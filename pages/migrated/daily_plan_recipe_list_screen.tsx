@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { recipesApi } from '../../api/recipes';
+import { dietApi } from '../../api/diet';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -45,17 +47,36 @@ export default function DailyPlanRecipeListScreen(props: DailyPlanRecipeListScre
   const _fetchRecipes = useCallback(async (searchTerm?: string) => {
     if (page === 1) setIsLoading(true);
     try {
-      // API call: getRecipeFilterListApi({ mealTypes: [mealType], page, mSearch: searchTerm || searchText })
-      // const value = await getRecipeFilterListApi(...);
-      // if (page === 1) setRecipeList([]);
-      // setRecipeList(prev => [...prev, ...value.data]);
-      // setIsLastPage(value.pagination?.currentPage === value.pagination?.totalPages);
+      const params: Record<string, any> = {
+        meal_type: [mealType],
+        page,
+        per_page: 20,
+      };
+      const term = searchTerm ?? searchText;
+      if (term) params.title = term;
+      if (isFavourite === 1) params.is_favourite = 1;
+
+      const value = await recipesApi.getFilteredList(params);
+      const items: RecipeItem[] = (value.data.data ?? []).map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        recipeImage: r.recipe_image,
+        calories: r.calories,
+        protein: r.protein,
+        carbs: r.carbs,
+        fats: r.fats,
+        preparationTime: r.preparation_time,
+        recipeCategory: (r.recipe_category ?? []).map((name: string) => ({ title: name })),
+      }));
+      if (page === 1) setRecipeList(items);
+      else setRecipeList((prev) => [...prev, ...items]);
+      setIsLastPage((value.data.pagination?.currentPage ?? 1) >= (value.data.pagination?.totalPages ?? 1));
     } catch (e) {
       console.log('Error fetching recipes', e);
     } finally {
       setIsLoading(false);
     }
-  }, [page, mealType, searchText]);
+  }, [page, mealType, searchText, isFavourite]);
 
   useEffect(() => {
     _fetchRecipes();
@@ -93,9 +114,22 @@ export default function DailyPlanRecipeListScreen(props: DailyPlanRecipeListScre
     _fetchRecipes(searchText);
   };
 
-  const _showRecipeDetailBottomSheet = (item: RecipeItem) => {
-    // Show modal bottom sheet with recipe detail
-    // RecipeDetailBottomSheet logic
+  const _showRecipeDetailBottomSheet = async (item: RecipeItem) => {
+    try {
+      let planId: number | null = dailyPlanId ?? null;
+      if (!planId) {
+        const planRes = await dietApi.getDailyPlan(date ?? '');
+        planId = planRes.data?.data?.id ?? null;
+      }
+      if (!planId) {
+        Alert.alert('Error', 'Could not resolve the daily plan for this date.');
+        return;
+      }
+      await recipesApi.saveDailyPlanRecipe(planId, item.id, mealType);
+      props.navigation.goBack();
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Failed to add recipe to your plan');
+    }
   };
 
   const renderRecipeItem = ({ item }: { item: RecipeItem }) => {
