@@ -1,0 +1,287 @@
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Animated,
+  Dimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+
+import { C, FONT } from "../theme";
+
+const { width } = Dimensions.get("window");
+
+function Confetti() {
+  const pieces = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    x: Math.random() * width,
+    color: ["#FF6B6B", "#4ECDC4", "#FFD93D", "#6C5CE7", "#FF9FF3"][i % 5],
+    delay: Math.random() * 2000,
+  }));
+
+  const anims = useRef(pieces.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    anims.forEach((anim, i) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(pieces[i].delay),
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+  }, []);
+
+  return (
+    <View style={styles.confettiContainer}>
+      {pieces.map((piece, i) => (
+        <Animated.View
+          key={piece.id}
+          style={{
+            position: "absolute",
+            left: piece.x,
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: piece.color,
+            opacity: anims[i].interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 0],
+            }),
+            transform: [
+              {
+                translateY: anims[i].interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-20, 400],
+                }),
+              },
+              {
+                rotate: anims[i].interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["0deg", "360deg"],
+                }),
+              },
+            ],
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+export default function StepGoalCompletedScreen({ navigation }: any) {
+
+  const [showEditSheet, setShowEditSheet] = useState(false);
+  const [goal, setGoal] = useState(10000);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Confetti />
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.trophyContainer}>
+          <View style={styles.trophyCircle}>
+            <Ionicons name="trophy" size={60} color="#FFD700" />
+          </View>
+        </View>
+
+        <Text style={styles.congratsText}>¡Meta alcanzada!</Text>
+        <Text style={styles.stepsText}>10,000 pasos completados</Text>
+
+        <View style={styles.streakCard}>
+          <Ionicons name="flame-outline" size={24} color="#FF6B6B" />
+          <Text style={styles.streakText}>3 días seguidos</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.editGoalButton}
+          onPress={() => setShowEditSheet(true)}
+        >
+          <Text style={styles.editGoalText}>Editar meta</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>Volver</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {showEditSheet && (
+        <View style={styles.bottomSheet}>
+          <View style={styles.sheetHandle} />
+          <Text style={styles.sheetTitle}>Editar meta</Text>
+          <Text style={styles.sheetGoal}>{goal.toLocaleString()} pasos</Text>
+          <View style={styles.sliderRow}>
+            <TouchableOpacity onPress={() => setGoal(Math.max(1000, goal - 1000))}>
+              <Ionicons name="remove-circle" size={32} color={C.primary} />
+            </TouchableOpacity>
+            <View style={styles.sliderTrack}>
+              <View
+                style={[
+                  styles.sliderFill,
+                  { width: `${(goal / 20000) * 100}%` },
+                ]}
+              />
+            </View>
+            <TouchableOpacity onPress={() => setGoal(Math.min(20000, goal + 1000))}>
+              <Ionicons name="add-circle" size={32} color={C.primary} />
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={styles.sheetConfirmBtn}
+            onPress={() => setShowEditSheet(false)}
+          >
+            <Text style={styles.sheetConfirmText}>Confirmar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  confettiContainer: {
+    ...StyleSheet.absoluteFill,
+    overflow: "hidden",
+    pointerEvents: "none",
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trophyContainer: {
+    marginBottom: 24,
+  },
+  trophyCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#FFF8E1",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  congratsText: {
+    fontSize: 28,
+    fontFamily: FONT.bold,
+    color: C.text,
+    marginBottom: 8,
+  },
+  stepsText: {
+    fontSize: 16,
+    fontFamily: FONT.medium,
+    color: C.gray,
+    marginBottom: 24,
+  },
+  streakCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: C.card,
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+    marginBottom: 32,
+  },
+  streakText: {
+    fontSize: 16,
+    fontFamily: FONT.bold,
+    color: C.text,
+  },
+  editGoalButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: C.primary,
+    marginBottom: 16,
+  },
+  editGoalText: {
+    fontSize: 14,
+    fontFamily: FONT.medium,
+    color: C.primary,
+  },
+  backButton: {
+    paddingVertical: 12,
+  },
+  backButtonText: {
+    fontSize: 14,
+    fontFamily: FONT.medium,
+    color: C.gray,
+  },
+  bottomSheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: C.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: C.gray + "40",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontFamily: FONT.bold,
+    color: C.text,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  sheetGoal: {
+    fontSize: 32,
+    fontFamily: FONT.bold,
+    color: C.primary,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  sliderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 20,
+  },
+  sliderTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: C.bg,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  sliderFill: {
+    height: "100%",
+    backgroundColor: C.primary,
+    borderRadius: 4,
+  },
+  sheetConfirmBtn: {
+    backgroundColor: C.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  sheetConfirmText: {
+    fontSize: 16,
+    fontFamily: FONT.bold,
+    color: C.white,
+  },
+});
