@@ -21,14 +21,16 @@ export interface ExerciseItem {
   based: string;
 }
 
+export interface Pagination {
+  total_items: number;
+  per_page: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface ExerciseListResponse {
   data: ExerciseItem[];
-  pagination: {
-    total_items: number;
-    per_page: number;
-    current_page: number;
-    total_pages: number;
-  };
+  pagination: Pagination;
 }
 
 export interface BodyPartItem {
@@ -61,8 +63,8 @@ export const exercisesApi = {
   getByLevel: (levelId: number, page: number = 1) =>
     apiClient.get<ExerciseListResponse>(`exercise-list?level_ids=${levelId}&page=${page}`),
 
-  search: (title: string) =>
-    apiClient.get<ExerciseListResponse>(`exercise-list?title=${encodeURIComponent(title)}`),
+  search: (title: string, page: number = 1) =>
+    apiClient.get<ExerciseListResponse>(`exercise-list?title=${encodeURIComponent(title)}&page=${page}`),
 
   getDetail: (id: number) =>
     apiClient.get<{ data: ExerciseItem & { equipment_image: string; seconds_per_rep: number } }>(`exercise-detail?id=${id}`),
@@ -71,11 +73,11 @@ export const exercisesApi = {
     apiClient.get<ExerciseListResponse>(`get-user-exercise?page=${page}`),
 
   getBodyParts: (page: number = 1) =>
-    apiClient.get<{ data: BodyPartItem[] }>(`bodypart-list?page=${page}`),
+    apiClient.get<{ data: BodyPartItem[]; pagination: Pagination }>(`bodypart-list?page=${page}`),
 
   getEquipment: (page: number = 1) =>
-    apiClient.get<{ data: EquipmentItem[] }>(`equipment-list?page=${page}`),
+    apiClient.get<{ data: EquipmentItem[]; pagination: Pagination }>(`equipment-list?page=${page}`),
 
   getLevels: (page: number = 1) =>
-    apiClient.get<{ data: LevelItem[] }>(`level-list?page=${page}`),
+    apiClient.get<{ data: LevelItem[]; pagination: Pagination }>(`level-list?page=${page}`),
 };
