@@ -56,7 +56,7 @@ export default function DietList({ navigation }: Props) {
         } else {
           setData((prev) => [...prev, ...(res.data?.data ?? [])]);
         }
-        setTotalPages(res.data?.pagination?.total_pages ?? 1);
+        setTotalPages(res.data?.pagination?.totalPages ?? 1);
       } catch {
         setError("Failed to load diet list.");
       } finally {
