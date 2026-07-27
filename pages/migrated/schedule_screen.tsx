@@ -184,7 +184,7 @@ export default function ScheduleScreen(props: any) {
       <TouchableOpacity
         style={s.workoutCard}
         onPress={() => {
-          props.navigation.navigate('MigratedFullWorkout', {
+          props.navigation.navigate('MigratedWorkoutPreview', {
             programDayAssignmentId: item.id,
             mTitle: item.title,
           });

@@ -247,6 +247,10 @@ import WorkoutDetailScreenMig from "@pages/migrated/workout_detail_screen";
 // @ts-ignore
 import WorkoutHistoryScreen from "@pages/migrated/workout_history_screen";
 // @ts-ignore
+import WorkoutPreviewScreen from "@pages/migrated/workout_preview_screen";
+// @ts-ignore
+import WorkoutSessionScreenMig from "@pages/migrated/workout_session_screen";
+// @ts-ignore
 import YoutubePlayerScreen from "@pages/migrated/youtube_player_screen";
 
 
@@ -523,6 +527,8 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedWebView" component={WebViewScreen} />
       <MStack.Screen name="MigratedWorkoutDetail" component={WorkoutDetailScreenMig} />
       <MStack.Screen name="MigratedWorkoutHistory" component={WorkoutHistoryScreen} />
+      <MStack.Screen name="MigratedWorkoutPreview" component={WorkoutPreviewScreen} />
+      <MStack.Screen name="MigratedWorkoutSession" component={WorkoutSessionScreenMig} />
       <MStack.Screen name="MigratedYoutubePlayer" component={YoutubePlayerScreen} />
       <MStack.Screen name="MigratedDeviceConnected" component={DeviceConnectedScreen} />
       <MStack.Screen name="MigratedEmparejando" component={EmparejandoScreen} />

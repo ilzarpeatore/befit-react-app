@@ -324,7 +324,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
               <TouchableOpacity
                 key={`${w.assignment_id}-${i}`}
                 style={i > 0 ? { marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border } : {}}
-                onPress={() => navigation?.navigate('MigratedFullWorkout', { programDayAssignmentId: w.assignment_id, mTitle: w.title || 'Entrenamiento' })}
+                onPress={() => navigation?.navigate('MigratedWorkoutPreview', { programDayAssignmentId: w.assignment_id, mTitle: w.title || 'Entrenamiento' })}
               >
                 <View style={styles.todayWorkoutTopRow}>
                   <View style={styles.todayWorkoutIcon}>

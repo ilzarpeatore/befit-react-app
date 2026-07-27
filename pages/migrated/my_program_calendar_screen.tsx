@@ -149,7 +149,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
                   activeOpacity={0.7}
                   onPress={() => {
                     if (w.assignmentId == null) return;
-                    navigation?.navigate('MigratedFullWorkout', {
+                    navigation?.navigate('MigratedWorkoutPreview', {
                       programDayAssignmentId: w.assignmentId,
                       mTitle: w.title,
                     });

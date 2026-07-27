@@ -1,0 +1,56 @@
+import apiClient from './client';
+
+// V2 system: WorkoutTemplate / WorkoutTemplateBlock / WorkoutTemplateExercise.
+// Backend: app/Http/Controllers/API/WorkoutTemplateController.php (getClientDetail).
+
+export interface WorkoutTemplateExerciseModel {
+  id: number;
+  exercise_id: number;
+  sequence: number;
+  prescribed: Record<string, any> | null;
+  enabled_metrics: string[] | null;
+  notes: string | null;
+  title: string | null;
+  exercise_image: string | null;
+  video_url: string | null;
+  exercise?: {
+    id: number;
+    title: string;
+    bodypart_ids?: number[] | null;
+    [key: string]: any;
+  } | null;
+}
+
+export interface WorkoutTemplateBlockModel {
+  id: number;
+  title: string;
+  instructions: string | null;
+  order: number;
+  exercises: WorkoutTemplateExerciseModel[];
+}
+
+export interface WorkoutTemplateDetailData {
+  id: number;
+  title: string;
+  description: string | null;
+  thumbnail: string | null;
+  blocks: WorkoutTemplateBlockModel[];
+}
+
+export interface MetricCatalogItem {
+  id: number;
+  key: string;
+  label: string;
+  unit: string | null;
+  input_type: 'number' | 'text' | 'time';
+  higher_is_better: boolean | null;
+  order: number;
+}
+
+export const workoutTemplateApi = {
+  getClientDetail: (id: number) =>
+    apiClient.get<{ data: WorkoutTemplateDetailData }>('v1/workout-template-detail', { params: { id } }),
+
+  getMetricsCatalog: () =>
+    apiClient.get<{ data: MetricCatalogItem[] }>('v1/metrics-catalog-list'),
+};
