@@ -15,6 +15,8 @@ export interface UserProfile {
   carbs_pct: number;
   protein_pct: number;
   fat_pct: number;
+  water_reminder_settings?: Record<string, any> | null;
+  meal_reminder_settings?: Record<string, any> | null;
 }
 
 export interface UserData {
@@ -60,6 +62,15 @@ export interface GraphListResponse {
   };
 }
 
+export interface ReminderSettingsPayload {
+  water_reminder_settings?: Record<string, any>;
+  meal_reminder_settings?: Record<string, any>;
+}
+
+export interface ReminderSettingsResponse {
+  data: UserProfile;
+}
+
 export const profileApi = {
   getUserDetail: (id: number) =>
     apiClient.get<UserResponse>(`user-detail?id=${id}`),
@@ -78,4 +89,7 @@ export const profileApi = {
 
   getGraphDetail: (type: string) =>
     apiClient.get<{ data: GraphItem }>(`usergraph-detail?type=${type}`),
+
+  setReminderSettings: (payload: ReminderSettingsPayload) =>
+    apiClient.post<ReminderSettingsResponse>('set-reminder-settings', payload),
 };
