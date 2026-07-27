@@ -3,22 +3,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, 
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface RecipeCategory {
   id: number;
   title: string;
-  recipeCategoryImage: string;
-}
-
-interface Pagination {
-  totalPages: number;
-}
-
-interface ApiResponse {
-  data: RecipeCategory[];
-  pagination?: Pagination;
+  recipeCategoryImage?: string;
 }
 
 export default function RecipeCategoryListScreen(props: any) {
@@ -37,9 +29,15 @@ export default function RecipeCategoryListScreen(props: any) {
       let totalPages = 1;
       const allCategories: RecipeCategory[] = [];
       while (page <= totalPages) {
-        const value: ApiResponse = await getRecipeCategoryListApi(page);
-        totalPages = value.pagination?.totalPages ?? 1;
-        allCategories.push(...(value.data ?? []));
+        const res = await recipesApi.getCategories(page);
+        totalPages = res.data.pagination?.totalPages ?? 1;
+        allCategories.push(
+          ...(res.data.data ?? []).map((c) => ({
+            id: c.id,
+            title: c.title,
+            recipeCategoryImage: c.recipe_category_image ?? undefined,
+          }))
+        );
         page++;
       }
       setMCategoryList(allCategories);
@@ -49,11 +47,6 @@ export default function RecipeCategoryListScreen(props: any) {
       setIsLoading(false);
     }
   }, []);
-
-  const getRecipeCategoryListApi = async (page: number): Promise<ApiResponse> => {
-    // Placeholder API call
-    return { data: [], pagination: { totalPages: 1 } };
-  };
 
   const columnWidth = (SCREEN_WIDTH - 48) / 2;
 
@@ -94,11 +87,15 @@ export default function RecipeCategoryListScreen(props: any) {
                   onPress={() => handleCategoryPress(item)}
                   activeOpacity={0.7}
                 >
-                  <Image
-                    source={{ uri: item.recipeCategoryImage }}
-                    style={[s.categoryImage, { width: columnWidth, height: 120 }]}
-                    resizeMode="cover"
-                  />
+                  {item.recipeCategoryImage ? (
+                    <Image
+                      source={{ uri: item.recipeCategoryImage }}
+                      style={[s.categoryImage, { width: columnWidth, height: 120 }]}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={[s.categoryImage, { width: columnWidth, height: 120, backgroundColor: C.surfaceLight }]} />
+                  )}
                   <Text style={[s.categoryTitle, styles.fontBold]} numberOfLines={1}>
                     {item.title}
                   </Text>
