@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator, Dimensions, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator, Dimensions, Modal, Pressable, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
@@ -14,8 +14,10 @@ interface RecipeItem {
   calories?: number;
 }
 
+const MEAL_TYPE_OPTIONS = ['breakfast', 'lunch', 'dinner', 'snacks'];
+
 interface RecipeFilterModel {
-  mealTypes?: number[];
+  mealTypes?: string[];
   recipeCategoryIds?: number[];
   recipeTagIds?: number[];
   startCalories?: number;
@@ -50,6 +52,9 @@ export default function RecipeListScreenV2(props: any) {
   const [isLastPage, setIsLastPage] = useState(false);
   const [filter, setFilter] = useState<RecipeFilterModel>({});
   const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [mealTypeDraft, setMealTypeDraft] = useState<string[]>([]);
+  const [calMinDraft, setCalMinDraft] = useState('');
+  const [calMaxDraft, setCalMaxDraft] = useState('');
   const scrollRef = useRef<ScrollView>(null);
   const styles = useStyle();
 
@@ -166,6 +171,7 @@ export default function RecipeListScreenV2(props: any) {
                   key={item.id}
                   style={[s.recipeCard, { width: columnWidth }]}
                   activeOpacity={0.7}
+                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id })}
                 >
                   {item.recipeImage ? (
                     <Image
@@ -194,15 +200,73 @@ export default function RecipeListScreenV2(props: any) {
         )}
       </View>
 
-      <Modal visible={showFilterSheet} transparent animationType="slide">
+      <Modal
+        visible={showFilterSheet}
+        transparent
+        animationType="slide"
+        onShow={() => {
+          setMealTypeDraft(filter.mealTypes ?? []);
+          setCalMinDraft(filter.startCalories != null ? String(filter.startCalories) : '');
+          setCalMaxDraft(filter.endCalories != null ? String(filter.endCalories) : '');
+        }}
+      >
         <Pressable style={s.modalOverlay} onPress={() => setShowFilterSheet(false)}>
           <Pressable style={s.filterSheet} onPress={(e) => e.stopPropagation()}>
             <View style={s.filterHandle} />
             <Text style={[s.filterTitle, styles.fontBold]}>Filters</Text>
-            {/* Filter options placeholder */}
+
+            <Text style={[s.filterLabel, styles.fontSemiBold]}>Meal Type</Text>
+            <View style={s.chipsRow}>
+              {MEAL_TYPE_OPTIONS.map((mt) => {
+                const selected = mealTypeDraft.includes(mt);
+                return (
+                  <TouchableOpacity
+                    key={mt}
+                    style={[s.chip, selected && s.chipSelected]}
+                    onPress={() =>
+                      setMealTypeDraft((prev) =>
+                        prev.includes(mt) ? prev.filter((v) => v !== mt) : [...prev, mt]
+                      )
+                    }
+                  >
+                    <Text style={[s.chipText, selected && s.chipTextSelected, styles.fontMedium]}>
+                      {mt.charAt(0).toUpperCase() + mt.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={[s.filterLabel, styles.fontSemiBold]}>Calories (kcal)</Text>
+            <View style={s.rangeRow}>
+              <TextInput
+                style={s.rangeInput}
+                placeholder="Min"
+                placeholderTextColor={C.gray40}
+                keyboardType="numeric"
+                value={calMinDraft}
+                onChangeText={setCalMinDraft}
+              />
+              <Text style={[s.rangeSeparator, styles.fontRegular]}>-</Text>
+              <TextInput
+                style={s.rangeInput}
+                placeholder="Max"
+                placeholderTextColor={C.gray40}
+                keyboardType="numeric"
+                value={calMaxDraft}
+                onChangeText={setCalMaxDraft}
+              />
+            </View>
+
             <TouchableOpacity
               style={s.applyBtn}
               onPress={() => {
+                setFilter((prev) => ({
+                  ...prev,
+                  mealTypes: mealTypeDraft.length > 0 ? mealTypeDraft : undefined,
+                  startCalories: calMinDraft ? Number(calMinDraft) : undefined,
+                  endCalories: calMaxDraft ? Number(calMaxDraft) : undefined,
+                }));
                 setShowFilterSheet(false);
                 setPage(1);
                 setRecipeList([]);
@@ -237,6 +301,31 @@ const s = StyleSheet.create({
   filterSheet: { backgroundColor: C.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
   filterHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: C.gray60, alignSelf: 'center', marginBottom: 16 },
   filterTitle: { fontSize: 20, color: C.white, marginBottom: 16 },
+  filterLabel: { fontSize: 14, color: C.gray30, marginTop: 16, marginBottom: 10 },
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: C.gray60,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  chipSelected: { backgroundColor: C.brand5, borderColor: C.brand5 },
+  chipText: { fontSize: 13, color: C.gray30 },
+  chipTextSelected: { color: C.white },
+  rangeRow: { flexDirection: 'row', alignItems: 'center' },
+  rangeInput: {
+    flex: 1,
+    backgroundColor: C.surfaceLight,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: C.white,
+    fontSize: 14,
+  },
+  rangeSeparator: { color: C.gray30, marginHorizontal: 12 },
   applyBtn: { backgroundColor: C.brand5, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
   applyBtnText: { fontSize: 16, color: C.white },
 });
