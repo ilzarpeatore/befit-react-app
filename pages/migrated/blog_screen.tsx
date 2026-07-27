@@ -43,8 +43,6 @@ export default function BlogScreen({ navigation }: any) {
       const raw = postsRes.data;
       const posts: BlogListItem[] = (raw?.data ?? []).filter((p: any) => p.status === 'publish');
 
-      Alert.alert('Blog Debug', `postsRes.data keys: ${Object.keys(raw || {})}\nraw.data type: ${typeof raw?.data}\nraw.data length: ${Array.isArray(raw?.data) ? raw.data.length : 'NOT ARRAY'}\nfiltered: ${posts.length}`);
-
       setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
       buildSections(posts);
 
