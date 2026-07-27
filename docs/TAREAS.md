@@ -38,6 +38,15 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 - `water_reminders_screen.tsx` y `meals_reminders_screen.tsx` conectadas a `POST set-reminder-settings` (guarda de verdad los horarios configurados en el perfil del usuario, y los precarga al entrar).
 - `verify_otp_screen.tsx` conectada a `POST social-otp-login` (con el `login_type` corregido a `'mobile'`, el único valor real que el backend acepta).
 
+### Pantallas de Dieta restantes — conectadas y verificadas en dispositivo
+- **Diet Screen**: ya estaba 100% conectada (sin cambios necesarios).
+- **Diet Screen Sandow**: conectada a `dietApi.getList/search` (mismo patrón que Diet Screen). Los chips de tipo de comida (Breakfast/Lunch/etc.) quedaron como filtro puramente visual — el modelo legacy "Diet" no tiene campo `meal_type` en el backend, solo `categorydiet_id`/`is_featured`/`is_premium`. De paso se corrigió un bug de paginación infinita que existía también en Diet Screen (nunca marcaba `isLastPage`).
+- **View Diet Category**: conectada a `dietApi.getCategories`. El contador de "items" por categoría queda en 0 porque el backend (`CategoryDietResource`) no expone ese dato — no se inventó un número.
+- **Favourite Recipe**: conectada a `recipesApi.getFavourite`. Al tocar una receta favorita navega al detalle real (ingredientes/instrucciones). Verificado en dispositivo (estado vacío correcto: "No favourite recipes found" para una cuenta sin favoritos).
+- **Plan Screen**: la versión rica del Daily Plan — metas de calorías/macros (calculadas del perfil del usuario), totales actuales, secciones por comida con recetas reales, checkbox de "marcar completado" y botón de vaciar plan. **Verificado en dispositivo de punta a punta**: marcar una receta como completada recalculó el total consumido correctamente (0 → 2000 kcal); agregar una receta desde "Daily Plan Recipe List" volvió automáticamente y refrescó los totales.
+- **Daily Plan Recipe List**: buscador de recetas por tipo de comida para agregar al plan. Conectada a `recipe-filter-list`. **Verificado en dispositivo**: mostró recetas reales de desayuno y la selección se agregó correctamente al plan.
+- Se agregó `recipesApi.updateDailyPlanRecipe` (nueva función, no reemplaza la existente) para soportar marcar/desmarcar completado sin romper otros usos de `saveDailyPlanRecipe`.
+
 ---
 
 ## 🔜 Pendientes, por prioridad
