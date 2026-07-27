@@ -14,12 +14,21 @@ export default function OTPScreen(props: any) {
   }, []);
 
   const sendOTP = async () => {
+    if (!mobileNumber.trim()) {
+      Alert.alert('Error', 'Please enter your phone number');
+      return;
+    }
     setIsLoading(true);
     try {
-      const number = `${countryCode}${mobileNumber.trim()}`;
-      // API call placeholder: loginWithOTP(number, mobileNumber.trim())
-      // await loginWithOTP(number, mobileNumber.trim());
-      Alert.alert('OTP Sent', 'Verification code has been sent to your phone.');
+      const phoneNumber = `${countryCode}${mobileNumber.trim()}`;
+      // NOTE: there is no backend endpoint to actually send/dispatch an OTP SMS code.
+      // routes/api.php only exposes `POST social-otp-login` (UserController::socialOTPLogin),
+      // which looks up (or creates) a user by phone number - it does not generate or send a
+      // verification code. The original flow relied on Firebase Phone Auth (client-side) to
+      // deliver the SMS, and this project has no `firebase` dependency installed. Until
+      // Firebase Phone Auth (or a dedicated send-otp backend endpoint) is added, this screen
+      // cannot really send an OTP; it just forwards the phone number to the verify screen.
+      props.navigation?.navigate('MigratedVerifyOtp', { phoneNumber });
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'Failed to send OTP');
     } finally {
