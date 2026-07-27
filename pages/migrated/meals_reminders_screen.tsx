@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { profileApi } from '@api/profile';
+import { useAuth } from '@store/AuthContext';
 import { C, FONT } from './theme';
 
 interface TimeObj {
@@ -36,6 +38,7 @@ interface MealsRemindersScreenProps {
 
 export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
   const { navigation } = props;
+  const { state } = useAuth();
 
   const [breakfastEnabled, setBreakfastEnabled] = useState(true);
   const [snacksEnabled, setSnacksEnabled] = useState(true);
@@ -62,15 +65,44 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
     divider: { height: 1, backgroundColor: C.border },
     saveBtn: { color: C.brand5, fontSize: '16@ratio', fontFamily: FONT.semiBold },
     loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
+    topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: '16@ratio', paddingTop: '16@ratio' },
   });
 
   useEffect(() => {
     loadSettings();
   }, []);
 
+  const parseTime = (value: string): TimeObj | null => {
+    if (!value) return null;
+    const [h, m] = value.split(':').map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    return { hour: h, minute: m };
+  };
+
   const loadSettings = async () => {
-    // Load from userStore.userProfile?.mealReminderSettings
-    // Placeholder: use defaults
+    const settings = state.user?.user_profile?.meal_reminder_settings;
+    if (!settings) return;
+
+    if (settings.breakfast) {
+      setBreakfastEnabled(settings.breakfast.enabled ?? true);
+      const t = parseTime(settings.breakfast.time);
+      if (t) setBreakfastTime(t);
+    }
+    if (settings.lunch) {
+      setLunchEnabled(settings.lunch.enabled ?? true);
+      const t = parseTime(settings.lunch.time);
+      if (t) setLunchTime(t);
+    }
+    if (settings.snacks) {
+      setSnacksEnabled(settings.snacks.enabled ?? true);
+      const t = parseTime(settings.snacks.time);
+      if (t) setSnacksTime(t);
+    }
+    if (settings.dinner) {
+      setDinnerEnabled(settings.dinner.enabled ?? true);
+      const t = parseTime(settings.dinner.time);
+      if (t) setDinnerTime(t);
+    }
   };
 
   const pickTime = (current: TimeObj, onSelected: (t: TimeObj) => void) => {
@@ -97,7 +129,7 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
           dinner: { enabled: dinnerEnabled, time: formatTime(dinnerTime) },
         },
       };
-      // API call placeholder: setReminderSettingsApi(request)
+      await profileApi.setReminderSettings(request);
       Alert.alert('Success', 'Settings saved');
       navigation?.goBack();
     } catch (e: any) {
@@ -144,7 +176,7 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: '16@ratio', paddingTop: '16@ratio' }}>
+      <View style={styles.topBar}>
         <Text style={styles.header}>Meals Reminders</Text>
         <TouchableOpacity onPress={saveSettings} disabled={isSaving}>
           <Text style={styles.saveBtn}>Save</Text>

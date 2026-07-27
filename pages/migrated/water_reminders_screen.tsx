@@ -14,9 +14,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { profileApi } from '@api/profile';
+import { useAuth } from '@store/AuthContext';
 import { C, FONT } from './theme';
 
 export default function WaterRemindersScreen(props: any) {
+  const { state } = useAuth();
   const [enabled, setEnabled] = useState(true);
   const [everyHours, setEveryHours] = useState(1);
   const [fromHour, setFromHour] = useState(8);
@@ -38,28 +41,27 @@ export default function WaterRemindersScreen(props: any) {
   }, []);
 
   const init = async () => {
-    // Load from userStore.userProfile?.waterReminderSettings
-    // if (userStore.userProfile?.waterReminderSettings) {
-    //   const settings = userStore.userProfile.waterReminderSettings;
-    //   setEnabled(settings.enabled ?? true);
-    //   if (settings.start) {
-    //     const [h, m] = settings.start.split(':').map(Number);
-    //     setFromHour(h);
-    //     setFromMinute(m);
-    //   }
-    //   if (settings.end) {
-    //     const [h, m] = settings.end.split(':').map(Number);
-    //     setUntilHour(h);
-    //     setUntilMinute(m);
-    //   }
-    //   const interval = settings.interval ?? 60;
-    //   setEveryHours(interval >= 60 ? Math.floor(interval / 60) : 1);
-    //   if (everyHours === 24 && settings.atTime) {
-    //     const [h, m] = settings.atTime.split(':').map(Number);
-    //     setAtHour(h);
-    //     setAtMinute(m);
-    //   }
-    // }
+    const settings = state.user?.user_profile?.water_reminder_settings;
+    if (settings) {
+      setEnabled(settings.enabled ?? true);
+      if (settings.start) {
+        const [h, m] = String(settings.start).split(':').map(Number);
+        setFromHour(h);
+        setFromMinute(m);
+      }
+      if (settings.end) {
+        const [h, m] = String(settings.end).split(':').map(Number);
+        setUntilHour(h);
+        setUntilMinute(m);
+      }
+      const interval = settings.interval ?? 60;
+      setEveryHours(interval >= 60 ? Math.floor(interval / 60) : 1);
+      if (settings.at_time) {
+        const [h, m] = String(settings.at_time).split(':').map(Number);
+        setAtHour(h);
+        setAtMinute(m);
+      }
+    }
   };
 
   const formatTime = (hour: number, minute: number) => {
@@ -119,13 +121,12 @@ export default function WaterRemindersScreen(props: any) {
     }
 
     try {
-      // await setReminderSettingsApi(request);
-      // Build water settings and update userStore
-      // await ReminderNotificationService.scheduleWaterReminders(newWaterSettings);
+      await profileApi.setReminderSettings(request);
+      // TODO: schedule local notifications via ReminderNotificationService once implemented
       Alert.alert('Success', 'Data saved');
       props.navigation?.goBack();
     } catch (e: any) {
-      Alert.alert('Error', e.toString());
+      Alert.alert('Error', e?.response?.data?.message || e.toString());
     } finally {
       setIsSaving(false);
     }
