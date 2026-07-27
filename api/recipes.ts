@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { DailyPlanDetailResponse } from './diet';
 
 export interface RecipeListItem {
   id: number;
@@ -106,6 +107,9 @@ export const recipesApi = {
 
   saveDailyPlanRecipe: (daily_plan_id: number, recipe_id: number, meal_type: string) =>
     apiClient.post('save-daily-plan-recipe', { daily_plan_id, recipe_id, meal_type }),
+
+  updateDailyPlanRecipe: (id: number, daily_plan_id: number, recipe_id: number, meal_type: string, is_complete: boolean) =>
+    apiClient.post<DailyPlanDetailResponse>('save-daily-plan-recipe', { id, daily_plan_id, recipe_id, meal_type, is_complete }),
 
   deleteDailyPlanRecipe: (id: number) =>
     apiClient.post('daily-plan-recipe-delete', { id }),
