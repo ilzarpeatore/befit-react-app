@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, 
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -64,39 +65,42 @@ export default function RecipeListScreenV2(props: any) {
   const loadRecipes = useCallback(async () => {
     setIsLoading(true);
     try {
-      const value: ApiResponse = await getRecipeFilterListApi({
-        mealTypes: filter.mealTypes ?? [],
-        recipeCategoryIds: filter.recipeCategoryIds ?? (categoryId ? [categoryId] : null),
-        recipeTagIds: filter.recipeTagIds ?? (tagId ? [tagId] : null),
-        startCalories: filter.startCalories,
-        endCalories: filter.endCalories,
-        startProtein: filter.startProtein,
-        endProtein: filter.endProtein,
-        startCarbs: filter.startCarbs,
-        endCarbs: filter.endCarbs,
-        startFats: filter.startFats,
-        endFats: filter.endFats,
-        minPreparationTime: filter.minPreparationTime,
-        maxPreparationTime: filter.maxPreparationTime,
-        isFavourite: filter.isFavourite,
+      const res = await recipesApi.getFilteredList({
+        meal_type: filter.mealTypes,
+        recipe_category_ids: filter.recipeCategoryIds ?? (categoryId ? [categoryId] : undefined),
+        recipe_tag_ids: filter.recipeTagIds ?? (tagId ? [tagId] : undefined),
+        start_calories: filter.startCalories,
+        end_calories: filter.endCalories,
+        start_protein: filter.startProtein,
+        end_protein: filter.endProtein,
+        start_carbs: filter.startCarbs,
+        end_carbs: filter.endCarbs,
+        start_fats: filter.startFats,
+        end_fats: filter.endFats,
+        min_preparation_time: filter.minPreparationTime,
+        max_preparation_time: filter.maxPreparationTime,
+        is_favourite: filter.isFavourite ?? undefined,
         page,
       });
+      const items = (res.data.data ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        recipeImage: r.recipe_image ?? undefined,
+        calories: r.calories,
+      }));
       if (page === 1) {
-        setRecipeList(value.data ?? []);
+        setRecipeList(items);
       } else {
-        setRecipeList((prev) => [...prev, ...(value.data ?? [])]);
+        setRecipeList((prev) => [...prev, ...items]);
       }
-      setIsLastPage((value.data ?? []).length < 10);
+      const totalPages = res.data.pagination?.totalPages ?? 1;
+      setIsLastPage(page >= totalPages);
     } catch (e: any) {
       // toast(e.toString());
     } finally {
       setIsLoading(false);
     }
   }, [page, filter, categoryId, tagId]);
-
-  const getRecipeFilterListApi = async (params: any): Promise<ApiResponse> => {
-    return { data: [], pagination: { totalPages: 1 } };
-  };
 
   const handleScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
