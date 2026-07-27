@@ -311,6 +311,23 @@ export default function Today({ navigation }: any) {
           </Chartbox>
           </TouchableOpacity>
           {/*chart end*/}
+          {/*nutrition link start*/}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={styles.nutritionLinkCard}
+            onPress={() => navigation.navigate("Migrated", { screen: "MigratedRecipeMain" })}
+          >
+            <LinearGradient
+              start={{ x: 0.04, y: -0.1 }}
+              end={{ x: 1, y: 1 }}
+              colors={["rgba(86,82,229,0.6)", "rgba(125,169,244,0.3)"]}
+              style={styles.nutritionLinkGradient}
+            >
+              <Text style={styles.nutritionLinkTitle}>Recetas y Nutrición</Text>
+              <Text style={styles.nutritionLinkSubtitle}>Explora recetas y tu plan de comidas</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          {/*nutrition link end*/}
           {/*chart row start*/}
           <View style={styles.chartboxrow}>
             {/*chart start*/}
@@ -513,6 +530,26 @@ function useStyle() {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
+    },
+    nutritionLinkCard: {
+      borderRadius: '16@ratio',
+      overflow: "hidden",
+      marginBottom: '16@ratio',
+    },
+    nutritionLinkGradient: {
+      paddingVertical: '16@ratio',
+      paddingHorizontal: '16@ratio',
+    },
+    nutritionLinkTitle: {
+      fontFamily: "Gilroy-ExtraBold",
+      fontSize: '15@ratio',
+      color: "#fff",
+    },
+    nutritionLinkSubtitle: {
+      fontFamily: "Gilroy-Light",
+      fontSize: '11@ratio',
+      color: "#D0D2E8",
+      marginTop: '4@ratio',
     },
     chartboxrow: {
       flexDirection: "row",

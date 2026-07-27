@@ -428,7 +428,7 @@ function Homenavigator() {
 function MigratedNavigator() {
   const MStack = createStackNavigator();
   return (
-    <MStack.Navigator screenOptions={{ headerShown: false }}>
+    <MStack.Navigator initialRouteName="MigratedHomeModern" screenOptions={{ headerShown: false }}>
       <MStack.Screen name="MigratedAboutApp" component={AboutAppScreen} />
       <MStack.Screen name="MigratedAboutUs" component={AboutUsScreen} />
       <MStack.Screen name="MigratedActivityTracker" component={ActivityTrackerScreen} />

@@ -48,7 +48,7 @@ export default function SignInScreenSandow(props: any) {
     setIsLoading(true);
     try {
       await login({ email: email.trim(), password: password.trim() });
-      props.navigation.replace('HomePage');
+      props.navigation.replace('Home', { screen: 'HomePage' });
     } catch (e: any) {
       // toast(e.toString());
     } finally {
@@ -62,7 +62,7 @@ export default function SignInScreenSandow(props: any) {
       // await signInWithGoogle();
       // setValue(IS_SOCIAL, true);
       // getUSerDetail, then navigate
-      props.navigation.navigate('HomePage');
+      props.navigation.navigate('Home', { screen: 'HomePage' });
     } catch (e: any) {
       // toast(e.toString());
     } finally {
