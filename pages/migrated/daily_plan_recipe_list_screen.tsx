@@ -33,7 +33,7 @@ interface DailyPlanRecipeListScreenProps {
 }
 
 export default function DailyPlanRecipeListScreen(props: DailyPlanRecipeListScreenProps) {
-  const { mealType, dailyPlanId, date } = props.route.params;
+  const { mealType = 'breakfast', dailyPlanId, date } = props.route.params ?? {};
 
   const [searchText, setSearchText] = useState('');
   const [recipeList, setRecipeList] = useState<RecipeItem[]>([]);
@@ -118,7 +118,7 @@ export default function DailyPlanRecipeListScreen(props: DailyPlanRecipeListScre
     try {
       let planId: number | null = dailyPlanId ?? null;
       if (!planId) {
-        const planRes = await dietApi.getDailyPlan(date ?? '');
+        const planRes = await dietApi.getDailyPlan(date ?? new Date().toISOString().split('T')[0]);
         planId = planRes.data?.data?.id ?? null;
       }
       if (!planId) {
@@ -190,7 +190,7 @@ export default function DailyPlanRecipeListScreen(props: DailyPlanRecipeListScre
             }}
             style={localStyles.iconBtn}
           >
-            <Ionicons name="filter-list" size={22} color={C.gray30} />
+            <Ionicons name="filter" size={22} color={C.gray30} />
           </TouchableOpacity>
         </View>
       </View>
