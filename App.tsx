@@ -582,7 +582,11 @@ function RootNavigator() {
   if (state.isLoading) return null;
 
   return (
-    <Stack.Navigator key={state.isAuthenticated ? (state.onboardingCompleted ? 'main' : 'onboarding') : 'auth'} screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      key={state.isAuthenticated ? (state.onboardingCompleted ? 'main' : 'onboarding') : 'auth'}
+      initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboarding' : 'Home'}
+      screenOptions={{ headerShown: false }}
+    >
       {!state.isAuthenticated ? (
         <>
           <Stack.Screen name="WelcomeAuth" component={WelcomeAuthScreen} />
@@ -595,9 +599,6 @@ function RootNavigator() {
       ) : !state.onboardingCompleted ? (
         <>
           <Stack.Screen name="MigratedOnboarding" component={OnboardingScreen} />
-          <Stack.Screen name="WelcomeAuth" component={WelcomeAuthScreen} />
-          <Stack.Screen name="LoginAuth" component={LoginScreen} />
-          <Stack.Screen name="RegisterFlow" component={RegisterScreen} />
           <Stack.Screen name="MigratedProfileSetupIntro" component={ProfileSetupIntroScreen} />
           <Stack.Screen name="MigratedProfileSetupForm" component={ProfileSetupFormScreen} />
           <Stack.Screen name="MigratedAvatarSetup" component={AvatarSetupScreen} />
