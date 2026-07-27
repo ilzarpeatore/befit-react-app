@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
-import { dietApi, RecipeDetail as RecipeDetailType } from "../api/diet";
+import { dietApi, RecipeDetail as RecipeDetailType, RecipeStep, RecipeIngredient } from "../api/diet";
 import { ErrorRetryMem } from "../components/ErrorRetry";
 import { LoadingSkeletonMem } from "../components/LoadingSkeleton";
 
@@ -24,6 +24,8 @@ export default function RecipeDetail() {
   const styles = useStyle();
   const { id } = route.params ?? {};
   const [data, setData] = useState<RecipeDetailType | null>(null);
+  const [steps, setSteps] = useState<RecipeStep[]>([]);
+  const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [favourite, setFavourite] = useState(false);
@@ -40,6 +42,8 @@ export default function RecipeDetail() {
       const res = await dietApi.getRecipeDetail(id);
       const recipeData = res.data?.data;
       setData(recipeData);
+      setSteps((res.data?.recipe_steps ?? []).slice().sort((a, b) => a.sequence - b.sequence));
+      setIngredients(res.data?.recipe_ingredients ?? []);
       if (recipeData) setFavourite(recipeData.is_favourite === 1);
     } catch {
       setError("Failed to load recipe details.");
@@ -113,16 +117,6 @@ export default function RecipeDetail() {
 
   if (!data) return null;
 
-  const ingredients = data.recipe_ingredients || [];
-  let steps: string[] = [];
-  try {
-    steps = JSON.parse(data.preparation_methods || "[]");
-  } catch {
-    steps = data.preparation_methods
-      ? data.preparation_methods.split(/\n|(?<=\.)\s+/).filter(Boolean)
-      : [];
-  }
-
   return (
     <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
@@ -194,9 +188,9 @@ export default function RecipeDetail() {
               {ingredients.map((ing) => (
                 <View key={ing.id} style={styles.ingredientRow}>
                   <View style={styles.ingredientDot} />
-                  <Text style={styles.ingredientName}>{ing.ingredient_name}</Text>
+                  <Text style={styles.ingredientName}>{ing.ingredient_title}</Text>
                   <Text style={styles.ingredientQty}>
-                    {ing.quantity} {ing.measurement_unit_name}
+                    {ing.quantity_display || `${ing.quantity} ${ing.measurement_unit_title}`}
                   </Text>
                 </View>
               ))}
@@ -207,7 +201,7 @@ export default function RecipeDetail() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Instructions</Text>
               {steps.map((step, index) => (
-                <View key={index} style={styles.stepRow}>
+                <View key={step.id} style={styles.stepRow}>
                   <LinearGradient
                     start={{ x: 0.24, y: -0.09 }}
                     end={{ x: 0.78, y: 0.93 }}
@@ -216,7 +210,7 @@ export default function RecipeDetail() {
                   >
                     <Text style={styles.stepNumber}>{index + 1}</Text>
                   </LinearGradient>
-                  <Text style={styles.stepText}>{step.replace(/^"|"$/g, "")}</Text>
+                  <Text style={styles.stepText}>{step.instruction}</Text>
                 </View>
               ))}
             </View>

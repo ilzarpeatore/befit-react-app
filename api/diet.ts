@@ -85,19 +85,38 @@ export interface RecipeDetail {
   protein: number;
   fats: number;
   carbs: number;
-  recipe_image: string;
+  recipe_image?: string;
   is_favourite: number;
-  recipe_ingredients: {
-    id: number;
-    ingredient_name: string;
-    measurement_unit_name: string;
-    quantity: number;
-    calories: number;
-    protein: number;
-    fats: number;
-    carbs: number;
-  }[];
-  preparation_methods: string;
+  recipe_categories: { id: number; name: string }[];
+  recipe_tags: { id: number; name: string }[];
+}
+
+export interface RecipeStep {
+  id: number;
+  instruction: string;
+  sequence: number;
+}
+
+export interface RecipeIngredient {
+  id: number;
+  ingredient_id: number;
+  ingredient_title: string;
+  measurement_unit_id: number;
+  measurement_unit_title: string;
+  quantity: number;
+  amount: number;
+  quantity_grams: number;
+  quantity_display: string;
+  calories: number;
+  protein: number;
+  fats: number;
+  carbs: number;
+}
+
+export interface RecipeDetailResponse {
+  data: RecipeDetail;
+  recipe_steps: RecipeStep[];
+  recipe_ingredients: RecipeIngredient[];
 }
 
 export const dietApi = {
@@ -123,7 +142,7 @@ export const dietApi = {
     apiClient.get<{ data: DailyPlanData }>(`daily-plan-detail?date=${date}`),
 
   getRecipeDetail: (id: number) =>
-    apiClient.get<{ data: RecipeDetail }>(`recipe-detail/${id}`),
+    apiClient.get<RecipeDetailResponse>(`recipe-detail/${id}`),
 
   getDetail: (id: number) =>
     apiClient.post<{ data: DietDetailItem }>('diet-detail', null, { params: { id } }),
