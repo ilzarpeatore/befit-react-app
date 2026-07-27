@@ -244,7 +244,12 @@ export default function RecipeMainScreen(props: any) {
           ) : recipes.length === 0 ? null : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {recipes.map((item) => (
-                <TouchableOpacity key={item.id} style={s.recipeCard} activeOpacity={0.7}>
+                <TouchableOpacity
+                  key={item.id}
+                  style={s.recipeCard}
+                  activeOpacity={0.7}
+                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id })}
+                >
                   {item.recipeImage ? (
                     <Image source={{ uri: item.recipeImage }} style={s.recipeImage} resizeMode="cover" />
                   ) : (
