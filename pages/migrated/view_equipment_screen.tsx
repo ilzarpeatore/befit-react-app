@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { exercisesApi } from '../../api/exercises';
 
 interface EquipmentItem {
   id: number;
@@ -42,14 +43,16 @@ export default function ViewEquipmentScreen(props: any) {
   const getEquipmentData = async () => {
     setIsLoading(true);
     try {
-      // await getEquipmentListApi(page)
-      //   .then((value) => {
-      //     setNumPage(value.pagination.totalPages);
-      //     setIsLastPage(false);
-      //     if (page === 1) setEquipmentList([]);
-      //     const items = value.data || [];
-      //     setEquipmentList((prev) => [...prev, ...items]);
-      //   });
+      const value = await exercisesApi.getEquipment(page);
+      const items = (value.data.data ?? []).map((e) => ({
+        id: e.id,
+        title: e.title,
+        image: e.equipment_image,
+      }));
+      setNumPage(value.data.pagination?.totalPages ?? 1);
+      setIsLastPage(false);
+      if (page === 1) setEquipmentList(items);
+      else setEquipmentList((prev) => [...prev, ...items]);
     } catch (e) {
       setIsLastPage(true);
     } finally {
@@ -60,14 +63,15 @@ export default function ViewEquipmentScreen(props: any) {
   const getEquipmentDataPagination = async () => {
     setIsLoading(true);
     try {
-      // await getEquipmentListApi(page)
-      //   .then((value) => {
-      //     setNumPage(value.pagination.totalPages);
-      //     setIsLastPage(false);
-      //     if (page === 1) setEquipmentList([]);
-      //     const items = value.data || [];
-      //     setEquipmentList((prev) => [...prev, ...items]);
-      //   });
+      const value = await exercisesApi.getEquipment(page);
+      const items = (value.data.data ?? []).map((e) => ({
+        id: e.id,
+        title: e.title,
+        image: e.equipment_image,
+      }));
+      setNumPage(value.data.pagination?.totalPages ?? 1);
+      setIsLastPage(false);
+      setEquipmentList((prev) => [...prev, ...items]);
     } catch (e) {
       setIsLastPage(true);
     } finally {
@@ -88,6 +92,13 @@ export default function ViewEquipmentScreen(props: any) {
       key={item.id?.toString() || index.toString()}
       style={styles.gridItem}
       activeOpacity={0.7}
+      onPress={() =>
+        props.navigation.navigate('MigratedExerciseList', {
+          mTitle: item.title,
+          isEquipment: true,
+          id: item.id,
+        })
+      }
     >
       <Image source={{ uri: item.image }} style={styles.equipmentImage} resizeMode="cover" />
       <Text style={styles.equipmentTitle} numberOfLines={2}>{item.title}</Text>
