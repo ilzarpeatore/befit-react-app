@@ -28,6 +28,7 @@ interface DietDetailScreenProps {
   route: {
     params: {
       dietModel?: DietModel;
+      id?: number;
       isCategory?: boolean;
       isFeatured?: boolean;
     };
@@ -36,13 +37,40 @@ interface DietDetailScreenProps {
 
 export default function DietDetailScreen(props: DietDetailScreenProps) {
   const dietModel = props.route.params?.dietModel ?? {};
+  const fallbackId = props.route.params?.id;
   const [select, setSelect] = useState(true);
   const [dietState, setDietState] = useState<DietModel>(dietModel);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // init
-  }, []);
+    // Fallback for when the screen is navigated with only { id } instead of the
+    // full dietModel object (e.g. deep links / notifications) — fetch from the API.
+    if (!dietModel?.id && fallbackId) {
+      setIsLoading(true);
+      dietApi
+        .getDetail(fallbackId)
+        .then((res) => {
+          const d = res.data?.data;
+          if (!d) return;
+          setDietState({
+            id: d.id,
+            title: d.title,
+            dietImage: d.diet_image,
+            calories: d.calories,
+            carbs: d.carbs,
+            fat: d.fat,
+            protein: d.protein,
+            totalTime: d.total_time,
+            ingredients: d.ingredients,
+            description: d.description,
+            isPremium: d.is_premium,
+            isFavourite: 0,
+          });
+        })
+        .catch((e) => console.log(e))
+        .finally(() => setIsLoading(false));
+    }
+  }, [fallbackId]);
 
   const setDiet = async (id?: number) => {
     if (!id) return;

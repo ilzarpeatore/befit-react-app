@@ -57,6 +57,25 @@ export interface DailyPlanData {
   }[];
 }
 
+export interface DietDetailItem {
+  id: number;
+  title: string;
+  calories: string;
+  carbs: string;
+  protein: string;
+  fat: string;
+  servings: string;
+  total_time: string;
+  is_featured: string;
+  status: string;
+  ingredients: string;
+  description: string;
+  diet_image: string;
+  is_premium: number;
+  categorydiet_id: number | null;
+  categorydiet_title: string | null;
+}
+
 export interface RecipeDetail {
   id: number;
   title: string;
@@ -105,4 +124,7 @@ export const dietApi = {
 
   getRecipeDetail: (id: number) =>
     apiClient.get<{ data: RecipeDetail }>(`recipe-detail/${id}`),
+
+  getDetail: (id: number) =>
+    apiClient.post<{ data: DietDetailItem }>('diet-detail', null, { params: { id } }),
 };
