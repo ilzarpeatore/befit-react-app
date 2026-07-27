@@ -389,7 +389,7 @@ function Homenavigator() {
     >
       <Tab.Screen
         name="HomePage"
-        component={Home}
+        component={MigratedNavigator}
         options={{
           //@ts-ignore
           icon: require("@assets/icons/nav1.png"),

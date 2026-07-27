@@ -505,6 +505,13 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
         <View style={{ height: r(16) }} />
       </ScrollView>
+
+      <TouchableOpacity
+        onPress={() => navigation?.navigate('ScreenExplorer')}
+        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#7773FA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+      >
+        <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
