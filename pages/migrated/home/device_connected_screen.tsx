@@ -23,7 +23,7 @@ export default function DeviceConnectedScreen({ navigation }: any) {
 
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate("HomePage")}
+            onPress={() => navigation.navigate('Home', { screen: 'HomePage' })}
           >
             <Text style={styles.buttonText}>Volver al inicio</Text>
           </TouchableOpacity>

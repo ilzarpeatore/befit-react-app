@@ -30,7 +30,7 @@ export default function SettingScreen(props: any) {
       // await logout();
       // remove stored credentials
       // Navigate to DashboardScreen
-      props.navigation.navigate('HomePage');
+      props.navigation.navigate('Home', { screen: 'HomePage' });
     } catch (e: any) {
       // toast(e.toString());
     }

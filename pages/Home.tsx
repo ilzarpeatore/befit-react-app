@@ -590,6 +590,44 @@ export default function Home({ navigation }: HomePropsInterface) {
                     {/*activities cycling end*/}
                   </View>
                   {/*activities end*/}
+                  {/*quick links start*/}
+                  <View style={styles.quickLinksRow}>
+                    <TouchableOpacity
+                      style={styles.quickLinkCard}
+                      activeOpacity={0.85}
+                      onPress={() =>
+                        navigation.navigate("Migrated", { screen: "MigratedMyProgramCalendar" })
+                      }
+                    >
+                      <LinearGradient
+                        start={{ x: 0.24, y: -0.09 }}
+                        end={{ x: 0.78, y: 0.93 }}
+                        colors={["#5A5D87", "#3C3F69"]}
+                        style={styles.quickLinkGradient}
+                      >
+                        <Text style={styles.quickLinkTitle}>Mi Programa</Text>
+                        <Text style={styles.quickLinkSubtitle}>Ver calendario asignado</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.quickLinkCard}
+                      activeOpacity={0.85}
+                      onPress={() =>
+                        navigation.navigate("Migrated", { screen: "MigratedViewAllBlog" })
+                      }
+                    >
+                      <LinearGradient
+                        start={{ x: 0.35, y: -0.09 }}
+                        end={{ x: 0.65, y: 1.05 }}
+                        colors={["#FFA296", "#FD715F"]}
+                        style={styles.quickLinkGradient}
+                      >
+                        <Text style={styles.quickLinkTitle}>Blog</Text>
+                        <Text style={styles.quickLinkSubtitle}>Consejos y artículos</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                  {/*quick links end*/}
                   {/*slider start*/}
                   <View>
                     {/*slider tabs start*/}
@@ -656,12 +694,14 @@ export default function Home({ navigation }: HomePropsInterface) {
             <View style={styles.navigationbgfix} />
             {/*navigation end*/}
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate("ScreenExplorer")}
-              style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#7773FA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
-            >
-              <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
-            </TouchableOpacity>
+            {__DEV__ && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("ScreenExplorer")}
+                style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#7773FA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+              >
+                <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
+              </TouchableOpacity>
+            )}
 
           </SafeAreaView>
           <StatusBar style="light" />
@@ -761,6 +801,31 @@ function useStyle() {
     activities: {
       flexDirection: "row",
       height: '168@ratio',
+    },
+    quickLinksRow: {
+      flexDirection: "row",
+      marginTop: '12@ratio',
+      gap: '8@ratio',
+    },
+    quickLinkCard: {
+      flex: 1,
+      borderRadius: '16@ratio',
+      overflow: "hidden",
+    },
+    quickLinkGradient: {
+      paddingVertical: '16@ratio',
+      paddingHorizontal: '14@ratio',
+    },
+    quickLinkTitle: {
+      fontFamily: "Gilroy-ExtraBold",
+      fontSize: '15@ratio',
+      color: "#fff",
+    },
+    quickLinkSubtitle: {
+      fontFamily: "Gilroy-Light",
+      fontSize: '11@ratio',
+      color: "#D0D2E8",
+      marginTop: '4@ratio',
     },
     activityboxborder: {
       height: '168@ratio',

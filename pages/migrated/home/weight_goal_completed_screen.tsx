@@ -45,7 +45,7 @@ export default function WeightGoalCompletedScreen({ navigation }: any) {
             ))}
           </Animated.View>
 
-          <TouchableOpacity style={styles.continueBtn} onPress={() => navigation.navigate("HomePage")}>
+          <TouchableOpacity style={styles.continueBtn} onPress={() => navigation.navigate('Home', { screen: 'HomePage' })}>
             <Text style={styles.continueBtnText}>Continuar</Text>
           </TouchableOpacity>
         </View>

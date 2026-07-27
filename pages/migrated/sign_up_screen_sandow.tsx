@@ -49,7 +49,7 @@ export default function SignUpScreenSandow(props: any) {
         user_type: 'LoginUser',
       });
       Alert.alert('Success', 'Account created successfully! Please sign in.');
-      props.navigation.navigate('HomePage');
+      props.navigation.navigate('Home', { screen: 'HomePage' });
     } catch (e: any) {
       // toast(e.toString());
     } finally {
