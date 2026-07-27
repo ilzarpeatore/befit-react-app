@@ -10,6 +10,10 @@ import {
   Dimensions,
   ActivityIndicator,
   useWindowDimensions,
+  Modal,
+  Pressable,
+  Alert,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -32,7 +36,7 @@ interface HomeScreenModernProps {
 
 export default function HomeScreenModern(props: HomeScreenModernProps) {
   const { navigation } = props;
-  const { state } = useAuth();
+  const { state, logout } = useAuth();
   const user = state.user;
 
   const [isLoading, setIsLoading] = useState(true);
@@ -41,6 +45,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
   const r = (n: number) => Math.round(n * sc);
+
+  const [showMenu, setShowMenu] = useState(false);
+  const [appleHealthOn, setAppleHealthOn] = useState(true);
+  const [smartWatchOn, setSmartWatchOn] = useState(false);
 
   const [todayWorkouts, setTodayWorkouts] = useState<any[]>([]);
   const [weeklyWorkouts, setWeeklyWorkouts] = useState<boolean[]>([]);
@@ -131,6 +139,20 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     errorBanner: { backgroundColor: C.destructive10, borderRadius: r(12), padding: r(12), marginHorizontal: r(20), marginBottom: r(12), flexDirection: 'row', alignItems: 'center' },
     errorText: { flex: 1, fontSize: r(12), color: C.destructive, marginLeft: r(8) },
     loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center' as const, justifyContent: 'center' as const },
+    menuOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' as const },
+    menuSheet: { backgroundColor: C.surface, borderTopLeftRadius: r(24), borderTopRightRadius: r(24), paddingBottom: r(24), maxHeight: '85%' as const },
+    menuHandle: { width: r(40), height: r(4), borderRadius: r(2), backgroundColor: C.border, alignSelf: 'center' as const, marginTop: r(10), marginBottom: r(4) },
+    menuHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: r(20), paddingVertical: r(16) },
+    menuAvatar: { width: r(48), height: r(48), borderRadius: r(24), backgroundColor: C.gray70, marginRight: r(12) },
+    menuGreeting: { fontSize: r(12), color: C.textSecondary },
+    menuUserName: { fontSize: r(17), fontFamily: FONT.bold, color: C.white, marginTop: r(2) },
+    menuCloseBtn: { width: r(32), height: r(32), borderRadius: r(16), backgroundColor: C.surfaceLight, alignItems: 'center' as const, justifyContent: 'center' as const },
+    menuDivider: { height: 1, backgroundColor: C.border, marginHorizontal: r(20) },
+    menuItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: r(20), paddingVertical: r(14) },
+    menuItemIcon: { width: r(36), height: r(36), borderRadius: r(12), backgroundColor: C.brand10, alignItems: 'center' as const, justifyContent: 'center' as const, marginRight: r(14) },
+    menuItemIconDanger: { backgroundColor: C.destructive10 },
+    menuItemText: { flex: 1, fontSize: r(15), fontFamily: FONT.semiBold, color: C.white },
+    menuItemTextDanger: { color: C.destructive },
   }), [sc]);
 
   useEffect(() => {
@@ -223,6 +245,19 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const dayLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   const displayName = user?.first_name || user?.display_name || 'Usuario';
 
+  const handleLogout = () => {
+    setShowMenu(false);
+    Alert.alert('Cerrar sesión', '¿Estás seguro de que quieres cerrar sesión?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Cerrar sesión', style: 'destructive', onPress: () => logout() },
+    ]);
+  };
+
+  const navigateFromMenu = (routeName: string) => {
+    setShowMenu(false);
+    navigation?.navigate(routeName);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -232,11 +267,13 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         {/* Header */}
         <View style={styles.darkHeader}>
           <View style={styles.headerTop}>
-            {user?.profile_image ? (
-              <Image source={{ uri: user.profile_image }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatar} />
-            )}
+            <TouchableOpacity onPress={() => setShowMenu(true)}>
+              {user?.profile_image ? (
+                <Image source={{ uri: user.profile_image }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatar} />
+              )}
+            </TouchableOpacity>
             <Text style={styles.headerTitle}>Hola, {displayName}!</Text>
             <TouchableOpacity style={styles.notifBtn} onPress={() => navigation?.navigate('MigratedNotification')}>
               <Ionicons name="notifications-outline" size={22} color={C.white} />
@@ -512,6 +549,97 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       >
         <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
       </TouchableOpacity>
+
+      {/* Menú de usuario (perfil, favoritos, ajustes, salud, comunidad, logout) */}
+      <Modal visible={showMenu} transparent animationType="slide" onRequestClose={() => setShowMenu(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setShowMenu(false)}>
+          <Pressable style={styles.menuSheet} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.menuHandle} />
+            <View style={styles.menuHeader}>
+              {user?.profile_image ? (
+                <Image source={{ uri: user.profile_image }} style={styles.menuAvatar} />
+              ) : (
+                <View style={styles.menuAvatar} />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.menuGreeting}>Hola</Text>
+                <Text style={styles.menuUserName}>{user?.display_name || displayName}</Text>
+              </View>
+              <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setShowMenu(false)}>
+                <Ionicons name="close" size={18} color={C.white} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.menuDivider} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Profile')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="person-outline" size={18} color={C.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Mi Perfil</Text>
+              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('FavouriteWorkouts')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="heart-outline" size={18} color={C.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Mis Favoritos</Text>
+              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Settings')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="settings-outline" size={18} color={C.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Configuración General</Text>
+              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={styles.menuItem}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="fitness-outline" size={18} color={C.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Apple Health</Text>
+              <Switch
+                value={appleHealthOn}
+                onValueChange={setAppleHealthOn}
+                trackColor={{ false: C.gray70, true: C.primary }}
+                thumbColor={C.white}
+              />
+            </View>
+
+            <View style={styles.menuItem}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="watch-outline" size={18} color={C.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Smart Watch</Text>
+              <Switch
+                value={smartWatchOn}
+                onValueChange={setSmartWatchOn}
+                trackColor={{ false: C.gray70, true: C.primary }}
+                thumbColor={C.white}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('CommunityFeed')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="people-outline" size={18} color={C.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Community</Text>
+              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={styles.menuDivider} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <View style={[styles.menuItemIcon, styles.menuItemIconDanger]}>
+                <Ionicons name="log-out-outline" size={18} color={C.destructive} />
+              </View>
+              <Text style={[styles.menuItemText, styles.menuItemTextDanger]}>Cerrar sesión</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
