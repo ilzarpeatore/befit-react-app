@@ -248,7 +248,7 @@ export default function RecipeMainScreen(props: any) {
                   key={item.id}
                   style={s.recipeCard}
                   activeOpacity={0.7}
-                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id })}
+                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id, recipeImage: item.recipeImage })}
                 >
                   {item.recipeImage ? (
                     <Image source={{ uri: item.recipeImage }} style={s.recipeImage} resizeMode="cover" />

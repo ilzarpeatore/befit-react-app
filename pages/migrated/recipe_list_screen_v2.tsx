@@ -171,7 +171,7 @@ export default function RecipeListScreenV2(props: any) {
                   key={item.id}
                   style={[s.recipeCard, { width: columnWidth }]}
                   activeOpacity={0.7}
-                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id })}
+                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id, recipeImage: item.recipeImage })}
                 >
                   {item.recipeImage ? (
                     <Image

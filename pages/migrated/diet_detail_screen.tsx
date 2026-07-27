@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { dietApi } from '../../api/diet';
+import { recipesApi, RecipeStep, RecipeIngredient } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -29,6 +30,8 @@ interface DietDetailScreenProps {
     params: {
       dietModel?: DietModel;
       id?: number;
+      recipeId?: number;
+      recipeImage?: string;
       isCategory?: boolean;
       isFeatured?: boolean;
     };
@@ -38,8 +41,13 @@ interface DietDetailScreenProps {
 export default function DietDetailScreen(props: DietDetailScreenProps) {
   const dietModel = props.route.params?.dietModel ?? {};
   const fallbackId = props.route.params?.id;
+  const recipeId = props.route.params?.recipeId;
+  const recipeImageParam = props.route.params?.recipeImage;
+  const isRecipeMode = !!recipeId;
   const [select, setSelect] = useState(true);
   const [dietState, setDietState] = useState<DietModel>(dietModel);
+  const [recipeIngredients, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
+  const [recipeSteps, setRecipeSteps] = useState<RecipeStep[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -72,11 +80,48 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
     }
   }, [fallbackId]);
 
+  useEffect(() => {
+    // Recipe mode: fetch a real recipe (with structured ingredients/steps) instead
+    // of a legacy Diet model.
+    if (recipeId) {
+      setIsLoading(true);
+      recipesApi
+        .getDetail(recipeId)
+        .then((res) => {
+          const d = res.data?.data;
+          if (!d) return;
+          setDietState({
+            id: d.id,
+            title: d.title,
+            dietImage: recipeImageParam,
+            calories: String(d.calories ?? ''),
+            carbs: String(d.carbs ?? ''),
+            fat: String(d.fats ?? ''),
+            protein: String(d.protein ?? ''),
+            totalTime: d.preparation_time ? `${d.preparation_time} min` : '',
+            description: d.description,
+            isPremium: 0,
+            isFavourite: d.is_favourite ?? 0,
+          });
+          setRecipeIngredients(res.data?.recipe_ingredients ?? []);
+          setRecipeSteps(
+            (res.data?.recipe_steps ?? []).slice().sort((a, b) => a.sequence - b.sequence)
+          );
+        })
+        .catch((e) => console.log(e))
+        .finally(() => setIsLoading(false));
+    }
+  }, [recipeId]);
+
   const setDiet = async (id?: number) => {
     if (!id) return;
     setIsLoading(true);
     try {
-      await dietApi.setFavourite(id);
+      if (isRecipeMode) {
+        await recipesApi.setFavourite(id);
+      } else {
+        await dietApi.setFavourite(id);
+      }
       setDietState((prev) => ({
         ...prev,
         isFavourite: prev.isFavourite === 1 ? 0 : 1,
@@ -96,17 +141,47 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
     </View>
   );
 
-  const ingredients = () => (
-    <View style={localStyles.htmlContent}>
-      <Text style={localStyles.htmlText}>{dietState.ingredients || ''}</Text>
-    </View>
-  );
+  const ingredients = () =>
+    isRecipeMode ? (
+      <View style={localStyles.htmlContent}>
+        {recipeIngredients.length === 0 ? (
+          <Text style={localStyles.htmlText}>No ingredients listed.</Text>
+        ) : (
+          recipeIngredients.map((ing) => (
+            <View key={ing.id} style={localStyles.ingredientRow}>
+              <View style={localStyles.ingredientDot} />
+              <Text style={[localStyles.htmlText, { flex: 1 }]}>{ing.ingredient_title}</Text>
+              <Text style={localStyles.ingredientQty}>
+                {ing.quantity_display || `${ing.quantity} ${ing.measurement_unit_title}`}
+              </Text>
+            </View>
+          ))
+        )}
+      </View>
+    ) : (
+      <View style={localStyles.htmlContent}>
+        <Text style={localStyles.htmlText}>{dietState.ingredients || ''}</Text>
+      </View>
+    );
 
-  const instruction = () => (
-    <View style={localStyles.htmlContent}>
-      <Text style={localStyles.htmlText}>{dietState.description || ''}</Text>
-    </View>
-  );
+  const instruction = () =>
+    isRecipeMode ? (
+      <View style={localStyles.htmlContent}>
+        {recipeSteps.length === 0 ? (
+          <Text style={localStyles.htmlText}>No instructions listed.</Text>
+        ) : (
+          recipeSteps.map((step, index) => (
+            <Text key={step.id} style={[localStyles.htmlText, { marginBottom: 10 }]}>
+              {index + 1}. {step.instruction}
+            </Text>
+          ))
+        )}
+      </View>
+    ) : (
+      <View style={localStyles.htmlContent}>
+        <Text style={localStyles.htmlText}>{dietState.description || ''}</Text>
+      </View>
+    );
 
   return (
     <View style={localStyles.container}>
@@ -361,6 +436,24 @@ const localStyles = StyleSheet.create({
     fontSize: 14,
     color: C.white,
     lineHeight: 22,
+  },
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  ingredientDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: C.brand5,
+    marginRight: 10,
+  },
+  ingredientQty: {
+    fontFamily: FONT.regular,
+    fontSize: 13,
+    color: C.gray30,
+    marginLeft: 8,
   },
   loaderContainer: {
     ...StyleSheet.absoluteFill,
