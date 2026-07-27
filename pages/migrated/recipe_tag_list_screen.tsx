@@ -3,20 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaVi
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { recipesApi } from '../../api/recipes';
 
 interface RecipeTag {
   id: number;
   title: string;
   recipeTagImage?: string;
-}
-
-interface Pagination {
-  totalPages: number;
-}
-
-interface ApiResponse {
-  data: RecipeTag[];
-  pagination?: Pagination;
 }
 
 export default function RecipeTagListScreen(props: any) {
@@ -35,9 +27,15 @@ export default function RecipeTagListScreen(props: any) {
       let totalPages = 1;
       const allTags: RecipeTag[] = [];
       while (page <= totalPages) {
-        const value: ApiResponse = await getRecipeTagListApi(page);
-        totalPages = value.pagination?.totalPages ?? 1;
-        allTags.push(...(value.data ?? []));
+        const res = await recipesApi.getTags(page);
+        totalPages = res.data.pagination?.totalPages ?? 1;
+        allTags.push(
+          ...(res.data.data ?? []).map((t) => ({
+            id: t.id,
+            title: t.title,
+            recipeTagImage: t.recipe_tag_image ?? undefined,
+          }))
+        );
         page++;
       }
       setMTagList(allTags);
@@ -47,10 +45,6 @@ export default function RecipeTagListScreen(props: any) {
       setIsLoading(false);
     }
   }, []);
-
-  const getRecipeTagListApi = async (page: number): Promise<ApiResponse> => {
-    return { data: [], pagination: { totalPages: 1 } };
-  };
 
   const handleTagPress = (item: RecipeTag) => {
     props.navigation.navigate('MigratedRecipeListV2', {
