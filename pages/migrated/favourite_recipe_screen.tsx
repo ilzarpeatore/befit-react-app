@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, 
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -15,7 +16,7 @@ interface RecipeItem {
   carbs?: number;
   fats?: number;
   preparationTime?: string;
-  recipeCategory?: { title: string }[];
+  recipeCategory?: string[];
   [key: string]: any;
 }
 
@@ -34,11 +35,20 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
   const _fetchRecipes = useCallback(async () => {
     if (page === 1) setIsLoading(true);
     try {
-      // API call: getFavouriteRecipeApi(page: page)
-      // const value = await getFavouriteRecipeApi(page: page);
-      // if (page === 1) setRecipeList([]);
-      // setRecipeList(prev => [...prev, ...value.data]);
-      // setIsLastPage(value.pagination?.currentPage === value.pagination?.totalPages);
+      const value = await recipesApi.getFavourite(page);
+      const items: RecipeItem[] = (value.data.data ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        recipeImage: r.recipe_image || '',
+        calories: r.calories,
+        protein: r.protein,
+        carbs: r.carbs,
+        fats: r.fats,
+        recipeCategory: r.recipe_category,
+      }));
+      if (page === 1) setRecipeList(items);
+      else setRecipeList((prev) => [...prev, ...items]);
+      setIsLastPage(value.data.pagination?.currentPage === value.data.pagination?.totalPages);
     } catch (e) {
       console.log(e);
     } finally {
@@ -57,17 +67,15 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
   };
 
   const _showRecipeDetailBottomSheet = (item: RecipeItem) => {
-    // Show modal bottom sheet with recipe detail
-    // After closing, refresh list
-    setPage(1);
-    setRecipeList([]);
-    _fetchRecipes();
+    props.navigation.navigate('MigratedDietDetail', {
+      recipeId: item.id,
+      recipeImage: item.recipeImage,
+    });
   };
 
   const renderRecipeItem = ({ item }: { item: RecipeItem }) => {
     const subtitle = item.recipeCategory
-      ?.map((e) => e.title)
-      .filter((t) => t?.length > 0)
+      ?.filter((t) => t?.length > 0)
       .join(', ') || '';
 
     return (
