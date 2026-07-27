@@ -26,6 +26,7 @@ interface Props {
 export default function DietDashboard({ navigation }: Props) {
   const styles = useStyle();
   const [data, setData] = useState<DietListItem[]>([]);
+  const [assignedDiets, setAssignedDiets] = useState<DietListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,8 +35,19 @@ export default function DietDashboard({ navigation }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const res = await dietApi.getDashboard();
-      setData(res.data?.data ?? []);
+      const [dashboardRes, assignedRes] = await Promise.allSettled([
+        dietApi.getDashboard(),
+        dietApi.getAssignedDiets(),
+      ]);
+      if (dashboardRes.status === "fulfilled") {
+        setData(dashboardRes.value.data?.data ?? []);
+      }
+      if (assignedRes.status === "fulfilled") {
+        setAssignedDiets(assignedRes.value.data?.data ?? []);
+      }
+      if (dashboardRes.status === "rejected") {
+        setError("Failed to load diet dashboard.");
+      }
     } catch {
       setError("Failed to load diet dashboard.");
     } finally {
@@ -49,16 +61,16 @@ export default function DietDashboard({ navigation }: Props) {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    try {
-      const res = await dietApi.getDashboard();
-      setData(res.data?.data ?? []);
-      setError(null);
-    } catch {
-      setError("Failed to load diet dashboard.");
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
+    await fetchData();
+    setRefreshing(false);
+  }, [fetchData]);
+
+  const openDietDetail = useCallback(
+    (id: number) => {
+      navigation.navigate("Migrated", { screen: "MigratedDietDetail", params: { id } });
+    },
+    [navigation]
+  );
 
   const featuredDiets = data.filter((d) => d.is_featured === "1");
   const recentMeals = data.filter((d) => d.is_featured !== "1");
@@ -129,7 +141,7 @@ export default function DietDashboard({ navigation }: Props) {
             />
           }
         >
-          {data.length === 0 ? (
+          {data.length === 0 && assignedDiets.length === 0 ? (
             <EmptyStateMem
               icon="nutrition-outline"
               title="No Diet Data"
@@ -137,6 +149,23 @@ export default function DietDashboard({ navigation }: Props) {
             />
           ) : (
             <>
+              {assignedDiets.length > 0 && (
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Assigned to Me</Text>
+                  </View>
+                  {assignedDiets.map((item) => (
+                    <DietCardMem
+                      key={`assigned-${item.id}`}
+                      title={item.title}
+                      calories={Number(item.calories)}
+                      image={item.diet_image}
+                      onPress={() => openDietDetail(item.id)}
+                    />
+                  ))}
+                </View>
+              )}
+
               <LinearGradient
                 start={{ x: 0.24, y: -0.09 }}
                 end={{ x: 0.78, y: 0.93 }}
@@ -192,7 +221,7 @@ export default function DietDashboard({ navigation }: Props) {
                           calories={Number(item.calories)}
                           image={item.diet_image}
                           onPress={() =>
-                            navigation.navigate("RecipeDetail", { id: item.id })
+                            openDietDetail(item.id)
                           }
                         />
                       </View>
@@ -213,7 +242,7 @@ export default function DietDashboard({ navigation }: Props) {
                       calories={Number(item.calories)}
                       image={item.diet_image}
                       onPress={() =>
-                        navigation.navigate("RecipeDetail", { id: item.id })
+                        openDietDetail(item.id)
                       }
                     />
                   ))}
