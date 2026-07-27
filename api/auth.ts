@@ -1,0 +1,68 @@
+import apiClient from './client';
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+  user_type?: string;
+}
+
+export interface LoginResponse {
+  data: {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    user_type: string;
+    status: string;
+    login_type: string;
+    gender: string;
+    display_name: string;
+    api_token: string;
+    profile_image: string;
+    is_subscribe: number;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface SocialLoginPayload {
+  email: string;
+  login_type: string;
+}
+
+export interface RegisterPayload {
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  user_type?: string;
+  status?: string;
+  phone_number?: string;
+  gender?: string;
+}
+
+export const authApi = {
+  login: (payload: LoginPayload) =>
+    apiClient.post<LoginResponse>('login', payload),
+
+  register: (payload: RegisterPayload) =>
+    apiClient.post('register', payload),
+
+  socialLogin: (payload: SocialLoginPayload) =>
+    apiClient.post('social-mail-login', payload),
+
+  updateProfile: (payload: Record<string, any>) =>
+    apiClient.post('update-profile', payload),
+
+  getUserDetail: (id: number) =>
+    apiClient.get(`user-detail?id=${id}`),
+
+  changePassword: (payload: { old_password: string; new_password: string }) =>
+    apiClient.post('change-password', payload),
+
+  forgotPassword: (payload: { email: string }) =>
+    apiClient.post('forget-password', payload),
+};

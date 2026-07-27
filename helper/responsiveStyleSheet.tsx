@@ -1,0 +1,97 @@
+import { useCallback, useMemo } from 'react';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import { NamedStyles } from './_types/responsiveStyleSheet.i';
+/**
+ * figmalayoudata
+ * used for responsive design
+ * @constant
+ */
+export const FigmaLayout = { w: 375, h: 812 };
+/**
+ * create responsive scale based on figma layout
+ */
+export const useScale = () => {
+  const { width, height } = useWindowDimensions();
+  const scaleWidth = width / FigmaLayout.w;
+  const scaleHeight = height / FigmaLayout.h;
+  const scale = Math.min(scaleWidth, scaleHeight);
+  return scale;
+};
+const isObject = (myVar: any) => myVar && typeof myVar === 'object';
+// Groups                     Size                   Func Factor
+//                             1                      2    3
+const validScaleSheetRegex = /^(\-?\d+(?:\.\d{1,3})?)@(ratio)(-r)?$/;
+/**
+ * create new stylesheet with responsive values based on figma values
+ * added new size values types
+ * @example
+ * "48@ratio"
+ */
+export const useResponsiveStyleSheet = (styleSheet: NamedStyles<any>) => {
+  /**
+   * deep map object and run function on object values
+   */
+  const DeepMap = useCallback((obj: any, fn: Function, scale: number): any => {
+    const deepMapper = (val: any, key: string | number) =>
+      isObject(val) ? DeepMap(val, fn, scale) : fn(key, val, scale);
+    if (Array.isArray(obj)) {
+      return obj.map(deepMapper);
+    }
+    if (isObject(obj)) {
+      return mapObject(obj, deepMapper);
+    }
+    return obj;
+  }, []);
+  /**
+   * map object to function
+   */
+  const mapObject = useCallback(
+    (obj: any, fn: Function): any =>
+      Object.keys(obj).reduce((res: any, key: string) => {
+        res[key] = fn(obj[key], key);
+        return res;
+      }, {}),
+    []
+  );
+  /**
+   * recive stylesheet value , run regex and change the resuld and send it back
+   * "any values with this pattern will be scaled"
+   * [number|float]@[ratio](-r)
+   * "-r flag will round the ratio values"
+   * @example
+   * "48@ratio"
+   * "48.5@ratio"
+   * "48.5@ratio-r"
+   */
+  const ScaleByAnnotation = useCallback(
+    () => (key: number, value: string, scale: number) => {
+      /**
+       * check for pattern
+       */
+      if (!validScaleSheetRegex.test(value)) {
+        return value;
+      }
+      /**
+       * get group from pattern
+       */
+      const regexExecResult = validScaleSheetRegex.exec(value);
+
+      let size = parseFloat(regexExecResult![1]);
+      const shouldRound = typeof regexExecResult![3] != 'undefined'; // string or undefined
+      const result = Math.ceil(scale * size);
+      /**
+       * return value rounded or not based on -r flag
+       */
+      return shouldRound ? Math.round(result) : result;
+    },
+    []
+  );
+  /**
+   * create style
+   */
+  const scaleFunc = ScaleByAnnotation();
+  const scale = useScale();
+  return useMemo(() => {
+    return StyleSheet.create(DeepMap(styleSheet, scaleFunc, scale));
+  }, []);
+};

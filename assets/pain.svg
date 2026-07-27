@@ -1,0 +1,57 @@
+<svg width="268" height="49" viewBox="0 0 268 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="1" y="9" width="266" height="38">
+<path d="M12.2156 38.56C18.2956 38.56 22.6156 35.36 22.6156 29.96C22.6156 24.04 17.8556 22.56 13.6156 21.28C9.25563 19.96 8.57563 19.08 8.57563 17.8C8.57563 16.68 9.57563 15.68 11.5756 15.68C14.1356 15.68 15.4556 16.92 16.4156 18.92L21.8156 15.76C19.7756 11.64 16.1756 9.44 11.5756 9.44C6.73563 9.44 2.17563 12.56 2.17563 17.96C2.17563 23.32 6.25563 25.32 10.4156 26.48C14.6156 27.64 16.2156 28.32 16.2156 30.04C16.2156 31.12 15.4556 32.32 12.4156 32.32C9.25563 32.32 7.53563 30.76 6.53563 28.44L1.01563 31.64C2.57563 35.76 6.33563 38.56 12.2156 38.56ZM35.8 38.56C41.68 38.56 46.4 33.96 46.4 28C46.4 22.04 41.68 17.44 35.8 17.44C29.92 17.44 25.2 22.04 25.2 28C25.2 33.96 29.92 38.56 35.8 38.56ZM35.8 32.72C33.2 32.72 31.2 30.84 31.2 28C31.2 25.16 33.2 23.28 35.8 23.28C38.4 23.28 40.4 25.16 40.4 28C40.4 30.84 38.4 32.72 35.8 32.72ZM72.1938 17.44C69.3538 17.44 67.5138 18.48 66.3938 20.08C65.2738 18.4 63.5138 17.44 61.1538 17.44C58.4738 17.44 56.7138 18.48 55.7938 19.84V18H49.7938V38H55.7938V26.72C55.7938 24.36 56.9138 22.96 58.9138 22.96C60.8338 22.96 61.7938 24.24 61.7938 26.24V38H67.7937V26.72C67.7937 24.36 68.9138 22.96 70.9138 22.96C72.8338 22.96 73.7938 24.24 73.7938 26.24V38H79.7938V25.72C79.7938 20.72 76.7938 17.44 72.1938 17.44ZM89.2553 30.4H103.455C103.615 29.64 103.695 28.84 103.695 28C103.695 21.96 99.3753 17.44 93.5353 17.44C87.2153 17.44 82.8953 22.04 82.8953 28C82.8953 33.96 87.1353 38.56 93.9753 38.56C97.7753 38.56 100.735 37.16 102.695 34.44L97.8953 31.68C97.0953 32.56 95.6953 33.2 94.0553 33.2C91.8553 33.2 90.0153 32.48 89.2553 30.4ZM89.1353 25.92C89.6953 23.88 91.2153 22.76 93.4953 22.76C95.2953 22.76 97.0953 23.6 97.7353 25.92H89.1353ZM135.098 38H142.098L132.578 10H124.418L114.898 38H121.898L123.298 33.6H133.698L135.098 38ZM125.218 27.6L128.498 17.32L131.778 27.6H125.218ZM153.3 38.56C157.22 38.56 160.62 36.52 162.34 33.4L157.1 30.4C156.46 31.8 154.98 32.64 153.22 32.64C150.62 32.64 148.7 30.76 148.7 28C148.7 25.24 150.62 23.36 153.22 23.36C154.98 23.36 156.42 24.2 157.1 25.6L162.34 22.56C160.62 19.48 157.18 17.44 153.3 17.44C147.22 17.44 142.7 22.04 142.7 28C142.7 33.96 147.22 38.56 153.3 38.56ZM176.475 23.76V18H172.355V12.4L166.355 14.2V18H163.155V23.76H166.355V30.84C166.355 36.44 168.635 38.8 176.475 38V32.56C173.835 32.72 172.355 32.56 172.355 30.84V23.76H176.475ZM182.872 16.24C184.832 16.24 186.472 14.6 186.472 12.64C186.472 10.68 184.832 9.04 182.872 9.04C180.912 9.04 179.272 10.68 179.272 12.64C179.272 14.6 180.912 16.24 182.872 16.24ZM179.872 38H185.872V18H179.872V38ZM203.023 18L198.863 30.68L194.703 18H188.062L195.463 38H202.263L209.663 18H203.023ZM214.864 16.24C216.824 16.24 218.464 14.6 218.464 12.64C218.464 10.68 216.824 9.04 214.864 9.04C212.904 9.04 211.264 10.68 211.264 12.64C211.264 14.6 212.904 16.24 214.864 16.24ZM211.864 38H217.864V18H211.864V38ZM233.975 23.76V18H229.855V12.4L223.855 14.2V18H220.655V23.76H223.855V30.84C223.855 36.44 226.135 38.8 233.975 38V32.56C231.335 32.72 229.855 32.56 229.855 30.84V23.76H233.975ZM250.363 18L246.603 30.24L242.163 18H235.562L243.523 37.08C242.643 39.52 241.323 40.4 238.523 40.4V46C244.123 46.28 247.683 43.76 249.923 37.4L256.763 18H250.363ZM259.973 28H264.773L265.973 18V10H258.773V18L259.973 28ZM262.373 38.56C264.453 38.56 266.173 36.84 266.173 34.76C266.173 32.68 264.453 30.96 262.373 30.96C260.293 30.96 258.573 32.68 258.573 34.76C258.573 36.84 260.293 38.56 262.373 38.56Z" fill="white"/>
+</mask>
+<g mask="url(#mask0)">
+<g filter="url(#filter0_f)">
+<circle cx="38" cy="-4" r="59" fill="#FB558B"/>
+</g>
+<g filter="url(#filter1_f)">
+<circle cx="170.5" cy="84.5" r="96.5" fill="#3A51DF"/>
+</g>
+<g filter="url(#filter2_f)">
+<circle cx="170.5" cy="-15.5" r="43.5" fill="#FF9A8D" fill-opacity="0.95"/>
+</g>
+<g filter="url(#filter3_f)">
+<circle cx="99" cy="73" r="59" fill="#3A51DF" fill-opacity="0.66"/>
+</g>
+<g filter="url(#filter4_f)">
+<circle cx="240" cy="-17" r="59" fill="#FB558B"/>
+</g>
+<g filter="url(#filter5_f)">
+<circle cx="90" cy="53" r="41" fill="#47FBDE" fill-opacity="0.3"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f" x="-51" y="-93" width="178" height="178" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="15" result="effect1_foregroundBlur"/>
+</filter>
+<filter id="filter1_f" x="44" y="-42" width="253" height="253" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="15" result="effect1_foregroundBlur"/>
+</filter>
+<filter id="filter2_f" x="97" y="-89" width="147" height="147" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="15" result="effect1_foregroundBlur"/>
+</filter>
+<filter id="filter3_f" x="10" y="-16" width="178" height="178" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="15" result="effect1_foregroundBlur"/>
+</filter>
+<filter id="filter4_f" x="151" y="-106" width="178" height="178" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="15" result="effect1_foregroundBlur"/>
+</filter>
+<filter id="filter5_f" x="19" y="-18" width="142" height="142" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="15" result="effect1_foregroundBlur"/>
+</filter>
+</defs>
+</svg>

@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [{
+    "name": "MobAI - Galaxy S9+",
+    "runtimeExecutable": "sleep",
+    "runtimeArgs": ["86400"],
+    "port": 8787,
+    "url": "http://127.0.0.1:8787/device/22cb6c5217017ece?server=http%3A%2F%2F127.0.0.1%3A8686"
+  }]
+}

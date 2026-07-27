@@ -1,0 +1,169 @@
+﻿import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+
+import { C, FONT } from "../theme";
+
+export default function ProfileSetupFormScreen({ navigation }: any) {
+  const [nombre, setNombre] = useState("");
+  const [apellidos, setApellidos] = useState("");
+  const [genero, setGenero] = useState("");
+  const [showGenero, setShowGenero] = useState(false);
+  const [fechaNac, setFechaNac] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [nacionalidad, setNacionalidad] = useState("");
+  const [alergias, setAlergias] = useState<string[]>([]);
+  const [alergiaInput, setAlergiaInput] = useState("");
+  const [medicacion, setMedicacion] = useState("");
+  const [suplementos, setSuplementos] = useState("");
+  const [altura, setAltura] = useState("");
+  const [peso, setPeso] = useState("");
+  const [notas, setNotas] = useState("");
+
+  const addAlergia = () => {
+    if (alergiaInput.trim()) {
+      setAlergias([...alergias, alergiaInput.trim()]);
+      setAlergiaInput("");
+    }
+  };
+
+  const removeAlergia = (index: number) => {
+    setAlergias(alergias.filter((_, i) => i !== index));
+  };
+
+  const generos = ["Masculino", "Femenino", "Otro", "Prefiero no decir"];
+
+  return (
+    <SafeAreaView style={localStyles.container}>
+      <ScrollView contentContainerStyle={localStyles.scrollContent}>
+        <Text style={[localStyles.title, { color: C.primary }]}>Tu informaciÃ³n</Text>
+
+        <Text style={[localStyles.sectionLabel, { color: C.primary }]}>Datos personales</Text>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Nombre</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={nombre} onChangeText={setNombre} placeholder="Tu nombre" placeholderTextColor={C.textMuted} />
+        </View>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Apellidos</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={apellidos} onChangeText={setApellidos} placeholder="Tus apellidos" placeholderTextColor={C.textMuted} />
+        </View>
+
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>GÃ©nero</Text>
+          <TouchableOpacity style={[localStyles.input, localStyles.pickerInput, { borderColor: C.border }]} onPress={() => setShowGenero(!showGenero)}>
+            <Text style={{ color: genero ? C.white : C.textMuted }}>{genero || "Seleccionar gÃ©nero"}</Text>
+            <Ionicons name={showGenero ? "chevron-up" : "chevron-down"} size={18} color={C.gray} />
+          </TouchableOpacity>
+          {showGenero && (
+            <View style={localStyles.dropdown}>
+              {generos.map((g) => (
+                <TouchableOpacity key={g} style={[localStyles.dropdownItem, { borderBottomColor: C.border }]} onPress={() => { setGenero(g); setShowGenero(false); }}>
+                  <Text style={[localStyles.dropdownText, { color: C.white }]}>{g}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Fecha de nacimiento</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={fechaNac} onChangeText={setFechaNac} placeholder="DD/MM/AAAA" placeholderTextColor={C.textMuted} keyboardType="numeric" />
+        </View>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>TelÃ©fono</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={telefono} onChangeText={setTelefono} placeholder="+34 000 000 000" placeholderTextColor={C.textMuted} keyboardType="phone-pad" />
+        </View>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>DirecciÃ³n</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={direccion} onChangeText={setDireccion} placeholder="Tu direcciÃ³n" placeholderTextColor={C.textMuted} />
+        </View>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Nacionalidad</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={nacionalidad} onChangeText={setNacionalidad} placeholder="Tu nacionalidad" placeholderTextColor={C.textMuted} />
+        </View>
+
+        <Text style={[localStyles.sectionLabel, { color: C.primary, marginTop: 16 }]}>Salud</Text>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Alergias</Text>
+          <View style={localStyles.tagInputRow}>
+            <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white, flex: 1 }]} value={alergiaInput} onChangeText={setAlergiaInput} placeholder="Agregar alergia" placeholderTextColor={C.textMuted} onSubmitEditing={addAlergia} />
+            <TouchableOpacity style={[localStyles.addTagBtn, { backgroundColor: C.primary }]} onPress={addAlergia}>
+              <Ionicons name="add" size={20} color={C.white} />
+            </TouchableOpacity>
+          </View>
+          <View style={localStyles.tagsContainer}>
+            {alergias.map((a, idx) => (
+              <View key={idx} style={[localStyles.tag, { backgroundColor: C.primary + "15" }]}>
+                <Text style={[localStyles.tagText, { color: C.primary }]}>{a}</Text>
+                <TouchableOpacity onPress={() => removeAlergia(idx)}>
+                  <Ionicons name="close-circle" size={16} color={C.primary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </View>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>MedicaciÃ³n</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={medicacion} onChangeText={setMedicacion} placeholder="MedicaciÃ³n actual" placeholderTextColor={C.textMuted} />
+        </View>
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Suplementos</Text>
+          <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={suplementos} onChangeText={setSuplementos} placeholder="Suplementos que tomas" placeholderTextColor={C.textMuted} />
+        </View>
+
+        <Text style={[localStyles.sectionLabel, { color: C.primary, marginTop: 16 }]}>Cuerpo</Text>
+        <View style={localStyles.row}>
+          <View style={[localStyles.field, { flex: 1 }]}>
+            <Text style={[localStyles.label, { color: C.white }]}>Altura (cm)</Text>
+            <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={altura} onChangeText={setAltura} placeholder="175" placeholderTextColor={C.textMuted} keyboardType="numeric" />
+          </View>
+          <View style={{ width: 12 }} />
+          <View style={[localStyles.field, { flex: 1 }]}>
+            <Text style={[localStyles.label, { color: C.white }]}>Peso (kg)</Text>
+            <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={peso} onChangeText={setPeso} placeholder="70" placeholderTextColor={C.textMuted} keyboardType="numeric" />
+          </View>
+        </View>
+
+        <View style={localStyles.field}>
+          <Text style={[localStyles.label, { color: C.white }]}>Notas adicionales</Text>
+          <TextInput style={[localStyles.input, localStyles.textArea, { borderColor: C.border, color: C.white }]} value={notas} onChangeText={setNotas} placeholder="Lesiones, condiciones mÃ©dicas, etc." placeholderTextColor={C.textMuted} multiline numberOfLines={4} textAlignVertical="top" />
+        </View>
+      </ScrollView>
+
+      <View style={localStyles.bottomBar}>
+        <TouchableOpacity
+          style={[localStyles.continueBtn, { backgroundColor: C.primary }]}
+          onPress={() => navigation.navigate("MigratedAvatarSetup")}
+        >
+          <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const localStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.bg },
+  scrollContent: { padding: 20, paddingBottom: 100 },
+  title: { fontSize: 24, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
+  sectionLabel: { fontSize: 14, fontFamily: FONT.bold, marginBottom: 12 },
+  field: { marginBottom: 14 },
+  label: { fontSize: 13, fontFamily: FONT.semiBold, marginBottom: 6 },
+  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, backgroundColor: C.surface },
+  pickerInput: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  dropdown: { backgroundColor: C.surface, borderRadius: 10, marginTop: 4, overflow: "hidden" },
+  dropdownItem: { paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1 },
+  dropdownText: { fontSize: 14 },
+  row: { flexDirection: "row" },
+  tagInputRow: { flexDirection: "row", gap: 8, alignItems: "center" },
+  addTagBtn: { width: 44, height: 44, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  tagsContainer: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  tag: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16 },
+  tagText: { fontSize: 13, fontFamily: FONT.medium },
+  textArea: { height: 100, paddingTop: 12 },
+  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 20, paddingBottom: 30, backgroundColor: C.surface },
+  continueBtn: { paddingVertical: 16, borderRadius: 12, alignItems: "center" },
+  continueBtnText: { fontSize: 16, fontFamily: FONT.bold },
+});

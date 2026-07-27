@@ -1,0 +1,157 @@
+import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authApi, LoginPayload, RegisterPayload } from '../api/auth';
+import { UserData } from '../api/profile';
+import { setLogoutHandler } from '../api/client';
+
+interface AuthState {
+  token: string | null;
+  user: UserData | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  onboardingCompleted: boolean;
+}
+
+type AuthAction =
+  | { type: 'RESTORE_TOKEN'; token: string | null; user: UserData | null; onboardingCompleted: boolean }
+  | { type: 'SIGN_IN'; token: string; user: UserData; onboardingCompleted?: boolean }
+  | { type: 'SIGN_OUT' }
+  | { type: 'SET_LOADING'; isLoading: boolean }
+  | { type: 'UPDATE_USER'; user: UserData }
+  | { type: 'SET_ONBOARDING_COMPLETED' };
+
+const initialState: AuthState = {
+  token: null,
+  user: null,
+  isLoading: true,
+  isAuthenticated: false,
+  onboardingCompleted: false,
+};
+
+function authReducer(state: AuthState, action: AuthAction): AuthState {
+  switch (action.type) {
+    case 'RESTORE_TOKEN':
+      return {
+        ...state,
+        token: action.token,
+        user: action.user,
+        isLoading: false,
+        isAuthenticated: action.token !== null,
+        onboardingCompleted: action.onboardingCompleted,
+      };
+    case 'SIGN_IN':
+      return {
+        ...state,
+        token: action.token,
+        user: action.user,
+        isLoading: false,
+        isAuthenticated: true,
+        onboardingCompleted: action.onboardingCompleted ?? state.onboardingCompleted,
+      };
+    case 'SIGN_OUT':
+      return {
+        ...state,
+        token: null,
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+      };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.isLoading };
+    case 'UPDATE_USER':
+      return { ...state, user: action.user };
+    case 'SET_ONBOARDING_COMPLETED':
+      return { ...state, onboardingCompleted: true };
+    default:
+      return state;
+  }
+}
+
+interface AuthContextType {
+  state: AuthState;
+  login: (payload: LoginPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
+  logout: () => Promise<void>;
+  updateUser: (user: UserData) => void;
+  restoreToken: () => Promise<void>;
+  completeOnboarding: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(authReducer, initialState);
+
+  const restoreToken = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const userJson = await AsyncStorage.getItem('USER');
+      const user = userJson ? JSON.parse(userJson) : null;
+      const onboardingCompletedStr = await AsyncStorage.getItem('ONBOARDING_COMPLETED');
+      const onboardingCompleted = onboardingCompletedStr === 'true';
+      dispatch({ type: 'RESTORE_TOKEN', token, user, onboardingCompleted });
+    } catch {
+      dispatch({ type: 'RESTORE_TOKEN', token: null, user: null, onboardingCompleted: false });
+    }
+  }, []);
+
+  useEffect(() => {
+    restoreToken();
+  }, [restoreToken]);
+
+  const login = useCallback(async (payload: LoginPayload) => {
+    const response = await authApi.login(payload);
+    const userData = response.data.data;
+    const token = userData.api_token;
+    await AsyncStorage.setItem('TOKEN', token);
+    await AsyncStorage.setItem('USER', JSON.stringify(userData));
+    const onboardingCompletedStr = await AsyncStorage.getItem('ONBOARDING_COMPLETED');
+    const onboardingCompleted = onboardingCompletedStr === 'true';
+    dispatch({ type: 'SIGN_IN', token, user: userData as any, onboardingCompleted });
+  }, []);
+
+  const register = useCallback(async (payload: RegisterPayload) => {
+    const response = await authApi.register(payload);
+    const userData = response.data.data;
+    const token = userData.api_token;
+    await AsyncStorage.setItem('TOKEN', token);
+    await AsyncStorage.setItem('USER', JSON.stringify(userData));
+    const onboardingCompletedStr = await AsyncStorage.getItem('ONBOARDING_COMPLETED');
+    const onboardingCompleted = onboardingCompletedStr === 'true';
+    dispatch({ type: 'SIGN_IN', token, user: userData as any, onboardingCompleted });
+  }, []);
+
+  const logout = useCallback(async () => {
+    await AsyncStorage.removeItem('TOKEN');
+    await AsyncStorage.removeItem('USER');
+    dispatch({ type: 'SIGN_OUT' });
+  }, []);
+
+  const updateUser = useCallback((user: UserData) => {
+    AsyncStorage.setItem('USER', JSON.stringify(user));
+    dispatch({ type: 'UPDATE_USER', user });
+  }, []);
+
+  const completeOnboarding = useCallback(async () => {
+    await AsyncStorage.setItem('ONBOARDING_COMPLETED', 'true');
+    dispatch({ type: 'SET_ONBOARDING_COMPLETED' });
+  }, []);
+
+  useEffect(() => {
+    setLogoutHandler(logout);
+  }, [logout]);
+
+  return (
+    <AuthContext.Provider value={{ state, login, register, logout, updateUser, restoreToken, completeOnboarding }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextType {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
