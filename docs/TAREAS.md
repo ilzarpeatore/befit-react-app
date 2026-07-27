@@ -1,60 +1,59 @@
 # Tareas — Befit App (React Native)
 
-Estado del trabajo de conexión backend/navegación, generado a partir de `docs/PANTALLAS.md` y las decisiones tomadas en esta ronda. Cada tarea pendiente indica el motivo y el endpoint/archivo relevante para retomarla sin tener que re-investigar desde cero.
+Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica el motivo y el endpoint/archivo relevante para retomarla sin tener que re-investigar desde cero.
 
 ---
 
 ## ✅ Completadas
 
 ### Navegación y autenticación
-- **Fix del bug de registro**: eliminada la colisión de nombres de ruta (`WelcomeAuth`/`LoginAuth`/`RegisterFlow` duplicados entre los stacks "auth" y "onboarding" en `App.tsx`) que dejaba al usuario en un formulario de registro vacío tras un registro exitoso. Ahora navega correctamente a onboarding.
-- **Fix de cleartext HTTP**: `android:usesCleartextTraffic="true"` en el manifest + `expo-build-properties`, para que los builds release no bloqueen las llamadas HTTP al backend local.
-- **Home Modern como pantalla de inicio real**: la ruta `HomePage` del tab principal ahora renderiza `MigratedNavigator` (inicia en `MigratedHomeModern`, `pages/migrated/home_screen_modern.tsx`). El `Home.tsx` original quedó desconectado (import sin usar en `App.tsx`, ver pendiente #10).
-- **Botón flotante "+"** (abre `ScreenExplorer`, listado de las 173 pantallas) disponible tanto en `Home.tsx` como en Home Modern.
-- **Tarjetas de acceso real** añadidas: "Blog" y "Mi Programa" en Home, "Recetas y Nutrición" en el tab Today — antes esas pantallas solo eran alcanzables desde el menú de QA.
-- **Saneamiento de `navigate("HomePage")` roto** en 5 pantallas migradas que no podían volver al tab Home real.
-- **`initialRouteName` explícito** en los 3 stacks condicionales de `RootNavigator` y en `MigratedNavigator`, como defensa en profundidad frente a colisiones de nombres futuras.
+- Fix del bug de registro (colisión de nombres de ruta que dejaba el formulario de registro vacío tras un registro exitoso).
+- Fix de cleartext HTTP en builds release.
+- Home Modern como pantalla de inicio real de la app.
+- Botón flotante "+" (ScreenExplorer) disponible en Home y Home Modern.
+- Tarjetas de acceso real a Blog, Mi Programa y Recetas/Nutrición desde Home y Today.
+- Saneamiento de `navigate("HomePage")` roto en 5 pantallas migradas.
+- **Menú de usuario en Home Modern**: Mi Perfil, Mis Favoritos, Configuración General, Apple Health/Smart Watch (toggles), Community, Cerrar sesión — migrado desde el `Home.tsx` original, mismo destino de rutas.
 
 ### Calidad / bugs de UI
-- Eliminado `Alert.alert('Blog Debug', ...)` olvidado en `blog_screen.tsx` que mostraba datos internos de la API en cada carga del blog.
-- Corregido el bug de scroll de Home Modern: `onScrollEndDrag` forzaba una recarga completa del dashboard (con spinner de pantalla completa) en cada gesto de scroll, impidiendo desplazarse por la pantalla.
+- Eliminado `Alert.alert('Blog Debug', ...)` olvidado en `blog_screen.tsx`.
+- Corregido el bug de scroll de Home Modern (`onScrollEndDrag` forzaba recarga completa en cada gesto).
 
 ### Documentación
-- **`docs/PANTALLAS.md`**: catálogo completo de las 173 pantallas (archivo, ruta, nombre visible, APIs usadas, módulo backend real o sugerido).
+- `docs/PANTALLAS.md`: catálogo de las 173 pantallas (archivo, ruta, nombre visible, APIs, módulo backend).
 
-### Conexión de APIs (esta ronda)
-- **`exercise_history_screen.tsx`**: cambiado de `exercisesApi.getList` (catálogo general) a `exercisesApi.getUserExercises` (`GET get-user-exercise`) — ahora muestra los ejercicios que el usuario realmente registró, no el catálogo completo.
-- **`post_details_screen.tsx`**: botones de like/bookmark conectados a `postsApi.like` / `postsApi.bookmark`, con actualización optimista y reversión si la llamada falla.
-- **`schedule_screen.tsx`**: eliminado el concepto de "horarios de clase pagados" (reserva + pantalla de pago, sin sentido sin clases reales). El calendario semanal ahora usa el endpoint real `v1/my-calendar` (mismo que "Mi Programa").
-- **`api/recipes.ts`**: tipos corregidos para coincidir con el backend real (`recipe_image` en vez de `image`, sin `description` inventado, paginación `currentPage`/`totalPages`), y se agregó `getDetail(id)` (`GET recipe-detail/{id}`, faltante).
-- **`api/exercises.ts`**: mismo fix de paginación (`totalPages` en vez de `total_pages`), tipos de paginación agregados a `getBodyParts`/`getEquipment`/`getLevels`/`search`.
-- **4 pantallas de recetas conectadas** a la API real (antes usaban stubs locales que devolvían arrays vacíos/mock):
-  - `recipe_main_screen.tsx` → `recipesApi.getTags/getCategories/getFilteredList`
-  - `recipe_category_list_screen.tsx` → `recipesApi.getCategories`
-  - `recipe_tag_list_screen.tsx` → `recipesApi.getTags`
-  - `recipe_list_screen_v2.tsx` → `recipesApi.getFilteredList` (con todos los filtros que soporta el backend: meal_type, categorías, tags, rangos de calorías/macros, tiempo de preparación, favoritos)
-- **`search_screen.tsx`** conectada a `exercisesApi.search/getByEquipment/getByLevel/getEquipment/getLevels` (antes stubs locales vacíos).
-- **Efecto colateral corregido**: al arreglar la paginación de `api/exercises.ts`, apareció el mismo bug preexistente en `exercise_list_screen.tsx` (no estaba en el alcance original, se corrigió al vuelo para no romper el build).
+### Sección de Recetas y Nutrición — ahora funcional de extremo a extremo
+- **Bug de datos crítico encontrado y corregido en el backend**: las **5276 recetas** de la tabla `recipes` tenían el campo `meal_type` guardado con doble codificación JSON (ej. `"[\"snacks\"]"` como string en vez de `["snacks"]` como array real). Esto rompía silenciosamente **todo** filtro por `meal_type` en `recipe-filter-list` (siempre devolvía 0 resultados), afectando cualquier pantalla o feature que filtrara recetas por tipo de comida — incluido el nuevo flujo de "agregar comida" al Daily Plan. Se corrigió con un script de una sola vez que re-normalizó las 5276 filas (verificado: 5276 arregladas, 0 fallos). Confirmado en dispositivo: el filtro y el buscador de "agregar comida" ya devuelven resultados reales.
+- **Detalle de receta funcional**: al tocar una receta (en `recipe_main_screen.tsx` o `recipe_list_screen_v2.tsx`) se abre `diet_detail_screen.tsx` mostrando ingredientes reales (cantidad + nombre) e instrucciones numeradas paso a paso, obtenidos de `recipe-detail/{id}`. Verificado en dispositivo con una receta real ("Torta de pasas": macros, 8 ingredientes, 4 pasos de instrucción).
+- **Filtros de recetas**: `recipe_list_screen_v2.tsx` tiene chips de tipo de comida (multi-select) y rango de calorías, conectados a `recipe-filter-list`.
+- **4 pantallas de recetas conectadas** a la API real (antes stubs locales vacíos): Recipe Main, Recipe Category List, Recipe Tag List, Recipe List V2.
+- **`search_screen.tsx`** (búsqueda de ejercicios) conectada a `exercisesApi` real.
+- **View Body Parts / View Equipment / View Level** (filtros de ejercicio) conectadas a `exercisesApi.getBodyParts/getEquipment/getLevels`, con navegación a la lista de ejercicios filtrada.
+- **`exercise_history_screen.tsx`**: usa `get-user-exercise` (ejercicios reales del usuario) en vez del catálogo general.
+- **Pantalla original `RecipeDetail.tsx`** (ya conectada desde Daily Plan/Diet Dashboard/Diet List): tenía un bug de nombres de campo (`ingredient_name`/`preparation_methods` inexistentes) que dejaba ingredientes e instrucciones vacíos — corregido para usar los campos reales (`ingredient_title`, `recipe_steps[]`).
+- **`pages/DailyPlan.tsx`**: tenía un bug más profundo de lo reportado — asumía una forma de respuesta (`data.meal_type[].recipe`) que no coincide con el backend real (`daily_plan_recipe: {breakfast: [...], lunch: [...]}`), lo que habría crasheado la pantalla en cuanto hubiera un plan real. Corregido el modelo de datos, y **agregado el flujo de "agregar comida"**: botón "+" por sección (Breakfast/Lunch/Dinner/Snacks) que abre un buscador de recetas reales y las agrega al plan (`save-daily-plan-recipe`). **Verificado en dispositivo de punta a punta**: búsqueda, selección y refresco automático del plan funcionan correctamente.
+- **Dietas asignadas por el coach**: sí existe backend (`GET assign-diet-list`, antes no usado en ningún lado). Se agregó una sección "Assigned to Me" en `pages/DietDashboard.tsx`. Se corrigió además un bug de navegación (`DietDashboard.tsx` y `DietList.tsx` navegaban a `RecipeDetail` pasando el id de una Dieta, cuando esa pantalla espera un id de Receta — dos modelos distintos — ahora navegan correctamente a `MigratedDietDetail`).
+
+### Recordatorios de salud y login por OTP
+- `water_reminders_screen.tsx` y `meals_reminders_screen.tsx` conectadas a `POST set-reminder-settings` (guarda de verdad los horarios configurados en el perfil del usuario, y los precarga al entrar).
+- `verify_otp_screen.tsx` conectada a `POST social-otp-login` (con el `login_type` corregido a `'mobile'`, el único valor real que el backend acepta).
 
 ---
 
 ## 🔜 Pendientes, por prioridad
 
-### Alta prioridad (recetas + entrenamiento — foco actual declarado)
-1. **UI de filtros en `recipe_list_screen_v2.tsx`**: la llamada a `recipesApi.getFilteredList` ya soporta todos los filtros del backend (meal_type, macros, categoría, tag), pero la interfaz de selección sigue siendo un placeholder ("Filter options placeholder"). Falta construir la UI que rellene esos parámetros.
-2. **View Body Parts / View Equipment / View Level** (`pages/migrated/view_body_part_screen.tsx`, `view_equipment_screen.tsx`, `view_level_screen.tsx`, categoría "Migrated - Exercise"): mismo patrón que `search_screen.tsx` antes del fix — llamadas a API comentadas como TODO. Los endpoints ya existen y están listos en `api/exercises.ts` (`getBodyParts`, `getEquipment`, `getLevels`), es una conexión directa y de bajo esfuerzo.
-3. **Verificar acciones interactivas dentro de las pantallas de recetas ya conectadas**: confirmar que los botones de "favorito" y "añadir a plan diario" (si existen en `recipe_main_screen.tsx`/`recipe_list_screen_v2.tsx`) llaman realmente a `recipesApi.setFavourite` / `recipesApi.saveDailyPlanRecipe` — la conexión de esta ronda se centró en la carga de listados/detalle, no se auditaron explícitamente esos botones de acción.
-
 ### Prioridad media
-4. **Recordatorios de salud** (`water_reminders_screen.tsx`, `meals_reminders_screen.tsx`, `meals_water_reminder_screen.tsx`, `set_reminder_screen.tsx`, `reminder_screen.tsx`): conectar a `POST set-reminder-settings` (`UserController::setReminderSetting`, ya existe y funciona — guarda `water_reminder_settings`/`meal_reminder_settings` en el perfil).
-5. **OTP / Verify OTP** (`otp_screen.tsx`, `verify_otp_screen.tsx`): login alternativo por SMS. Backend disponible en `social-otp-login` (`UserController::socialOTPLogin`), no conectado todavía. Solo necesario si se quiere ofrecer login sin contraseña.
-6. **Menú lateral de `Home.tsx`** (Mi Perfil, Favoritos, Configuración general, Apple Health, Smart Watch, Community, Logout): no está replicado en Home Modern. Decidir si se migra ese menú a Home Modern o se agrega un acceso equivalente, ya que esas opciones dejaron de ser alcanzables para el usuario real.
+1. **`set_reminder_screen.tsx` / `reminder_screen.tsx`**: son recordatorios locales genéricos (nombre/descripción/día), pensados para notificaciones locales del dispositivo. **Bloqueado**: no existe librería de notificaciones locales instalada en el proyecto (`expo-notifications` no está en `package.json`) ni un endpoint CRUD de recordatorios individuales en el backend (solo existe `set-reminder-settings`, que solo acepta las claves agregadas de agua/comidas). Requiere decidir e instalar una librería de notificaciones locales antes de poder conectar esto de verdad.
+2. **`otp_screen.tsx`**: no existe ningún endpoint de "enviar OTP" en el backend, ni el proyecto tiene Firebase Phone Auth instalado. Se reemplazó la alerta falsa por una navegación real a `verify_otp_screen`, pero el envío real del código sigue sin contraparte — requiere integrar un proveedor de SMS/Firebase o un endpoint dedicado a futuro.
+3. **Daily Plan — "Daily Total" no se refresca tras agregar una comida**: al agregar una comida el resumen de macros por sección se actualiza correctamente, pero la tarjeta de "Daily Total" al final de la pantalla se vio en 0 kcal en la prueba en dispositivo — revisar si falta recalcular ese total tras el refresco o si depende de otro campo del backend que no se está reflejando.
+4. **Daily Plan — caso "sin `daily_plan_id`" no verificado a fondo**: el backend crea el daily plan automáticamente en el primer `GET`, así que en la práctica no debería faltar, pero no se probó explícitamente el primer uso de un usuario que nunca tuvo un daily plan antes de esta fecha.
 
 ### Baja prioridad / diferido explícitamente por decisión de producto
-7. **Suscripciones y pagos** (`Subscribe`, `Subscription Detail`, `Payment`, `Payment Scheduled`): módulo `api/subscription.ts` completo y listo, pero **no se va a integrar por ahora** (decisión explícita).
-8. **Conexión con wearables** (`Emparejando`, `Device Connected`, `Link Device Choice`, `Link Device List`): pura simulación local, sin endpoint de "device pairing" en el backend. Se abordará más adelante, según lo planteado.
-9. **Pantallas de video** (`Video Screen`, `Video Detail`, `YouTube Player`, `Chewie Player`): no existe ningún módulo de video en `routes/api.php`. Pendiente decidir si se construye ese backend o se elimina esta sección de la app.
+5. **Suscripciones y pagos**: módulo `api/subscription.ts` completo y listo, pero no se va a integrar por ahora (decisión explícita).
+6. **Conexión con wearables**: sin backend propio, se abordará más adelante.
+7. **Pantallas de video**: no existe ningún módulo de video en `routes/api.php`. Pendiente decidir si se construye ese backend o se elimina esta sección.
 
 ### Limpieza técnica (opcional, bajo riesgo, no bloqueante)
-10. Import muerto `import Home from "@pages/Home"` en `App.tsx` (el componente ya no está conectado a ninguna ruta activa).
-11. Decidir el destino de `pages/Home.tsx` (el Home original): ¿se elimina del repo o se mantiene como referencia/rollback?
+8. Import muerto `import Home from "@pages/Home"` en `App.tsx`.
+9. Decidir el destino de `pages/Home.tsx` (el Home original, ya sin ninguna ruta activa) — ¿eliminar o mantener como referencia?
+10. `hooks/useDiet.ts` no se usa en ningún lado del proyecto — candidato a eliminar o a adoptarse como capa de datos real de las pantallas de diet.
