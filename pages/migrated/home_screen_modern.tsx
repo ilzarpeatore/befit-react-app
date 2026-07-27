@@ -228,8 +228,6 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        refreshControl={undefined}
-        onScrollEndDrag={() => fetchData()}
       >
         {/* Header */}
         <View style={styles.darkHeader}>
