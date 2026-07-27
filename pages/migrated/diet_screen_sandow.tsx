@@ -59,7 +59,7 @@ export default function DietScreenSandow(props: DietScreenSandowProps) {
           isFavourite: d.is_favourite,
         }));
         setMDietList((prev) => (targetPage === 1 ? list : [...prev, ...list]));
-        const totalPages = res.data.pagination?.total_pages ?? null;
+        const totalPages = res.data.pagination?.totalPages ?? null;
         setNumPage(totalPages);
         setIsLastPage(totalPages ? targetPage >= totalPages : list.length === 0);
       } catch (e: any) {

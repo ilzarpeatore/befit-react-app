@@ -71,7 +71,7 @@ export default function DietScreen(props: DietScreenProps) {
       }));
       if (page === 1) setMDietList(list);
       else setMDietList((prev) => [...prev, ...list]);
-      setNumPage(res.data.pagination?.total_pages ?? null);
+      setNumPage(res.data.pagination?.totalPages ?? null);
     } catch (e: any) {
       console.log(e);
     } finally {

@@ -20,8 +20,8 @@ export interface DietListResponse {
   pagination: {
     total_items: number;
     per_page: number;
-    current_page: number;
-    total_pages: number;
+    currentPage: number;
+    totalPages: number;
   };
 }
 
