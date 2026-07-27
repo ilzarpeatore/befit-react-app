@@ -242,7 +242,7 @@ export default function DietList({ navigation }: Props) {
                 calories={Number(item.calories)}
                 image={item.diet_image}
                 onPress={() =>
-                  navigation.navigate("RecipeDetail", { id: item.id })
+                  navigation.navigate("Migrated", { screen: "MigratedDietDetail", params: { id: item.id } })
                 }
               />
             </View>
