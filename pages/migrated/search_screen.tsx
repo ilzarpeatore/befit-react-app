@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { exercisesApi } from '../../api/exercises';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -86,21 +87,27 @@ export default function SearchScreen(props: any) {
   } = {}): Promise<void> => {
     setIsLoading(true);
     try {
-      const value: ApiResponse<ExerciseModel> = await getExerciseApi({
-        page,
-        id: props.route?.params?.id ?? 0,
-        isFilter: params.isFilter,
-        ids: params.ids,
-        isEquipment: params.isEquipment,
-        isLevel: params.isLevel,
-        mSearchValue: searchValue,
-      });
-      setNumPage(value.pagination?.totalPages);
+      let res;
+      if (searchValue.length > 0) {
+        res = await exercisesApi.search(searchValue, page);
+      } else if (params.isFilter && params.isEquipment && params.ids) {
+        res = await exercisesApi.getByEquipment(Number(params.ids), page);
+      } else if (params.isFilter && params.isLevel && params.ids) {
+        res = await exercisesApi.getByLevel(Number(params.ids), page);
+      } else {
+        res = await exercisesApi.getList(page);
+      }
+      const items: ExerciseModel[] = (res.data.data ?? []).map((e: any) => ({
+        id: e.id,
+        title: e.title,
+        exerciseImage: e.exercise_image ?? undefined,
+      }));
+      setNumPage(res.data.pagination?.totalPages);
       setIsLastPage(false);
       if (page === 1) {
-        setExerciseList(value.data ?? []);
+        setExerciseList(items);
       } else {
-        setExerciseList((prev) => [...prev, ...(value.data ?? [])]);
+        setExerciseList((prev) => [...prev, ...items]);
       }
     } catch (e) {
       setIsLastPage(true);
@@ -109,16 +116,20 @@ export default function SearchScreen(props: any) {
     }
   };
 
-  const getExerciseApi = async (params: any): Promise<ApiResponse<ExerciseModel>> => {
-    return { data: [], pagination: { totalPages: 1 } };
-  };
-
   const getEquipmentListApi = async (page: number): Promise<ApiResponse<EquipmentModel>> => {
-    return { data: [], pagination: { totalPages: 1 } };
+    const res = await exercisesApi.getEquipment(page);
+    return {
+      data: (res.data.data ?? []).map((e) => ({ id: e.id, title: e.title })),
+      pagination: { totalPages: res.data.pagination?.totalPages ?? 1 },
+    };
   };
 
   const getLevelListApi = async (page: number): Promise<ApiResponse<LevelModel>> => {
-    return { data: [], pagination: { totalPages: 1 } };
+    const res = await exercisesApi.getLevels(page);
+    return {
+      data: (res.data.data ?? []).map((l) => ({ id: l.id, title: l.title })),
+      pagination: { totalPages: res.data.pagination?.totalPages ?? 1 },
+    };
   };
 
   const getExerciseData = useCallback(async (params: {
