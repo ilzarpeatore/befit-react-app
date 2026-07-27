@@ -33,9 +33,9 @@ export default function ExerciseHistoryScreen(props: ExerciseHistoryScreenProps)
   const getExerciseData = useCallback(async () => {
     setIsLoading(true);
     try {
-      await exercisesApi.getList(page).then((res) => {
+      await exercisesApi.getUserExercises(page).then((res) => {
         const value: any = res.data;
-        setNumPage(value.pagination?.total_pages ?? null);
+        setNumPage(value.pagination?.totalPages ?? null);
         setIsLastPage(false);
         if (page === 1) setMExerciseList([]);
         const items = (value.data ?? []).map((ex: any) => ({
