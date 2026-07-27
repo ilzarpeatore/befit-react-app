@@ -31,6 +31,17 @@ export interface DietCategory {
   category_image: string;
 }
 
+export interface DailyPlanMealTypeSummary {
+  key: string;
+  display_name: string;
+  total: {
+    total_calories: number;
+    total_protein: number;
+    total_carbs: number;
+    total_fats: number;
+  };
+}
+
 export interface DailyPlanData {
   id: number;
   user_id: number;
@@ -42,19 +53,36 @@ export interface DailyPlanData {
   protein: number;
   fats: number;
   carbs: number;
-  meal_type: {
+  meal_type: DailyPlanMealTypeSummary[];
+}
+
+export interface DailyPlanRecipeEntry {
+  id: number;
+  daily_plan_id: number;
+  recipe_id: number;
+  calories: number;
+  protein: number;
+  fats: number;
+  carbs: number;
+  meal_type: string;
+  recipe: {
     id: number;
     title: string;
-    recipe: {
-      id: number;
-      title: string;
-      calories: number;
-      protein: number;
-      carbs: number;
-      fats: number;
-      recipe_image: string;
-    }[];
-  }[];
+    recipe_image: string | null;
+    calories: number;
+    protein: number;
+    fats: number;
+    carbs: number;
+  } | null;
+  is_complete: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DailyPlanDetailResponse {
+  data: DailyPlanData;
+  daily_plan_recipe: Record<string, DailyPlanRecipeEntry[]>;
+  day_has_daily_plan: string[];
 }
 
 export interface DietDetailItem {
@@ -138,8 +166,11 @@ export const dietApi = {
   getFavourite: (page: number = 1) =>
     apiClient.get<DietListResponse>(`get-favourite-diet?page=${page}`),
 
+  getAssignedDiets: (page: number = 1) =>
+    apiClient.get<DietListResponse>(`assign-diet-list?page=${page}`),
+
   getDailyPlan: (date: string) =>
-    apiClient.get<{ data: DailyPlanData }>(`daily-plan-detail?date=${date}`),
+    apiClient.get<DailyPlanDetailResponse>(`daily-plan-detail?date=${date}`),
 
   getRecipeDetail: (id: number) =>
     apiClient.get<RecipeDetailResponse>(`recipe-detail/${id}`),

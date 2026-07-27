@@ -6,13 +6,20 @@ import {
   TouchableOpacity,
   RefreshControl,
   ImageBackground,
+  Modal,
+  Pressable,
+  TextInput,
+  Image,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
-import { dietApi, DailyPlanData } from "../api/diet";
+import { dietApi, DailyPlanData, DailyPlanRecipeEntry } from "../api/diet";
+import { recipesApi, RecipeListItem } from "../api/recipes";
 import { ErrorRetryMem } from "../components/ErrorRetry";
 import { LoadingSkeletonMem } from "../components/LoadingSkeleton";
 import { EmptyStateMem } from "../components/EmptyState";
@@ -41,9 +48,16 @@ export default function DailyPlan({ navigation }: Props) {
   const styles = useStyle();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [data, setData] = useState<DailyPlanData | null>(null);
+  const [mealsByType, setMealsByType] = useState<Record<string, DailyPlanRecipeEntry[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [addMealFor, setAddMealFor] = useState<{ key: string; label: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<RecipeListItem[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [savingRecipeId, setSavingRecipeId] = useState<number | null>(null);
 
   const fetchData = useCallback(async (date: Date) => {
     try {
@@ -51,12 +65,63 @@ export default function DailyPlan({ navigation }: Props) {
       setError(null);
       const res = await dietApi.getDailyPlan(formatDate(date));
       setData(res.data?.data ?? null);
+      setMealsByType(res.data?.daily_plan_recipe ?? {});
     } catch {
       setError("Failed to load daily plan.");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const searchRecipes = useCallback(async (mealKey: string, query: string) => {
+    setSearchLoading(true);
+    try {
+      const res = await recipesApi.getFilteredList({
+        meal_type: [mealKey],
+        title: query || undefined,
+        per_page: 20,
+      });
+      setSearchResults(res.data?.data ?? []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  const openAddMeal = useCallback(
+    (key: string, label: string) => {
+      setAddMealFor({ key, label });
+      setSearchQuery("");
+      setSearchResults([]);
+      searchRecipes(key, "");
+    },
+    [searchRecipes]
+  );
+
+  useEffect(() => {
+    if (!addMealFor) return;
+    const timeout = setTimeout(() => searchRecipes(addMealFor.key, searchQuery), 350);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, addMealFor]);
+
+  const addRecipeToPlan = useCallback(
+    async (recipe: RecipeListItem) => {
+      if (!data?.id || !addMealFor) return;
+      setSavingRecipeId(recipe.id);
+      try {
+        await recipesApi.saveDailyPlanRecipe(data.id, recipe.id, addMealFor.key);
+        setAddMealFor(null);
+        await fetchData(selectedDate);
+      } catch {
+        Alert.alert("Error", "Could not add this meal. Please try again.");
+      } finally {
+        setSavingRecipeId(null);
+      }
+    },
+    [data?.id, addMealFor, fetchData, selectedDate]
+  );
 
   useEffect(() => {
     fetchData(selectedDate);
@@ -181,63 +246,98 @@ export default function DailyPlan({ navigation }: Props) {
             />
           }
         >
-          {!data || data.meal_type.length === 0 ? (
-            <EmptyStateMem
-              icon="calendar-outline"
-              title="No Meals Planned"
-              message="No meals found for this date."
-            />
+          {!data ||
+          Object.values(mealsByType).every((entries) => entries.length === 0) ? (
+            <>
+              <EmptyStateMem
+                icon="calendar-outline"
+                title="No Meals Planned"
+                message="No meals found for this date. Tap + on a meal below to add one."
+              />
+              {data?.meal_type.map((mealGroup) => (
+                <View key={mealGroup.key} style={styles.mealSection}>
+                  <View style={styles.mealHeader}>
+                    <Ionicons
+                      name={mealTypeIcons[mealGroup.key] || "restaurant-outline"}
+                      size={20}
+                      color={Colors.ACCENT_START}
+                    />
+                    <Text style={styles.mealTypeTitle}>{mealGroup.display_name}</Text>
+                    <TouchableOpacity
+                      style={styles.addMealBtn}
+                      onPress={() => openAddMeal(mealGroup.key, mealGroup.display_name)}
+                    >
+                      <Ionicons name="add" size={18} color={Colors.TEXT_PRIMARY} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </>
           ) : (
             <>
               {data.meal_type.map((mealGroup) => {
-                const totalCals = (mealGroup.recipe ?? []).reduce(
-                  (sum, r) => sum + r.calories,
-                  0
-                );
+                const entries = mealsByType[mealGroup.key] ?? [];
                 return (
-                  <View key={mealGroup.id} style={styles.mealSection}>
+                  <View key={mealGroup.key} style={styles.mealSection}>
                     <View style={styles.mealHeader}>
                       <Ionicons
-                        name={mealTypeIcons[(mealGroup.title ?? "").toLowerCase()] || "restaurant-outline"}
+                        name={mealTypeIcons[mealGroup.key] || "restaurant-outline"}
                         size={20}
                         color={Colors.ACCENT_START}
                       />
-                      <Text style={styles.mealTypeTitle}>{mealGroup.title}</Text>
-                      <Text style={styles.mealCals}>{totalCals} kcal</Text>
-                    </View>
-                    {mealGroup.recipe.map((recipe) => (
+                      <Text style={styles.mealTypeTitle}>{mealGroup.display_name}</Text>
+                      <Text style={styles.mealCals}>{mealGroup.total.total_calories} kcal</Text>
                       <TouchableOpacity
-                        key={recipe.id}
-                        activeOpacity={0.85}
-                        onPress={() =>
-                          navigation.navigate("RecipeDetail", { id: recipe.id })
-                        }
+                        style={styles.addMealBtn}
+                        onPress={() => openAddMeal(mealGroup.key, mealGroup.display_name)}
                       >
-                        <LinearGradient
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          colors={[Colors.CARD_START, Colors.CARD_END]}
-                          style={styles.mealCard}
-                        >
-                          <View style={styles.mealCardBody}>
-                            <Text style={styles.mealCardTitle} numberOfLines={1}>
-                              {recipe.title}
-                            </Text>
-                            <View style={styles.mealCardMacros}>
-                              <Text style={styles.mealCardCal}>{recipe.calories} kcal</Text>
-                              <Text style={styles.mealCardMacro}>P {recipe.protein}g</Text>
-                              <Text style={styles.mealCardMacro}>C {recipe.carbs}g</Text>
-                              <Text style={styles.mealCardMacro}>F {recipe.fats}g</Text>
-                            </View>
-                          </View>
-                          <Ionicons
-                            name="chevron-forward"
-                            size={18}
-                            color={Colors.TEXT_MUTED}
-                          />
-                        </LinearGradient>
+                        <Ionicons name="add" size={18} color={Colors.TEXT_PRIMARY} />
                       </TouchableOpacity>
-                    ))}
+                    </View>
+                    {entries.length === 0 ? (
+                      <Text style={styles.noMealText}>No {mealGroup.display_name.toLowerCase()} logged yet.</Text>
+                    ) : (
+                      entries.map((entry) => (
+                        <TouchableOpacity
+                          key={entry.id}
+                          activeOpacity={0.85}
+                          disabled={!entry.recipe}
+                          onPress={() =>
+                            navigation.navigate("RecipeDetail", { id: entry.recipe_id })
+                          }
+                        >
+                          <LinearGradient
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            colors={[Colors.CARD_START, Colors.CARD_END]}
+                            style={styles.mealCard}
+                          >
+                            {entry.recipe?.recipe_image ? (
+                              <Image
+                                source={{ uri: entry.recipe.recipe_image }}
+                                style={styles.mealCardImage}
+                              />
+                            ) : null}
+                            <View style={styles.mealCardBody}>
+                              <Text style={styles.mealCardTitle} numberOfLines={1}>
+                                {entry.recipe?.title ?? "Recipe unavailable"}
+                              </Text>
+                              <View style={styles.mealCardMacros}>
+                                <Text style={styles.mealCardCal}>{entry.calories} kcal</Text>
+                                <Text style={styles.mealCardMacro}>P {entry.protein}g</Text>
+                                <Text style={styles.mealCardMacro}>C {entry.carbs}g</Text>
+                                <Text style={styles.mealCardMacro}>F {entry.fats}g</Text>
+                              </View>
+                            </View>
+                            <Ionicons
+                              name="chevron-forward"
+                              size={18}
+                              color={Colors.TEXT_MUTED}
+                            />
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      ))
+                    )}
                   </View>
                 );
               })}
@@ -286,6 +386,66 @@ export default function DailyPlan({ navigation }: Props) {
             </>
           )}
         </ScrollView>
+
+        <Modal visible={!!addMealFor} transparent animationType="slide">
+          <Pressable style={styles.modalOverlay} onPress={() => setAddMealFor(null)}>
+            <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>
+                Add to {addMealFor?.label ?? ""}
+              </Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search recipes..."
+                placeholderTextColor={Colors.TEXT_MUTED}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              {searchLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={Colors.ACCENT_START}
+                  style={{ marginTop: 20 }}
+                />
+              ) : searchResults.length === 0 ? (
+                <Text style={styles.noResultsText}>No recipes found.</Text>
+              ) : (
+                <ScrollView style={styles.searchResultsScroll}>
+                  {searchResults.map((recipe) => (
+                    <TouchableOpacity
+                      key={recipe.id}
+                      style={styles.searchResultRow}
+                      disabled={savingRecipeId === recipe.id}
+                      onPress={() => addRecipeToPlan(recipe)}
+                    >
+                      {recipe.recipe_image ? (
+                        <Image
+                          source={{ uri: recipe.recipe_image }}
+                          style={styles.searchResultImage}
+                        />
+                      ) : (
+                        <View style={styles.searchResultImage} />
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.searchResultTitle} numberOfLines={1}>
+                          {recipe.title}
+                        </Text>
+                        <Text style={styles.searchResultMeta}>
+                          {recipe.calories} kcal
+                        </Text>
+                      </View>
+                      {savingRecipeId === recipe.id ? (
+                        <ActivityIndicator size="small" color={Colors.ACCENT_START} />
+                      ) : (
+                        <Ionicons name="add-circle-outline" size={26} color={Colors.ACCENT_START} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </Pressable>
+          </Pressable>
+        </Modal>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -381,6 +541,21 @@ function useStyle() {
       fontSize: "13@ratio",
       color: Colors.TEXT_SECONDARY,
     },
+    addMealBtn: {
+      width: "28@ratio",
+      height: "28@ratio",
+      borderRadius: "14@ratio",
+      backgroundColor: Colors.BG_CARD,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: "8@ratio",
+    },
+    noMealText: {
+      fontFamily: "Gilroy-Regular",
+      fontSize: "13@ratio",
+      color: Colors.TEXT_MUTED,
+      marginBottom: "8@ratio",
+    },
     mealCard: {
       flexDirection: "row",
       alignItems: "center",
@@ -388,6 +563,13 @@ function useStyle() {
       paddingHorizontal: "14@ratio",
       paddingVertical: "12@ratio",
       marginBottom: "8@ratio",
+    },
+    mealCardImage: {
+      width: "44@ratio",
+      height: "44@ratio",
+      borderRadius: "10@ratio",
+      marginRight: "12@ratio",
+      backgroundColor: Colors.BG_CARD,
     },
     mealCardBody: {
       flex: 1,
@@ -473,6 +655,77 @@ function useStyle() {
       fontSize: "12@ratio",
       color: Colors.TEXT_SECONDARY,
       marginTop: "4@ratio",
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+    },
+    modalSheet: {
+      backgroundColor: Colors.BG_PRIMARY,
+      borderTopLeftRadius: "24@ratio",
+      borderTopRightRadius: "24@ratio",
+      padding: "24@ratio",
+      maxHeight: "70%",
+    },
+    modalHandle: {
+      width: "40@ratio",
+      height: "4@ratio",
+      borderRadius: "2@ratio",
+      backgroundColor: Colors.BG_CARD,
+      alignSelf: "center",
+      marginBottom: "16@ratio",
+    },
+    modalTitle: {
+      fontFamily: "Gilroy-Bold",
+      fontSize: "18@ratio",
+      color: Colors.TEXT_PRIMARY,
+      marginBottom: "16@ratio",
+    },
+    searchInput: {
+      backgroundColor: Colors.BG_CARD,
+      borderRadius: "12@ratio",
+      paddingHorizontal: "14@ratio",
+      paddingVertical: "10@ratio",
+      fontFamily: "Gilroy-Regular",
+      fontSize: "14@ratio",
+      color: Colors.TEXT_PRIMARY,
+      marginBottom: "12@ratio",
+    },
+    noResultsText: {
+      fontFamily: "Gilroy-Regular",
+      fontSize: "14@ratio",
+      color: Colors.TEXT_MUTED,
+      textAlign: "center",
+      marginTop: "20@ratio",
+    },
+    searchResultsScroll: {
+      maxHeight: "320@ratio",
+    },
+    searchResultRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: "10@ratio",
+      borderBottomWidth: 1,
+      borderBottomColor: Colors.BG_CARD,
+    },
+    searchResultImage: {
+      width: "44@ratio",
+      height: "44@ratio",
+      borderRadius: "10@ratio",
+      marginRight: "12@ratio",
+      backgroundColor: Colors.BG_CARD,
+    },
+    searchResultTitle: {
+      fontFamily: "Gilroy-SemiBold",
+      fontSize: "14@ratio",
+      color: Colors.TEXT_PRIMARY,
+    },
+    searchResultMeta: {
+      fontFamily: "Gilroy-Regular",
+      fontSize: "12@ratio",
+      color: Colors.TEXT_SECONDARY,
+      marginTop: "2@ratio",
     },
   });
 }
