@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { exercisesApi } from '../../api/exercises';
 
 interface LevelItem {
   id: number;
@@ -43,13 +44,15 @@ export default function ViewLevelScreen(props: any) {
   const getLevelData = async () => {
     setIsLoading(true);
     try {
-      // await getLevelListApi(page).then((value) => {
-      //   setNumPage(value.pagination.totalPages);
-      //   setIsLastPage(false);
-      //   if (page === 1) setLevelList([]);
-      //   const items = value.data || [];
-      //   setLevelList((prev) => [...prev, ...items]);
-      // });
+      const value = await exercisesApi.getLevels(page);
+      const items = (value.data.data ?? []).map((l) => ({
+        id: l.id,
+        title: l.title,
+      }));
+      setNumPage(value.data.pagination?.totalPages ?? 1);
+      setIsLastPage(false);
+      if (page === 1) setLevelList(items);
+      else setLevelList((prev) => [...prev, ...items]);
     } catch (e) {
       setIsLastPage(true);
     } finally {
@@ -60,13 +63,14 @@ export default function ViewLevelScreen(props: any) {
   const getLevelDataPagination = async () => {
     setIsLoading(true);
     try {
-      // await getLevelListApi(page).then((value) => {
-      //   setNumPage(value.pagination.totalPages);
-      //   setIsLastPage(false);
-      //   if (page === 1) setLevelList([]);
-      //   const items = value.data || [];
-      //   setLevelList((prev) => [...prev, ...items]);
-      // });
+      const value = await exercisesApi.getLevels(page);
+      const items = (value.data.data ?? []).map((l) => ({
+        id: l.id,
+        title: l.title,
+      }));
+      setNumPage(value.data.pagination?.totalPages ?? 1);
+      setIsLastPage(false);
+      setLevelList((prev) => [...prev, ...items]);
     } catch (e) {
       setIsLastPage(true);
     } finally {
@@ -87,6 +91,13 @@ export default function ViewLevelScreen(props: any) {
       key={item.id?.toString() || index.toString()}
       style={styles.levelItem}
       activeOpacity={0.7}
+      onPress={() =>
+        props.navigation.navigate('MigratedExerciseList', {
+          mTitle: item.title,
+          isLevel: true,
+          id: item.id,
+        })
+      }
     >
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.levelImage} resizeMode="cover" />
