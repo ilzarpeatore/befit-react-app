@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, 
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -58,9 +59,15 @@ export default function RecipeMainScreen(props: any) {
       let totalPages = 1;
       const allTags: RecipeTag[] = [];
       while (page <= totalPages) {
-        const response: ApiResponse<RecipeTag> = await getRecipeTagListApi(page);
-        totalPages = response.pagination?.totalPages ?? 1;
-        allTags.push(...(response.data ?? []));
+        const res = await recipesApi.getTags(page);
+        totalPages = res.data.pagination?.totalPages ?? 1;
+        allTags.push(
+          ...(res.data.data ?? []).map((t) => ({
+            id: t.id,
+            title: t.title,
+            recipeTagImage: t.recipe_tag_image ?? undefined,
+          }))
+        );
         page++;
       }
       setTags(allTags);
@@ -78,10 +85,16 @@ export default function RecipeMainScreen(props: any) {
       let totalPages = 1;
       const allCategories: RecipeCategory[] = [];
       while (page <= totalPages) {
-        const response: ApiResponse<RecipeCategory> = await getRecipeCategoryListApi(page);
-        totalPages = response.pagination?.totalPages ?? 1;
-        setTotalCategoryItems(response.pagination?.totalItems ?? 0);
-        allCategories.push(...(response.data ?? []));
+        const res = await recipesApi.getCategories(page);
+        totalPages = res.data.pagination?.totalPages ?? 1;
+        setTotalCategoryItems(res.data.pagination?.total_items ?? 0);
+        allCategories.push(
+          ...(res.data.data ?? []).map((c) => ({
+            id: c.id,
+            title: c.title,
+            recipeCategoryImage: c.recipe_category_image ?? undefined,
+          }))
+        );
         if (allCategories.length >= 9) break;
         page++;
       }
@@ -96,24 +109,20 @@ export default function RecipeMainScreen(props: any) {
   const fetchRecipes = useCallback(async () => {
     setIsRecipesLoading(true);
     try {
-      const response: ApiResponse<RecipeItem> = await getRecipeFilterListApi({ mealTypes: [], page: 1 });
-      setRecipes(response.data ?? []);
+      const res = await recipesApi.getFilteredList({ page: 1 });
+      const items = (res.data.data ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        recipeImage: r.recipe_image ?? undefined,
+        calories: r.calories,
+      }));
+      setRecipes(items);
     } catch (e) {
       console.log(e);
     } finally {
       setIsRecipesLoading(false);
     }
   }, []);
-
-  const getRecipeTagListApi = async (page: number): Promise<ApiResponse<RecipeTag>> => {
-    return { data: [], pagination: { totalPages: 1 } };
-  };
-  const getRecipeCategoryListApi = async (page: number): Promise<ApiResponse<RecipeCategory>> => {
-    return { data: [], pagination: { totalPages: 1 } };
-  };
-  const getRecipeFilterListApi = async (params: any): Promise<ApiResponse<RecipeItem>> => {
-    return { data: [], pagination: { totalPages: 1 } };
-  };
 
   const showViewMore = totalCategoryItems > 8 || categories.length > 8;
   const displayCategories = showViewMore ? categories.slice(0, 8) : categories;
