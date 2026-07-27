@@ -3,13 +3,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Activ
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { exercisesApi } from '../../api/exercises';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
-function BodyPartComponent({ item }: { item: any }) {
+function BodyPartComponent({ item, onPress }: { item: any; onPress: () => void }) {
   return (
-    <TouchableOpacity style={styles.bodyPartCard} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.bodyPartCard} activeOpacity={0.8} onPress={onPress}>
       <Image
         source={{ uri: item.image || '' }}
         style={styles.bodyPartImage}
@@ -41,10 +42,15 @@ export default function ViewBodyPartScreen(props: any) {
   const getBodyPartData = async () => {
     setIsLoading(true);
     try {
-      // const value = await getBodyPartApi(page);
-      // setNumPage(value.pagination.totalPages);
-      // if (page === 1) setBodyPartList([]);
-      // setBodyPartList(prev => [...prev, ...value.data]);
+      const value = await exercisesApi.getBodyParts(page);
+      const items = (value.data.data ?? []).map((bp) => ({
+        id: bp.id,
+        name: bp.title,
+        image: bp.bodypart_image,
+      }));
+      setNumPage(value.data.pagination?.totalPages ?? 1);
+      if (page === 1) setBodyPartList(items);
+      else setBodyPartList((prev) => [...prev, ...items]);
       setIsLoading(false);
     } catch (e) {
       setIsLastPage(true);
@@ -80,7 +86,17 @@ export default function ViewBodyPartScreen(props: any) {
         >
           <View style={styles.grid}>
             {bodyPartList.map((item, index) => (
-              <BodyPartComponent key={item.id || index} item={item} />
+              <BodyPartComponent
+                key={item.id || index}
+                item={item}
+                onPress={() =>
+                  props.navigation.navigate('MigratedExerciseList', {
+                    mTitle: item.name,
+                    isBodyPart: true,
+                    id: item.id,
+                  })
+                }
+              />
             ))}
           </View>
         </ScrollView>
