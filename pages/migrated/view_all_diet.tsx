@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Activit
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { dietApi } from '../../api/diet';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -50,32 +51,47 @@ export default function ViewAllDiet(props: any) {
     getDietData();
   }, []);
 
-  const getDietData = async () => {
+  const getDietData = async (targetPage: number = page) => {
     setIsLoading(true);
     try {
-      // const value = await getDietApi({ page, isFeatured, isCategory, isAssign, categoryId, isFav });
-      // setNumPage(value.pagination.totalPages);
-      // if (page === 1) setDietList([]);
-      // setDietList(prev => [...prev, ...value.data]);
-      setIsLoading(false);
+      const res = isFav
+        ? await dietApi.getFavourite(targetPage)
+        : isAssign
+        ? await dietApi.getAssignedDiets(targetPage)
+        : await dietApi.getList({
+            page: targetPage,
+            ...(isFeatured ? { is_featured: true } : {}),
+            ...(isCategory && mCategoryId ? { categorydiet_id: mCategoryId } : {}),
+          });
+
+      const items = (res.data.data ?? []).map((d: any) => ({
+        id: d.id,
+        title: d.title,
+        image: d.diet_image,
+        calories: d.calories,
+      }));
+
+      setNumPage(res.data.pagination?.totalPages ?? 1);
+      setIsLastPage(targetPage >= (res.data.pagination?.totalPages ?? 1));
+      if (targetPage === 1) setDietList(items);
+      else setDietList((prev) => [...prev, ...items]);
     } catch (e) {
       setIsLastPage(true);
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleLoadMore = () => {
     if (!isLastPage && !isLoading && page < numPage) {
-      setPage(page + 1);
-      getDietData();
+      const nextPage = page + 1;
+      setPage(nextPage);
+      getDietData(nextPage);
     }
   };
 
   const handleItemCall = (item: any) => {
-    if (isFav) {
-      setDietList([]);
-      getDietData();
-    }
+    props.navigation.navigate('MigratedDietDetail', { dietModel: item });
   };
 
   const renderEmpty = () => {
