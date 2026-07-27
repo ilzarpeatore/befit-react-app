@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { authApi } from '@api/auth';
+import { useAuth } from '@store/AuthContext';
 
 export default function VerifyOTPScreen(props: any) {
   const {
@@ -10,6 +13,7 @@ export default function VerifyOTPScreen(props: any) {
     phoneNumber = '',
     isCodeSent = false,
   } = props.route?.params || {};
+  const { restoreToken } = useAuth();
 
   const [otpCode, setOtpCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,33 +38,49 @@ export default function VerifyOTPScreen(props: any) {
     }
     setIsLoading(true);
     try {
-      // Firebase Phone Auth sign-in
-      // const credential = PhoneAuthProvider.credential(verificationId, code);
-      // await FirebaseAuth.instance.signInWithCredential(credential);
-      // Then call socialOtpLogInApi
+      // NOTE: the backend's `social-otp-login` endpoint (UserController::socialOTPLogin)
+      // does not actually validate `code` against anything server-side — it only looks up
+      // (or creates) a user by phone number. Real SMS code delivery/verification would
+      // require a client-side provider (e.g. Firebase Phone Auth), which is not installed
+      // in this project (no `firebase` dependency, see otp_screen.tsx). This call still
+      // reflects the only real endpoint available for this flow.
+      const cleanPhone = phoneNumber.replace('+', '');
       const req = {
         email: '',
-        username: phoneNumber.replace('+', ''),
+        username: cleanPhone,
         first_name: '',
         last_name: '',
-        login_type: 'otp',
+        login_type: 'mobile',
         user_type: 'user',
-        accessToken: phoneNumber.replace('+', ''),
-        phone_number: phoneNumber.replace('+', ''),
+        accessToken: cleanPhone,
+        phone_number: cleanPhone,
         player_id: '',
       };
-      // const value = await socialOtpLogInApi(req);
+      const response = await authApi.socialOtpLogin(req);
+      const value = response.data;
       setIsLoading(false);
-      // Navigate based on result
-      // if (!value.isUserExist) { navigation.navigate('SignUp', { phoneNumber }); }
-      // else { navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] }); }
+
+      if (value.is_user_exist === false) {
+        // No account exists yet for this phone number - continue to sign up.
+        props.navigation.navigate('MigratedSignUpSandow', { phoneNumber: cleanPhone });
+        return;
+      }
+
+      if (value.data) {
+        const userData: any = value.data;
+        await AsyncStorage.setItem('TOKEN', userData.api_token);
+        await AsyncStorage.setItem('USER', JSON.stringify(userData));
+        await restoreToken();
+        props.navigation.replace('Home', { screen: 'HomePage' });
+      }
     } catch (e: any) {
       setIsLoading(false);
-      if (e?.toString().includes('invalid_username')) {
+      const message = e?.response?.data?.message || e?.toString();
+      if (message?.includes('invalid_username')) {
         props.navigation.goBack();
-        props.navigation.navigate('MigratedSignUp', { phoneNumber: phoneNumber.replace('+', '') });
+        props.navigation.navigate('MigratedSignUpSandow', { phoneNumber: phoneNumber.replace('+', '') });
       } else {
-        Alert.alert(e?.toString() || 'Verification failed');
+        Alert.alert(message || 'Verification failed');
       }
     }
   };

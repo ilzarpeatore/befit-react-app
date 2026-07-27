@@ -32,6 +32,25 @@ export interface SocialLoginPayload {
   login_type: string;
 }
 
+export interface SocialOtpLoginPayload {
+  email: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  login_type: string;
+  user_type: string;
+  accessToken: string;
+  phone_number: string;
+  player_id: string;
+}
+
+export interface SocialOtpLoginResponse {
+  status: boolean;
+  message?: string;
+  is_user_exist?: boolean;
+  data?: LoginResponse['data'];
+}
+
 export interface RegisterPayload {
   username: string;
   email: string;
@@ -53,6 +72,9 @@ export const authApi = {
 
   socialLogin: (payload: SocialLoginPayload) =>
     apiClient.post('social-mail-login', payload),
+
+  socialOtpLogin: (payload: SocialOtpLoginPayload) =>
+    apiClient.post<SocialOtpLoginResponse>('social-otp-login', payload),
 
   updateProfile: (payload: Record<string, any>) =>
     apiClient.post('update-profile', payload),
