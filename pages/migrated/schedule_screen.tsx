@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView, Alert, FlatList, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { workoutHistoryApi } from '../../api/workoutHistory';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -14,15 +15,6 @@ interface CalendarWorkoutModel {
 interface CalendarDayModel {
   date?: string;
   workouts?: CalendarWorkoutModel[];
-}
-
-interface ScheduledModelData {
-  id?: number;
-  workoutTitle?: string;
-  name?: string;
-  className?: string;
-  workoutType?: string;
-  price?: number;
 }
 
 interface ScheduleWorkoutItem {
@@ -53,16 +45,11 @@ function getWorkoutImage(title: string): string {
 
 export default function ScheduleScreen(props: any) {
   const [focusedDay, setFocusedDay] = useState(new Date());
-  const [scheduledWorkoutList, setScheduledWorkoutList] = useState<ScheduledModelData[]>([]);
   const [selectedDays, setSelectedDays] = useState<Date[]>([new Date()]);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | undefined>(undefined);
-  const [isLastPage, setIsLastPage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mProgramDays, setMProgramDays] = useState<CalendarDayModel[]>([]);
   const [mProgramCalendarYear, setMProgramCalendarYear] = useState<number | undefined>(undefined);
   const [mProgramCalendarMonth, setMProgramCalendarMonth] = useState<number | undefined>(undefined);
-  const [hiddenItemIds, setHiddenItemIds] = useState<Set<number>>(new Set());
   const scrollRef = useRef<FlatList>(null);
   const styles = useStyle();
 
@@ -101,94 +88,50 @@ export default function ScheduleScreen(props: any) {
       .flatMap((d) => d.workouts ?? []);
   });
 
-  const workoutItems: ScheduleWorkoutItem[] = [
-    ...selectedDateWorkouts.map((w) => ({
-      id: w.assignmentId ?? 0,
-      title: w.title ?? '',
-      duration: '30min',
-      category: 'Cardio',
-      image: getWorkoutImage(w.title ?? ''),
-      isAssigned: true,
-    })),
-    ...scheduledWorkoutList.map((s) => ({
-      id: s.id ?? 0,
-      title: s.workoutTitle ?? s.name ?? s.className ?? '',
-      duration: '30min',
-      category: s.workoutType ?? 'Cardio',
-      image: getWorkoutImage(s.workoutTitle ?? s.name ?? ''),
-      isAssigned: false,
-    })),
-  ];
+  const workoutItems: ScheduleWorkoutItem[] = selectedDateWorkouts.map((w) => ({
+    id: w.assignmentId ?? 0,
+    title: w.title ?? '',
+    duration: '30min',
+    category: 'Cardio',
+    image: getWorkoutImage(w.title ?? ''),
+    isAssigned: true,
+  }));
 
-  const visibleWorkoutItems = workoutItems.filter((i) => !hiddenItemIds.has(i.id));
-  const hasWorkouts = visibleWorkoutItems.length > 0;
+  const hasWorkouts = workoutItems.length > 0;
 
   useEffect(() => {
     const now = new Date();
     getProgramCalendarData(now.getFullYear(), now.getMonth() + 1);
-    callScheduleApi();
   }, []);
 
   const getProgramCalendarData = async (year: number, month: number) => {
     setMProgramCalendarYear(year);
     setMProgramCalendarMonth(month);
+    setIsLoading(true);
     try {
-      // const value = await getMyCalendarApi({ year, month });
-      // setMProgramDays(value.days ?? []);
+      const res = await workoutHistoryApi.getMyCalendar(month, year);
+      const calData: any = res.data.data;
+      const days = calData?.days ?? [];
+      const mapped: CalendarDayModel[] = days.map((d: any) => ({
+        date: d.date,
+        workouts: (d.workouts ?? []).map((w: any) => ({
+          title: w.title,
+          assignmentId: w.assignment_id,
+        })),
+      }));
+      setMProgramDays(mapped);
     } catch (e) {
       console.log('getProgramCalendarData error:', e);
-    }
-  };
-
-  const callScheduleApi = useCallback(async () => {
-    const commaSeparatedValues = selectedDays
-      .map((date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)
-      .join(',');
-    setIsLoading(true);
-    const dataSet = commaSeparatedValues || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
-    try {
-      // const value = await getClassSchedule({ selectedDate: dataSet, page });
-      // setNumPage(value.pagination?.totalPages);
-      // setIsLastPage(false);
-      // if (page === 1) {
-      //   setScheduledWorkoutList(value.data ?? []);
-      //   setHiddenItemIds(new Set());
-      // } else {
-      //   setScheduledWorkoutList((prev) => [...prev, ...(value.data ?? [])]);
-      // }
-    } catch (e) {
-      console.log('schedule error:', e);
-      setIsLastPage(true);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDays, page]);
+  };
 
   const onDaySelected = (day: Date) => {
     setSelectedDays([new Date(day.getFullYear(), day.getMonth(), day.getDate())]);
-    setHiddenItemIds(new Set());
-    setPage(1);
     if (day.getFullYear() !== mProgramCalendarYear || day.getMonth() + 1 !== mProgramCalendarMonth) {
       getProgramCalendarData(day.getFullYear(), day.getMonth() + 1);
     }
-  };
-
-  const confirmDelete = (item: ScheduleWorkoutItem) => {
-    Alert.alert(
-      'Remove workout',
-      `Are you sure you want to remove "${item.title}" from your schedule?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            setHiddenItemIds((prev) => new Set([...prev, item.id]));
-            // toast('Workout removed');
-          },
-        },
-      ]
-    );
   };
 
   const buildWeekStrip = () => (
@@ -241,20 +184,10 @@ export default function ScheduleScreen(props: any) {
       <TouchableOpacity
         style={s.workoutCard}
         onPress={() => {
-          if (item.isAssigned) {
-            props.navigation.navigate('MigratedFullWorkout', {
-              programDayAssignmentId: item.id,
-              mTitle: item.title,
-            });
-          } else {
-            const scheduled = scheduledWorkoutList.find((s) => s.id === item.id);
-            if (scheduled) {
-              props.navigation.navigate('MigratedPaymentScheduled', {
-                price: `${scheduled.price ?? 0}`,
-                sceduledId: `${scheduled.id ?? 0}`,
-              });
-            }
-          }
+          props.navigation.navigate('MigratedFullWorkout', {
+            programDayAssignmentId: item.id,
+            mTitle: item.title,
+          });
         }}
         activeOpacity={0.7}
       >
@@ -273,11 +206,6 @@ export default function ScheduleScreen(props: any) {
         </View>
         <View style={s.workoutActions}>
           <Ionicons name="chevron-forward" size={24} color={C.gray40} />
-          {index === 0 && (
-            <TouchableOpacity style={s.deleteCircle} onPress={() => confirmDelete(item)}>
-              <Ionicons name="trash-outline" size={20} color={C.white} />
-            </TouchableOpacity>
-          )}
         </View>
       </TouchableOpacity>
     );
@@ -298,7 +226,7 @@ export default function ScheduleScreen(props: any) {
       <View style={s.body}>
         {buildWeekStrip()}
 
-        {isLoading && visibleWorkoutItems.length === 0 ? (
+        {isLoading && workoutItems.length === 0 ? (
           <View style={s.loadingOverlay}>
             <ActivityIndicator size="large" color={C.orange} />
           </View>
@@ -307,7 +235,7 @@ export default function ScheduleScreen(props: any) {
         ) : (
           <FlatList
             ref={scrollRef}
-            data={visibleWorkoutItems}
+            data={workoutItems}
             keyExtractor={(item) => `${item.id}`}
             renderItem={renderWorkoutItem}
             contentContainerStyle={s.workoutListContent}
