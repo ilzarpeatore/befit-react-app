@@ -91,7 +91,7 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
       }));
       if (exercisePage === 1) setMExerciseList(list);
       else setMExerciseList((prev) => [...prev, ...list]);
-      setExerciseNumPage(res.data.pagination?.total_pages ?? null);
+      setExerciseNumPage(res.data.pagination?.totalPages ?? null);
     } catch (e) {
       setIsExerciseLastPage(true);
     } finally {
