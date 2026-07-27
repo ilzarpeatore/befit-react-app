@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { dietApi } from '../../api/diet';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -22,6 +23,10 @@ interface DietScreenSandowProps {
   navigation: any;
 }
 
+// NOTE: the legacy "Diet" model (backend) has no meal-type field — only categorydiet_id,
+// is_featured, is_premium and title are filterable (see api/diet.ts + DietController::getList).
+// These chips are kept as a purely visual/decorative filter (selection state only) since
+// there is no real backend counterpart for "Breakfast/Lunch/Dinner/Snacks/Protein" on Diet.
 const CHIPS = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Protein'];
 
 export default function DietScreenSandow(props: DietScreenSandowProps) {
@@ -34,37 +39,62 @@ export default function DietScreenSandow(props: DietScreenSandowProps) {
   const [selectedChip, setSelectedChip] = useState('All');
   const scrollController = useRef<FlatList | null>(null);
 
-  const getDietData = useCallback(async (isFromPagination = false) => {
-    if (!isFromPagination) setIsLoading(true);
-    try {
-      // API call: getDietApi(null, null)
-      // const value = await getDietApi(null, null);
-      // if (value.data) setMDietList(value.data);
-    } catch (e: any) {
-      console.log(e);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const getDietData = useCallback(
+    async (opts?: { pagination?: boolean; page?: number; search?: string }) => {
+      const targetPage = opts?.page ?? page;
+      const targetSearch = opts?.search ?? mSearch;
+      if (!opts?.pagination) setIsLoading(true);
+      try {
+        const res = targetSearch
+          ? await dietApi.search(targetSearch, targetPage)
+          : await dietApi.getList({ page: targetPage });
+        const list: DietModel[] = (res.data.data ?? []).map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          dietImage: d.diet_image,
+          calories: d.calories,
+          carbs: d.carbs,
+          fat: d.fat,
+          protein: d.protein,
+          isFavourite: d.is_favourite,
+        }));
+        setMDietList((prev) => (targetPage === 1 ? list : [...prev, ...list]));
+        const totalPages = res.data.pagination?.total_pages ?? null;
+        setNumPage(totalPages);
+        setIsLastPage(totalPages ? targetPage >= totalPages : list.length === 0);
+      } catch (e: any) {
+        console.log(e);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [page, mSearch]
+  );
 
   useEffect(() => {
     getDietData();
-  }, [getDietData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEndReached = () => {
     if (!isLastPage && !isLoading) {
-      setPage((prev) => prev + 1);
-      getDietData(true);
+      setPage((prev) => {
+        const nextPage = prev + 1;
+        getDietData({ pagination: true, page: nextPage });
+        return nextPage;
+      });
     }
   };
 
   const handleClearSearch = () => {
     setMSearch('');
-    getDietData();
+    setPage(1);
+    getDietData({ page: 1, search: '' });
   };
 
   const handleSearchSubmit = () => {
-    getDietData();
+    setPage(1);
+    getDietData({ page: 1, search: mSearch });
   };
 
   const renderChip = (label: string) => {
