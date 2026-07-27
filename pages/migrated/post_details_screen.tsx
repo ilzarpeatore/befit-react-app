@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { postsApi } from '../../api/posts';
 
 interface PostUser {
   id?: number;
@@ -53,6 +54,28 @@ export default function PostDetailsScreen(props: any) {
 
   const user = postData.users;
 
+  const toggleLike = () => {
+    setIsLiked((prev) => !prev);
+    setLikeChange((prev) => prev + 1);
+    if (postData.id) {
+      postsApi.like(postData.id).catch(() => {
+        setIsLiked((prev) => !prev);
+        setLikeChange((prev) => prev - 1);
+      });
+    }
+  };
+
+  const toggleBookmark = () => {
+    setIsBookmarked((prev) => !prev);
+    setBookMarkChange((prev) => prev + 1);
+    if (postData.id) {
+      postsApi.bookmark(postData.id).catch(() => {
+        setIsBookmarked((prev) => !prev);
+        setBookMarkChange((prev) => prev - 1);
+      });
+    }
+  };
+
   return (
     <View style={s.container}>
       <View style={s.appBar}>
@@ -90,7 +113,7 @@ export default function PostDetailsScreen(props: any) {
             </View>
           ) : null}
           <View style={s.postFooter}>
-            <TouchableOpacity style={s.actionBtn} onPress={() => { setIsLiked(!isLiked); setLikeChange(prev => prev + 1); }}>
+            <TouchableOpacity style={s.actionBtn} onPress={toggleLike}>
               <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={22} color={isLiked ? C.destructive : C.gray30} />
               <Text style={[s.actionText, isLiked && s.actionTextActive]}>{(postData.likesCount ?? 0) + (isLiked ? 1 : 0)}</Text>
             </TouchableOpacity>
@@ -98,7 +121,7 @@ export default function PostDetailsScreen(props: any) {
               <Ionicons name="chatbubble-outline" size={22} color={C.gray30} />
               <Text style={s.actionText}>{postData.commentsCount ?? 0}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.actionBtn} onPress={() => { setIsBookmarked(!isBookmarked); setBookMarkChange(prev => prev + 1); }}>
+            <TouchableOpacity style={s.actionBtn} onPress={toggleBookmark}>
               <Ionicons name={isBookmarked ? 'bookmark' : 'bookmark-outline'} size={22} color={isBookmarked ? C.brand5 : C.gray30} />
             </TouchableOpacity>
             <TouchableOpacity style={s.actionBtn}>
