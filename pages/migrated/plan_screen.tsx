@@ -2,7 +2,17 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { useFocusEffect } from '@react-navigation/native';
 import { C, FONT } from './theme';
+import { dietApi } from '../../api/diet';
+import { recipesApi } from '../../api/recipes';
+
+function formatDateYMD(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 const GRAPH_CARD_HEIGHT = 260;
 
@@ -73,6 +83,7 @@ export default function PlanScreen(props: any) {
 
   const [mealTotals, setMealTotals] = useState<Record<string, MealTotal>>({});
   const [mealRecipes, setMealRecipes] = useState<Record<string, DailyPlanRecipeItem[]>>({});
+  const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
 
   const [selectedDay, setSelectedDay] = useState(new Date());
   const [showCompactSummary, setShowCompactSummary] = useState(false);
@@ -86,12 +97,63 @@ export default function PlanScreen(props: any) {
     fetchDailyPlan();
   }, [selectedDay]);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchDailyPlan();
+    }, [selectedDay])
+  );
+
+  const applyDailyPlanResponse = (value: any) => {
+    const data = value?.data;
+    if (!data) return;
+
+    setDailyPlanId(data.id ?? null);
+
+    const goals = data.daily_plan ?? {};
+    setKcalTarget(goals.kCal ?? 0);
+    setProteinTarget(goals.protein?.target ?? 0);
+    setCarbsTarget(goals.carbs?.target ?? 0);
+    setFatsTarget(goals.fat?.target ?? 0);
+
+    setKcalCurrent(data.calories ?? 0);
+    setProteinCurrent(data.protein ?? 0);
+    setCarbsCurrent(data.carbs ?? 0);
+    setFatsCurrent(data.fats ?? 0);
+
+    const totals: Record<string, MealTotal> = {};
+    (data.meal_type ?? []).forEach((m: any) => {
+      totals[m.key] = {
+        totalCalories: m.total?.total_calories ?? 0,
+        totalProtein: m.total?.total_protein ?? 0,
+        totalCarbs: m.total?.total_carbs ?? 0,
+        totalFats: m.total?.total_fats ?? 0,
+      };
+    });
+    setMealTotals(totals);
+
+    const recipesByMeal: Record<string, DailyPlanRecipeItem[]> = {};
+    const dailyPlanRecipe = value?.daily_plan_recipe ?? {};
+    Object.keys(dailyPlanRecipe).forEach((key) => {
+      recipesByMeal[key] = (dailyPlanRecipe[key] ?? []).map((entry: any) => ({
+        id: entry.id,
+        dailyPlanId: entry.daily_plan_id,
+        recipeId: entry.recipe_id,
+        mealType: entry.meal_type,
+        isComplete: !!entry.is_complete,
+        recipeName: entry.recipe?.title,
+        recipeImage: entry.recipe?.recipe_image,
+      }));
+    });
+    setMealRecipes(recipesByMeal);
+
+    setPlannedDays(value?.day_has_daily_plan ?? []);
+  };
+
   const fetchDailyPlan = async () => {
     setIsLoading(true);
     try {
-      // API call placeholder: getDailyPlanDetailApi(date)
-      // const value = await getDailyPlanDetailApi({ date: selectedDay.toISOString() });
-      // Parse response and set state
+      const res = await dietApi.getDailyPlan(formatDateYMD(selectedDay));
+      applyDailyPlanResponse(res.data);
     } catch (e) {
       console.log('Plan fetch error:', e);
     } finally {
@@ -111,17 +173,14 @@ export default function PlanScreen(props: any) {
     }
     setIsLoading(true);
     try {
-      const request = {
-        id: item.id,
-        daily_plan_id: item.dailyPlanId,
-        recipe_id: item.recipeId,
-        meal_type: mealType,
-        is_complete: !(item.isComplete ?? false),
-      };
-      // API call placeholder: saveDailyPlanRecipeApi(request)
-      // const response = await saveDailyPlanRecipeApi(request);
-      // updateDataFromResponse(response);
-      Alert.alert('Success', 'Recipe status updated');
+      const response = await recipesApi.updateDailyPlanRecipe(
+        item.id,
+        item.dailyPlanId,
+        item.recipeId,
+        mealType,
+        !(item.isComplete ?? false)
+      );
+      applyDailyPlanResponse(response.data);
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'Failed to update');
     } finally {
@@ -130,6 +189,7 @@ export default function PlanScreen(props: any) {
   };
 
   const clearDailyPlan = () => {
+    if (!dailyPlanId) return;
     Alert.alert('Clear Plan', 'Are you sure you want to clear all recipes for this day?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -138,9 +198,8 @@ export default function PlanScreen(props: any) {
         onPress: async () => {
           setIsLoading(true);
           try {
-            // API call placeholder
-            fetchDailyPlan();
-            Alert.alert('Success', 'Daily plan cleared');
+            await recipesApi.deleteAllDailyPlanRecipes(dailyPlanId);
+            await fetchDailyPlan();
           } catch (e) {
             Alert.alert('Error', 'Failed to clear plan');
           } finally {
@@ -154,8 +213,8 @@ export default function PlanScreen(props: any) {
   const navigateToRecipeList = (mealType: string) => {
     props.navigation?.navigate('MigratedDailyPlanRecipeList', {
       mealType,
-      dailyPlanId: null,
-      date: selectedDay.toISOString(),
+      dailyPlanId,
+      date: formatDateYMD(selectedDay),
     });
   };
 
