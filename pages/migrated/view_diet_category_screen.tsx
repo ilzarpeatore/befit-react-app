@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Activ
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { dietApi } from '../../api/diet';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
@@ -38,10 +39,18 @@ export default function ViewDietCategoryScreen(props: any) {
   const getDietCategoryData = async () => {
     setIsLoading(true);
     try {
-      // const value = await getDietCategoryApi({ page });
-      // setNumPage(value.pagination.totalPages);
-      // if (page === 1) setDietCategoryList([]);
-      // setDietCategoryList(prev => [...prev, ...value.data]);
+      const value = await dietApi.getCategories(page);
+      const items = (value.data.data ?? []).map((cat) => ({
+        id: cat.id,
+        title: cat.title,
+        image: cat.category_image,
+        // The categorydiet-list endpoint doesn't return an item count per
+        // category, so this stays at 0 (not derived from real backend data).
+        count: 0,
+      }));
+      setNumPage((value.data as any).pagination?.totalPages ?? 1);
+      if (page === 1) setDietCategoryList(items);
+      else setDietCategoryList((prev) => [...prev, ...items]);
       setIsLoading(false);
     } catch (e) {
       setIsLastPage(true);
