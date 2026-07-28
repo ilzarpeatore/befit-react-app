@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, View, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../pages/migrated/theme';
 
@@ -7,28 +7,25 @@ export const HEADER_HEIGHT_RATIO = 0.45;
 
 interface Props {
   headerHeight: number;
-  scrollY: Animated.Value;
   thumbnailUrl: string | null;
-  onBack: () => void;
-  isFavourite: boolean;
-  onToggleFavourite: () => void;
 }
 
 /**
- * Cabecera con media que colapsa 1:1 con el scroll (de headerHeight a 0).
+ * Cabecera con media. Es un hijo normal (no animado) del ScrollView, con
+ * altura fija — el scroll nativo ya la "colapsa" 1:1 sin remanente al
+ * desplazarse por encima de ella, sin ningún cálculo por frame en JS.
+ * Una versión anterior animaba `height` vía interpolate() en cada evento
+ * de scroll (useNativeDriver:false) para lograr el mismo efecto, pero
+ * forzaba un re-layout nativo en cada frame y producía vibración/jank
+ * visible al hacer scroll — esta versión es más simple y no tiene ese
+ * problema porque no anima nada.
  * Los iconos flotantes van fuera de este componente (posicionados
  * respecto a toda la pantalla, no a la media) para que sigan visibles
- * incluso cuando la media ya colapsó del todo.
+ * incluso cuando la media ya se desplazó fuera de la vista.
  */
-function ExerciseMediaHeader({ headerHeight, scrollY, thumbnailUrl }: Props) {
-  const animatedHeight = scrollY.interpolate({
-    inputRange: [0, headerHeight],
-    outputRange: [headerHeight, 0],
-    extrapolate: 'clamp',
-  });
-
+function ExerciseMediaHeader({ headerHeight, thumbnailUrl }: Props) {
   return (
-    <Animated.View style={[styles.wrap, { height: animatedHeight }]}>
+    <View style={[styles.wrap, { height: headerHeight }]}>
       {thumbnailUrl ? (
         <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
       ) : (
@@ -36,7 +33,7 @@ function ExerciseMediaHeader({ headerHeight, scrollY, thumbnailUrl }: Props) {
           <Ionicons name="barbell-outline" size={72} color={C.gray30} />
         </View>
       )}
-    </Animated.View>
+    </View>
   );
 }
 

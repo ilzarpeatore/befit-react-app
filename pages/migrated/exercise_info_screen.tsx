@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Animated,
+  ScrollView,
+  Image,
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
@@ -58,8 +59,6 @@ export default function ExerciseInfoScreen(props: Props) {
   const [analysisError, setAnalysisError] = useState(false);
 
   const [tipsExpanded, setTipsExpanded] = useState(false);
-
-  const scrollY = useRef(new Animated.Value(0)).current;
 
   const loadDetail = useCallback(async () => {
     if (!exerciseId) {
@@ -162,22 +161,8 @@ export default function ExerciseInfoScreen(props: Props) {
         onToggleFavourite={() => onFeedback('like')}
       />
 
-      <Animated.ScrollView
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
-          useNativeDriver: false,
-        })}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        <ExerciseMediaHeaderMem
-          headerHeight={HEADER_HEIGHT}
-          scrollY={scrollY}
-          thumbnailUrl={detail.thumbnail_url}
-          onBack={() => navigation?.goBack()}
-          isFavourite={detail.user_feedback === 'like'}
-          onToggleFavourite={() => onFeedback('like')}
-        />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        <ExerciseMediaHeaderMem headerHeight={HEADER_HEIGHT} thumbnailUrl={detail.thumbnail_url} />
 
         <View style={styles.panel}>
           {/* Badges */}
@@ -264,7 +249,7 @@ export default function ExerciseInfoScreen(props: Props) {
             )}
           </View>
         </View>
-      </Animated.ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -307,7 +292,7 @@ function MuscleRow({ name, iconUrl }: { name: string; iconUrl: string | null }) 
     <View style={styles.muscleRow}>
       <View style={styles.muscleIconWrap}>
         {iconUrl ? (
-          <Animated.Image source={{ uri: iconUrl }} style={styles.muscleIcon} resizeMode="cover" />
+          <Image source={{ uri: iconUrl }} style={styles.muscleIcon} resizeMode="cover" />
         ) : (
           <Ionicons name="body-outline" size={28} color={C.gray30} />
         )}
@@ -378,7 +363,7 @@ function EquipmentTab({ equipment }: { equipment: ExerciseDetailData['equipment'
   return (
     <View style={styles.equipmentRow}>
       {equipment.image_url ? (
-        <Animated.Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} resizeMode="cover" />
+        <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} resizeMode="cover" />
       ) : (
         <View style={[styles.equipmentImage, styles.equipmentImageFallback]}>
           <Ionicons name="barbell-outline" size={32} color={C.gray30} />
