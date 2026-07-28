@@ -52,7 +52,7 @@ export default function WorkoutDayExercises() {
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={() =>
-          navigation.navigate("ExerciseDetail", { id: item.exercise_id })
+          navigation.navigate("ExerciseInfo", { id: item.exercise_id })
         }
       >
         <LinearGradient

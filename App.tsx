@@ -98,6 +98,8 @@ import EditProfileScreen from "@pages/migrated/edit_profile_screen";
 // @ts-ignore
 import ExerciseDetailScreen from "@pages/migrated/exercise_detail_screen";
 // @ts-ignore
+import ExerciseInfoScreen from "@pages/migrated/exercise_info_screen";
+// @ts-ignore
 import ExerciseDurationScreen from "@pages/migrated/exercise_duration_screen";
 // @ts-ignore
 import ExerciseDurationScreencast from "@pages/migrated/exercise_duration_screencast";
@@ -453,6 +455,7 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedDietSandow" component={DietScreenSandow} />
       <MStack.Screen name="MigratedEditProfile" component={EditProfileScreen} />
       <MStack.Screen name="MigratedExerciseDetail" component={ExerciseDetailScreen as any} />
+      <MStack.Screen name="MigratedExerciseInfo" component={ExerciseInfoScreen} />
       <MStack.Screen name="MigratedExerciseDuration" component={ExerciseDurationScreen as any} />
       <MStack.Screen name="MigratedExerciseDurationCast" component={ExerciseDurationScreencast as any} />
       <MStack.Screen name="MigratedExerciseHistory" component={ExerciseHistoryScreen} />
@@ -637,6 +640,7 @@ function RootNavigator() {
           {/* Exercise */}
           <Stack.Screen name="ExerciseList" component={ExerciseList} />
           <Stack.Screen name="ExerciseDetail" component={ExerciseDetail} />
+          <Stack.Screen name="ExerciseInfo" component={ExerciseInfoScreen} />
 
           {/* Diet */}
           <Stack.Screen name="DietDashboard" component={DietDashboard} />

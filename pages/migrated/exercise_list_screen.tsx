@@ -43,7 +43,7 @@ interface ExerciseListScreenProps {
 }
 
 export default function ExerciseListScreen(props: ExerciseListScreenProps) {
-  const { mTitle, isBodyPart = false, isLevel = false, isEquipment = false, id } = props.route.params;
+  const { mTitle, isBodyPart = false, isLevel = false, isEquipment = false, id } = props.route.params ?? {};
 
   const [mExerciseList, setMExerciseList] = useState<ExerciseModel[]>([]);
   const [mWorkoutList, setMWorkoutList] = useState<WorkoutDetailModel[]>([]);
@@ -191,7 +191,7 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
     <TouchableOpacity
       style={localStyles.card}
       onPress={() =>
-        props.navigation.navigate('MigratedExerciseDetail', {
+        props.navigation.navigate('MigratedExerciseInfo', {
           mExerciseId: item.id,
           mExerciseName: item.title,
         })
