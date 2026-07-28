@@ -68,7 +68,7 @@ export default function ExerciseHistoryScreen(props: ExerciseHistoryScreenProps)
     <TouchableOpacity
       style={localStyles.exerciseCard}
       onPress={() =>
-        props.navigation.navigate('MigratedExerciseDetail', {
+        props.navigation.navigate('MigratedExerciseInfo', {
           mExerciseId: item.id,
           mExerciseName: item.title,
         })

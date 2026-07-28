@@ -136,7 +136,7 @@ export default function ExerciseList({ navigation }: Props) {
       equipment={item.equipment_title}
       level={item.level_title}
       image={item.exercise_image}
-      onPress={() => navigation.navigate("ExerciseDetail", { id: item.id })}
+      onPress={() => navigation.navigate("ExerciseInfo", { id: item.id })}
     />
   );
 
