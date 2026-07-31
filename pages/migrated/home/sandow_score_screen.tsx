@@ -109,7 +109,7 @@ export default function SandowScoreScreen() {
             </Text>
           </View>
           <View style={styles.recommendationCard}>
-            <Ionicons name="fitness-outline" size={20} color={C.primary} />
+            <Ionicons name="fitness-outline" size={20} color={C.textPrimary} />
             <Text style={styles.recommendationText}>
               Considera agregar mÃ¡s ejercicios de flexibilidad para mejorar tu
               puntuaciÃ³n en esa categorÃ­a.

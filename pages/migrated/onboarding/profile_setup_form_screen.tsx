@@ -38,9 +38,9 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>Tu informaciÃ³n</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Tu informaciÃ³n</Text>
 
-        <Text style={[localStyles.sectionLabel, { color: C.primary }]}>Datos personales</Text>
+        <Text style={[localStyles.sectionLabel, { color: C.textPrimary }]}>Datos personales</Text>
         <View style={localStyles.field}>
           <Text style={[localStyles.label, { color: C.white }]}>Nombre</Text>
           <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={nombre} onChangeText={setNombre} placeholder="Tu nombre" placeholderTextColor={C.textMuted} />
@@ -84,7 +84,7 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
           <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={nacionalidad} onChangeText={setNacionalidad} placeholder="Tu nacionalidad" placeholderTextColor={C.textMuted} />
         </View>
 
-        <Text style={[localStyles.sectionLabel, { color: C.primary, marginTop: 16 }]}>Salud</Text>
+        <Text style={[localStyles.sectionLabel, { color: C.textPrimary, marginTop: 16 }]}>Salud</Text>
         <View style={localStyles.field}>
           <Text style={[localStyles.label, { color: C.white }]}>Alergias</Text>
           <View style={localStyles.tagInputRow}>
@@ -96,9 +96,9 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
           <View style={localStyles.tagsContainer}>
             {alergias.map((a, idx) => (
               <View key={idx} style={[localStyles.tag, { backgroundColor: C.primary + "15" }]}>
-                <Text style={[localStyles.tagText, { color: C.primary }]}>{a}</Text>
+                <Text style={[localStyles.tagText, { color: C.textPrimary }]}>{a}</Text>
                 <TouchableOpacity onPress={() => removeAlergia(idx)}>
-                  <Ionicons name="close-circle" size={16} color={C.primary} />
+                  <Ionicons name="close-circle" size={16} color={C.textPrimary} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -113,7 +113,7 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
           <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white }]} value={suplementos} onChangeText={setSuplementos} placeholder="Suplementos que tomas" placeholderTextColor={C.textMuted} />
         </View>
 
-        <Text style={[localStyles.sectionLabel, { color: C.primary, marginTop: 16 }]}>Cuerpo</Text>
+        <Text style={[localStyles.sectionLabel, { color: C.textPrimary, marginTop: 16 }]}>Cuerpo</Text>
         <View style={localStyles.row}>
           <View style={[localStyles.field, { flex: 1 }]}>
             <Text style={[localStyles.label, { color: C.white }]}>Altura (cm)</Text>

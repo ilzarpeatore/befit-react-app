@@ -22,9 +22,9 @@ export default function PrivacyPolicyScreen({ navigation }: any) {
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
         <View style={localStyles.headerIcon}>
-          <Ionicons name="shield-checkmark" size={40} color={C.primary} />
+          <Ionicons name="shield-checkmark" size={40} color={C.textPrimary} />
         </View>
-        <Text style={[localStyles.title, { color: C.primary }]}>PolÃ­tica de privacidad</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>PolÃ­tica de privacidad</Text>
 
         {SECTIONS.map((section, idx) => (
           <View key={idx} style={localStyles.section}>

@@ -8,7 +8,7 @@ import { C, FONT } from "../theme";
 const BADGES = [
   { icon: "flash" as const, label: "+5 puntos Sandow", color: C.warning40 },
   { icon: "trending-down" as const, label: "-5 kg logrados", color: C.success50 },
-  { icon: "trophy" as const, label: "Constancia", color: C.brand50 },
+  { icon: "trophy" as const, label: "Constancia", color: C.textPrimary },
 ];
 
 export default function WeightGoalCompletedScreen({ navigation }: any) {

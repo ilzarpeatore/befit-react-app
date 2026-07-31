@@ -146,6 +146,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
   },
 });

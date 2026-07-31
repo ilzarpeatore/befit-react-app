@@ -17,7 +17,7 @@ const PROMPTS = [
     title: "Add your first metric",
     desc: "Track heart rate, steps, weight and more",
     icon: "stats-chart",
-    color: C.brand50,
+    color: C.textPrimary,
     action: "Add",
   },
   {
@@ -164,6 +164,6 @@ function useStyle() {
     },
     navItem: { alignItems: "center", gap: 4 },
     navLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray10 },
-    navLabelActive: { color: C.brand50 },
+    navLabelActive: { color: C.textPrimary },
   });
 }

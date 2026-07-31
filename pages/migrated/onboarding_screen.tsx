@@ -57,7 +57,7 @@ export default function OnboardingScreen({ navigation }: any) {
           {PAGES.map((p, i) => (
             <View key={i} style={styles.page}>
               <View style={styles.iconCircle}>
-                <Ionicons name={p.icon} size={48} color={C.brand50} />
+                <Ionicons name={p.icon} size={48} color={C.textPrimary} />
               </View>
               <Text style={styles.title}>{p.title}</Text>
               <Text style={styles.subtitle}>{p.subtitle}</Text>
@@ -92,7 +92,7 @@ export default function OnboardingScreen({ navigation }: any) {
           ) : (
             <TouchableOpacity style={styles.nextBtn} onPress={() => goTo(page + 1)}>
               <Text style={styles.nextText}>Siguiente</Text>
-              <Ionicons name="arrow-forward" size={20} color={C.brand50} />
+              <Ionicons name="arrow-forward" size={20} color={C.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -125,7 +125,7 @@ function useStyle() {
     backBtn: { flexDirection: "row", alignItems: "center", paddingVertical: 14, paddingHorizontal: 20 },
     backText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white, marginLeft: 8 },
     nextBtn: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 28, borderWidth: 1, borderColor: C.border },
-    nextText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.brand50, marginRight: 8 },
+    nextText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.textPrimary, marginRight: 8 },
     startBtn: { backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 40 },
     startText: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
   });

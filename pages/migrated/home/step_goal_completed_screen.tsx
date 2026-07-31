@@ -122,7 +122,7 @@ export default function StepGoalCompletedScreen({ navigation }: any) {
           <Text style={styles.sheetGoal}>{goal.toLocaleString()} pasos</Text>
           <View style={styles.sliderRow}>
             <TouchableOpacity onPress={() => setGoal(Math.max(1000, goal - 1000))}>
-              <Ionicons name="remove-circle" size={32} color={C.primary} />
+              <Ionicons name="remove-circle" size={32} color={C.textPrimary} />
             </TouchableOpacity>
             <View style={styles.sliderTrack}>
               <View
@@ -133,7 +133,7 @@ export default function StepGoalCompletedScreen({ navigation }: any) {
               />
             </View>
             <TouchableOpacity onPress={() => setGoal(Math.min(20000, goal + 1000))}>
-              <Ionicons name="add-circle" size={32} color={C.primary} />
+              <Ionicons name="add-circle" size={32} color={C.textPrimary} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   editGoalText: {
     fontSize: 14,
     fontFamily: FONT.medium,
-    color: C.primary,
+    color: C.textPrimary,
   },
   backButton: {
     paddingVertical: 12,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   sheetGoal: {
     fontSize: 32,
     fontFamily: FONT.bold,
-    color: C.primary,
+    color: C.textPrimary,
     textAlign: "center",
     marginBottom: 20,
   },

@@ -83,7 +83,7 @@ export default function StepsInsightScreen() {
           <Text style={styles.sectionTitle}>Key Metrics</Text>
           <View style={styles.metricsGrid}>
             <View style={styles.metricCard}>
-              <Ionicons name="footsteps-outline" size={24} color={C.primary} />
+              <Ionicons name="footsteps-outline" size={24} color={C.textPrimary} />
               <Text style={styles.metricValue}>{TOTAL.toLocaleString()}</Text>
               <Text style={styles.metricLabel}>Total</Text>
             </View>
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   ringPercent: {
     fontSize: 18,
     fontFamily: FONT.bold,
-    color: C.primary,
+    color: C.textPrimary,
   },
   ringLabel: {
     fontSize: 9,

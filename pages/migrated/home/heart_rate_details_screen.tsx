@@ -33,7 +33,7 @@ export default function HeartRateDetailsScreen({ navigation }: any) {
           <View style={styles.grid}>
             {METRICS.map((m) => (
               <View key={m.label} style={styles.gridCard}>
-                <Ionicons name={m.icon as any} size={20} color={C.brand50} />
+                <Ionicons name={m.icon as any} size={20} color={C.textPrimary} />
                 <Text style={styles.gridLabel}>{m.label}</Text>
                 <Text style={styles.gridValue}>{m.value}</Text>
               </View>
@@ -49,7 +49,7 @@ export default function HeartRateDetailsScreen({ navigation }: any) {
               <Text style={styles.btnPrimaryText}>Ver insight</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnSecondary}>
-              <Ionicons name="chatbubble-ellipses" size={18} color={C.brand50} />
+              <Ionicons name="chatbubble-ellipses" size={18} color={C.textPrimary} />
               <Text style={styles.btnSecondaryText}>Consultar AI Coach</Text>
             </TouchableOpacity>
           </View>
@@ -117,6 +117,6 @@ function useStyle() {
       borderWidth: 1,
       borderColor: C.brand50,
     },
-    btnSecondaryText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.brand50 },
+    btnSecondaryText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.textPrimary },
   });
 }

@@ -215,11 +215,11 @@ export default function ScheduleScreen(props: any) {
     <SafeAreaView style={s.container}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color={C.gray80} />
+          <Ionicons name="chevron-back" size={20} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={[s.headerTitle, styles.fontBold]}>Workout Schedule (Daily)</Text>
         <TouchableOpacity style={s.backBtn}>
-          <Ionicons name="calendar-outline" size={22} color={C.gray80} />
+          <Ionicons name="calendar-outline" size={22} color={C.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -265,7 +265,7 @@ const s = StyleSheet.create({
     backgroundColor: C.bg,
   },
   backBtn: { width: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, color: C.gray80, flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 17, color: C.textPrimary, flex: 1, textAlign: 'center' },
   body: { flex: 1 },
   loadingOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   weekStrip: { height: 86, paddingHorizontal: 12 },
@@ -280,18 +280,21 @@ const s = StyleSheet.create({
     borderColor: C.gray70,
     paddingVertical: 10,
   },
-  weekDayBoxSelected: { backgroundColor: C.white, borderColor: C.orange, borderWidth: 1.5 },
+  // weekDayBoxSelected usaba C.white como fondo - ese token ahora es el color
+  // de TEXTO principal (#1C1C1E), no una superficie blanca real; C.surface es
+  // el token correcto para un fondo blanco.
+  weekDayBoxSelected: { backgroundColor: C.surface, borderColor: C.orange, borderWidth: 1.5 },
   weekDayLetter: { fontSize: 13, fontWeight: '500', color: C.gray40 },
-  weekDayLetterSelected: { color: C.gray80 },
-  weekDayNumber: { fontSize: 18, fontWeight: '700', color: C.gray80, marginTop: 4 },
-  weekDayNumberSelected: { color: C.gray80 },
+  weekDayLetterSelected: { color: C.textPrimary },
+  weekDayNumber: { fontSize: 18, fontWeight: '700', color: C.textPrimary, marginTop: 4 },
+  weekDayNumberSelected: { color: C.textPrimary },
   weekDayDot: { width: 5, height: 5, borderRadius: 2.5, marginTop: 6 },
   weekDayDotActive: { backgroundColor: C.orange },
   weekDayDotInactive: { backgroundColor: 'transparent' },
   emptyContainer: { flex: 1, paddingHorizontal: 24, alignItems: 'center' },
   emptySpacer: { flex: 1 },
   emptyImage: { width: SCREEN_WIDTH * 0.7, height: 280 },
-  emptyTitle: { fontSize: 22, fontWeight: '800', color: C.gray80, textAlign: 'center', marginTop: 32, lineHeight: 30 },
+  emptyTitle: { fontSize: 22, fontWeight: '800', color: C.textPrimary, textAlign: 'center', marginTop: 32, lineHeight: 30 },
   emptySubtitle: { fontSize: 15, color: C.gray40, textAlign: 'center', marginTop: 12, lineHeight: 24 },
   exploreBtn: {
     flexDirection: 'row',
@@ -309,7 +312,7 @@ const s = StyleSheet.create({
   workoutCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
     borderRadius: 20,
     padding: 12,
     marginBottom: 14,
@@ -321,7 +324,7 @@ const s = StyleSheet.create({
   },
   workoutImage: { width: 72, height: 72, borderRadius: 16 },
   workoutInfo: { flex: 1, marginLeft: 14 },
-  workoutTitle: { fontSize: 15, fontWeight: '700', color: C.gray80 },
+  workoutTitle: { fontSize: 15, fontWeight: '700', color: C.textPrimary },
   workoutMeta: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   workoutMetaText: { fontSize: 13, color: C.gray40 },
   metaDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: C.gray40, marginHorizontal: 8 },

@@ -110,7 +110,7 @@ export default function HeartRateScreen({ navigation }: any) {
           ))}
 
           <View style={styles.deviceInfo}>
-            <Ionicons name="watch" size={20} color={C.brand50} />
+            <Ionicons name="watch" size={20} color={C.textPrimary} />
             <View>
               <Text style={styles.deviceName}>Apple Watch Series 8</Text>
               <Text style={styles.deviceStatus}>Connected</Text>
@@ -130,21 +130,21 @@ export default function HeartRateScreen({ navigation }: any) {
               style={styles.actionBtn}
               onPress={() => navigation.navigate("MigratedHeartRateZones")}
             >
-              <Ionicons name="color-filter" size={18} color={C.brand50} />
+              <Ionicons name="color-filter" size={18} color={C.textPrimary} />
               <Text style={styles.actionBtnText}>Zones</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() => navigation.navigate("MigratedHeartRateInsight")}
             >
-              <Ionicons name="eye" size={18} color={C.brand50} />
+              <Ionicons name="eye" size={18} color={C.textPrimary} />
               <Text style={styles.actionBtnText}>Insight</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() => navigation.navigate("MigratedHeartRateHistory")}
             >
-              <Ionicons name="time" size={18} color={C.brand50} />
+              <Ionicons name="time" size={18} color={C.textPrimary} />
               <Text style={styles.actionBtnText}>History</Text>
             </TouchableOpacity>
           </View>
@@ -286,6 +286,6 @@ function useStyle() {
       borderWidth: 1,
       borderColor: C.brand50,
     },
-    actionBtnText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.brand50 },
+    actionBtnText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.textPrimary },
   });
 }

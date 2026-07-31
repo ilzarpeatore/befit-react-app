@@ -108,8 +108,8 @@ export default function WeightScreen({ navigation }: any) {
               <Text style={styles.insightMiniStatus}>por semana</Text>
             </View>
             <TouchableOpacity style={styles.insightMini} onPress={() => navigation.navigate("MigratedWeightInsight")}>
-              <Ionicons name="analytics-outline" size={20} color={C.brand50} />
-              <Text style={[styles.insightMiniValue, { color: C.brand50, fontSize: 13 }]}>Ver m\u00E1s</Text>
+              <Ionicons name="analytics-outline" size={20} color={C.textPrimary} />
+              <Text style={[styles.insightMiniValue, { color: C.textPrimary, fontSize: 13 }]}>Ver m\u00E1s</Text>
             </TouchableOpacity>
           </View>
 
@@ -129,7 +129,7 @@ export default function WeightScreen({ navigation }: any) {
 
           <View style={styles.goalRow}>
             <View style={styles.goalRingSmall}>
-              <Ionicons name="flag" size={18} color={C.brand50} />
+              <Ionicons name="flag" size={18} color={C.textPrimary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.goalLabel}>Meta: 65.0 kg</Text>
@@ -173,7 +173,7 @@ function useStyle() {
     insightMiniStatus: { fontSize: 10, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
     sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
     sectionTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-    seeAll: { fontSize: 13, fontFamily: FONT.medium, color: C.brand50 },
+    seeAll: { fontSize: 13, fontFamily: FONT.medium, color: C.textPrimary },
     entryRow: { flexDirection: "row", justifyContent: "space-between", backgroundColor: C.surface, borderRadius: 10, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: C.border },
     entryDate: { fontSize: 14, fontFamily: FONT.medium, color: C.gray5 },
     entryWeight: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },

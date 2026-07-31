@@ -79,6 +79,6 @@ const s = StyleSheet.create({
   settingLabel: { fontSize: 16, fontFamily: FONT.bold, color: C.gray20 },
   settingLabelActive: { color: C.white },
   radioContainer: { marginLeft: 12 },
-  radioActive: { width: 22, height: 22, borderRadius: 11, backgroundColor: C.white, alignItems: 'center', justifyContent: 'center' },
+  radioActive: { width: 22, height: 22, borderRadius: 11, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
   radioInactive: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: C.brand5 },
 });

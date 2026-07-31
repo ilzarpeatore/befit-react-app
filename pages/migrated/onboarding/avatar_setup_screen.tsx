@@ -26,15 +26,15 @@ export default function AvatarSetupScreen({ navigation }: any) {
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>Elige tu avatar</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Elige tu avatar</Text>
 
         <View style={localStyles.profileSection}>
           <View style={[localStyles.profileCircle, { backgroundColor: C.primary + "20", borderColor: C.primary }]}>
-            <Ionicons name={hasPhoto ? "person" : "camera-outline"} size={48} color={C.primary} />
+            <Ionicons name={hasPhoto ? "person" : "camera-outline"} size={48} color={C.textPrimary} />
           </View>
           <TouchableOpacity style={[localStyles.uploadBtn, { backgroundColor: C.primary + "15" }]} onPress={handleUploadPhoto}>
-            <Ionicons name="image-outline" size={18} color={C.primary} />
-            <Text style={[localStyles.uploadBtnText, { color: C.primary }]}>Subir foto</Text>
+            <Ionicons name="image-outline" size={18} color={C.textPrimary} />
+            <Text style={[localStyles.uploadBtnText, { color: C.textPrimary }]}>Subir foto</Text>
           </TouchableOpacity>
         </View>
 

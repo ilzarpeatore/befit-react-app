@@ -45,7 +45,7 @@ export default function ChoosePlanScreen({ navigation }: any) {
       </View>
 
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>Elige tu plan</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Elige tu plan</Text>
         <Text style={[localStyles.subtitle, { color: C.gray }]}>Selecciona el plan que mejor se adapte a tus necesidades</Text>
 
         {PLANS.map((plan) => (
@@ -75,7 +75,7 @@ export default function ChoosePlanScreen({ navigation }: any) {
             <View style={localStyles.divider} />
             {plan.features.map((feature, idx) => (
               <View key={idx} style={localStyles.featureRow}>
-                <Ionicons name="checkmark-circle" size={16} color={C.primary} />
+                <Ionicons name="checkmark-circle" size={16} color={C.textPrimary} />
                 <Text style={[localStyles.featureText, { color: C.white }]}>{feature}</Text>
               </View>
             ))}

@@ -74,7 +74,7 @@ export default function ManageHealthMetricsScreen({ navigation }: any) {
               <Ionicons
                 name={metric.icon as any}
                 size={20}
-                color={C.primary}
+                color={C.textPrimary}
                 style={{ marginHorizontal: 12 }}
               />
               <Text style={styles.metricName}>{metric.name}</Text>

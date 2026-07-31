@@ -17,7 +17,7 @@ const KEY_METRICS = [
   { label: "Promedio", value: "70.2", unit: "kg", icon: "stats-chart" as const, color: C.blue50 },
   { label: "M\u00EDnimo", value: "68.5", unit: "kg", icon: "arrow-down-circle" as const, color: C.success50 },
   { label: "M\u00E1ximo", value: "72.1", unit: "kg", icon: "arrow-up-circle" as const, color: C.destructive50 },
-  { label: "Tendencia", value: "\u2193 0.3", unit: "kg/sem", icon: "trending-down" as const, color: C.brand50 },
+  { label: "Tendencia", value: "\u2193 0.3", unit: "kg/sem", icon: "trending-down" as const, color: C.textPrimary },
 ];
 
 export default function WeightInsightScreen({ navigation }: any) {

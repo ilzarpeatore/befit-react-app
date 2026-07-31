@@ -170,7 +170,7 @@ export default function WorkoutSummary() {
                       marginRight: r(12),
                     }}
                   >
-                    <Text style={{ fontFamily: FONT.bold, fontSize: r(13), color: C.primary }}>
+                    <Text style={{ fontFamily: FONT.bold, fontSize: r(13), color: C.textPrimary }}>
                       {index + 1}
                     </Text>
                   </View>

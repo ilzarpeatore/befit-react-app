@@ -77,7 +77,7 @@ export default function WeightDeadlineScreen({ navigation }: any) {
 
           {selectedDate && (
             <View style={styles.deadlineDisplay}>
-              <Ionicons name="calendar" size={20} color={C.brand50} />
+              <Ionicons name="calendar" size={20} color={C.textPrimary} />
               <Text style={styles.deadlineText}>
                 Fecha l\u00EDmite: {selectedDate} de {MONTHS[currentMonth]} {currentYear}
               </Text>
@@ -130,7 +130,7 @@ function useStyle() {
     dayTextSelected: { color: C.white, fontFamily: FONT.bold },
     dayTextPast: { color: C.gray5 },
     deadlineDisplay: { flexDirection: "row", alignItems: "center", backgroundColor: C.brand5, borderRadius: 12, padding: 14, marginBottom: 24, gap: 10 },
-    deadlineText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.brand50 },
+    deadlineText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.textPrimary },
     sectionTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white, marginBottom: 12 },
     hoursScroll: { marginBottom: 32 },
     hourChip: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, marginRight: 10 },

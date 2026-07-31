@@ -29,7 +29,7 @@ export default function AboutAppScreen({ navigation }: any) {
   const mOption = (icon: string, title: string, onPress: () => void) => (
     <TouchableOpacity style={styles_local.optionRow} onPress={onPress} activeOpacity={0.7}>
       <View style={styles_local.optionIcon}>
-        <Ionicons name={icon as any} size={20} color={C.brand50} />
+        <Ionicons name={icon as any} size={20} color={C.textPrimary} />
       </View>
       <Text style={styles_local.optionText}>{title}</Text>
       <Ionicons name="chevron-forward" size={18} color={C.gray30} />
