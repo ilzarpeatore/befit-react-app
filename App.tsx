@@ -47,8 +47,6 @@ import ExerciseList from "@pages/ExerciseList";
 import ExerciseDetail from "@pages/ExerciseDetail";
 import DietDashboard from "@pages/DietDashboard";
 import DietList from "@pages/DietList";
-import RecipeDetail from "@pages/RecipeDetail";
-import DailyPlan from "@pages/DailyPlan";
 import CommunityFeed from "@pages/CommunityFeed";
 import PostDetail from "@pages/PostDetail";
 import ProfileStats from "@pages/ProfileStats";
@@ -84,15 +82,11 @@ import ChattingScreen from "@pages/migrated/chatting_screen";
 import ChewieScreen from "@pages/migrated/chewie_screen";
 // @ts-ignore
 import CommunityScreen from "@pages/migrated/community_screen";
-// @ts-ignore
-import DailyPlanRecipeListScreen from "@pages/migrated/daily_plan_recipe_list_screen";
 
 // @ts-ignore
 import DietDetailScreen from "@pages/migrated/diet_detail_screen";
 // @ts-ignore
-import DietScreen from "@pages/migrated/diet_screen";
-// @ts-ignore
-import DietScreenSandow from "@pages/migrated/diet_screen_sandow";
+import AssignedMealsScreen from "@pages/migrated/assigned_meals_screen";
 // @ts-ignore
 import EditProfileScreen from "@pages/migrated/edit_profile_screen";
 // @ts-ignore
@@ -177,6 +171,8 @@ import RecipeCategoryListScreen from "@pages/migrated/recipe_category_list_scree
 import RecipeListScreenV2 from "@pages/migrated/recipe_list_screen_v2";
 // @ts-ignore
 import RecipeMainScreen from "@pages/migrated/recipe_main_screen";
+// @ts-ignore
+import WorkoutTemplateListScreen from "@pages/migrated/workout_template_list_screen";
 // @ts-ignore
 import RecipeTagListScreen from "@pages/migrated/recipe_tag_list_screen";
 // @ts-ignore
@@ -449,10 +445,8 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedChatting" component={ChattingScreen} />
       <MStack.Screen name="MigratedChewie" component={ChewieScreen} />
       <MStack.Screen name="MigratedCommunity" component={CommunityScreen} />
-      <MStack.Screen name="MigratedDailyPlanRecipeList" component={DailyPlanRecipeListScreen as any} />
       <MStack.Screen name="MigratedDietDetail" component={DietDetailScreen as any} />
-      <MStack.Screen name="MigratedDiet" component={DietScreen} />
-      <MStack.Screen name="MigratedDietSandow" component={DietScreenSandow} />
+      <MStack.Screen name="MigratedAssignedMeals" component={AssignedMealsScreen} />
       <MStack.Screen name="MigratedEditProfile" component={EditProfileScreen} />
       <MStack.Screen name="MigratedExerciseDetail" component={ExerciseDetailScreen as any} />
       <MStack.Screen name="MigratedExerciseInfo" component={ExerciseInfoScreen} />
@@ -532,6 +526,7 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedWorkoutHistory" component={WorkoutHistoryScreen} />
       <MStack.Screen name="MigratedWorkoutPreview" component={WorkoutPreviewScreen} />
       <MStack.Screen name="MigratedWorkoutSession" component={WorkoutSessionScreenMig} />
+      <MStack.Screen name="MigratedWorkoutTemplateList" component={WorkoutTemplateListScreen} />
       <MStack.Screen name="MigratedYoutubePlayer" component={YoutubePlayerScreen} />
       <MStack.Screen name="MigratedDeviceConnected" component={DeviceConnectedScreen} />
       <MStack.Screen name="MigratedEmparejando" component={EmparejandoScreen} />
@@ -645,8 +640,6 @@ function RootNavigator() {
           {/* Diet */}
           <Stack.Screen name="DietDashboard" component={DietDashboard} />
           <Stack.Screen name="DietList" component={DietList} />
-          <Stack.Screen name="RecipeDetail" component={RecipeDetail} />
-          <Stack.Screen name="DailyPlan" component={DailyPlan} />
 
           {/* Community */}
           <Stack.Screen name="CommunityFeed" component={CommunityFeed} />

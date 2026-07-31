@@ -43,7 +43,7 @@ export default function ViewDietCategoryScreen(props: any) {
       const items = (value.data.data ?? []).map((cat) => ({
         id: cat.id,
         title: cat.title,
-        image: cat.category_image,
+        image: cat.categorydiet_image,
         // The categorydiet-list endpoint doesn't return an item count per
         // category, so this stays at 0 (not derived from real backend data).
         count: 0,
