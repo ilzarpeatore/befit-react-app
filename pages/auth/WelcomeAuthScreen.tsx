@@ -49,7 +49,7 @@ export default function WelcomeAuthScreen() {
           />
         </View>
 
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

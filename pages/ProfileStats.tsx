@@ -204,7 +204,7 @@ export default function ProfileStats({ navigation }: Props) {
             </View>
           </View>
         </SafeAreaView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </ImageBackground>
     );
   }
@@ -229,7 +229,7 @@ export default function ProfileStats({ navigation }: Props) {
           </View>
           <ErrorRetryMem message={error} onRetry={loadData} />
         </SafeAreaView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </ImageBackground>
     );
   }
@@ -454,7 +454,7 @@ export default function ProfileStats({ navigation }: Props) {
           </View>
         </View>
       </Modal>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </ImageBackground>
   );
 }

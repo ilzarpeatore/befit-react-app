@@ -206,7 +206,7 @@ export default function WorkoutSessionScreen() {
       resizeMode="cover"
     >
       <SafeAreaView style={{ flex: 1 }} edges={["right", "left", "top"]}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
 
         {/* Header */}
         <View

@@ -35,7 +35,7 @@ export default function PasswordResetSentScreen() {
           />
         </View>
 
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

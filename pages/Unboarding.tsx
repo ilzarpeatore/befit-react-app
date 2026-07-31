@@ -120,7 +120,7 @@ export default function Unboarding({ navigation }: any) {
             inactiveDotScale={0.5}
           />
         </ScrollView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

@@ -204,7 +204,7 @@ export default function PostDetail() {
             />
           </View>
         </SafeAreaView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </ImageBackground>
     );
   }
@@ -232,7 +232,7 @@ export default function PostDetail() {
             onRetry={loadData}
           />
         </SafeAreaView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </ImageBackground>
     );
   }
@@ -423,7 +423,7 @@ export default function PostDetail() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </ImageBackground>
   );
 }

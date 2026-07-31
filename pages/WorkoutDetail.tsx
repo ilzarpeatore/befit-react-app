@@ -143,7 +143,7 @@ export default function WorkoutDetail() {
               ))}
             </View>
           </View>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
         </SafeAreaView>
       </ImageBackground>
     );
@@ -174,7 +174,7 @@ export default function WorkoutDetail() {
             </View>
             <ErrorRetryMem message={error} onRetry={fetchDetail} />
           </View>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
         </SafeAreaView>
       </ImageBackground>
     );
@@ -266,7 +266,7 @@ export default function WorkoutDetail() {
             }
           />
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );
