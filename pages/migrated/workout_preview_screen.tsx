@@ -108,6 +108,23 @@ export default function WorkoutPreviewScreen(props: Props) {
     );
   }
 
+  if (workout.isExclusive && !workout.isAccessible) {
+    return (
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Ionicons name="chevron-back" size={22} color={C.white} />
+        </TouchableOpacity>
+        <View style={styles.loader}>
+          <Ionicons name="lock-closed-outline" size={40} color={C.textSecondary} />
+          <Text style={[styles.title, { textAlign: 'center', marginTop: 16 }]}>{workout.title}</Text>
+          <Text style={[styles.emptyText, { marginTop: 8 }]}>
+            Contenido exclusivo — hazte cliente 1:1 o compra un paquete con acceso completo a Workouts.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />

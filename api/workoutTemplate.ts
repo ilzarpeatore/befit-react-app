@@ -34,7 +34,24 @@ export interface WorkoutTemplateDetailData {
   title: string;
   description: string | null;
   thumbnail: string | null;
+  is_exclusive?: boolean;
+  is_accessible?: boolean;
   blocks: WorkoutTemplateBlockModel[];
+}
+
+// Item plano de la lista de "Workouts sueltos" (navegación libre, sin programa).
+export interface WorkoutTemplateListItem {
+  id: number;
+  title: string;
+  description: string | null;
+  thumbnail: string | null;
+  is_exclusive: boolean;
+  is_accessible: boolean;
+}
+
+export interface WorkoutTemplateListResponse {
+  pagination: { total_items: number; per_page: number; currentPage: number; totalPages: number };
+  data: WorkoutTemplateListItem[];
 }
 
 export interface MetricCatalogItem {
@@ -53,4 +70,7 @@ export const workoutTemplateApi = {
 
   getMetricsCatalog: () =>
     apiClient.get<{ data: MetricCatalogItem[] }>('v1/metrics-catalog-list'),
+
+  getList: (page: number, perPage = 20) =>
+    apiClient.get<WorkoutTemplateListResponse>('v1/workout-template-list', { params: { page, per_page: perPage } }),
 };

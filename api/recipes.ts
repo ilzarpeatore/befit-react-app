@@ -16,6 +16,8 @@ export interface RecipeListItem {
   fats: number;
   recipe_image: string | null;
   is_favourite: number;
+  is_premium: boolean;
+  is_accessible: boolean;
 }
 
 export interface RecipeDetail {
@@ -30,7 +32,10 @@ export interface RecipeDetail {
   protein: number;
   fats: number;
   carbs: number;
+  recipe_image?: string | null;
   is_favourite: number;
+  is_premium: boolean;
+  is_accessible: boolean;
   recipe_categories: { id: number; name: string }[];
   recipe_tags: { id: number; name: string }[];
 }
