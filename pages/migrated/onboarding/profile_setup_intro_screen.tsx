@@ -10,10 +10,10 @@ export default function ProfileSetupIntroScreen({ navigation }: any) {
     <SafeAreaView style={localStyles.container}>
       <View style={localStyles.content}>
         <View style={[localStyles.iconContainer, { backgroundColor: C.primary + "15" }]}>
-          <Ionicons name="shield-checkmark-outline" size={64} color={C.primary} />
+          <Ionicons name="shield-checkmark-outline" size={64} color={C.textPrimary} />
         </View>
 
-        <Text style={[localStyles.title, { color: C.primary }]}>Configura tu perfil</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Configura tu perfil</Text>
         <Text style={[localStyles.subtitle, { color: C.gray }]}>
           Tu informaciÃ³n es privada y segura. Nos ayuda a personalizar tu experiencia y crear planes de entrenamiento adaptados a ti.
         </Text>
@@ -21,7 +21,7 @@ export default function ProfileSetupIntroScreen({ navigation }: any) {
         <View style={localStyles.featureList}>
           <View style={localStyles.featureRow}>
             <View style={[localStyles.featureIcon, { backgroundColor: C.primary + "15" }]}>
-              <Ionicons name="lock-closed" size={20} color={C.primary} />
+              <Ionicons name="lock-closed" size={20} color={C.textPrimary} />
             </View>
             <View style={localStyles.featureContent}>
               <Text style={[localStyles.featureTitle, { color: C.white }]}>Datos protegidos</Text>
@@ -30,7 +30,7 @@ export default function ProfileSetupIntroScreen({ navigation }: any) {
           </View>
           <View style={localStyles.featureRow}>
             <View style={[localStyles.featureIcon, { backgroundColor: C.primary + "15" }]}>
-              <Ionicons name="fitness" size={20} color={C.primary} />
+              <Ionicons name="fitness" size={20} color={C.textPrimary} />
             </View>
             <View style={localStyles.featureContent}>
               <Text style={[localStyles.featureTitle, { color: C.white }]}>Experiencia personalizada</Text>
@@ -39,7 +39,7 @@ export default function ProfileSetupIntroScreen({ navigation }: any) {
           </View>
           <View style={localStyles.featureRow}>
             <View style={[localStyles.featureIcon, { backgroundColor: C.primary + "15" }]}>
-              <Ionicons name="time" size={20} color={C.primary} />
+              <Ionicons name="time" size={20} color={C.textPrimary} />
             </View>
             <View style={localStyles.featureContent}>
               <Text style={[localStyles.featureTitle, { color: C.white }]}>Solo toma 2 minutos</Text>

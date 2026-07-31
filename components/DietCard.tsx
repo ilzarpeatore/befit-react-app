@@ -46,7 +46,7 @@ function DietCard({ title, calories, category, image, onPress }: Props) {
               <Ionicons
                 name="flame-outline"
                 size={16}
-                color={Colors.ACCENT_START}
+                color={Colors.TEXT_PRIMARY}
               />
               <Text style={styles.calorieText}>{calories} kcal</Text>
             </View>
@@ -105,7 +105,7 @@ function useStyle() {
     calorieText: {
       fontFamily: "Gilroy-Medium",
       fontSize: "14@ratio",
-      color: Colors.ACCENT_START,
+      color: Colors.TEXT_PRIMARY,
     },
   });
 }

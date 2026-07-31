@@ -68,7 +68,7 @@ export default function AssignedMealsScreen(props: any) {
 
       {isLoading ? (
         <View style={s.loadingWrap}>
-          <ActivityIndicator size="large" color={C.brand50} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       ) : (
         <>
@@ -207,6 +207,6 @@ const s = StyleSheet.create({
   recipeInfo: { flex: 1 },
   recipeTitle: { fontFamily: FONT.bold, fontSize: 14, color: C.white, marginBottom: 4 },
   recipeMacrosRow: { flexDirection: 'row', gap: 10 },
-  recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.brand50 },
+  recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.textPrimary },
   recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5 },
 });

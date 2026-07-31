@@ -49,7 +49,7 @@ export default function EmparejandoScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <Animated.View style={[styles.spinner, { transform: [{ scale: pulseAnim }] }]}>
-            <Ionicons name="bluetooth-outline" size={48} color={C.brand50} />
+            <Ionicons name="bluetooth-outline" size={48} color={C.textPrimary} />
           </Animated.View>
 
           <Text style={styles.title}>Emparejando...</Text>

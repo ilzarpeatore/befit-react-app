@@ -28,18 +28,18 @@ export default function RecommendationsScreen({ navigation }: any) {
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>Tus recomendaciones</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Tus recomendaciones</Text>
 
         <Text style={[localStyles.sectionTitle, { color: C.white }]}>Actividades recomendadas</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={localStyles.activitiesScroll}>
           {ACTIVITIES.map((act) => (
             <View key={act.id} style={localStyles.activityCard}>
               <View style={[localStyles.activityIcon, { backgroundColor: C.primary + "15" }]}>
-                <Ionicons name={act.icon} size={28} color={C.primary} />
+                <Ionicons name={act.icon} size={28} color={C.textPrimary} />
               </View>
               <Text style={[localStyles.activityName, { color: C.white }]}>{act.name}</Text>
               <Text style={[localStyles.activityDetail, { color: C.gray }]}>{act.duration}</Text>
-              <Text style={[localStyles.activityCal, { color: C.primary }]}>{act.calories}</Text>
+              <Text style={[localStyles.activityCal, { color: C.textPrimary }]}>{act.calories}</Text>
             </View>
           ))}
         </ScrollView>
@@ -60,7 +60,7 @@ export default function RecommendationsScreen({ navigation }: any) {
         <Text style={[localStyles.sectionTitle, { color: C.white }]}>Entrenador recomendado</Text>
         <View style={[localStyles.card, localStyles.coachCard]}>
           <View style={[localStyles.coachAvatar, { backgroundColor: C.primary + "20" }]}>
-            <Ionicons name="person" size={32} color={C.primary} />
+            <Ionicons name="person" size={32} color={C.textPrimary} />
           </View>
           <View style={localStyles.coachInfo}>
             <Text style={[localStyles.coachName, { color: C.white }]}>Coach Ana MartÃ­nez</Text>
@@ -75,15 +75,15 @@ export default function RecommendationsScreen({ navigation }: any) {
         <Text style={[localStyles.sectionTitle, { color: C.white }]}>Plan de entrenamiento</Text>
         <View style={localStyles.card}>
           <View style={localStyles.planRow}>
-            <Ionicons name="calendar-outline" size={20} color={C.primary} />
+            <Ionicons name="calendar-outline" size={20} color={C.textPrimary} />
             <Text style={[localStyles.planText, { color: C.white }]}>4 sesiones por semana</Text>
           </View>
           <View style={localStyles.planRow}>
-            <Ionicons name="time-outline" size={20} color={C.primary} />
+            <Ionicons name="time-outline" size={20} color={C.textPrimary} />
             <Text style={[localStyles.planText, { color: C.white }]}>60 min por sesiÃ³n</Text>
           </View>
           <View style={localStyles.planRow}>
-            <Ionicons name="trending-up-outline" size={20} color={C.primary} />
+            <Ionicons name="trending-up-outline" size={20} color={C.textPrimary} />
             <Text style={[localStyles.planText, { color: C.white }]}>ProgresiÃ³n semanal</Text>
           </View>
         </View>
@@ -95,7 +95,7 @@ export default function RecommendationsScreen({ navigation }: any) {
             {MUSCLE_ZONES.map((zone) => (
               <View key={zone.label} style={[localStyles.muscleZone, { top: zone.top, left: zone.left }]}>
                 <View style={[localStyles.muscleDot, { backgroundColor: C.primary }]} />
-                <Text style={[localStyles.muscleLabel, { color: C.primary }]}>{zone.label}</Text>
+                <Text style={[localStyles.muscleLabel, { color: C.textPrimary }]}>{zone.label}</Text>
               </View>
             ))}
           </View>

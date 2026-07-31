@@ -97,8 +97,8 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     workoutCard: { width: SCREEN_WIDTH * 0.75, height: r(180), borderRadius: r(20), marginHorizontal: r(6), overflow: 'hidden' },
     workoutImage: { ...StyleSheet.absoluteFill, backgroundColor: C.gray70 },
     workoutGradient: { ...StyleSheet.absoluteFill },
-    workoutLevelBadge: { position: 'absolute', top: r(12), left: r(12), backgroundColor: C.white, borderRadius: r(12), paddingHorizontal: r(8), paddingVertical: r(3) },
-    workoutLevelText: { fontSize: r(10), fontFamily: FONT.bold, color: C.gray80 },
+    workoutLevelBadge: { position: 'absolute', top: r(12), left: r(12), backgroundColor: C.surface, borderRadius: r(12), paddingHorizontal: r(8), paddingVertical: r(3) },
+    workoutLevelText: { fontSize: r(10), fontFamily: FONT.bold, color: C.textPrimary },
     workoutBottomInfo: { position: 'absolute', bottom: r(12), left: r(12), right: r(12) },
     workoutCardTitle: { fontSize: r(16), fontFamily: FONT.bold, color: C.white },
     workoutCardMeta: { fontSize: r(11), color: C.gray10, marginTop: r(4) },
@@ -145,7 +145,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     supportLink: { fontSize: r(12), fontFamily: FONT.semiBold, color: C.orange, marginTop: r(6) },
     emptySection: { paddingHorizontal: r(20), paddingVertical: r(12), marginBottom: r(8) },
     myProgramBadge: { flexDirection: 'row' as const, alignItems: 'center', gap: r(5), paddingHorizontal: r(20), marginBottom: r(8) },
-    myProgramBadgeText: { fontSize: r(11), fontFamily: FONT.semiBold, color: C.brand50 },
+    myProgramBadgeText: { fontSize: r(11), fontFamily: FONT.semiBold, color: C.textPrimary },
     emptyText: { fontSize: r(13), color: C.textSecondary, textAlign: 'center' as const },
     errorBanner: { backgroundColor: C.destructive10, borderRadius: r(12), padding: r(12), marginHorizontal: r(20), marginBottom: r(12), flexDirection: 'row', alignItems: 'center' },
     errorText: { flex: 1, fontSize: r(12), color: C.destructive, marginLeft: r(8) },
@@ -349,7 +349,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         </View>
         {state.user?.is_personal_client && (
           <View style={styles.myProgramBadge}>
-            <Ionicons name="person-circle" size={14} color={C.brand50} />
+            <Ionicons name="person-circle" size={14} color={C.textPrimary} />
             <Text style={styles.myProgramBadgeText}>Personalizado por tu coach</Text>
           </View>
         )}
@@ -696,9 +696,9 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
       <TouchableOpacity
         onPress={() => navigation?.navigate('ScreenExplorer')}
-        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#7773FA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E3DCD9', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#E3DCD9', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
       >
-        <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
+        <Text style={{ fontSize: 28, color: '#1C1C1E', marginTop: -2 }}>+</Text>
       </TouchableOpacity>
 
       {/* Menú de usuario (perfil, favoritos, ajustes, salud, comunidad, logout) */}
@@ -724,7 +724,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Profile')}>
               <View style={styles.menuItemIcon}>
-                <Ionicons name="person-outline" size={18} color={C.primary} />
+                <Ionicons name="person-outline" size={18} color={C.textPrimary} />
               </View>
               <Text style={styles.menuItemText}>Mi Perfil</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
@@ -732,7 +732,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('FavouriteWorkouts')}>
               <View style={styles.menuItemIcon}>
-                <Ionicons name="heart-outline" size={18} color={C.primary} />
+                <Ionicons name="heart-outline" size={18} color={C.textPrimary} />
               </View>
               <Text style={styles.menuItemText}>Mis Favoritos</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
@@ -740,7 +740,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Settings')}>
               <View style={styles.menuItemIcon}>
-                <Ionicons name="settings-outline" size={18} color={C.primary} />
+                <Ionicons name="settings-outline" size={18} color={C.textPrimary} />
               </View>
               <Text style={styles.menuItemText}>Configuración General</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
@@ -748,7 +748,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
             <View style={styles.menuItem}>
               <View style={styles.menuItemIcon}>
-                <Ionicons name="fitness-outline" size={18} color={C.primary} />
+                <Ionicons name="fitness-outline" size={18} color={C.textPrimary} />
               </View>
               <Text style={styles.menuItemText}>Apple Health</Text>
               <Switch
@@ -761,7 +761,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
             <View style={styles.menuItem}>
               <View style={styles.menuItemIcon}>
-                <Ionicons name="watch-outline" size={18} color={C.primary} />
+                <Ionicons name="watch-outline" size={18} color={C.textPrimary} />
               </View>
               <Text style={styles.menuItemText}>Smart Watch</Text>
               <Switch
@@ -774,7 +774,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('CommunityFeed')}>
               <View style={styles.menuItemIcon}>
-                <Ionicons name="people-outline" size={18} color={C.primary} />
+                <Ionicons name="people-outline" size={18} color={C.textPrimary} />
               </View>
               <Text style={styles.menuItemText}>Community</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />

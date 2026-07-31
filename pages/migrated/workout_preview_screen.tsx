@@ -75,7 +75,7 @@ export default function WorkoutPreviewScreen(props: Props) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.brand50} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       </SafeAreaView>
     );

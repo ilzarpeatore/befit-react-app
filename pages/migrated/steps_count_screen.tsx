@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   pickerItemActive: { backgroundColor: C.brand5, borderRadius: 8 },
   pickerItemText: { fontSize: 22, fontFamily: FONT.semiBold, color: C.white },
   saveButton: {
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: { fontSize: 16, fontFamily: FONT.bold, color: C.orange },
   chartCard: {
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
     borderRadius: 16,
     padding: 12,
     shadowColor: 'rgba(0,0,0,0.15)',

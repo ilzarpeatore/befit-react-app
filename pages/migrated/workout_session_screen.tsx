@@ -234,7 +234,7 @@ export default function WorkoutSessionScreen(props: Props) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.brand50} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       </SafeAreaView>
     );
@@ -382,7 +382,7 @@ export default function WorkoutSessionScreen(props: Props) {
                 style={styles.rowActionRight}
                 onPress={() => markAllRows(activeIndex)}
               >
-                <Ionicons name="checkmark-done" size={16} color={C.brand50} />
+                <Ionicons name="checkmark-done" size={16} color={C.textPrimary} />
                 <Text style={styles.rowActionText}>MARCAR TODAS LAS SERIES</Text>
               </TouchableOpacity>
             </View>
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   countText: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary, letterSpacing: 0.5 },
-  addExerciseText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.brand50 },
+  addExerciseText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.textPrimary },
   activeCard: {
     marginHorizontal: 16,
     backgroundColor: C.surfaceLight,
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   rowActionRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  rowActionText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.brand50 },
+  rowActionText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.textPrimary },
   separator: {
     height: 1,
     backgroundColor: C.border,

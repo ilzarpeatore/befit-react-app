@@ -383,7 +383,7 @@ export default function PlanScreen(props: any) {
             <Text style={s.mealCalories}>{total.totalCalories ?? 0} kcal | P: {total.totalProtein ?? 0}g | C: {total.totalCarbs ?? 0}g | F: {total.totalFats ?? 0}g</Text>
           </View>
           <TouchableOpacity style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
-            <Ionicons name="add-circle-outline" size={24} color={C.brand50} />
+            <Ionicons name="add-circle-outline" size={24} color={C.textPrimary} />
           </TouchableOpacity>
         </View>
         {recipes.length === 0 ? (
@@ -475,7 +475,7 @@ export default function PlanScreen(props: any) {
       </ScrollView>
       {isLoading && (
         <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.brand50} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       )}
 
@@ -499,7 +499,7 @@ export default function PlanScreen(props: any) {
             autoFocus
           />
           {searchLoading ? (
-            <ActivityIndicator size="small" color={C.brand50} style={{ marginTop: 20 }} />
+            <ActivityIndicator size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
           ) : searchResults.length === 0 ? (
             <Text style={s.noResultsText}>No recipes found.</Text>
           ) : (
@@ -526,14 +526,14 @@ export default function PlanScreen(props: any) {
                     <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
                   </View>
                   {savingRecipeId === recipe.id ? (
-                    <ActivityIndicator size="small" color={C.brand50} />
+                    <ActivityIndicator size="small" color={C.textPrimary} />
                   ) : (
-                    <Ionicons name="add-circle-outline" size={26} color={C.brand50} />
+                    <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
                   )}
                 </TouchableOpacity>
               ))}
               {searchLoadingMore && (
-                <ActivityIndicator size="small" color={C.brand50} style={{ marginVertical: 16 }} />
+                <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
               )}
             </ScrollView>
           )}
@@ -588,7 +588,7 @@ const s = StyleSheet.create({
   recipeInfo: { flex: 1, marginRight: 8 },
   recipeName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray10, marginBottom: 4 },
   recipeMacrosRow: { flexDirection: 'row', gap: 10 },
-  recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.brand50 },
+  recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.textPrimary },
   recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5 },
   coachBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   coachBadgeText: { fontSize: 10, fontFamily: FONT.medium, color: C.orange },

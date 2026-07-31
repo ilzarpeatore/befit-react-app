@@ -23,13 +23,13 @@ export default function ArticlesScreen({ navigation }: any) {
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>
           ArtÃ­culos recomendados
         </Text>
 
         <TouchableOpacity style={localStyles.featuredCard}>
           <View style={localStyles.featuredImage}>
-            <Ionicons name="newspaper-outline" size={48} color={C.primary} />
+            <Ionicons name="newspaper-outline" size={48} color={C.textPrimary} />
           </View>
           <View style={localStyles.featuredContent}>
             <Text style={localStyles.featuredTitle}>{featured.title}</Text>
@@ -41,11 +41,11 @@ export default function ArticlesScreen({ navigation }: any) {
           {gridArticles.map((article) => (
             <TouchableOpacity key={article.id} style={localStyles.gridCard}>
               <View style={localStyles.gridImage}>
-                <Ionicons name="document-text-outline" size={32} color={C.primary} />
+                <Ionicons name="document-text-outline" size={32} color={C.textPrimary} />
               </View>
               <View style={localStyles.gridContent}>
                 <View style={[localStyles.categoryTag, { backgroundColor: C.primaryLight }]}>
-                  <Text style={[localStyles.categoryText, { color: C.primary }]}>{article.category}</Text>
+                  <Text style={[localStyles.categoryText, { color: C.textPrimary }]}>{article.category}</Text>
                 </View>
                 <Text style={[localStyles.gridTitle]} numberOfLines={2}>{article.title}</Text>
               </View>

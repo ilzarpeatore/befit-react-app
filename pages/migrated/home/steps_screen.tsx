@@ -119,7 +119,7 @@ export default function StepsScreen({ navigation }: any) {
         ))}
 
         <View style={styles.deviceCard}>
-          <Ionicons name="watch-outline" size={20} color={C.primary} />
+          <Ionicons name="watch-outline" size={20} color={C.textPrimary} />
           <View style={styles.deviceInfo}>
             <Text style={styles.deviceName}>Apple Watch</Text>
             <Text style={styles.deviceStatus}>Conectado</Text>

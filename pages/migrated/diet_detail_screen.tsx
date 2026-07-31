@@ -137,7 +137,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
 
   const getVitamins = (icon: string, title: string, subTitle: string) => (
     <View style={localStyles.vitaminItem}>
-      <Ionicons name={icon as any} size={26} color={C.brand50} />
+      <Ionicons name={icon as any} size={26} color={C.textPrimary} />
       <Text style={localStyles.vitaminTitle}>{title}</Text>
       <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
     </View>
@@ -295,7 +295,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
 
       {isLoading && (
         <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="large" color={C.brand50} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       )}
     </View>
@@ -442,7 +442,7 @@ const localStyles = StyleSheet.create({
     color: C.gray30,
   },
   activeTabText: {
-    color: C.brand50,
+    color: C.textPrimary,
   },
   htmlContent: {
     paddingHorizontal: 8,

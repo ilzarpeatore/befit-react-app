@@ -14,7 +14,7 @@ const BREAKDOWN = [
 ];
 
 const BODY_COMP = [
-  { label: "MÃºsculo", value: 42, color: C.primary },
+  { label: "MÃºsculo", value: 42, color: C.textPrimary },
   { label: "Grasa", value: 24, color: "#FF5722" },
   { label: "Agua", value: 55, color: "#03A9F4" },
   { label: "Ã“seo", value: 15, color: "#795548" },
@@ -30,7 +30,7 @@ export default function AssessmentResultScreen({ navigation }: any) {
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>Resultado del assessment</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Resultado del assessment</Text>
 
         <View style={localStyles.scoreContainer}>
           <View style={[localStyles.circle, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -38,7 +38,7 @@ export default function AssessmentResultScreen({ navigation }: any) {
               <View style={[localStyles.scoreOverlay, { width: size - strokeWidth * 2, height: size - strokeWidth * 2, borderRadius: (size - strokeWidth * 2) / 2, borderColor: C.primary, borderWidth: strokeWidth, borderTopColor: C.primary + "30", borderRightColor: C.primary + "30" }]} />
             </View>
             <View style={localStyles.scoreTextContainer}>
-              <Text style={[localStyles.scoreValue, { color: C.primary }]}>{SCORE}</Text>
+              <Text style={[localStyles.scoreValue, { color: C.textPrimary }]}>{SCORE}</Text>
               <Text style={[localStyles.scoreUnit, { color: C.gray }]}>pts</Text>
             </View>
           </View>

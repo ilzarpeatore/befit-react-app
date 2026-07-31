@@ -39,7 +39,7 @@ export default function StepsDetailsScreen({ navigation }: any) {
         <Text style={styles.metricsTitle}>Key Metrics</Text>
         {METRICS.map((metric) => (
           <View key={metric.label} style={styles.metricCard}>
-            <Ionicons name={metric.icon as any} size={22} color={C.primary} />
+            <Ionicons name={metric.icon as any} size={22} color={C.textPrimary} />
             <View style={styles.metricInfo}>
               <Text style={styles.metricLabel}>{metric.label}</Text>
               <Text style={styles.metricValue}>{metric.value}</Text>
