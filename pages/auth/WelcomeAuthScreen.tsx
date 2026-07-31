@@ -22,7 +22,7 @@ export default function WelcomeAuthScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.top}>
           <SandowLogo size={80} />
-          <Text style={styles.title}>Welcome to{"\n"}Be Stronger!</Text>
+          <Text style={styles.title}>Bienvenido a{"\n"}Be Stronger!</Text>
           <Text style={styles.subtitle}>Choose how you want to continue.</Text>
         </View>
 
