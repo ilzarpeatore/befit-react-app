@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { exercisesApi } from '../../api/exercises';
-import { workoutsApi } from '../../api/workouts';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -14,16 +13,6 @@ interface ExerciseModel {
   exerciseImage?: string;
   type?: string;
   levelTitle?: string;
-  isFavourite?: number;
-  isFavouriteLocally?: number;
-  [key: string]: any;
-}
-
-interface WorkoutDetailModel {
-  id?: number;
-  title?: string;
-  workoutImage?: string;
-  isPremium?: number;
   isFavourite?: number;
   isFavouriteLocally?: number;
   [key: string]: any;
@@ -46,7 +35,6 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
   const { mTitle, isBodyPart = false, isLevel = false, isEquipment = false, id } = props.route.params ?? {};
 
   const [mExerciseList, setMExerciseList] = useState<ExerciseModel[]>([]);
-  const [mWorkoutList, setMWorkoutList] = useState<WorkoutDetailModel[]>([]);
   const [isSearch, setIsSearch] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -55,16 +43,7 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
   const [exerciseNumPage, setExerciseNumPage] = useState<number | null>(null);
   const [isExerciseLastPage, setIsExerciseLastPage] = useState(false);
 
-  const [workoutPage, setWorkoutPage] = useState(1);
-  const [workoutNumPage, setWorkoutNumPage] = useState<number | null>(null);
-  const [isWorkoutLastPage, setIsWorkoutLastPage] = useState(false);
-
-  const [activeTab, setActiveTab] = useState(0);
-
   const exerciseScrollRef = useRef<FlatList | null>(null);
-  const workoutScrollRef = useRef<FlatList | null>(null);
-
-  const showTabs = !isBodyPart && !isEquipment;
 
   const getExerciseData = useCallback(async () => {
     setIsLoading(true);
@@ -99,51 +78,15 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
     }
   }, [exercisePage, searchText, id, isBodyPart, isEquipment, isLevel]);
 
-  const getLevelWorkoutData = useCallback(async () => {
-    if (!showTabs) return;
-    setIsLoading(true);
-    try {
-      let res;
-      if (searchText) {
-        res = await workoutsApi.getFilteredList({ page: workoutPage });
-      } else if (isLevel && id) {
-        res = await workoutsApi.getFilteredList({ level_ids: id, page: workoutPage });
-      } else {
-        res = await workoutsApi.getList(workoutPage);
-      }
-      const list = (res.data.data ?? []).map((w: any) => ({
-        id: w.id,
-        title: w.title,
-        workoutImage: w.workout_image,
-        isPremium: w.is_premium,
-        isFavourite: w.is_favourite,
-      }));
-      if (workoutPage === 1) setMWorkoutList(list);
-      else setMWorkoutList((prev) => [...prev, ...list]);
-      setWorkoutNumPage(res.data.pagination?.total_pages ?? null);
-    } catch (e) {
-      setIsWorkoutLastPage(true);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workoutPage, searchText, id, showTabs]);
-
   useEffect(() => {
     getExerciseData();
-    if (showTabs) getLevelWorkoutData();
   }, []);
 
   const handleSearchChange = (v: string) => {
     setSearchText(v);
-    if (activeTab === 0) {
-      setExercisePage(1);
-      setMExerciseList([]);
-      getExerciseData();
-    } else {
-      setWorkoutPage(1);
-      setMWorkoutList([]);
-      getLevelWorkoutData();
-    }
+    setExercisePage(1);
+    setMExerciseList([]);
+    getExerciseData();
   };
 
   const toggleSearch = () => {
@@ -156,35 +99,6 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
     } else {
       setIsSearch(true);
     }
-  };
-
-  const handleWorkoutTap = async (workout: WorkoutDetailModel) => {
-    const isSubscriptionEnabled = false; // userStore.subscription === '1'
-    const isPremiumWorkout = workout.isPremium === 1;
-    const isUserSubscribed = false; // userStore.isSubscribe === 1
-
-    if (isSubscriptionEnabled && isPremiumWorkout && !isUserSubscribed) {
-      props.navigation.navigate('MigratedSubscribe');
-      return;
-    }
-    props.navigation.navigate('MigratedWorkoutDetail', {
-      id: workout.id,
-      mWorkoutModel: workout,
-    });
-  };
-
-  const toggleWorkoutFavourite = (index: number) => {
-    const updated = [...mWorkoutList];
-    const item = { ...updated[index] };
-    if (item.isFavourite === 0 && (!item.isFavouriteLocally || item.isFavouriteLocally === 0)) {
-      item.isFavouriteLocally = 1;
-      item.isFavourite = 1;
-    } else {
-      item.isFavouriteLocally = 0;
-      item.isFavourite = 0;
-    }
-    updated[index] = item;
-    setMWorkoutList(updated);
   };
 
   const renderExerciseItem = ({ item }: { item: ExerciseModel }) => (
@@ -209,29 +123,6 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
     </TouchableOpacity>
   );
 
-  const renderWorkoutItem = ({ item, index }: { item: WorkoutDetailModel; index: number }) => (
-    <TouchableOpacity
-      style={localStyles.card}
-      onPress={() => handleWorkoutTap(item)}
-      activeOpacity={0.7}
-    >
-      <Image source={{ uri: item.workoutImage || '' }} style={localStyles.cardImage} />
-      <View style={localStyles.cardInfo}>
-        <Text style={localStyles.cardTitle} numberOfLines={1}>{item.title || ''}</Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => toggleWorkoutFavourite(index)}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Ionicons
-          name={(item.isFavourite === 1 || item.isFavouriteLocally === 1) ? 'heart' : 'heart-outline'}
-          size={20}
-          color={(item.isFavourite === 1 || item.isFavouriteLocally === 1) ? C.red : C.gray40}
-        />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={localStyles.container}>
       {/* App Bar */}
@@ -251,87 +142,38 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
           </Text>
         )}
         <TouchableOpacity onPress={toggleSearch} style={localStyles.searchBtn}>
-          <Ionicons name={isSearch ? 'close' : 'search'} size={22} color={C.brand5} />
+          <Ionicons name={isSearch ? 'close' : 'search'} size={22} color={C.textPrimary} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
-      {showTabs && (
-        <View style={localStyles.tabsRow}>
-          <TouchableOpacity
-            style={[localStyles.tab, activeTab === 0 && localStyles.activeTab]}
-            onPress={() => setActiveTab(0)}
-          >
-            <Text style={[localStyles.tabText, activeTab === 0 && localStyles.activeTabText]}>
-              Exercises
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[localStyles.tab, activeTab === 1 && localStyles.activeTab]}
-            onPress={() => setActiveTab(1)}
-          >
-            <Text style={[localStyles.tabText, activeTab === 1 && localStyles.activeTabText]}>
-              Workouts
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       {/* Content */}
       <View style={localStyles.body}>
-        {activeTab === 0 ? (
-          <View style={{ flex: 1 }}>
-            <FlatList
-              ref={exerciseScrollRef}
-              data={mExerciseList}
-              renderItem={renderExerciseItem}
-              keyExtractor={(item, i) => `${item.id}-${i}`}
-              contentContainerStyle={{ paddingHorizontal: 12 }}
-              onEndReached={() => {
-                if (!isExerciseLastPage && exercisePage < (exerciseNumPage ?? 1)) {
-                  setExercisePage((prev) => prev + 1);
-                  getExerciseData();
-                }
-              }}
-              onEndReachedThreshold={0.5}
-              ListEmptyComponent={
-                !isLoading ? (
-                  <View style={localStyles.emptyContainer}>
-                    <Text style={localStyles.emptyText}>No exercises found</Text>
-                  </View>
-                ) : null
-              }
-            />
-          </View>
-        ) : (
-          <View style={{ flex: 1 }}>
-            <FlatList
-              ref={workoutScrollRef}
-              data={mWorkoutList}
-              renderItem={renderWorkoutItem}
-              keyExtractor={(item, i) => `${item.id}-${i}`}
-              contentContainerStyle={{ paddingHorizontal: 12 }}
-              onEndReached={() => {
-                if (!isWorkoutLastPage && workoutPage < (workoutNumPage ?? 1)) {
-                  setWorkoutPage((prev) => prev + 1);
-                  getLevelWorkoutData();
-                }
-              }}
-              onEndReachedThreshold={0.5}
-              ListEmptyComponent={
-                !isLoading ? (
-                  <View style={localStyles.emptyContainer}>
-                    <Text style={localStyles.emptyText}>No workouts found</Text>
-                  </View>
-                ) : null
-              }
-            />
-          </View>
-        )}
+        <FlatList
+          ref={exerciseScrollRef}
+          data={mExerciseList}
+          renderItem={renderExerciseItem}
+          keyExtractor={(item, i) => `${item.id}-${i}`}
+          contentContainerStyle={{ paddingHorizontal: 12 }}
+          onEndReached={() => {
+            if (!isExerciseLastPage && exercisePage < (exerciseNumPage ?? 1)) {
+              setExercisePage((prev) => prev + 1);
+              getExerciseData();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={
+            !isLoading ? (
+              <View style={localStyles.emptyContainer}>
+                <Text style={localStyles.emptyText}>No exercises found</Text>
+              </View>
+            ) : null
+          }
+        />
 
         {isLoading && (
           <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.textPrimary} />
           </View>
         )}
       </View>
@@ -361,33 +203,10 @@ const localStyles = StyleSheet.create({
     fontSize: 16,
     color: C.white,
     borderBottomWidth: 1,
-    borderBottomColor: C.brand5,
+    borderBottomColor: C.border,
     paddingBottom: 8,
   },
   searchBtn: { padding: 8 },
-  tabsRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomColor: C.brand5,
-  },
-  tabText: {
-    fontFamily: FONT.medium,
-    fontSize: 14,
-    color: C.gray30,
-  },
-  activeTabText: {
-    color: C.brand5,
-  },
   body: { flex: 1 },
   card: {
     flexDirection: 'row',

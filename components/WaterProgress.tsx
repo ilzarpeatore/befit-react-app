@@ -56,7 +56,7 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
             {/* water */}
             <Path
               d="M 28.571 27.5 C 43.071 18.5 56.571 27.5 56.571 27.5 L 57 85 L 1 85 L 1.071 27.5 C 1.071 27.5 14.071 36.5 28.571 27.5 Z"
-              fill="#5652E5"
+              fill="#000000"
             />
             <Path
               d="M 29 27.5 C 14.5 18.5 1 27.5 1 27.5 L 1 85 L 57 85 L 56.5 27.5 C 56.5 27.5 43.5 36.5 29 27.5 Z"
@@ -84,8 +84,8 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
             y2="57"
             gradientUnits="userSpaceOnUse"
           >
-            <Stop stopColor="#7DA9F4" />
-            <Stop offset="1" stopColor="#5652E5" />
+            <Stop stopColor="#000000" />
+            <Stop offset="1" stopColor="#000000" />
           </SlinearGradient>
           <RadialGradient
             id="paint1_radial"
@@ -106,8 +106,8 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
             y2="53.5"
             gradientUnits="userSpaceOnUse"
           >
-            <Stop stopColor="#8A8CB3" />
-            <Stop offset="1" stopColor="#8A8CB3" stopOpacity="0" />
+            <Stop stopColor="#E5E5EA" />
+            <Stop offset="1" stopColor="#E5E5EA" stopOpacity="0" />
           </SlinearGradient>
         </Defs>
         {/* gradients */}

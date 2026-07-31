@@ -76,16 +76,15 @@ export default function DietDashboard({ navigation }: Props) {
 
   if (loading && !refreshing) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="chevron-back" size={22} color="#000000" />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Diet</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet</Text>
             <View style={{ width: 40 }} />
           </View>
           <View style={styles.skeletonWrap}>
@@ -94,38 +93,37 @@ export default function DietDashboard({ navigation }: Props) {
             <LoadingSkeletonMem width="100%" height="180@ratio" borderRadius={16} />
           </View>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error && !refreshing) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="chevron-back" size={22} color="#000000" />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Diet</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet</Text>
             <View style={{ width: 40 }} />
           </View>
           <ErrorRetryMem message={error} onRetry={fetchData} />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-            <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Ionicons name="chevron-back" size={22} color="#000000" />
           </TouchableOpacity>
-          <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Diet</Text>
+          <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet</Text>
           <View style={{ width: 40 }} />
         </View>
         <ScrollView
@@ -156,7 +154,7 @@ export default function DietDashboard({ navigation }: Props) {
                   style={styles.summaryCard}
                 >
                   <View style={styles.summaryKcalRow}>
-                    <Ionicons name="flame-outline" size={26} color={Colors.ACCENT_START} />
+                    <Ionicons name="flame-outline" size={26} color={Colors.TEXT_PRIMARY} />
                     <Text style={styles.summaryKcalValue}>{assignedMealsGoal?.kcal ?? 0}</Text>
                     <Text style={styles.summaryKcalLabel}>kcal / day goal</Text>
                   </View>
@@ -212,7 +210,7 @@ export default function DietDashboard({ navigation }: Props) {
           </>
         </ScrollView>
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -301,7 +299,7 @@ function useStyle() {
       marginTop: "16@ratio",
       paddingTop: "12@ratio",
       borderTopWidth: 1,
-      borderTopColor: "rgba(255,255,255,0.15)",
+      borderTopColor: "#E5E5EA",
     },
     viewPlanText: {
       fontFamily: "Gilroy-SemiBold",
@@ -325,7 +323,7 @@ function useStyle() {
     viewAll: {
       fontFamily: "Gilroy-SemiBold",
       fontSize: "14@ratio",
-      color: Colors.ACCENT_START,
+      color: Colors.TEXT_SECONDARY,
     },
   });
 }

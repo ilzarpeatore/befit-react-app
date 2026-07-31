@@ -56,7 +56,7 @@ function useStyle() {
         skipbtntext: {
             fontFamily: "Gilroy-Bold",
             fontSize: '16@ratio',
-            color: "#8A8CB2",
+            color: "#6B6B70",
         },
     });
     return styles

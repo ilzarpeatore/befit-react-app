@@ -44,9 +44,9 @@ export const Input = forwardRef(({ name, label, style, inputLabelBgStyle, inputs
                 start={{ x: 0.26, y: -1.53 }}
                 end={{ x: 0.63, y: 2.9 }}
                 colors={[
-                    "rgba(138,140,178,1)",
-                    "rgba(138,140,178,0)",
-                    "rgba(138,140,178,0.6)",
+                    "rgba(229,229,234,1)",
+                    "rgba(229,229,234,0)",
+                    "rgba(229,229,234,0.6)",
                 ]}
                 style={styles.inputborder}
             >
@@ -64,9 +64,9 @@ export const Input = forwardRef(({ name, label, style, inputLabelBgStyle, inputs
                 start={{ x: 0.26, y: -1.53 }}
                 end={{ x: 0.63, y: 2.9 }}
                 colors={[
-                    "rgba(138,140,178,1)",
-                    "rgba(138,140,178,0)",
-                    "rgba(138,140,178,0.6)",
+                    "rgba(229,229,234,1)",
+                    "rgba(229,229,234,0)",
+                    "rgba(229,229,234,0.6)",
                 ]}
                 style={[
                     styles.inputlabelbg,
@@ -119,13 +119,13 @@ function useStyle() {
         textinput: {
             width: "100%",
             height: "100%",
-            backgroundColor: "#141227",
+            backgroundColor: "#FFFFFF",
             borderRadius: '16@ratio',
             fontFamily: "Gilroy-Bold",
             fontSize: '18@ratio',
             paddingHorizontal: '12@ratio',
             paddingLeft: '19@ratio',
-            color: "#ffffff",
+            color: "#000000",
         },
         inputlabelbg: {
             borderRadius: '16@ratio',
@@ -135,7 +135,7 @@ function useStyle() {
             justifyContent: 'center'
         },
         inputlabelview: {
-            backgroundColor: "#141227",
+            backgroundColor: "#FFFFFF",
             borderRadius: '16@ratio',
             paddingVertical: '2@ratio',
             paddingHorizontal: '8@ratio',
@@ -143,7 +143,7 @@ function useStyle() {
         inputlabel: {
             fontFamily: "Gilroy-Bold",
             fontSize: '16@ratio',
-            color: "#8A8CB2",
+            color: "#6B6B70",
             lineHeight: '19@ratio',
             textAlign: "center",
         },

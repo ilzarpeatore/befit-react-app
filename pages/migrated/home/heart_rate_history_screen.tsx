@@ -135,11 +135,11 @@ function useStyle() {
       borderColor: C.border,
     },
     filterBtnActive: { backgroundColor: C.brand50, borderColor: C.brand50 },
-    filterText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray5 },
+    filterText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray50 },
     filterTextActive: { color: C.white },
     list: { paddingHorizontal: 20, paddingBottom: 32 },
     group: { marginBottom: 24 },
-    dateLabel: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray5, marginBottom: 10 },
+    dateLabel: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray50, marginBottom: 10 },
     entry: {
       flexDirection: "row",
       alignItems: "center",
@@ -153,7 +153,7 @@ function useStyle() {
     },
     entryLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
     dot: { width: 10, height: 10, borderRadius: 5 },
-    entryTime: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5 },
+    entryTime: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
     entryBpm: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
   });
 }

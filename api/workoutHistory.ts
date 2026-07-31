@@ -11,6 +11,9 @@ export interface StoreWorkoutExercisePayload {
   exercise_id: number;
   sets: WorkoutSet[];
   date: string;
+  // Sin esto el backend nunca puede devolver la entrada en el historial
+  // (get-user-workout-exercise exige workout_day_id no nulo).
+  workout_day_id?: number;
 }
 
 export interface WorkoutExerciseHistoryItem {
@@ -100,8 +103,23 @@ export const workoutHistoryApi = {
     apiClient.get<{ data: CalendarDayDetail }>('v1/my-calendar-day-detail', { params: { program_day_assignment_id: programDayAssignmentId } }),
 
   logCalendarSets: (payload: {
-    workout_template_exercise_id: number;
+    // Uno de los dos es obligatorio: workout_template_exercise_id para
+    // ejercicios prescritos por el coach, exercise_id para ejercicios
+    // anadidos ad-hoc durante la sesion (sin WorkoutTemplateExercise).
+    workout_template_exercise_id?: number;
+    exercise_id?: number;
     logged_sets: Record<string, any>[];
     program_day_assignment_id?: number | null;
   }) => apiClient.post('v1/my-calendar-log-sets', payload),
+
+  finishCalendarSession: (payload: {
+    // Uno de los dos es obligatorio: program_day_assignment_id (dia de
+    // programa asignado) o workout_template_id (Workout suelto sin programa).
+    program_day_assignment_id?: number;
+    workout_template_id?: number;
+    duration_seconds?: number;
+    volume_kg?: number;
+    difficulty_rating?: number;
+    comment?: string;
+  }) => apiClient.post('v1/my-calendar-finish-session', payload),
 };

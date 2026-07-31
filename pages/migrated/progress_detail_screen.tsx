@@ -162,7 +162,7 @@ export default function ProgressDetailScreen(props: any) {
               { text: 'Year', onPress: () => handleFilterSelect('year') },
             ]);
           }}>
-            <Ionicons name="ellipsis-vertical" size={20} color={C.gray20} />
+            <Ionicons name="ellipsis-vertical" size={20} color={C.gray40} />
           </TouchableOpacity>
         </View>
       </View>
@@ -209,7 +209,7 @@ const chartStyles = StyleSheet.create({
   barLabel: { width: 60, fontSize: 11, color: C.gray40, textAlign: 'right', marginRight: 8 },
   barTrack: { flex: 1, height: 20, backgroundColor: C.gray70, borderRadius: 4, overflow: 'hidden' },
   barFill: { height: 20, backgroundColor: C.brand5, borderRadius: 4 },
-  barValue: { width: 80, fontSize: 11, color: C.gray20, marginLeft: 8 },
+  barValue: { width: 80, fontSize: 11, color: C.gray40, marginLeft: 8 },
 });
 
 const s = StyleSheet.create({

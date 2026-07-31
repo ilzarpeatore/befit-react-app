@@ -10,7 +10,7 @@ const TOTAL_STEPS = 4;
 
 const GOALS = [
   { key: "lose_weight", icon: "flame-outline" as const, label: "Perder peso", color: C.orange },
-  { key: "gain_muscle", icon: "barbell-outline" as const, label: "Ganar mÃºsculo", color: C.brand50 },
+  { key: "gain_muscle", icon: "barbell-outline" as const, label: "Ganar mÃºsculo", color: C.white },
   { key: "stay_fit", icon: "heart-outline" as const, label: "Mantenerme en forma", color: C.success50 },
   { key: "improve_endurance", icon: "walk-outline" as const, label: "Mejorar resistencia", color: C.blue50 },
   { key: "improve_flexibility", icon: "body-outline" as const, label: "Mejorar flexibilidad", color: C.purple50 },
@@ -118,7 +118,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
                   <Text style={[styles.optionLabel, experience === e.key && { color: C.white }]}>{e.label}</Text>
                   <Text style={styles.optionDesc}>{e.desc}</Text>
                 </View>
-                {experience === e.key && <Ionicons name="checkmark-circle" size={22} color={C.brand50} />}
+                {experience === e.key && <Ionicons name="checkmark-circle" size={22} color={C.white} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -135,10 +135,10 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
                 onPress={() => setEquipment(eq.key)}
               >
                 <View style={[styles.optionIcon, { backgroundColor: equipment === eq.key ? C.brand10 : C.gray40 }]}>
-                  <Ionicons name={eq.icon} size={24} color={equipment === eq.key ? C.brand50 : C.gray5} />
+                  <Ionicons name={eq.icon} size={24} color={equipment === eq.key ? C.white : C.gray50} />
                 </View>
                 <Text style={[styles.optionLabel, equipment === eq.key && { color: C.white }]}>{eq.label}</Text>
-                {equipment === eq.key && <Ionicons name="checkmark-circle" size={22} color={C.brand50} />}
+                {equipment === eq.key && <Ionicons name="checkmark-circle" size={22} color={C.white} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -150,7 +150,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
 
           <View style={styles.freqCard}>
             <View style={styles.freqHeader}>
-              <Ionicons name="trending-up" size={20} color={C.brand50} />
+              <Ionicons name="trending-up" size={20} color={C.gray50} />
               <Text style={styles.freqLabel}>HÃ¡bito de entrenamiento</Text>
             </View>
             <View style={styles.freqBar}>
@@ -222,7 +222,7 @@ function useStyle() {
     header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12 },
     backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, justifyContent: "center", alignItems: "center" },
     headerTitle: { flex: 1, textAlign: "center", fontSize: 16, fontFamily: FONT.bold, color: C.white },
-    counter: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray5 },
+    counter: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray50 },
     progressTrack: { height: 4, backgroundColor: C.gray30, marginHorizontal: 20, borderRadius: 2 },
     progressFill: { height: 4, backgroundColor: C.brand50, borderRadius: 2 },
     stepPage: { width: SW, paddingHorizontal: 24, paddingTop: 24 },
@@ -230,8 +230,8 @@ function useStyle() {
     optionCard: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16, gap: 14 },
     optionOn: { backgroundColor: C.brand10, borderColor: C.brand50 },
     optionIcon: { width: 48, height: 48, borderRadius: 14, justifyContent: "center", alignItems: "center" },
-    optionLabel: { flex: 1, fontSize: 15, fontFamily: FONT.semiBold, color: C.gray5 },
-    optionDesc: { fontSize: 12, fontFamily: FONT.medium, color: C.gray5, marginTop: 2 },
+    optionLabel: { flex: 1, fontSize: 15, fontFamily: FONT.semiBold, color: C.gray50 },
+    optionDesc: { fontSize: 12, fontFamily: FONT.medium, color: C.gray50, marginTop: 2 },
     freqCard: { backgroundColor: C.surface, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16, marginBottom: 20 },
     freqHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
     freqLabel: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
@@ -239,7 +239,7 @@ function useStyle() {
     freqFill: { height: 8, backgroundColor: C.brand50, borderRadius: 4 },
     freqDisplay: { alignItems: "center", marginBottom: 20 },
     freqBig: { fontSize: 64, fontFamily: FONT.extraBold, color: C.white },
-    freqSub: { fontSize: 16, fontFamily: FONT.medium, color: C.gray5, marginTop: -4 },
+    freqSub: { fontSize: 16, fontFamily: FONT.medium, color: C.gray50, marginTop: -4 },
     sliderRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 24 },
     sliderBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.gray40, justifyContent: "center", alignItems: "center" },
     sliderTrack: { flex: 1, height: 8, backgroundColor: C.gray30, borderRadius: 4 },
@@ -247,7 +247,7 @@ function useStyle() {
     daysRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 24 },
     dayBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.gray40, justifyContent: "center", alignItems: "center" },
     dayOn: { backgroundColor: C.brand50 },
-    dayLabel: { fontSize: 14, fontFamily: FONT.bold, color: C.gray5 },
+    dayLabel: { fontSize: 14, fontFamily: FONT.bold, color: C.gray50 },
     recoBanner: { flexDirection: "row", alignItems: "flex-start", backgroundColor: C.warning5, borderRadius: 14, padding: 14, gap: 10 },
     recoText: { flex: 1, fontSize: 12, fontFamily: FONT.medium, color: C.white, lineHeight: 18 },
     footer: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8 },

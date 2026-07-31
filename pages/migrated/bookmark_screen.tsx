@@ -170,7 +170,7 @@ const styles_local = StyleSheet.create({
   postDescription: {
     fontSize: 14,
     fontFamily: FONT.regular,
-    color: C.gray10,
+    color: C.gray50,
     paddingHorizontal: 12,
     paddingBottom: 8,
     lineHeight: 20,

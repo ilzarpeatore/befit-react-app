@@ -83,7 +83,7 @@ export default function HomeEmptyScreen({ navigation }: any) {
               <Ionicons
                 name={item.icon as any}
                 size={22}
-                color={item.active ? C.brand50 : C.gray10}
+                color={item.active ? C.brand50 : C.gray50}
               />
               <Text style={[styles.navLabel, item.active && styles.navLabelActive]}>{item.label}</Text>
             </TouchableOpacity>
@@ -100,7 +100,7 @@ function useStyle() {
     content: { padding: 20, paddingBottom: 20 },
     header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
     greeting: { fontSize: 28, fontFamily: FONT.bold, color: C.white },
-    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, marginTop: 4 },
+    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, marginTop: 4 },
     notifBtn: {
       width: 44,
       height: 44,
@@ -120,9 +120,9 @@ function useStyle() {
       borderColor: C.border,
       marginBottom: 28,
     },
-    scoreLabel: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, marginTop: 12 },
+    scoreLabel: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, marginTop: 12 },
     scoreValue: { fontSize: 48, fontFamily: FONT.extraBold, color: C.white, marginTop: 4 },
-    scoreHint: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, marginTop: 4 },
+    scoreHint: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginTop: 4 },
     sectionTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.white, marginBottom: 12 },
     promptCard: {
       flexDirection: "row",
@@ -144,7 +144,7 @@ function useStyle() {
     },
     promptBody: { flex: 1 },
     promptTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-    promptDesc: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+    promptDesc: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
     promptBtn: {
       borderWidth: 1,
       borderRadius: 10,
@@ -163,7 +163,7 @@ function useStyle() {
       paddingBottom: 24,
     },
     navItem: { alignItems: "center", gap: 4 },
-    navLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray10 },
+    navLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray50 },
     navLabelActive: { color: C.textPrimary },
   });
 }

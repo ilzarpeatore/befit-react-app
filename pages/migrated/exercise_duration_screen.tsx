@@ -33,7 +33,7 @@ interface ExerciseDurationScreenProps {
 }
 
 export default function ExerciseDurationScreen(props: ExerciseDurationScreenProps) {
-  const { mExerciseModel, workOutId, workoutDayId } = props.route.params;
+  const { mExerciseModel, workOutId, workoutDayId } = props.route?.params ?? {};
 
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -120,6 +120,7 @@ export default function ExerciseDurationScreen(props: ExerciseDurationScreenProp
           exercise_id: mExerciseModel.data.id,
           sets: [],
           date: new Date().toISOString().split('T')[0],
+          workout_day_id: workoutDayId,
         });
       }
       props.navigation.pop();
@@ -140,7 +141,7 @@ export default function ExerciseDurationScreen(props: ExerciseDurationScreenProp
       {/* App Bar */}
       <View style={localStyles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={localStyles.appBarTitle} numberOfLines={1}>
           {mExerciseModel?.data?.title || ''}
@@ -177,18 +178,18 @@ export default function ExerciseDurationScreen(props: ExerciseDurationScreenProp
         {/* Controls */}
         <View style={localStyles.controlsRow}>
           <TouchableOpacity style={localStyles.controlBtn} onPress={resetCountdown}>
-            <Ionicons name="refresh" size={28} color={C.white} />
+            <Ionicons name="refresh" size={28} color="#FFFFFF" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={localStyles.playBtn}
             onPress={isPlaying ? pauseCountdown : startCountdown}
           >
-            <Ionicons name={isPlaying ? 'pause' : 'play'} size={36} color={C.white} />
+            <Ionicons name={isPlaying ? 'pause' : 'play'} size={36} color={C.textPrimary} />
           </TouchableOpacity>
 
           <TouchableOpacity style={localStyles.controlBtn} onPress={completeExercise}>
-            <Ionicons name="checkmark-circle-outline" size={28} color={C.white} />
+            <Ionicons name="checkmark-circle-outline" size={28} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
@@ -214,7 +215,7 @@ export default function ExerciseDurationScreen(props: ExerciseDurationScreenProp
 
       {isLoading && (
         <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       )}
     </View>
@@ -258,7 +259,7 @@ const localStyles = StyleSheet.create({
     height: 190,
     borderRadius: 95,
     borderWidth: 10,
-    borderColor: C.brand5,
+    borderColor: C.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -269,7 +270,7 @@ const localStyles = StyleSheet.create({
   countdownText: {
     fontFamily: FONT.bold,
     fontSize: 48,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   controlsRow: {
     flexDirection: 'row',
@@ -289,13 +290,13 @@ const localStyles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: C.brand5,
+    backgroundColor: C.brand50,
     justifyContent: 'center',
     alignItems: 'center',
   },
   completeBtn: {
     marginHorizontal: 16,
-    backgroundColor: C.brand5,
+    backgroundColor: C.brand50,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

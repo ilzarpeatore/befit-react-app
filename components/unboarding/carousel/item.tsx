@@ -108,7 +108,7 @@ function useStyle() {
     slideriteminfo: {
       fontFamily: "Gilroy-Regular",
       fontSize: '16@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       lineHeight: '24@ratio',
       textAlign: "center",
     }

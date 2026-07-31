@@ -16,10 +16,10 @@ export const Mapstyle = [
         "elementType": "geometry",
         "stylers": [
             {
-                "color": "#141227"
+                "color": "#EBEBF0"
             },
             {
-                "lightness": "5"
+                "lightness": "0"
             },
             {
                 "gamma": "1.00"
@@ -58,10 +58,10 @@ export const Mapstyle = [
         "elementType": "all",
         "stylers": [
             {
-                "color": "#8a8cb2"
+                "color": "#D1D1D6"
             },
             {
-                "lightness": "-49"
+                "lightness": "0"
             },
             {
                 "gamma": "1"
@@ -97,7 +97,7 @@ export const Mapstyle = [
                 "visibility": "on"
             },
             {
-                "color": "#878bb2"
+                "color": "#6B6B70"
             }
         ]
     },
@@ -184,6 +184,9 @@ export const Mapstyle = [
                 "visibility": "on"
             },
             {
+                "color": "#FFFFFF"
+            },
+            {
                 "weight": "4"
             }
         ]
@@ -214,7 +217,7 @@ export const Mapstyle = [
         "elementType": "geometry",
         "stylers": [
             {
-                "color": "#7da9f4"
+                "color": "#C8D8F4"
             }
         ]
     }

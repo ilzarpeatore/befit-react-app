@@ -225,7 +225,7 @@ export default function RegisterScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#000000" />
             ) : (
               <Text style={styles.btnText}>Create Account</Text>
             )}
@@ -264,7 +264,7 @@ const styles = {
   input: { flex: 1, height: 52, paddingHorizontal: 12, fontFamily: "Gilroy-Regular" as const, fontSize: 16, color: Colors.TEXT_PRIMARY } as const,
   eyeBtn: { paddingHorizontal: 14 } as const,
   btn: {
-    backgroundColor: Colors.ACCENT_START || "#E3DCD9",
+    backgroundColor: Colors.ACCENT_START || "#E5E5EA",
     borderRadius: 14,
     height: 54,
     justifyContent: "center" as const,
@@ -273,10 +273,10 @@ const styles = {
     marginBottom: 24,
   } as const,
   btnDisabled: { opacity: 0.6 } as const,
-  btnText: { fontFamily: "Gilroy-Bold" as const, fontSize: 17, color: "#1C1C1E" } as const,
+  btnText: { fontFamily: "Gilroy-Bold" as const, fontSize: 17, color: "#000000" } as const,
   footer: { flexDirection: "row" as const, justifyContent: "center" as const, alignItems: "center" } as const,
   footerText: { fontFamily: "Gilroy-Regular" as const, fontSize: 15, color: Colors.TEXT_SECONDARY } as const,
   // Texto de enlace: ACCENT_START/ACCENT_ACTIVE son ahora beige claro,
   // ilegibles como color de texto sobre fondo claro - se usa TEXT_PRIMARY.
-  footerLink: { fontFamily: "Gilroy-Bold" as const, fontSize: 15, color: Colors.TEXT_PRIMARY || "#1C1C1E" } as const,
+  footerLink: { fontFamily: "Gilroy-Bold" as const, fontSize: 15, color: Colors.TEXT_PRIMARY || "#000000" } as const,
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   FlatList,
   Text,
@@ -6,6 +6,7 @@ import {
   ImageBackground,
   TouchableOpacity,
   RefreshControl,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -37,6 +38,8 @@ export default function ExerciseList({ navigation }: Props) {
   const [selectedBodyPart, setSelectedBodyPart] = useState<number | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<number | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchExercises = useCallback(async (refresh = false) => {
     try {
@@ -45,7 +48,9 @@ export default function ExerciseList({ navigation }: Props) {
       setError(null);
 
       let res;
-      if (selectedBodyPart) {
+      if (searchText.trim()) {
+        res = await exercisesApi.search(searchText.trim());
+      } else if (selectedBodyPart) {
         res = await exercisesApi.getByBodyPart(selectedBodyPart);
       } else if (selectedEquipment) {
         res = await exercisesApi.getByEquipment(selectedEquipment);
@@ -61,7 +66,15 @@ export default function ExerciseList({ navigation }: Props) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedBodyPart, selectedEquipment, selectedLevel]);
+  }, [selectedBodyPart, selectedEquipment, selectedLevel, searchText]);
+
+  const handleSearchChange = (text: string) => {
+    setSearchText(text);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      fetchExercises();
+    }, 400);
+  };
 
   const fetchFilters = useCallback(async () => {
     try {
@@ -88,9 +101,11 @@ export default function ExerciseList({ navigation }: Props) {
     setSelectedBodyPart(null);
     setSelectedEquipment(null);
     setSelectedLevel(null);
+    setSearchText("");
   };
 
-  const hasActiveFilter = selectedBodyPart !== null || selectedEquipment !== null || selectedLevel !== null;
+  const hasActiveFilter =
+    selectedBodyPart !== null || selectedEquipment !== null || selectedLevel !== null || searchText.trim().length > 0;
 
   const renderFilterChip = (
     label: string,
@@ -107,8 +122,8 @@ export default function ExerciseList({ navigation }: Props) {
         end={{ x: 1, y: 1 }}
         colors={
           active
-            ? [Colors.ACCENT_START, Colors.ACCENT_END]
-            : ["rgba(90,93,135,0.3)", "rgba(60,63,105,0.3)"]
+            ? ["#1C1C1E", "#000000"]
+            : ["#E5E5EA", "#E5E5EA"]
         }
         style={styles.chip}
       >
@@ -141,7 +156,7 @@ export default function ExerciseList({ navigation }: Props) {
   );
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -152,6 +167,22 @@ export default function ExerciseList({ navigation }: Props) {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Exercises</Text>
           <View style={styles.backBtn} />
+        </View>
+
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={18} color={Colors.TEXT_SECONDARY} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search exercises..."
+            placeholderTextColor={Colors.TEXT_SECONDARY}
+            value={searchText}
+            onChangeText={handleSearchChange}
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={() => handleSearchChange("")}>
+              <Ionicons name="close-circle" size={18} color={Colors.TEXT_SECONDARY} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.filterSection}>
@@ -238,13 +269,13 @@ export default function ExerciseList({ navigation }: Props) {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={() => fetchExercises(true)}
-                tintColor={Colors.ACCENT_START}
+                tintColor={Colors.TEXT_SECONDARY}
               />
             }
           />
         )}
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -270,6 +301,24 @@ function useStyle() {
       alignItems: "center",
       justifyContent: "center",
     },
+    searchContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: Colors.BG_CARD,
+      borderRadius: "12@ratio",
+      marginHorizontal: "16@ratio",
+      marginBottom: "8@ratio",
+      paddingHorizontal: "12@ratio",
+      paddingVertical: "8@ratio",
+      gap: 8,
+    },
+    searchInput: {
+      flex: 1,
+      fontFamily: "Gilroy-Regular",
+      fontSize: "14@ratio",
+      color: Colors.TEXT_PRIMARY,
+      padding: 0,
+    },
     headerTitle: {
       fontFamily: "Gilroy-Bold",
       fontSize: "20@ratio",
@@ -294,7 +343,7 @@ function useStyle() {
       color: Colors.TEXT_SECONDARY,
     },
     chipTextActive: {
-      color: Colors.TEXT_PRIMARY,
+      color: "#FFFFFF",
     },
     clearBtn: {
       flexDirection: "row",

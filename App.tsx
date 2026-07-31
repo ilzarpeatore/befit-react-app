@@ -26,7 +26,6 @@ import Height from "@pages/Height";
 import Name from "@pages/Name";
 import Challenges from "@pages/Challenges";
 import Today from "@pages/Today";
-import Workout from "@pages/Workout";
 import Profile from "@pages/Profile";
 import NavigationTab from "@components/NavigationTab";
 
@@ -110,8 +109,6 @@ import FavouriteScreen from "@pages/migrated/favourite_screen";
 import FilterWorkoutScreen from "@pages/migrated/filter_workout_screen";
 // @ts-ignore
 import ForgotPwdScreen from "@pages/migrated/forgot_pwd_screen";
-// @ts-ignore
-import FullWorkoutScreen from "@pages/migrated/full_workout_screen";
 // @ts-ignore
 import GoalCaloriesMacrosScreen from "@pages/migrated/goal_calories_macros_screen";
 // @ts-ignore
@@ -249,6 +246,10 @@ import WorkoutHistoryScreen from "@pages/migrated/workout_history_screen";
 import WorkoutPreviewScreen from "@pages/migrated/workout_preview_screen";
 // @ts-ignore
 import WorkoutSessionScreenMig from "@pages/migrated/workout_session_screen";
+// @ts-ignore
+import WorkoutFeedbackScreen from "@pages/migrated/workout_feedback_screen";
+// @ts-ignore
+import WorkoutSummaryScreenMig from "@pages/migrated/workout_summary_screen";
 // @ts-ignore
 import YoutubePlayerScreen from "@pages/migrated/youtube_player_screen";
 
@@ -462,7 +463,6 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedFavourite" component={FavouriteScreen as any} />
       <MStack.Screen name="MigratedFilterWorkout" component={FilterWorkoutScreen} />
       <MStack.Screen name="MigratedForgotPwd" component={ForgotPwdScreen} />
-      <MStack.Screen name="MigratedFullWorkout" component={FullWorkoutScreen} />
       <MStack.Screen name="MigratedGoalCaloriesMacros" component={GoalCaloriesMacrosScreen} />
       <MStack.Screen name="MigratedGoalSelection" component={GoalSelectionScreen} />
       <MStack.Screen name="MigratedHomeModern" component={HomeScreenModern} />
@@ -530,6 +530,8 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedWorkoutHistory" component={WorkoutHistoryScreen} />
       <MStack.Screen name="MigratedWorkoutPreview" component={WorkoutPreviewScreen} />
       <MStack.Screen name="MigratedWorkoutSession" component={WorkoutSessionScreenMig} />
+      <MStack.Screen name="MigratedWorkoutFeedback" component={WorkoutFeedbackScreen} />
+      <MStack.Screen name="MigratedWorkoutSummary" component={WorkoutSummaryScreenMig} />
       <MStack.Screen name="MigratedWorkoutTemplateList" component={WorkoutTemplateListScreen} />
       <MStack.Screen name="MigratedYoutubePlayer" component={YoutubePlayerScreen} />
       <MStack.Screen name="MigratedDeviceConnected" component={DeviceConnectedScreen} />
@@ -624,7 +626,6 @@ function RootNavigator() {
           <Stack.Screen name="Home" component={Homenavigator} />
           <Stack.Screen name="Unboarding" component={Unboardingnavigator} />
           <Stack.Screen name="Clubnav" component={Clubnavigator} />
-          <Stack.Screen name="Workout" component={Workout} />
           <Stack.Screen name="Profile" component={Profile} />
           <Stack.Screen name="Congratulation" component={Congratulation} />
           <Stack.Screen name="Result" component={Result} />
@@ -733,7 +734,7 @@ export default function App() {
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <AuthProvider>
             <NavigationContainer
-              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#F2F2F7" } }}
+              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#EBEBF0" } }}
               onReady={onLayoutRootView}
             >
               <RootNavigator />

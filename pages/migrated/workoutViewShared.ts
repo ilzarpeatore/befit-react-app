@@ -40,6 +40,10 @@ export interface UnifiedWorkout {
   // cliente tiene el programa asignado, siempre accesible.
   isExclusive: boolean;
   isAccessible: boolean;
+  // Solo tiene sentido cuando viene por workoutTemplateId (navegacion
+  // libre desde el catalogo) - un dia de programa asignado no es "algo"
+  // que se guarde en favoritos por si mismo.
+  isFavourite: boolean;
 }
 
 export interface WorkoutViewParams {
@@ -81,6 +85,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
       workoutTemplateId: null,
       isExclusive: false,
       isAccessible: true,
+      isFavourite: false,
     };
   }
 
@@ -116,6 +121,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
       workoutTemplateId: params.workoutTemplateId,
       isExclusive: !!data.is_exclusive,
       isAccessible: data.is_accessible ?? true,
+      isFavourite: !!data.is_favourite,
     };
   }
 

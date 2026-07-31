@@ -13,15 +13,13 @@ export default function PasswordResetSentScreen() {
   const styles = useStyle();
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Ionicons name="mail-open-outline" size={64} color={Colors.ACCENT_START} />
+            <Ionicons name="mail-open-outline" size={64} color={Colors.TEXT_PRIMARY} />
           </View>
 
           <Text style={styles.heading}>Check Your Email</Text>
@@ -37,7 +35,7 @@ export default function PasswordResetSentScreen() {
 
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

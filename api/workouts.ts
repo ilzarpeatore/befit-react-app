@@ -71,8 +71,14 @@ export const workoutsApi = {
   getList: (page: number = 1) =>
     apiClient.get<WorkoutListResponse>(`workout-list?page=${page}`),
 
-  getFilteredList: (params: { workout_type_id?: number; level_ids?: number; page?: number }) =>
-    apiClient.get<WorkoutListResponse>('workout-list', { params }),
+  getFilteredList: (params: {
+    workout_type_id?: number;
+    workout_type_ids?: string;
+    level_ids?: number | string;
+    bodypart_ids?: string;
+    title?: string;
+    page?: number;
+  }) => apiClient.get<WorkoutListResponse>('workout-list', { params }),
 
   getDetail: (id: number) =>
     apiClient.get<WorkoutDetailResponse>(`workout-detail?id=${id}`),

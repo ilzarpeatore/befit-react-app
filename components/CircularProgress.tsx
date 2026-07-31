@@ -59,7 +59,7 @@ function CircularProgress({ width, height, percent, icon }: CircularProgressInte
             y2="27.5001"
             gradientUnits="userSpaceOnUse"
           >
-            <Stop stopColor="#5652E5" />
+            <Stop stopColor="#1C1C1E" />
             <Stop offset="1" stopColor="#F85365" />
           </SlinearGradient>
         </Defs>

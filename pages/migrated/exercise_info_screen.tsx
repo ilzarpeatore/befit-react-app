@@ -11,6 +11,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,6 +52,7 @@ export default function ExerciseInfoScreen(props: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('muscle');
   const [detail, setDetail] = useState<ExerciseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
   const [isSavingFeedback, setIsSavingFeedback] = useState(false);
 
@@ -60,13 +62,14 @@ export default function ExerciseInfoScreen(props: Props) {
 
   const [tipsExpanded, setTipsExpanded] = useState(false);
 
-  const loadDetail = useCallback(async () => {
+  const loadDetail = useCallback(async (isRefresh = false) => {
     if (!exerciseId) {
       setError(true);
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     setError(false);
     try {
       const res = await exerciseInfoApi.getDetail(exerciseId);
@@ -75,6 +78,7 @@ export default function ExerciseInfoScreen(props: Props) {
       setError(true);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [exerciseId]);
 
@@ -95,6 +99,11 @@ export default function ExerciseInfoScreen(props: Props) {
       setAnalysisLoading(false);
     }
   }, [exerciseId]);
+
+  const onRefresh = useCallback(() => {
+    loadDetail(true);
+    if (activeTab === 'analysis') loadAnalysis();
+  }, [loadDetail, loadAnalysis, activeTab]);
 
   const onSelectTab = (tab: TabKey) => {
     setActiveTab(tab);
@@ -161,13 +170,19 @@ export default function ExerciseInfoScreen(props: Props) {
         onToggleFavourite={() => onFeedback('like')}
       />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.textSecondary} />
+        }
+      >
         <ExerciseMediaHeaderMem headerHeight={HEADER_HEIGHT} thumbnailUrl={detail.thumbnail_url} />
 
         <View style={styles.panel}>
           {/* Badges */}
           <View style={styles.badgeRow}>
-            {detail.muscle.primary ? (
+            {detail.muscle?.primary ? (
               <View style={styles.muscleBadge}>
                 <Text style={styles.muscleBadgeText}>{detail.muscle.primary.name.toUpperCase()}</Text>
               </View>
@@ -228,12 +243,12 @@ export default function ExerciseInfoScreen(props: Props) {
           {/* Tab content */}
           <View style={styles.tabContent}>
             {activeTab === 'muscle' && (
-              <MuscleTab primary={detail.muscle.primary} secondary={detail.muscle.secondary} />
+              <MuscleTab primary={detail.muscle?.primary ?? null} secondary={detail.muscle?.secondary ?? []} />
             )}
             {activeTab === 'instructions' && (
               <InstructionsTab
-                steps={detail.instructions.steps}
-                tips={detail.instructions.tips}
+                steps={detail.instructions?.steps ?? []}
+                tips={detail.instructions?.tips ?? []}
                 tipsExpanded={tipsExpanded}
                 onToggleTips={toggleTips}
               />

@@ -36,6 +36,7 @@ export interface WorkoutTemplateDetailData {
   thumbnail: string | null;
   is_exclusive?: boolean;
   is_accessible?: boolean;
+  is_favourite?: boolean;
   blocks: WorkoutTemplateBlockModel[];
 }
 
@@ -73,4 +74,9 @@ export const workoutTemplateApi = {
 
   getList: (page: number, perPage = 20) =>
     apiClient.get<WorkoutTemplateListResponse>('v1/workout-template-list', { params: { page, per_page: perPage } }),
+
+  setFavourite: (workoutTemplateId: number) =>
+    apiClient.post<{ data: { is_favourite: boolean } }>('v1/workout-template-set-favourite', {
+      workout_template_id: workoutTemplateId,
+    }),
 };

@@ -3,26 +3,31 @@
 // 173 pantallas existentes seguuan funcionando sin tocarlas, solo cambian
 // los valores. Ver docs/Encargo2_Theme_Bevel.md para el origen de estos
 // valores (estimados visualmente de 18 capturas reales de Bevel).
+// Encargo 3 (2026-07-31): paleta monocromática — fondo gris claro (#EBEBF0),
+// superficies blancas (#FFFFFF), texto en grises/negros (#000000), acento de
+// marca en gris claro (#E5E5EA) para mantener el patrón relleno claro +
+// texto oscuro. El fondo NO es blanco puro para que las tarjetas blancas
+// sigan destacando (jerarquía visual).
 export const C = {
-  bg: "#F2F2F7",
+  bg: "#EBEBF0",
   surface: "#FFFFFF",
-  surfaceLight: "#F7F7F9",
+  surfaceLight: "#FFFFFF",
   border: "#E5E5EA",
-  white: "#1C1C1E",
-  gray5: "#F2F2F7",
+  white: "#000000",
+  gray5: "#F7F7F7",
   gray10: "#E5E5EA",
   gray20: "#D1D1D6",
-  gray30: "#8A8A90",
-  gray40: "#AEAEB2",
+  gray30: "#AEAEB2",
+  gray40: "#8A8A90",
   gray50: "#6B6B70",
-  gray60: "#636366",
-  gray70: "#E3DCD9",
-  gray80: "#E3DCD9",
-  brand5: "rgba(227,220,217,0.08)",
-  brand10: "rgba(227,220,217,0.15)",
-  brand20: "rgba(227,220,217,0.25)",
-  brand50: "#E3DCD9",
-  brand60: "#E3DCD9",
+  gray60: "#3A3A3C",
+  gray70: "#E5E5EA",
+  gray80: "#E5E5EA",
+  brand5: "rgba(0,0,0,0.08)",
+  brand10: "rgba(0,0,0,0.15)",
+  brand20: "rgba(0,0,0,0.25)",
+  brand50: "#E5E5EA",
+  brand60: "#E5E5EA",
   success: "#34C759",
   success5: "rgba(52,199,89,0.1)",
   success10: "rgba(52,199,89,0.15)",
@@ -59,16 +64,16 @@ export const C = {
   blue30: "#66B2FF",
   red: "#FF3B30",
   pink: "#FB558B",
-  textWhite: "#1C1C1E",
-  textPrimary: "#1C1C1E",
+  textWhite: "#000000",
+  textPrimary: "#000000",
   textSecondary: "#6B6B70",
-  textTertiary: "#8A8A90",
-  primary: "#E3DCD9",
-  primaryLight: "rgba(227,220,217,0.15)",
+  textTertiary: "#AEAEB2",
+  primary: "#E5E5EA",
+  primaryLight: "rgba(0,0,0,0.15)",
   gray: "#6B6B70",
-  text: "#1C1C1E",
+  text: "#000000",
   card: "#FFFFFF",
-  textMuted: "#8A8A90",
+  textMuted: "#AEAEB2",
 
   // Tokens semánticos con nombre (sección 1 del Encargo 2) — reutilizar
   // estos por significado, en vez de success/warning/destructive/blue
@@ -96,8 +101,8 @@ export const FONT = {
 };
 
 export const GRADIENT = {
-  accent: ["#E3DCD9", "#E3DCD9"] as const,
-  card: ["#FFFFFF", "#F7F7F9"] as const,
+  accent: ["#E5E5EA", "#E5E5EA"] as const,
+  card: ["#FFFFFF", "#F7F7F7"] as const,
   orange: ["#FF8A2B", "#FF6000"] as const,
   border: ["rgba(0,0,0,0.08)", "rgba(0,0,0,0)"] as const,
 };

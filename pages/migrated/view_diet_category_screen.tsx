@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-  categoryCount: { fontSize: 12, color: C.gray20, fontFamily: FONT.regular },
+  categoryCount: { fontSize: 12, color: C.gray40, fontFamily: FONT.regular },
   loadingOverlay: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.3)',

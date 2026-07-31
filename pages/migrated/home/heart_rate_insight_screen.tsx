@@ -144,7 +144,7 @@ function useStyle() {
       gap: 6,
     },
     overviewValue: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
-    overviewLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5 },
+    overviewLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50 },
     scoreSection: { alignItems: "center", marginBottom: 28 },
     sectionTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.white, marginBottom: 16 },
     scoreCircle: {
@@ -158,7 +158,7 @@ function useStyle() {
       alignItems: "center",
     },
     scoreValue: { fontSize: 36, fontFamily: FONT.bold, color: C.white },
-    scoreOf: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5 },
+    scoreOf: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
     alertSection: { marginBottom: 28 },
     alertCard: {
       flexDirection: "row",
@@ -172,15 +172,15 @@ function useStyle() {
       marginBottom: 8,
     },
     alertText: { fontSize: 14, fontFamily: FONT.regular, color: C.white },
-    alertTime: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginTop: 4 },
+    alertTime: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 4 },
     chartSection: { marginBottom: 28 },
     chartRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 120 },
     chartCol: { alignItems: "center", flex: 1 },
     chartBarWrapper: { height: 100, justifyContent: "flex-end" },
     chartBar: { width: 20, borderRadius: 6 },
-    chartDay: { fontSize: 11, fontFamily: FONT.regular, color: C.gray5, marginTop: 6 },
+    chartDay: { fontSize: 11, fontFamily: FONT.regular, color: C.gray50, marginTop: 6 },
     recSection: { marginBottom: 32 },
     recItem: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, flex: 1 },
+    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, flex: 1 },
   });
 }

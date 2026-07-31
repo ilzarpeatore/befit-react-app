@@ -112,7 +112,7 @@ export default function HeartRateZoneScreen({ navigation }: any) {
                 <Ionicons
                   name={expanded === i ? "chevron-up" : "chevron-down"}
                   size={18}
-                  color={C.gray5}
+                  color={C.gray50}
                 />
               </View>
 
@@ -160,7 +160,7 @@ function useStyle() {
     gradientBarContainer: { marginBottom: 28 },
     gradientBar: { height: 12, borderRadius: 6 },
     gradientLabels: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-    gradientLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5 },
+    gradientLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50 },
     zoneCard: {
       backgroundColor: C.surface,
       borderRadius: 16,
@@ -173,12 +173,12 @@ function useStyle() {
     zoneIndicator: { width: 8, height: 36, borderRadius: 4 },
     zoneInfo: { flex: 1 },
     zoneName: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-    zoneRange: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+    zoneRange: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
     zonePercent: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
     zonePercentText: { fontSize: 12, fontFamily: FONT.semiBold },
-    zoneDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, marginTop: 10, marginLeft: 20 },
+    zoneDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginTop: 10, marginLeft: 20 },
     zoneDetails: { marginTop: 12, marginLeft: 20, gap: 8 },
     detailItem: { flexDirection: "row", alignItems: "center", gap: 8 },
-    detailText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5 },
+    detailText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50 },
   });
 }

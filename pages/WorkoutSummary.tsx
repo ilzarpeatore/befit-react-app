@@ -36,7 +36,7 @@ interface RouteParams {
 export default function WorkoutSummary() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { exercises, totalTime, workoutId } = route.params as RouteParams;
+  const { exercises = [], totalTime = 0, workoutId } = (route.params ?? {}) as Partial<RouteParams>;
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = Math.min(winW / 375, winH / 812);
   const r = (n: number) => Math.round(n * sc);
@@ -63,10 +63,8 @@ export default function WorkoutSummary() {
   };
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={{ flex: 1, backgroundColor: C.bg }}
-      resizeMode="cover"
     >
       <SafeAreaView style={{ flex: 1 }} edges={["right", "left", "top"]}>
         <StatusBar style="dark" />
@@ -164,7 +162,7 @@ export default function WorkoutSummary() {
                       width: r(32),
                       height: r(32),
                       borderRadius: r(16),
-                      backgroundColor: "rgba(80,94,220,0.3)",
+                      backgroundColor: "#E5E5EA",
                       alignItems: "center",
                       justifyContent: "center",
                       marginRight: r(12),
@@ -218,6 +216,6 @@ export default function WorkoutSummary() {
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }

@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  ImageBackground,
   Platform,
   Dimensions,
 } from "react-native";
@@ -149,15 +148,12 @@ export default function Stories({ navigation }: StoriesPropsInterface) {
     });
   }
   return (
-    <ImageBackground
-      source={require("@assets/bg2.png")}
-      style={styles.bg}
-    >
+    <View style={styles.bg}>
       {/*stories slider start*/}
       {_render_stories_slider()}
       <StatusBar style="dark" />
       {/*stories slider end*/}
-    </ImageBackground>
+    </View>
   );
 
 }
@@ -172,7 +168,7 @@ function useStyle() {
       height: "100%",
       resizeMode: "cover",
       paddingTop: '44@ratio',
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     storiesslider: {
       position: "absolute",
@@ -181,7 +177,7 @@ function useStyle() {
       top: 0,
       left: 0,
       zIndex: 999,
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     slideimage: {
       width: "100%",
@@ -208,12 +204,12 @@ function useStyle() {
     },
     slideuserdatausername: {
       fontSize: window.width <= 320 ? '14@ratio' : '16@ratio', // reponsive fix
-      color: "#ffffff",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
     },
     slideuserdatatime: {
       fontSize: window.width <= 320 ? '12@ratio' : '14@ratio', // reponsive fix
-      color: "#ffffff",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Medium",
     },
     slidelocation: {
@@ -230,7 +226,7 @@ function useStyle() {
     },
     slidelocationtext: {
       fontSize: window.width <= 320 ? '14@ratio' : '16@ratio', // reponsive fix
-      color: "#ffffff",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
     },
     slidelike: {
@@ -249,7 +245,7 @@ function useStyle() {
     },
     slideliketext: {
       fontSize: '16@ratio',
-      color: "#ffffff",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
     },
     slidepagination: {
@@ -264,7 +260,7 @@ function useStyle() {
       flex: 1,
       height: '4@ratio',
       borderRadius: '10@ratio',
-      backgroundColor: "rgba(255,255,255,0.5)",
+      backgroundColor: "#E5E5EA",
       marginHorizontal: '6@ratio',
       position: "relative",
       overflow: "hidden",
@@ -276,7 +272,7 @@ function useStyle() {
       width: "100%",
       height: '4@ratio',
       borderRadius: '10@ratio',
-      backgroundColor: "rgba(255,255,255,1)",
+      backgroundColor: "#000000",
     },
   });
   return styles;

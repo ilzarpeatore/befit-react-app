@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
 import {
-  ImageBackground,
   StyleSheet,
   Text,
   View,
@@ -156,10 +155,8 @@ export default function Name({ navigation }: NamePropsInterface) {
    * render
    */
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.container2}>
@@ -204,7 +201,7 @@ export default function Name({ navigation }: NamePropsInterface) {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -228,7 +225,7 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     masklabel: {
       height: '49@ratio',
@@ -272,7 +269,7 @@ function useStyle() {
     skipbtntext: {
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
     },
     btnsave: {
       width: '300@ratio',
@@ -288,13 +285,13 @@ function useStyle() {
     titler: {
       fontFamily: "Gilroy-Regular",
       fontSize: '16@ratio',
-      color: "#ffffff",
+      color: "#6B6B70",
       lineHeight: '32@ratio'
     },
     titleb: {
       fontFamily: "Gilroy-Bold",
       fontSize: '20@ratio',
-      color: "#ffffff",
+      color: "#000000",
       lineHeight: '32@ratio'
     },
     textinputbox: {
@@ -310,13 +307,13 @@ function useStyle() {
     textinput: {
       width: "100%",
       height: "100%",
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
       borderRadius: '16@ratio',
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
       paddingHorizontal: '15@ratio',
       lineHeight: '20@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     inputlabelbg: {
       width: Platform.OS == "ios" ? '110@ratio' : '88@ratio', //ios fix
@@ -330,11 +327,11 @@ function useStyle() {
     inputlabel: {
       width: "100%",
       height: "100%",
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
       borderRadius: '16@ratio',
       fontFamily: "Gilroy-Bold",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       lineHeight: '26@ratio',
       textAlign: "center",
     },

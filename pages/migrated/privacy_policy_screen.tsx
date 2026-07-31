@@ -30,5 +30,5 @@ const s = StyleSheet.create({
   backBtn: { padding: 4 },
   appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   content: { padding: 16, paddingBottom: 40 },
-  policyText: { fontSize: 15, fontFamily: FONT.regular, color: C.gray10, lineHeight: 24 },
+  policyText: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, lineHeight: 24 },
 });

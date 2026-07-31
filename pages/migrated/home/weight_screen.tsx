@@ -136,7 +136,7 @@ export default function WeightScreen({ navigation }: any) {
               <Text style={styles.goalSub}>Faltan 5.0 kg</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate("MigratedWeightDetails")}>
-              <Ionicons name="chevron-forward" size={20} color={C.gray5} />
+              <Ionicons name="chevron-forward" size={20} color={C.gray50} />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -155,12 +155,12 @@ function useStyle() {
     scroll: { padding: 20, paddingBottom: 80 },
     headerTitle: { fontSize: 28, fontFamily: FONT.bold, color: C.white, marginBottom: 20 },
     heroCard: { backgroundColor: C.surface, borderRadius: 16, padding: 24, alignItems: "center", marginBottom: 20, borderWidth: 1, borderColor: C.border },
-    heroLabel: { fontSize: 13, fontFamily: FONT.medium, color: C.gray5, marginBottom: 4 },
+    heroLabel: { fontSize: 13, fontFamily: FONT.medium, color: C.gray50, marginBottom: 4 },
     heroWeight: { fontSize: 42, fontFamily: FONT.extraBold, color: C.white },
     tabsRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
     tab: { paddingVertical: 8, paddingHorizontal: 18, borderRadius: 20, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
     tabActive: { backgroundColor: C.brand50, borderColor: C.brand50 },
-    tabText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray5 },
+    tabText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray50 },
     tabTextActive: { color: C.white },
     chartCard: { backgroundColor: C.surface, borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: C.border },
     chartArea: { height: 140, position: "relative" },
@@ -168,19 +168,19 @@ function useStyle() {
     chartDot: { position: "absolute", width: 8, height: 8, borderRadius: 4 },
     insightRow: { flexDirection: "row", gap: 10, marginBottom: 24 },
     insightMini: { flex: 1, backgroundColor: C.surface, borderRadius: 12, padding: 12, alignItems: "center", borderWidth: 1, borderColor: C.border },
-    insightMiniLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray5, marginBottom: 4 },
+    insightMiniLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray50, marginBottom: 4 },
     insightMiniValue: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
-    insightMiniStatus: { fontSize: 10, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+    insightMiniStatus: { fontSize: 10, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
     sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
     sectionTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
     seeAll: { fontSize: 13, fontFamily: FONT.medium, color: C.textPrimary },
     entryRow: { flexDirection: "row", justifyContent: "space-between", backgroundColor: C.surface, borderRadius: 10, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: C.border },
-    entryDate: { fontSize: 14, fontFamily: FONT.medium, color: C.gray5 },
+    entryDate: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50 },
     entryWeight: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },
     goalRow: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 14, padding: 16, marginTop: 8, borderWidth: 1, borderColor: C.border, gap: 12 },
     goalRingSmall: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.brand5, justifyContent: "center", alignItems: "center" },
     goalLabel: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-    goalSub: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+    goalSub: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
     fab: { position: "absolute", bottom: 24, right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: C.brand50, justifyContent: "center", alignItems: "center", elevation: 4 },
   });
 }

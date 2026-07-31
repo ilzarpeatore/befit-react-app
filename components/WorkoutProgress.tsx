@@ -55,14 +55,14 @@ export default function WorkoutProgress({
       {/* workout progress bg */}
       <Path
         d="M183.268 205C208.105 185.122 224 154.633 224 120.45C224 60.5549 175.199 12 115 12C54.801 12 6 60.5549 6 120.45C6 154.633 21.8947 185.122 46.7316 205"
-        stroke="#8A8CB3"
+        stroke="#E5E5EA"
         strokeWidth="10"
         strokeLinecap="round"
       />
       {/* workout progress path */}
       <AnimatedPath
         d="M183.268 205C208.105 185.122 224 154.633 224 120.45C224 60.5549 175.199 12 115 12C54.801 12 6 60.5549 6 120.45C6 154.633 21.8947 185.122 46.7316 205"
-        stroke="#505EDC"
+        stroke="#1C1C1E"
         strokeWidth="12"
         strokeLinecap="round"
         strokeDasharray={550}
@@ -178,7 +178,7 @@ export default function WorkoutProgress({
         }
         r="9"
         fill="white"
-        stroke="#505EDC"
+        stroke="#1C1C1E"
         strokeWidth="6"
       />
       {/* workout progress 7 circles inside */}
@@ -186,43 +186,43 @@ export default function WorkoutProgress({
         cx="60.3762"
         cy="182.429"
         r="2.75878"
-        fill={percent >= 0 ? "#505EDC" : "#C4C4C4"} // change the color of the circles if the percentage reach its the position
+        fill={percent >= 0 ? "#1C1C1E" : "#D1D1D6"} // change the color of the circles if the percentage reach its the position
       />
       <Circle
         cx="29.4778"
         cy="117.322"
         r="2.75878"
-        fill={percent >= 16 ? "#505EDC" : "#C4C4C4"}
+        fill={percent >= 16 ? "#1C1C1E" : "#D1D1D6"}
       />
       <Circle
         cx="54.8585"
         cy="57.7324"
         r="2.75878"
-        fill={percent >= 32 ? "#505EDC" : "#C4C4C4"}
+        fill={percent >= 32 ? "#1C1C1E" : "#D1D1D6"}
       />
       <Circle
         cx="115.552"
         cy="34.5586"
         r="2.75878"
-        fill={percent >= 48 ? "#505EDC" : "#C4C4C4"}
+        fill={percent >= 48 ? "#1C1C1E" : "#D1D1D6"}
       />
       <Circle
         cx="175.141"
         cy="57.7324"
         r="2.75878"
-        fill={percent >= 64 ? "#505EDC" : "#C4C4C4"}
+        fill={percent >= 64 ? "#1C1C1E" : "#D1D1D6"}
       />
       <Circle
         cx="200.522"
         cy="117.322"
         r="2.75878"
-        fill={percent >= 80 ? "#505EDC" : "#C4C4C4"}
+        fill={percent >= 80 ? "#1C1C1E" : "#D1D1D6"}
       />
       <Circle
         cx="169.624"
         cy="182.429"
         r="2.75878"
-        fill={percent == 100 ? "#505EDC" : "#C4C4C4"}
+        fill={percent == 100 ? "#1C1C1E" : "#D1D1D6"}
       />
       {/* workout progress 7 circles inside */}
     </Svg>

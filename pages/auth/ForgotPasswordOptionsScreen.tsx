@@ -14,10 +14,8 @@ export default function ForgotPasswordOptionsScreen() {
   const styles = useStyle();
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         {/* title */}
@@ -64,7 +62,7 @@ export default function ForgotPasswordOptionsScreen() {
 
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

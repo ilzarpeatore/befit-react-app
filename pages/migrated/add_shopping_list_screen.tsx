@@ -284,7 +284,7 @@ const styles_local = StyleSheet.create({
   cardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardLabel: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },
   dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dateText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray20 },
+  dateText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray40 },
   textInput: {
     backgroundColor: C.surfaceLight,
     borderRadius: 8,

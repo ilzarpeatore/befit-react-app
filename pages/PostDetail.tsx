@@ -168,7 +168,7 @@ export default function PostDetail() {
 
   if (loading) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -205,13 +205,13 @@ export default function PostDetail() {
           </View>
         </SafeAreaView>
         <StatusBar style="dark" />
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error || !post) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -233,12 +233,12 @@ export default function PostDetail() {
           />
         </SafeAreaView>
         <StatusBar style="dark" />
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -344,7 +344,7 @@ export default function PostDetail() {
                     name={post.is_bookmark ? "bookmark" : "bookmark-outline"}
                     size={22}
                     color={
-                      post.is_bookmark ? Colors.ACCENT_START : Colors.TEXT_SECONDARY
+                      post.is_bookmark ? Colors.TEXT_PRIMARY : Colors.TEXT_SECONDARY
                     }
                   />
                 </TouchableOpacity>
@@ -424,7 +424,7 @@ export default function PostDetail() {
         </KeyboardAvoidingView>
       </SafeAreaView>
       <StatusBar style="dark" />
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -433,7 +433,6 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       backgroundColor: Colors.BG_PRIMARY,
     },
     container: {
@@ -515,7 +514,7 @@ function useStyle() {
       gap: "24@ratio",
       paddingTop: "8@ratio",
       borderTopWidth: "1@ratio",
-      borderTopColor: "rgba(138,140,178,0.15)",
+      borderTopColor: "#E5E5EA",
     },
     actionBtn: {
       flexDirection: "row",
@@ -583,7 +582,7 @@ function useStyle() {
       paddingHorizontal: "16@ratio",
       paddingVertical: "12@ratio",
       borderTopWidth: "1@ratio",
-      borderTopColor: "rgba(138,140,178,0.15)",
+      borderTopColor: "#E5E5EA",
       backgroundColor: Colors.BG_PRIMARY,
     },
     input: {

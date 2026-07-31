@@ -107,7 +107,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#000000" />
             ) : (
               <Text style={styles.btnText}>Sign In</Text>
             )}
@@ -163,7 +163,7 @@ const styles = {
   input: { flex: 1, height: 52, paddingHorizontal: 12, fontFamily: "Gilroy-Regular" as const, fontSize: 16, color: Colors.TEXT_PRIMARY } as const,
   eyeBtn: { paddingHorizontal: 14 } as const,
   btn: {
-    backgroundColor: Colors.ACCENT_START || "#E3DCD9",
+    backgroundColor: Colors.ACCENT_START || "#E5E5EA",
     borderRadius: 14,
     height: 54,
     justifyContent: "center" as const,
@@ -172,12 +172,12 @@ const styles = {
     marginBottom: 16,
   } as const,
   btnDisabled: { opacity: 0.6 } as const,
-  btnText: { fontFamily: "Gilroy-Bold" as const, fontSize: 17, color: "#1C1C1E" } as const,
+  btnText: { fontFamily: "Gilroy-Bold" as const, fontSize: 17, color: "#000000" } as const,
   forgotBtn: { alignItems: "flex-end" as const, marginBottom: 24 } as const,
-  // Texto de enlace: ACCENT_START/ACCENT_ACTIVE son ahora beige claro (E3DCD9),
+  // Texto de enlace: ACCENT_START/ACCENT_ACTIVE son ahora gris claro (E5E5EA),
   // ilegibles como color de TEXTO sobre fondo claro - se usa TEXT_PRIMARY
-  // (#1C1C1E) en su lugar, el peso "Bold" ya distingue el enlace visualmente.
-  forgotText: { fontFamily: "Gilroy-Medium" as const, fontSize: 14, color: Colors.TEXT_PRIMARY || "#1C1C1E" } as const,
+  // (#000000) en su lugar, el peso "Bold" ya distingue el enlace visualmente.
+  forgotText: { fontFamily: "Gilroy-Medium" as const, fontSize: 14, color: Colors.TEXT_PRIMARY || "#000000" } as const,
   dividerRow: { flexDirection: "row" as const, alignItems: "center" as const, marginBottom: 24 } as const,
   dividerLine: { flex: 1, height: 1, backgroundColor: Colors.TEXT_MUTED || "#2A2844" } as const,
   dividerText: { fontFamily: "Gilroy-Medium" as const, fontSize: 13, color: Colors.TEXT_SECONDARY, marginHorizontal: 16 } as const,
@@ -196,5 +196,5 @@ const styles = {
   googleBtnText: { fontFamily: "Gilroy-Medium" as const, fontSize: 15, color: Colors.TEXT_PRIMARY } as const,
   footer: { flexDirection: "row" as const, justifyContent: "center" as const, alignItems: "center" } as const,
   footerText: { fontFamily: "Gilroy-Regular" as const, fontSize: 15, color: Colors.TEXT_SECONDARY } as const,
-  footerLink: { fontFamily: "Gilroy-Bold" as const, fontSize: 15, color: Colors.TEXT_PRIMARY || "#1C1C1E" } as const,
+  footerLink: { fontFamily: "Gilroy-Bold" as const, fontSize: 15, color: Colors.TEXT_PRIMARY || "#000000" } as const,
 };

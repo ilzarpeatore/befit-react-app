@@ -38,13 +38,13 @@ export default function ForgotPasswordOptionsScreen({ navigation }: any) {
                 }}
               >
                 <View style={styles.iconBox}>
-                  <Ionicons name={o.icon} size={24} color={C.brand50} />
+                  <Ionicons name={o.icon} size={24} color={C.white} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardLabel}>{o.label}</Text>
                   <Text style={styles.cardDesc}>{o.desc}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={C.gray5} />
+                <Ionicons name="chevron-forward" size={20} color={C.gray50} />
               </TouchableOpacity>
             ))}
           </View>
@@ -65,11 +65,11 @@ function useStyle() {
     backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, justifyContent: "center", alignItems: "center" },
     content: { paddingHorizontal: 24, paddingTop: 24 },
     title: { fontSize: 24, fontFamily: FONT.bold, color: C.white, textAlign: "center" },
-    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", marginTop: 8 },
+    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", marginTop: 8 },
     card: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16, gap: 14 },
     iconBox: { width: 48, height: 48, borderRadius: 14, backgroundColor: C.brand10, justifyContent: "center", alignItems: "center" },
     cardLabel: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },
-    cardDesc: { fontSize: 12, fontFamily: FONT.medium, color: C.gray5, marginTop: 2 },
+    cardDesc: { fontSize: 12, fontFamily: FONT.medium, color: C.gray50, marginTop: 2 },
     imagePlaceholder: { flex: 1, justifyContent: "center", alignItems: "center" },
   });
 }

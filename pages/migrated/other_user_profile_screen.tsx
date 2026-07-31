@@ -139,7 +139,7 @@ const s = StyleSheet.create({
   postHeaderInfo: { marginLeft: 12, flex: 1 },
   postUserName: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
   postTime: { fontSize: 12, color: C.gray40 },
-  postContent: { fontSize: 14, color: C.gray10, marginBottom: 12, lineHeight: 20 },
+  postContent: { fontSize: 14, color: C.gray50, marginBottom: 12, lineHeight: 20 },
   postImagesRow: { flexDirection: 'row', marginBottom: 12 },
   postImageThumb: { width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight },
   postActions: { flexDirection: 'row', borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 12 },

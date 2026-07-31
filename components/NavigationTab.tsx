@@ -69,16 +69,16 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
     <View style={[styles.navigation, { marginBottom: safearea.bottom }]}>
       {/*navigation bg start*/}
       <LinearGradient
-        colors={["rgba(20, 18, 39, 0)", "rgba(20, 18, 39, 0.5)"]}
+        colors={["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.08)"]}
         style={styles.navigationdropshadow}
       ></LinearGradient>
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         colors={[
-          "rgba(26, 23,53, 0)",
-          "rgba(90,93,135, 1)",
-          "rgba(27, 23, 52, 0)",
+          "rgba(0, 0, 0, 0)",
+          "rgba(229,229,234, 1)",
+          "rgba(0, 0, 0, 0)",
         ]}
         locations={[0, 0.515625, 1]}
         style={styles.navigationglow}
@@ -89,6 +89,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
           styles.navigationbtnactive,
           {
             transform: [{ translateX: navigationbtnactiveX }],
+            tintColor: "#1C1C1E",
           },
           navigation_ellipse_show ? { opacity: 1 } : { opacity: 0 },
         ]}
@@ -134,7 +135,13 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
             onLongPress={onLongPress}
             style={styles.navigationbtn}
           >
-            <Image source={typedOptions.icon} style={styles.navigationicon} />
+            <Image
+              source={typedOptions.icon}
+              style={[
+                styles.navigationicon,
+                { tintColor: isFocused ? "#000000" : "#AEAEB2" },
+              ]}
+            />
           </TouchableOpacity>
         );
       })}
@@ -151,7 +158,7 @@ function useStyle() {
     navigation: {
       width: "100%",
       height: '65@ratio',
-      backgroundColor: "#1A1735",
+      backgroundColor: "#FFFFFF",
       bottom: 0,
       right: 0,
       flexDirection: "row",

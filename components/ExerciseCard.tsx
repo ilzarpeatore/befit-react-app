@@ -33,7 +33,9 @@ function ExerciseCard({
       >
         {image ? (
           <Image source={{ uri: image }} style={styles.image} />
-        ) : null}
+        ) : (
+          <View style={[styles.image, styles.imagePlaceholder]} />
+        )}
 
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={1}>
@@ -43,17 +45,17 @@ function ExerciseCard({
           <View style={styles.tagRow}>
             {bodyPart ? (
               <View style={styles.tag}>
-                <Text style={styles.tagText}>{bodyPart}</Text>
+                <Text style={styles.tagText} numberOfLines={1}>{bodyPart}</Text>
               </View>
             ) : null}
             {equipment ? (
               <View style={styles.tag}>
-                <Text style={styles.tagText}>{equipment}</Text>
+                <Text style={styles.tagText} numberOfLines={1}>{equipment}</Text>
               </View>
             ) : null}
             {level ? (
               <View style={styles.tag}>
-                <Text style={styles.tagText}>{level}</Text>
+                <Text style={styles.tagText} numberOfLines={1}>{level}</Text>
               </View>
             ) : null}
           </View>
@@ -68,38 +70,47 @@ export const ExerciseCardMem = React.memo(ExerciseCard);
 function useStyle() {
   return useResponsiveStyleSheet({
     container: {
-      borderRadius: "16@ratio",
+      flexDirection: "row",
+      alignItems: "center",
+      borderRadius: "12@ratio",
       overflow: "hidden",
-      marginBottom: "12@ratio",
+      marginBottom: "10@ratio",
+      padding: "8@ratio",
     },
     image: {
-      width: "100%",
-      height: "140@ratio",
+      width: "56@ratio",
+      height: "56@ratio",
+      borderRadius: "8@ratio",
       resizeMode: "cover",
     },
+    imagePlaceholder: {
+      backgroundColor: "#E5E5EA",
+    },
     content: {
-      padding: "16@ratio",
+      flex: 1,
+      marginLeft: "12@ratio",
     },
     title: {
       fontFamily: "Gilroy-Bold",
-      fontSize: "16@ratio",
+      fontSize: "14@ratio",
       color: Colors.TEXT_PRIMARY,
-      marginBottom: "10@ratio",
+      marginBottom: "4@ratio",
     },
     tagRow: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 6,
+      gap: 4,
     },
     tag: {
-      backgroundColor: "rgba(90,93,135,0.3)",
+      backgroundColor: "#E5E5EA",
       borderRadius: "20@ratio",
-      paddingHorizontal: "10@ratio",
-      paddingVertical: "4@ratio",
+      paddingHorizontal: "8@ratio",
+      paddingVertical: "2@ratio",
+      maxWidth: "100@ratio",
     },
     tagText: {
       fontFamily: "Gilroy-Medium",
-      fontSize: "12@ratio",
+      fontSize: "11@ratio",
       color: Colors.TEXT_SECONDARY,
     },
   });
