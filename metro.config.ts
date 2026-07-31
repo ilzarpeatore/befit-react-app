@@ -1,9 +1,8 @@
-import { getDefaultConfig } from 'expo/metro-config';
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativewind } = require('nativewind/metro');
 
 const config = getDefaultConfig(__dirname);
-//@ts-ignore
 config.resolver.sourceExts.push('mjs');
-//@ts-ignore
 config.resolver.sourceExts.push('cjs');
 
-module.exports = config;
+module.exports = withNativewind(config, { inlineRem: 16 });
