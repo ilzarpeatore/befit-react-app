@@ -3,21 +3,43 @@
   "compilerOptions": {
     "ignoreDeprecations": "6.0",
     "baseUrl": "./",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@components/*": ["./components/*"],
-      "@pages/*": ["./pages/*"],
-      "@assets/*": ["./assets/*"],
-      "@constants/*": ["./constants/*"],
-      "@helper/*": ["./helper/*"],
-      "@store/*": ["./store/*"],
-      "@api/*": ["./api/*"],
-      "@hooks/*": ["./hooks/*"]
+      "@components/*": [
+        "./components/*"
+      ],
+      "@pages/*": [
+        "./pages/*"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ],
+      "@constants/*": [
+        "./constants/*"
+      ],
+      "@helper/*": [
+        "./helper/*"
+      ],
+      "@store/*": [
+        "./store/*"
+      ],
+      "@api/*": [
+        "./api/*"
+      ],
+      "@hooks/*": [
+        "./hooks/*"
+      ],
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "nativewind-env.d.ts"
   ],
   "exclude": [
     "pages/migrated/**/*"
