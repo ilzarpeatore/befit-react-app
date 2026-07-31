@@ -24,5 +24,5 @@ export const Colors = {
   DANGER: C.destructive,
 
   CARD_START: "#FFFFFF",
-  CARD_END: "#F7F7F9",
+  CARD_END: "#FFFFFF",
 } as const;

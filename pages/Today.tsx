@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  StyleSheet,
   Text,
   View,
   Image,
   TouchableOpacity,
   Animated,
-  ImageBackground,
   ScrollView,
   Dimensions,
   RefreshControl,
@@ -33,10 +31,10 @@ const Chartbox = ({ title, number, unit, chartStyle, children, styles }: Chartbo
       start={{ x: 0.04, y: -0.1 }}
       end={{ x: 0.09, y: 1.72 }}
       colors={[
-        "rgba(86,82,229,1)",
-        "rgba(138,140,178,0)",
-        "rgba(138,140,178,0)",
-        "rgba(125,169,244,0.5)",
+        "#E5E5EA",
+        "rgba(0,0,0,0)",
+        "rgba(0,0,0,0)",
+        "#E5E5EA",
       ]}
       locations={[0, 0.348069, 0.596479, 1]}
       style={styles.chartboxborder}
@@ -77,18 +75,15 @@ const Chartrowbox = ({
       start={{ x: 0.04, y: -0.1 }}
       end={{ x: 0.09, y: 1.72 }}
       colors={[
-        "rgba(86,82,229,1)",
-        "rgba(138,140,178,0)",
-        "rgba(138,140,178,0)",
-        "rgba(125,169,244,0.5)",
+        "#E5E5EA",
+        "rgba(0,0,0,0)",
+        "rgba(0,0,0,0)",
+        "#E5E5EA",
       ]}
       locations={[0, 0.348069, 0.596479, 1]}
       style={[styles.chartrowboxborder, borderStyle]}
     >
-      <ImageBackground
-        source={require("./../assets/chartrowbg.png")}
-        style={styles.chartrowboxinside}
-      >
+      <View style={styles.chartrowboxinside}>
         {/*chart title start*/}
         <View style={[styles.chartboxtitle, styles.chartrowboxtitle]}>
           {/*chart title*/}
@@ -117,13 +112,13 @@ const Chartrowbox = ({
           <LinearGradient
             start={{ x: 0.88, y: 1.21 }}
             end={{ x: 0.56, y: 0.5 }}
-            colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0)"]}
+            colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.05)"]}
             style={styles.btnborder}
           >
             <LinearGradient
               start={{ x: 0.24, y: -0.09 }}
               end={{ x: 0.5, y: 1 }}
-              colors={["#7773FA", "#5652E5"]}
+              colors={["#1C1C1E", "#000000"]}
               style={styles.btnbg}
             >
               <Text style={styles.btntext}>{buttonText}</Text>
@@ -131,7 +126,7 @@ const Chartrowbox = ({
           </LinearGradient>
         </TouchableOpacity>
         {/*chart action end*/}
-      </ImageBackground>
+      </View>
     </LinearGradient>
   );
 };
@@ -233,10 +228,7 @@ export default function Today({ navigation }: any) {
       }).start();
   };
   return (
-    <ImageBackground
-      source={require("./../assets/bg2.png")}
-      style={styles.bg}
-    >
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={['right', 'top', 'left']}>
         {/*toolbar start*/}
         <View style={styles.topbar}>
@@ -265,7 +257,7 @@ export default function Today({ navigation }: any) {
           style={styles.containerscroll}
           contentContainerStyle={{ paddingBottom: 20 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FBFBFB" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6B6B70" />
           }
         >
           {/*chart start*/}
@@ -320,7 +312,7 @@ export default function Today({ navigation }: any) {
             <LinearGradient
               start={{ x: 0.04, y: -0.1 }}
               end={{ x: 1, y: 1 }}
-              colors={["rgba(86,82,229,0.6)", "rgba(125,169,244,0.3)"]}
+              colors={["#E5E5EA", "#EBEBF0"]}
               style={styles.nutritionLinkGradient}
             >
               <Text style={styles.nutritionLinkTitle}>Recetas y Nutrición</Text>
@@ -377,7 +369,7 @@ export default function Today({ navigation }: any) {
         {/*navigation end*/}
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -411,7 +403,7 @@ function useStyle() {
       height: "100%",
       resizeMode: "cover",
       paddingTop: '44@ratio',
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     topbar: {
       width: "100%",
@@ -446,7 +438,7 @@ function useStyle() {
       width: '171@ratio',
       height: '35@ratio',
       borderRadius: '5@ratio',
-      backgroundColor: "#3C3F69",
+      backgroundColor: "#E5E5EA",
       flexDirection: "row",
     },
     actionsbg: {
@@ -454,7 +446,7 @@ function useStyle() {
       width: "50%",
       height: '31@ratio',
       borderRadius: '4@ratio',
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
       top: '2@ratio',
       left: '2@ratio',
     },
@@ -466,11 +458,11 @@ function useStyle() {
     actiontext: {
       fontFamily: "Gilroy-SemiBold",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       textAlign: "center",
     },
     actionactive: {
-      color: "#ffffff",
+      color: "#000000",
     },
     containerscroll: {
       flex: 1,
@@ -489,7 +481,7 @@ function useStyle() {
       width: "100%",
       height: "100%",
       borderRadius: '16@ratio',
-      backgroundColor: "#3C3F69",
+      backgroundColor: "#FFFFFF",
       paddingHorizontal: '8@ratio',
       paddingVertical: '15@ratio',
     },
@@ -500,7 +492,7 @@ function useStyle() {
     chartboxtitleh: {
       fontFamily: "Gilroy-Bold",
       fontSize: window.width <= 320 ? '14@ratio' : '16@ratio', //responsive fix
-      color: "#ffffff",
+      color: "#000000",
       flex: 1,
     },
     chartboxtitledata: {
@@ -509,12 +501,12 @@ function useStyle() {
     chartboxtitledatanumber: {
       fontFamily: "Gilroy-Bold",
       fontSize: window.width <= 320 ? '18@ratio' : '20@ratio', //responsive fix
-      color: "#ffffff",
+      color: "#000000",
     },
     chartboxtitledataunit: {
       fontFamily: "Gilroy-Bold",
       fontSize: '12@ratio',
-      color: "#ffffff",
+      color: "#6B6B70",
       opacity: 0.5,
       marginLeft: '5@ratio',
       alignSelf: "flex-end",
@@ -543,12 +535,12 @@ function useStyle() {
     nutritionLinkTitle: {
       fontFamily: "Gilroy-ExtraBold",
       fontSize: '15@ratio',
-      color: "#fff",
+      color: "#000000",
     },
     nutritionLinkSubtitle: {
       fontFamily: "Gilroy-Light",
       fontSize: '11@ratio',
-      color: "#D0D2E8",
+      color: "#6B6B70",
       marginTop: '4@ratio',
     },
     chartboxrow: {
@@ -569,7 +561,7 @@ function useStyle() {
       width: "100%",
       height: "100%",
       borderRadius: '16@ratio',
-      backgroundColor: "#1A1735",
+      backgroundColor: "#FFFFFF",
       resizeMode: "contain",
     },
     chartrowboxtitle: {
@@ -580,7 +572,7 @@ function useStyle() {
     chartboxtitledatadash: {
       fontFamily: "Gilroy-Bold",
       fontSize: '24@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     chartboxtitledatatotal: {
       marginLeft: '3@ratio',
@@ -588,12 +580,12 @@ function useStyle() {
     chartboxtitledatatotalnumber: {
       fontFamily: "Gilroy-Bold",
       fontSize: '12@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     chartboxtitledatatotalunit: {
       fontFamily: "Gilroy-Bold",
       fontSize: '10@ratio',
-      color: "#ffffff",
+      color: "#6B6B70",
       opacity: 0.5,
     },
     chartboxgraph3: {
@@ -630,213 +622,4 @@ function useStyle() {
   });
   return styles;
 }
-/**
- * style
- * * you can remove this const
- * * use this style if you don't want to use ratio ( comment the code on line 26 )
- */
-const styles_old = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  bg: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-    paddingTop: 44,
-    backgroundColor: "#1A1735",
-  },
-  topbar: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    marginBottom: 15,
-  },
-  title: {
-    flex: 1,
-    height: 37,
-  },
-  masklabelview: {
-    backgroundColor: "transparent",
-    height: 37,
-    alignItems: "flex-start",
-  },
-  masklabeltext: {
-    fontSize: 30,
-    color: "white",
-    fontFamily: "Gilroy-ExtraBold",
-  },
-  masklabelimg: {
-    resizeMode: "contain",
-    width: "100%",
-    height: 199,
-    marginLeft: -20,
-    marginTop: -37,
-  },
-  actions: {
-    width: 171,
-    height: 35,
-    borderRadius: 5,
-    backgroundColor: "#3C3F69",
-    flexDirection: "row",
-  },
-  actionsbg: {
-    position: "absolute",
-    width: "50%",
-    height: 31,
-    borderRadius: 4,
-    backgroundColor: "#141227",
-    top: 2,
-    left: 2,
-  },
-  action: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  actiontext: {
-    fontFamily: "Gilroy-SemiBold",
-    fontSize: 14,
-    color: "#8A8CB2",
-    textAlign: "center",
-  },
-  actionactive: {
-    color: "#ffffff",
-  },
-  containerscroll: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  chartboxborder: {
-    borderRadius: 16,
-    justifyContent: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 1,
-    height: 174,
-    marginBottom: 15,
-  },
-  chartboxinside: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 16,
-    backgroundColor: "#3C3F69",
-    paddingHorizontal: 8,
-    paddingVertical: 15,
-  },
-  chartboxtitle: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  chartboxtitleh: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: window.width <= 320 ? 14 : 16, //responsive fix
-    color: "#ffffff",
-    flex: 1,
-  },
-  chartboxtitledata: {
-    flexDirection: "row",
-  },
-  chartboxtitledatanumber: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: window.width <= 320 ? 18 : 20, //responsive fix
-    color: "#ffffff",
-  },
-  chartboxtitledataunit: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: 12,
-    color: "#ffffff",
-    opacity: 0.5,
-    marginLeft: 5,
-    alignSelf: "flex-end",
-    marginBottom: 2,
-  },
-  chartboxgraph: {
-    position: "absolute",
-    top: 0,
-    left: "50%",
-    marginLeft: -151,
-  },
-  chartboxgraph2: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  chartboxrow: {
-    flexDirection: "row",
-  },
-  chartrowboxborder: {
-    flex: 1,
-    borderRadius: 16,
-    justifyContent: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 1,
-    height: 174,
-    overflow: "hidden",
-  },
-  chartrowboxinside: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 16,
-    backgroundColor: "#1A1735",
-    resizeMode: "contain",
-  },
-  chartrowboxtitle: {
-    padding: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  chartboxtitledatadash: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: 24,
-    color: "#ffffff",
-  },
-  chartboxtitledatatotal: {
-    marginLeft: 3,
-  },
-  chartboxtitledatatotalnumber: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: 12,
-    color: "#ffffff",
-  },
-  chartboxtitledatatotalunit: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: 10,
-    color: "#ffffff",
-    opacity: 0.5,
-  },
-  chartboxgraph3: {
-    width: 56,
-    height: 56,
-    alignSelf: "center",
-    marginTop: 5,
-  },
-  btn: {
-    width: 90,
-    height: 45,
-    borderRadius: 12,
-    alignSelf: "center",
-    marginTop: 10,
-  },
-  btnborder: {
-    padding: 1,
-    width: 90,
-    height: 45,
-    borderRadius: 12,
-  },
-  btnbg: {
-    width: 90,
-    height: 45,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  btntext: {
-    fontFamily: "Gilroy-Bold",
-    fontSize: 14,
-    color: "#ffffff",
-  },
-});
+

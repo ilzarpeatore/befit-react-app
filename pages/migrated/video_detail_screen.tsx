@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     fontFamily: FONT.regular,
-    color: C.gray10,
+    color: C.gray50,
     lineHeight: 22,
     paddingHorizontal: 8,
   },

@@ -144,7 +144,7 @@ function useStyle() {
     badge: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "rgba(90,93,135,0.3)",
+      backgroundColor: "#E5E5EA",
       borderRadius: "20@ratio",
       paddingHorizontal: "10@ratio",
       paddingVertical: "4@ratio",

@@ -110,10 +110,8 @@ export default function WorkoutDetail() {
 
   if (loading) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
-        resizeMode="cover"
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.container2}>
@@ -145,16 +143,14 @@ export default function WorkoutDetail() {
           </View>
           <StatusBar style="dark" />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
-        resizeMode="cover"
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.container2}>
@@ -176,17 +172,15 @@ export default function WorkoutDetail() {
           </View>
           <StatusBar style="dark" />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   if (!detail) return null;
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.container2}>
@@ -268,7 +262,7 @@ export default function WorkoutDetail() {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -334,7 +328,7 @@ function useStyle() {
     badge: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "rgba(90,93,135,0.3)",
+      backgroundColor: "#E5E5EA",
       borderRadius: "20@ratio",
       paddingHorizontal: "10@ratio",
       paddingVertical: "4@ratio",

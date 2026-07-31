@@ -154,7 +154,7 @@ const cpStyles = StyleSheet.create({
   circle: { position: "absolute" },
   label: { alignItems: "center" },
   score: { fontSize: 32, fontFamily: FONT.bold, color: C.white },
-  of: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5 },
+  of: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
 });
 
 export default function HealthMetricInsightScreen({ route }: any) {
@@ -254,7 +254,7 @@ function useStyle() {
       borderWidth: 1,
       borderColor: C.border,
     },
-    overviewLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginBottom: 4 },
+    overviewLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginBottom: 4 },
     overviewValue: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
     scoreSection: { alignItems: "center", marginBottom: 28 },
     sectionTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.white, marginBottom: 16 },
@@ -263,9 +263,9 @@ function useStyle() {
     chartCol: { alignItems: "center", flex: 1 },
     chartBarWrapper: { height: 100, justifyContent: "flex-end" },
     chartBar: { width: 20, borderRadius: 6 },
-    chartDay: { fontSize: 11, fontFamily: FONT.regular, color: C.gray5, marginTop: 6 },
+    chartDay: { fontSize: 11, fontFamily: FONT.regular, color: C.gray50, marginTop: 6 },
     recSection: { marginBottom: 32 },
     recItem: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, flex: 1 },
+    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, flex: 1 },
   });
 }

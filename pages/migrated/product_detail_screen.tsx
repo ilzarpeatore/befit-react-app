@@ -81,7 +81,7 @@ const s = StyleSheet.create({
   productTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
   productPrice: { fontSize: 20, fontFamily: FONT.bold, color: C.brand5, marginBottom: 8 },
   divider: { height: 1, backgroundColor: C.gray70, marginVertical: 12, marginHorizontal: 16 },
-  productDescription: { fontSize: 14, fontFamily: FONT.regular, color: C.gray20, lineHeight: 22 },
+  productDescription: { fontSize: 14, fontFamily: FONT.regular, color: C.gray40, lineHeight: 22 },
   footer: { padding: 16, paddingBottom: 32 },
   buyBtn: { backgroundColor: C.brand5, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   buyBtnText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },

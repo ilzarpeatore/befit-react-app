@@ -65,7 +65,7 @@ export default function ParqResultScreen({ navigation, route }: any) {
 function ProfileRow({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <View style={prStyles.row}>
-      <Ionicons name={icon as any} size={18} color={C.gray5} />
+      <Ionicons name={icon as any} size={18} color={C.gray50} />
       <Text style={prStyles.label}>{label}</Text>
       <View style={{ flex: 1 }} />
       <Text style={prStyles.value}>{value}</Text>
@@ -75,7 +75,7 @@ function ProfileRow({ icon, label, value }: { icon: string; label: string; value
 
 const prStyles = {
   row: { flexDirection: "row", alignItems: "center", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.border, gap: 10 } as const,
-  label: { fontSize: 14, fontFamily: FONT.medium, color: C.gray5 } as const,
+  label: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50 } as const,
   value: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white } as const,
 };
 
@@ -87,12 +87,12 @@ function useStyle() {
     iconGreen: { backgroundColor: C.success5 },
     iconOrange: { backgroundColor: C.warning5 },
     title: { fontSize: 24, fontFamily: FONT.bold, color: C.white, textAlign: "center" },
-    desc: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", marginTop: 8, marginBottom: 28, lineHeight: 22 },
+    desc: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", marginTop: 8, marginBottom: 28, lineHeight: 22 },
     profileCard: { width: "100%", backgroundColor: C.surface, borderRadius: 20, borderWidth: 1, borderColor: C.border, padding: 20, marginBottom: 24 },
     profileTitle: { fontSize: 16, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
     primaryBtn: { backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, alignItems: "center", width: "100%" },
     primaryBtnText: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
     retryLink: { marginTop: 16 },
-    retryText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray5 },
+    retryText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray50 },
   });
 }

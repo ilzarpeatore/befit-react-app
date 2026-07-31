@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   tipsContent: {
     fontSize: 14,
     fontFamily: FONT.regular,
-    color: C.gray10,
+    color: C.gray50,
     marginTop: 8,
     lineHeight: 22,
   },
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   instructionContent: {
     fontSize: 14,
     fontFamily: FONT.regular,
-    color: C.gray10,
+    color: C.gray50,
     lineHeight: 22,
   },
 });

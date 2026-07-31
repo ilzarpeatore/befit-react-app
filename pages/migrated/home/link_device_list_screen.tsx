@@ -66,7 +66,7 @@ function useStyle() {
       marginBottom: 24,
     },
     title: { fontSize: 28, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray5, marginBottom: 28 },
+    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, marginBottom: 28 },
     deviceCard: {
       flexDirection: "row",
       alignItems: "center",
@@ -88,7 +88,7 @@ function useStyle() {
     },
     deviceInfo: { flex: 1 },
     deviceName: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-    deviceDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+    deviceDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
     connectBtn: {
       backgroundColor: C.brand50,
       borderRadius: 12,

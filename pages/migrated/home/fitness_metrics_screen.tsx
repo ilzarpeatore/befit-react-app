@@ -83,7 +83,7 @@ export default function FitnessMetricsScreen({ navigation }: any) {
                 </View>
               </View>
               <MiniChart data={m.chart} color={m.iconColor} />
-              <Ionicons name="chevron-forward" size={16} color={C.gray10} />
+              <Ionicons name="chevron-forward" size={16} color={C.gray50} />
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -116,10 +116,10 @@ function useStyle() {
       alignItems: "center",
     },
     cardBody: { flex: 1 },
-    cardName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray5 },
+    cardName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50 },
     cardValueRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
     cardValue: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-    cardUnit: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, marginRight: 8 },
+    cardUnit: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginRight: 8 },
     badge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
     badgeText: { fontSize: 11, fontFamily: FONT.semiBold },
   });

@@ -22,7 +22,16 @@ interface WorkoutHistoryItem {
   workoutTitle: string;
   workoutId: number;
   workoutDayId: number;
+  sets: { reps: string; weight: string; time?: string }[];
+  date: string | null;
   [key: string]: any;
+}
+
+function formatHistoryDate(date: string | null): string {
+  if (!date) return '';
+  const d = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
 export default function WorkoutHistoryScreen(props: any) {
@@ -45,12 +54,14 @@ export default function WorkoutHistoryScreen(props: any) {
         const value: any = res.data;
         const items = (value.data ?? []).map((item: any) => ({
           exerciseId: item.exercise_id,
-          exerciseTitle: item.exercise?.title || '',
-          exerciseImage: item.exercise?.exercise_image || '',
-          exerciseIsPremium: item.exercise?.is_premium,
-          workoutTitle: item.workout?.title || '',
+          exerciseTitle: item.exercise_title || '',
+          exerciseImage: item.exercise_image || '',
+          exerciseIsPremium: item.exercise_is_premium,
+          workoutTitle: item.workout_title || '',
           workoutId: item.workout_id,
           workoutDayId: item.workout_day_id,
+          sets: item.sets || [],
+          date: item.date || null,
         }));
         setHistoryList(items);
       });
@@ -108,6 +119,12 @@ export default function WorkoutHistoryScreen(props: any) {
             </View>
           )}
         </View>
+        {(item.sets.length > 0 || item.date) && (
+          <Text style={styles.detailText} numberOfLines={1}>
+            {item.sets.length > 0 ? `${item.sets.length} series` : 'Completado'}
+            {item.date ? ` · ${formatHistoryDate(item.date)}` : ''}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -206,6 +223,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: C.white,
     flex: 1,
+  },
+  detailText: {
+    fontFamily: FONT.regular,
+    fontSize: 12,
+    color: C.textSecondary,
+    marginTop: 4,
   },
   proBadge: {
     backgroundColor: C.orange,

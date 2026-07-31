@@ -52,7 +52,7 @@ function PasswordStrength({ password }: { password: string }) {
   if (/[A-Z]/.test(password)) strength++;
   if (/[0-9]/.test(password)) strength++;
   if (/[^A-Za-z0-9]/.test(password)) strength++;
-  const colors = [C.destructive50, C.orange, C.warning40, C.success50, C.brand50];
+  const colors = [C.destructive50, C.orange, C.warning40, C.success50, C.success60];
   const labels = ["Muy dÃ©bil", "DÃ©bil", "Regular", "Fuerte", "Muy fuerte"];
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 }}>
@@ -108,16 +108,16 @@ export default function RegisterFlowScreen({ navigation }: any) {
         return (
           <>
             <Text style={styles.label}>Nombre completo</Text>
-            <View style={styles.inputWrap}><Ionicons name="person-outline" size={20} color={C.gray5} /><TextInput style={styles.input} placeholder="Tu nombre" placeholderTextColor={C.gray20} value={name} onChangeText={setName} /></View>
+            <View style={styles.inputWrap}><Ionicons name="person-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="Tu nombre" placeholderTextColor={C.gray40} value={name} onChangeText={setName} /></View>
             <Text style={styles.label}>Email</Text>
-            <View style={styles.inputWrap}><Ionicons name="mail-outline" size={20} color={C.gray5} /><TextInput style={styles.input} placeholder="tucorreo@email.com" placeholderTextColor={C.gray20} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" /></View>
+            <View style={styles.inputWrap}><Ionicons name="mail-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="tucorreo@email.com" placeholderTextColor={C.gray40} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" /></View>
             <Text style={styles.label}>TelÃ©fono</Text>
-            <View style={styles.inputWrap}><Ionicons name="call-outline" size={20} color={C.gray5} /><TextInput style={styles.input} placeholder="+34 600 000 000" placeholderTextColor={C.gray20} value={phone} onChangeText={setPhone} keyboardType="phone-pad" /></View>
+            <View style={styles.inputWrap}><Ionicons name="call-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="+34 600 000 000" placeholderTextColor={C.gray40} value={phone} onChangeText={setPhone} keyboardType="phone-pad" /></View>
             <Text style={styles.label}>ContraseÃ±a</Text>
-            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray5} /><TextInput style={styles.input} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" placeholderTextColor={C.gray20} value={password} onChangeText={setPassword} secureTextEntry={!showPass} /><TouchableOpacity onPress={() => setShowPass(!showPass)}><Ionicons name={showPass ? "eye-off-outline" : "eye-outline"} size={20} color={C.gray5} /></TouchableOpacity></View>
+            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" placeholderTextColor={C.gray40} value={password} onChangeText={setPassword} secureTextEntry={!showPass} /><TouchableOpacity onPress={() => setShowPass(!showPass)}><Ionicons name={showPass ? "eye-off-outline" : "eye-outline"} size={20} color={C.gray50} /></TouchableOpacity></View>
             <PasswordStrength password={password} />
             <Text style={styles.label}>Confirmar contraseÃ±a</Text>
-            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray5} /><TextInput style={styles.input} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" placeholderTextColor={C.gray20} value={confirm} onChangeText={setConfirm} secureTextEntry /></View>
+            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" placeholderTextColor={C.gray40} value={confirm} onChangeText={setConfirm} secureTextEntry /></View>
             {confirm.length > 0 && password !== confirm && <Text style={{ fontSize: 12, color: C.destructive50, fontFamily: FONT.medium, marginTop: 4 }}>Las contraseÃ±as no coinciden</Text>}
           </>
         );
@@ -126,7 +126,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
           <View style={{ gap: 12 }}>
             {GOALS.map(g => (
               <TouchableOpacity key={g.key} style={[styles.optionCard, gender === g.key && styles.optionOn]} onPress={() => setGender(g.key)}>
-                <Ionicons name={g.icon} size={28} color={gender === g.key ? C.brand50 : C.gray5} />
+                <Ionicons name={g.icon} size={28} color={gender === g.key ? C.white : C.gray50} />
                 <Text style={[styles.optionLabel, gender === g.key && { color: C.white }]}>{g.label}</Text>
               </TouchableOpacity>
             ))}
@@ -143,7 +143,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
                 return (
                   <TouchableOpacity key={v} onPress={() => setAge(v)} style={{ alignItems: "center", marginHorizontal: 10 }}>
                     <View style={[styles.tickMark, v === age && styles.tickOn]} />
-                    {v % 5 === 0 && <Text style={[styles.tickLabel, v === age && { color: C.brand50 }]}>{v}</Text>}
+                    {v % 5 === 0 && <Text style={[styles.tickLabel, v === age && { color: C.white }]}>{v}</Text>}
                   </TouchableOpacity>
                 );
               })}
@@ -188,7 +188,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
           <View style={{ gap: 12 }}>
             {GOALS.map(g => (
               <TouchableOpacity key={g.key} style={[styles.optionCard, goal === g.key && styles.optionOn]} onPress={() => setGoal(g.key)}>
-                <Ionicons name={g.icon} size={28} color={goal === g.key ? C.brand50 : C.gray5} />
+                <Ionicons name={g.icon} size={28} color={goal === g.key ? C.white : C.gray50} />
                 <Text style={[styles.optionLabel, goal === g.key && { color: C.white }]}>{g.label}</Text>
               </TouchableOpacity>
             ))}
@@ -222,7 +222,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
                 <MacroSlider label="ProteÃ­na" value={proteinPct} color={C.orange} onChange={setProteinPct} />
                 <MacroSlider label="Grasas" value={fatPct} color={C.purple50} onChange={setFatPct} />
                 <MacroSlider label="Carbohidratos" value={carbPct} color={C.blue50} onChange={setCarbPct} />
-                <Text style={{ fontSize: 12, color: C.gray5, fontFamily: FONT.medium, textAlign: "center" }}>Total: {proteinPct + fatPct + carbPct}%</Text>
+                <Text style={{ fontSize: 12, color: C.gray50, fontFamily: FONT.medium, textAlign: "center" }}>Total: {proteinPct + fatPct + carbPct}%</Text>
               </View>
             )}
           </>
@@ -273,8 +273,8 @@ function MacroSlider({ label, value, color, onChange }: { label: string; value: 
         <View style={{ height: 4, backgroundColor: color, borderRadius: 2, width: `${value}%` }} />
       </View>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
-        <TouchableOpacity onPress={() => onChange(Math.max(0, value - 5))}><Ionicons name="remove-circle" size={28} color={C.gray5} /></TouchableOpacity>
-        <TouchableOpacity onPress={() => onChange(Math.min(100, value + 5))}><Ionicons name="add-circle" size={28} color={C.gray5} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => onChange(Math.max(0, value - 5))}><Ionicons name="remove-circle" size={28} color={C.gray50} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => onChange(Math.min(100, value + 5))}><Ionicons name="add-circle" size={28} color={C.gray50} /></TouchableOpacity>
       </View>
     </View>
   );
@@ -286,31 +286,31 @@ function useStyle() {
     header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12 },
     backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, justifyContent: "center", alignItems: "center" },
     headerTitle: { flex: 1, textAlign: "center", fontSize: 16, fontFamily: FONT.bold, color: C.white },
-    stepCounter: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray5 },
+    stepCounter: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray50 },
     body: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 32 },
     stepTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white, marginBottom: 20 },
-    label: { fontSize: 13, fontFamily: FONT.semiBold, color: C.gray5, marginBottom: 6, marginTop: 4 },
+    label: { fontSize: 13, fontFamily: FONT.semiBold, color: C.gray50, marginBottom: 6, marginTop: 4 },
     inputWrap: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 14, borderWidth: 1, borderColor: C.border, paddingHorizontal: 14, paddingVertical: 14, marginBottom: 12, gap: 10 },
     input: { flex: 1, fontSize: 15, fontFamily: FONT.regular, color: C.white },
     optionCard: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16, gap: 14 },
     optionOn: { backgroundColor: C.brand10, borderColor: C.brand50 },
-    optionLabel: { fontSize: 15, fontFamily: FONT.semiBold, color: C.gray5 },
-    optionDesc: { fontSize: 12, fontFamily: FONT.medium, color: C.gray5, marginTop: 2 },
+    optionLabel: { fontSize: 15, fontFamily: FONT.semiBold, color: C.gray50 },
+    optionDesc: { fontSize: 12, fontFamily: FONT.medium, color: C.gray50, marginTop: 2 },
     bigNumber: { fontSize: 64, fontFamily: FONT.extraBold, color: C.white },
-    bigLabel: { fontSize: 16, fontFamily: FONT.medium, color: C.gray5, marginTop: -4 },
+    bigLabel: { fontSize: 16, fontFamily: FONT.medium, color: C.gray50, marginTop: -4 },
     tickMark: { width: 3, height: 20, backgroundColor: C.gray30, borderRadius: 2 },
     tickOn: { backgroundColor: C.brand50, height: 30 },
-    tickLabel: { fontSize: 12, fontFamily: FONT.medium, color: C.gray5, marginTop: 6 },
+    tickLabel: { fontSize: 12, fontFamily: FONT.medium, color: C.gray50, marginTop: 6 },
     sliderWrap: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-    sliderMin: { fontSize: 12, fontFamily: FONT.medium, color: C.gray5, width: 30 },
-    sliderMax: { fontSize: 12, fontFamily: FONT.medium, color: C.gray5, width: 30, textAlign: "right" },
+    sliderMin: { fontSize: 12, fontFamily: FONT.medium, color: C.gray50, width: 30 },
+    sliderMax: { fontSize: 12, fontFamily: FONT.medium, color: C.gray50, width: 30, textAlign: "right" },
     sliderTrack: { flex: 1, height: 6, backgroundColor: C.gray30, borderRadius: 3, marginHorizontal: 8, position: "relative" },
     sliderFill: { height: 6, backgroundColor: C.brand50, borderRadius: 3 },
     sliderThumb: { position: "absolute", top: -7, width: 20, height: 20, borderRadius: 10, backgroundColor: C.brand50, borderWidth: 3, borderColor: C.white },
     sliderBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.gray40, justifyContent: "center", alignItems: "center", alignSelf: "center", marginTop: 4 },
     bmiCard: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.surface, borderRadius: 16, padding: 16, marginTop: 20, gap: 12 },
-    bmiLabel: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray5 },
-    bmiValue: { fontSize: 24, fontFamily: FONT.extraBold, color: C.brand50 },
+    bmiLabel: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray50 },
+    bmiValue: { fontSize: 24, fontFamily: FONT.extraBold, color: C.white },
     footer: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8 },
     nextBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, gap: 8 },
     nextBtnText: { fontSize: 16, fontFamily: FONT.bold, color: C.white },

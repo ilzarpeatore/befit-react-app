@@ -94,7 +94,7 @@ function useStyle() {
     subtitle: {
       fontSize: 14,
       fontFamily: FONT.regular,
-      color: C.gray5,
+      color: C.gray50,
       marginBottom: 32,
     },
     dotsRow: {

@@ -127,6 +127,7 @@ export default function ExerciseDetailScreen(props: ExerciseDetailScreenProps) {
           exercise_id: mExerciseId || 0,
           sets: [],
           date: new Date().toISOString().split('T')[0],
+          workout_day_id: workoutDayId,
         });
         setIsCompleted(false);
         handleBack();

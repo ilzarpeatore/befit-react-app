@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   Animated,
-  ImageBackground,
   Platform,
   RefreshControl,
 } from "react-native";
@@ -84,10 +83,10 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
             start={{ x: 0, y: 1 }}
             end={{ x: 0, y: 0 }}
             colors={[
-              "rgba(60,63,105,1)",
-              "rgba(60,63,105,0)",
-              "rgba(60,63,105,1)",
-              "rgba(60,63,105,0)",
+              "rgba(0,0,0,0.08)",
+              "rgba(0,0,0,0)",
+              "rgba(0,0,0,0.08)",
+              "rgba(0,0,0,0)",
             ]}
             locations={[0, 0.0001, 0.514034, 1]}
             style={styles.challengebulletline}
@@ -104,10 +103,10 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
             start={{ x: 0.04, y: -0.1 }}
             end={{ x: 0.09, y: 1.72 }}
             colors={[
-              "rgba(86,82,229,1)",
-              "rgba(138,140,178,0)",
-              "rgba(138,140,178,0)",
-              "rgba(125,169,244,0.5)",
+              "#E5E5EA",
+              "rgba(0,0,0,0)",
+              "rgba(0,0,0,0)",
+              "#E5E5EA",
             ]}
             locations={[0, 0.348069, 0.596479, 1]}
             style={styles.challengeboxborder}
@@ -152,7 +151,7 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
         <LinearGradient
           start={{ x: 0.5, y: 0.5 }}
           end={{ x: 0.5, y: 1 }}
-          colors={["rgba(60, 63, 105, 0)", "rgba(60, 63, 105, 1)"]}
+          colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.5)"]}
           style={styles.missionimgoverlay}
         />
         {/* mission data start */}
@@ -165,10 +164,7 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
           </View>
           {/* start mission data progress */}
           {item.percentage < 100 ? (
-            <ImageBackground
-              source={require("@assets/challenges/progressbg.png")}
-              style={styles.missiondataprogress}
-            >
+            <View style={styles.missiondataprogress}>
               <Svg
                 width={styles.percentage.width}
                 height={styles.percentage.height}
@@ -200,12 +196,12 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
                     y2="27.5001"
                     gradientUnits="userSpaceOnUse"
                   >
-                    <Stop stopColor="#5652E5" />
+                    <Stop stopColor="#000000" />
                     <Stop offset="1" stopColor="#F85365" />
                   </SlinearGradient>
                 </Defs>
               </Svg>
-            </ImageBackground>
+            </View>
           ) : (
             // show when progress is 100%
             <View style={styles.missiondataprogressdone}>
@@ -321,10 +317,7 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
       }).start();
   };
   return (
-    <ImageBackground
-      source={require("@assets/bg2.png")}
-      style={styles.bg}
-    >
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={['right', 'top', 'left']}>
         {/*toolbar start*/}
         <View style={styles.topbar}>
@@ -361,7 +354,7 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
                 _render_challenge_flatlist_header()
               }
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FBFBFB" />
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6B6B70" />
               }
             />
           </View>
@@ -372,7 +365,7 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
         {/*navigation end*/}
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -397,7 +390,7 @@ function useStyle() {
       height: "100%",
       resizeMode: "cover",
       paddingTop: '44@ratio',
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     topbar: {
       width: "100%",
@@ -431,7 +424,7 @@ function useStyle() {
       width: '131@ratio',
       height: '35@ratio',
       borderRadius: '5@ratio',
-      backgroundColor: "#3C3F69",
+      backgroundColor: "#E5E5EA",
       flexDirection: "row",
     },
     actionsbg: {
@@ -439,7 +432,7 @@ function useStyle() {
       width: "50%",
       height: '31@ratio',
       borderRadius: '4@ratio',
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
       top: '2@ratio',
       left: '2@ratio',
     },
@@ -451,11 +444,11 @@ function useStyle() {
     actiontext: {
       fontFamily: "Gilroy-SemiBold",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       textAlign: "center",
     },
     actionactive: {
-      color: "#ffffff",
+      color: "#000000",
     },
     dailymissiontitle: {
       flexDirection: "row",
@@ -470,7 +463,7 @@ function useStyle() {
     dailymissiontitlet: {
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     missions: {
       flexDirection: "row",
@@ -513,7 +506,8 @@ function useStyle() {
     missiondataprogress: {
       width: '30@ratio',
       height: '30@ratio',
-      resizeMode: "contain",
+      borderRadius: '15@ratio',
+      backgroundColor: "#E5E5EA",
     },
     missiondataprogresssvg: {
       transform: [{ rotate: "-90deg" }],
@@ -537,7 +531,7 @@ function useStyle() {
       height: '36@ratio',
       borderRadius: Platform.OS == "ios" ? '18@ratio' : '36@ratio', //ios fix
       borderWidth: '3@ratio',
-      borderColor: "#5652E5",
+      borderColor: "#000000",
       alignItems: "center",
       justifyContent: "center",
     },
@@ -554,7 +548,7 @@ function useStyle() {
     challengetitle: {
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
-      color: "#ffffff",
+      color: "#000000",
       marginBottom: '20@ratio',
       paddingLeft: '8@ratio',
       marginTop: '32@ratio',
@@ -596,7 +590,7 @@ function useStyle() {
       width: "100%",
       height: "100%",
       borderRadius: '16@ratio',
-      backgroundColor: "#3C3F69",
+      backgroundColor: "#FFFFFF",
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
@@ -606,7 +600,7 @@ function useStyle() {
       width: '45@ratio',
       height: '45@ratio',
       borderRadius: '13@ratio',
-      backgroundColor: "rgba(20,18,39,0.2)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       justifyContent: "center",
       alignItems: "center",
     },
@@ -617,7 +611,7 @@ function useStyle() {
     },
     challengelabel: {
       fontSize: '14@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
       flex: 1,
       paddingLeft: '9@ratio',
@@ -634,7 +628,7 @@ function useStyle() {
     },
     challengetime: {
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Bold",
       marginRight: '15@ratio',
     },

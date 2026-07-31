@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   ImageBackground,
@@ -6,6 +6,7 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -24,6 +25,11 @@ interface WorkoutType {
   title: string;
 }
 
+interface WorkoutLevel {
+  id: number;
+  title: string;
+}
+
 interface Props {
   navigation: any;
 }
@@ -32,20 +38,33 @@ export default function WorkoutList({ navigation }: Props) {
   const styles = useStyle();
   const [workouts, setWorkouts] = useState<WorkoutListItem[]>([]);
   const [types, setTypes] = useState<WorkoutType[]>([]);
+  const [levels, setLevels] = useState<WorkoutLevel[]>([]);
   const [selectedType, setSelectedType] = useState<number | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const fetchWorkouts = useCallback(
-    async (pageNum: number = 1, typeId: number | null = selectedType) => {
+    async (
+      pageNum: number = 1,
+      typeId: number | null = selectedType,
+      levelId: number | null = selectedLevel,
+      title: string = searchText
+    ) => {
       try {
         setError(null);
+        const hasFilters = !!typeId || !!levelId || !!title.trim();
         const params: any = { page: pageNum };
         if (typeId) params.workout_type_id = typeId;
-        const res = typeId
+        if (levelId) params.level_ids = levelId;
+        if (title.trim()) params.title = title.trim();
+        const res = hasFilters
           ? await workoutsApi.getFilteredList(params)
           : await workoutsApi.getList(pageNum);
         const data = res.data?.data ?? [];
@@ -59,7 +78,7 @@ export default function WorkoutList({ navigation }: Props) {
         setError(e?.message || "Failed to load workouts");
       }
     },
-    [selectedType]
+    [selectedType, selectedLevel, searchText]
   );
 
   const fetchTypes = useCallback(async () => {
@@ -69,9 +88,16 @@ export default function WorkoutList({ navigation }: Props) {
     } catch {}
   }, []);
 
+  const fetchLevels = useCallback(async () => {
+    try {
+      const res = await workoutsApi.getLevels();
+      setLevels(res.data?.data ?? []);
+    } catch {}
+  }, []);
+
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchWorkouts(1), fetchTypes()]).finally(() =>
+    Promise.all([fetchWorkouts(1), fetchTypes(), fetchLevels()]).finally(() =>
       setLoading(false)
     );
   }, []);
@@ -96,9 +122,32 @@ export default function WorkoutList({ navigation }: Props) {
       setSelectedType(typeId);
       setPage(1);
       setLoading(true);
-      fetchWorkouts(1, typeId).finally(() => setLoading(false));
+      fetchWorkouts(1, typeId, selectedLevel, searchText).finally(() => setLoading(false));
     },
-    [fetchWorkouts]
+    [fetchWorkouts, selectedLevel, searchText]
+  );
+
+  const handleLevelFilter = useCallback(
+    (levelId: number | null) => {
+      setSelectedLevel(levelId);
+      setPage(1);
+      setLoading(true);
+      fetchWorkouts(1, selectedType, levelId, searchText).finally(() => setLoading(false));
+    },
+    [fetchWorkouts, selectedType, searchText]
+  );
+
+  const handleSearchChange = useCallback(
+    (text: string) => {
+      setSearchText(text);
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => {
+        setPage(1);
+        setLoading(true);
+        fetchWorkouts(1, selectedType, selectedLevel, text).finally(() => setLoading(false));
+      }, 400);
+    },
+    [fetchWorkouts, selectedType, selectedLevel]
   );
 
   const renderSkeleton = () => (
@@ -141,6 +190,32 @@ export default function WorkoutList({ navigation }: Props) {
     );
   };
 
+  const renderLevelChip = (level: WorkoutLevel) => {
+    const isActive = selectedLevel === level.id;
+    return (
+      <TouchableOpacity
+        key={level.id}
+        activeOpacity={0.85}
+        onPress={() => handleLevelFilter(isActive ? null : level.id)}
+      >
+        <LinearGradient
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          colors={
+            isActive
+              ? [Colors.ACCENT_START, Colors.ACCENT_END]
+              : [Colors.CARD_START, Colors.CARD_END]
+          }
+          style={styles.chip}
+        >
+          <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+            {level.title}
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  };
+
   const renderItem = useCallback(
     ({ item }: { item: WorkoutListItem }) => (
       <WorkoutCardMem
@@ -158,10 +233,8 @@ export default function WorkoutList({ navigation }: Props) {
   const keyExtractor = useCallback((item: WorkoutListItem) => item.id.toString(), []);
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.container2}>
@@ -174,6 +247,22 @@ export default function WorkoutList({ navigation }: Props) {
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Workouts</Text>
             <View style={styles.backBtn} />
+          </View>
+
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color={Colors.TEXT_SECONDARY} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search workouts..."
+              placeholderTextColor={Colors.TEXT_SECONDARY}
+              value={searchText}
+              onChangeText={handleSearchChange}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={() => handleSearchChange("")}>
+                <Ionicons name="close-circle" size={18} color={Colors.TEXT_SECONDARY} />
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.chipContainer}>
@@ -210,6 +299,42 @@ export default function WorkoutList({ navigation }: Props) {
             </ScrollView>
           </View>
 
+          {levels.length > 0 && (
+            <View style={styles.chipContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipScroll}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => handleLevelFilter(null)}
+                >
+                  <LinearGradient
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    colors={
+                      selectedLevel === null
+                        ? [Colors.ACCENT_START, Colors.ACCENT_END]
+                        : [Colors.CARD_START, Colors.CARD_END]
+                    }
+                    style={styles.chip}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        selectedLevel === null && styles.chipTextActive,
+                      ]}
+                    >
+                      All levels
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                {levels.map(renderLevelChip)}
+              </ScrollView>
+            </View>
+          )}
+
           {loading && !refreshing ? (
             renderSkeleton()
           ) : error ? (
@@ -245,7 +370,7 @@ export default function WorkoutList({ navigation }: Props) {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -280,6 +405,24 @@ function useStyle() {
       fontFamily: "Gilroy-Bold",
       fontSize: "20@ratio",
       color: Colors.TEXT_PRIMARY,
+    },
+    searchContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: Colors.BG_CARD,
+      borderRadius: "12@ratio",
+      marginHorizontal: "16@ratio",
+      marginBottom: "12@ratio",
+      paddingHorizontal: "12@ratio",
+      paddingVertical: "8@ratio",
+      gap: 8,
+    },
+    searchInput: {
+      flex: 1,
+      fontFamily: "Gilroy-Regular",
+      fontSize: "14@ratio",
+      color: Colors.TEXT_PRIMARY,
+      padding: 0,
     },
     chipContainer: {
       marginBottom: "16@ratio",

@@ -102,7 +102,7 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
             {/* label */}
             {showLabels ? (
               <SText
-                fill="#ffffff"
+                fill="#6B6B70"
                 fontSize="14"
                 fontFamily={Platform.OS != "ios" ? "Gilroy-Bold" : ""} //ios fix | ios can't load fonts inside svg for some reason yet
                 fontWeight="bold"
@@ -126,14 +126,14 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
             y1={Platform.OS == "ios" ? chart.avglinestartY : avglinestartAnimY}
             x2="301.5"
             y2={Platform.OS == "ios" ? chart.avglinestartY : avglinestartAnimY}
-            stroke="#8A8CB3"
+            stroke="#6B6B70"
             strokeOpacity="0.5"
             strokeLinecap="round"
             strokeDasharray="1 5"
           />
           {/* label */}
           <AnimatedSText
-            fill="#8A8CB2"
+            fill="#6B6B70"
             fontSize="10"
             fontFamily={Platform.OS != "ios" ? "Gilroy-Bold" : ""} //ios fix | ios can't load fonts inside svg for some reason yet
             fontWeight="bold"
@@ -156,8 +156,8 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
           y2="0"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0.00323008" stopColor="#8A8CB3" stopOpacity="0.2" />
-          <Stop offset="1" stopColor="#8A8CB3" />
+          <Stop offset="0.00323008" stopColor="#E5E5EA" stopOpacity="0.2" />
+          <Stop offset="1" stopColor="#E5E5EA" />
         </SlinearGradient>
         {chartdata.map((data, i) => {
           /* bar gradient for each data value is unique */
@@ -176,8 +176,8 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
               y2={Y}
               gradientUnits="userSpaceOnUse"
             >
-              <Stop offset="0.00323008" stopColor="#5652E5" />
-              <Stop offset="1" stopColor="#7DA9F4" />
+              <Stop offset="0.00323008" stopColor="#1C1C1E" />
+              <Stop offset="1" stopColor="#000000" />
             </SlinearGradient>
           );
         })}

@@ -102,8 +102,8 @@ export default function Cycling({ navigation }: CyclingPropsInterface) {
           <View style={styles.recordboxautorecord}>
             <ToggleSwitch
               isOn={autorecord}
-              onColor="#505EDC"
-              offColor="#8A8CB2"
+              onColor="#000000"
+              offColor="#AEAEB2"
               label="Auto Record"
               labelStyle={styles.recordboxautorecordlabel}
               size="medium"
@@ -359,12 +359,12 @@ function useStyle() {
   const styles = useResponsiveStyleSheet({
     container: {
       flex: 1,
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     mapview: {
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(60, 63, 105, 0.47)",
+      backgroundColor: "#EBEBF0",
     },
     mapmarkerstartpoint: {
       width: 0,
@@ -376,7 +376,7 @@ function useStyle() {
       borderBottomWidth: '8@ratio',
       borderLeftColor: "transparent",
       borderRightColor: "transparent",
-      borderBottomColor: "#505EDC",
+      borderBottomColor: "#000000",
     },
     returnbutton: {
       position: "absolute",
@@ -385,7 +385,7 @@ function useStyle() {
       width: '44@ratio',
       height: '44@ratio',
       borderRadius: Platform.OS == "ios" ? '22@ratio' : '44@ratio', //ios fix
-      backgroundColor: "rgba(60,63,105,0.49)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       justifyContent: "center",
       alignItems: "center",
     },
@@ -470,7 +470,7 @@ function useStyle() {
       width: '208@ratio',
       height: '44@ratio',
       borderRadius: '14@ratio',
-      backgroundColor: "rgba(20,18,39,0.85)",
+      backgroundColor: "#FFFFFF",
       position: "absolute",
       top: 0,
       flexDirection: "row",
@@ -492,16 +492,16 @@ function useStyle() {
       alignItems: "center",
       flexDirection: "row",
       borderLeftWidth: '1@ratio',
-      borderLeftColor: "rgba(138,140,178,0.15)",
+      borderLeftColor: "#E5E5EA",
     },
     activitytimerlabeltxt: {
       fontSize: '24@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-ExtraBold",
     },
     activitytimerunit: {
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#AEAEB2",
       fontFamily: "Gilroy-ExtraBold",
       marginLeft: '3@ratio',
       marginTop: '7@ratio',
@@ -513,7 +513,7 @@ function useStyle() {
       height: '343@ratio',
       width: "94%",
       borderRadius: '12@ratio',
-      backgroundColor: "rgba(20,18,39,0.85)",
+      backgroundColor: "#FFFFFF",
       zIndex: 1,
       opacity: 0,
       transform: [{ translateY: 343 }],
@@ -547,13 +547,13 @@ function useStyle() {
       alignItems: "center",
       justifyContent: "center",
       borderLeftWidth: '1@ratio',
-      borderLeftColor: "rgba(138,140,178,0.15)",
+      borderLeftColor: "#E5E5EA",
       marginBottom: '24@ratio',
     },
     recordboxdatatitle: {
       fontFamily: "Gilroy-Medium",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#AEAEB2",
       marginBottom: '5@ratio',
     },
     recordboxdatarow: {
@@ -563,19 +563,19 @@ function useStyle() {
     recordboxdatavalue: {
       fontFamily: "Gilroy-ExtraBold",
       fontSize: '24@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     recordboxdataunit: {
       fontFamily: "Gilroy-ExtraBold",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#AEAEB2",
       marginLeft: '5@ratio',
       marginBottom: '3@ratio',
     },
     recordboxautorecordlabel: {
       fontFamily: "Gilroy-Bold",
       fontSize: window.width <= 320 ? '12@ratio' : '16@ratio', //responsive fix
-      color: "#fff",
+      color: "#000000",
     },
     activityboxbottom: {
       flexDirection: "row",
@@ -591,7 +591,7 @@ function useStyle() {
       justifyContent: "center",
     },
     activityboxbottombtntxt: {
-      color: "#FB558B",
+      color: "#000000",
       fontSize: window.width <= 320 ? '14@ratio' : '16@ratio', //responsive fix
       fontFamily: "Gilroy-Bold",
     },

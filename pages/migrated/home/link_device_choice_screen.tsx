@@ -29,7 +29,7 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
             </View>
             <Text style={styles.optionTitle}>Wearable Device</Text>
             <Text style={styles.optionDesc}>Connect via Bluetooth</Text>
-            <Ionicons name="chevron-forward" size={20} color={C.gray5} />
+            <Ionicons name="chevron-forward" size={20} color={C.gray50} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -42,7 +42,7 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
             </View>
             <Text style={styles.optionTitle}>Manual Entry</Text>
             <Text style={styles.optionDesc}>Log steps manually</Text>
-            <Ionicons name="chevron-forward" size={20} color={C.gray5} />
+            <Ionicons name="chevron-forward" size={20} color={C.gray50} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.helpBtn}>
@@ -71,7 +71,7 @@ function useStyle() {
       marginBottom: 24,
     },
     title: { fontSize: 28, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray5, marginBottom: 32 },
+    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, marginBottom: 32 },
     optionTile: {
       flexDirection: "row",
       alignItems: "center",
@@ -91,7 +91,7 @@ function useStyle() {
       alignItems: "center",
     },
     optionTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white, flex: 1 },
-    optionDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, position: "absolute", bottom: 20, left: 92 },
+    optionDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, position: "absolute", bottom: 20, left: 92 },
     helpBtn: {
       flexDirection: "row",
       alignItems: "center",

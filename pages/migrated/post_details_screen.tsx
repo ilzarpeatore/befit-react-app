@@ -147,7 +147,7 @@ const s = StyleSheet.create({
   userName: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
   postTime: { fontSize: 12, color: C.gray50, marginTop: 2 },
   moreBtn: { padding: 4 },
-  postContent: { fontSize: 15, color: C.gray10, lineHeight: 22, marginBottom: 12 },
+  postContent: { fontSize: 15, color: C.gray50, lineHeight: 22, marginBottom: 12 },
   postImages: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
   postImage: { width: '48%', height: 180, borderRadius: 12, marginBottom: 4, marginRight: 8, backgroundColor: C.surfaceLight },
   postImageFull: { width: '100%', marginRight: 0 },

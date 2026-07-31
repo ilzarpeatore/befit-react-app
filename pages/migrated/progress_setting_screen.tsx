@@ -76,7 +76,7 @@ const s = StyleSheet.create({
   listContent: { padding: 16 },
   settingItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16, backgroundColor: C.surface, borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: C.border },
   settingItemActive: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  settingLabel: { fontSize: 16, fontFamily: FONT.bold, color: C.gray20 },
+  settingLabel: { fontSize: 16, fontFamily: FONT.bold, color: C.gray40 },
   settingLabelActive: { color: C.white },
   radioContainer: { marginLeft: 12 },
   radioActive: { width: 22, height: 22, borderRadius: 11, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },

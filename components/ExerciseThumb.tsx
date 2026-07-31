@@ -22,7 +22,7 @@ function ExerciseThumb({ image, size = 56 }: Props) {
         <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
       ) : (
         <View style={[styles.image, styles.imageFallback]}>
-          <Ionicons name="barbell-outline" size={size * 0.4} color={C.gray20} />
+          <Ionicons name="barbell-outline" size={size * 0.4} color={C.gray40} />
         </View>
       )}
       <View style={styles.badge}>

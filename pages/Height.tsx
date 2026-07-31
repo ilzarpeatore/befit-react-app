@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import {
-  ImageBackground,
   StyleSheet,
   Text,
   View,
@@ -86,11 +85,11 @@ export default function Height({ navigation }: HeightPropsInterface) {
             start={{ x: 1, y: 0 }}
             end={{ x: 0, y: 0 }}
             colors={[
-              "rgba(20, 18, 39, 0.5)",
-              "rgba(60, 63, 105, 0.5)",
-              "rgba(138, 140, 178, 0.7)",
-              "rgba(60, 63, 105, 0.5)",
-              "rgba(20, 18, 38, 0.5)",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
             ]}
             locations={[0, 0.15587, 0.500517, 0.851209, 1]}
             style={styles.heightsliderbg}
@@ -99,14 +98,14 @@ export default function Height({ navigation }: HeightPropsInterface) {
           <LinearGradient
             start={{ x: 1, y: 0 }}
             end={{ x: 0, y: 0 }}
-            colors={["#141227", "rgba(20,18,39,0)"]}
+            colors={["#EBEBF0", "rgba(235,235,240,0)"]}
             style={styles.heightsliderbgcoverright}
           />
           {/*height slider overlay left*/}
           <LinearGradient
             start={{ x: 2, y: 1 }}
             end={{ x: 1, y: 1 }}
-            colors={["#141227", "rgba(20,18,39,0)"]}
+            colors={["#EBEBF0", "rgba(235,235,240,0)"]}
             style={styles.heightsliderbgcoverleft}
           />
           {/*height slider top highlight*/}
@@ -114,11 +113,11 @@ export default function Height({ navigation }: HeightPropsInterface) {
             start={{ x: 1, y: 0 }}
             end={{ x: 0, y: 0 }}
             colors={[
-              "rgba(20, 18, 39, 0.5)",
-              "rgba(60, 63, 105, 0.5)",
-              "rgba(138, 140, 178, 1)",
-              "rgba(60, 63, 105, 0.5)",
-              "rgba(20, 18, 38, 0.5)",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
             ]}
             locations={[0, 0.15587, 0.500517, 0.851209, 1]}
             style={styles.heightsliderbgbordertop}
@@ -128,11 +127,11 @@ export default function Height({ navigation }: HeightPropsInterface) {
             start={{ x: 1, y: 0 }}
             end={{ x: 0, y: 0 }}
             colors={[
-              "rgba(20, 18, 39, 0.5)",
-              "rgba(60, 63, 105, 0.5)",
-              "rgba(138, 140, 178, 1)",
-              "rgba(60, 63, 105, 0.5)",
-              "rgba(20, 18, 38, 0.5)",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
+              "#E5E5EA",
             ]}
             locations={[0, 0.15587, 0.500517, 0.851209, 1]}
             style={styles.heightsliderbgborderbottom}
@@ -163,10 +162,8 @@ export default function Height({ navigation }: HeightPropsInterface) {
     setHeightSliderValue(Math.round(event.nativeEvent.contentOffset.x / 32))
   }
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.container2}>
@@ -213,18 +210,18 @@ export default function Height({ navigation }: HeightPropsInterface) {
                     y2="269.287"
                     gradientUnits="userSpaceOnUse"
                   >
-                    <Stop stopColor="#5652E5" />
+                    <Stop stopColor="#000000" />
                     <Stop
                       offset="0.348069"
-                      stopColor="#8A8CB3"
+                      stopColor="#000000"
                       stopOpacity="0"
                     />
                     <Stop
                       offset="0.596479"
-                      stopColor="#8A8CB3"
+                      stopColor="#000000"
                       stopOpacity="0"
                     />
-                    <Stop offset="1" stopColor="#7DA9F4" stopOpacity="0.5" />
+                    <Stop offset="1" stopColor="#000000" stopOpacity="0.08" />
                   </SlinearGradient>
                 </Defs>
               </Svg>
@@ -261,13 +258,13 @@ export default function Height({ navigation }: HeightPropsInterface) {
                 <LinearGradient
                   start={{ x: 0.88, y: 1.21 }}
                   end={{ x: 0.56, y: 0.5 }}
-                  colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0)"]}
+                  colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.05)"]}
                   style={[styles.btnborder, styles.btnsave]}
                 >
                   <LinearGradient
                     start={{ x: 0.24, y: -0.09 }}
                     end={{ x: 0.5, y: 1 }}
-                    colors={["#7773FA", "#5652E5"]}
+                    colors={["#1C1C1E", "#000000"]}
                     style={[styles.btnbg, styles.btnsave]}
                   >
                     {loading ? <ActivityIndicator color="#ffffff" size="small" /> : <Text style={styles.btnsavetext}>Save</Text>}
@@ -289,7 +286,7 @@ export default function Height({ navigation }: HeightPropsInterface) {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -310,7 +307,7 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     masklabel: {
       height: '49@ratio',
@@ -376,7 +373,7 @@ function useStyle() {
     skipbtntext: {
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
     },
     btnsave: {
       width: '300@ratio',
@@ -405,12 +402,12 @@ function useStyle() {
     heightboxtext: {
       fontSize: '50@ratio',
       fontFamily: "Gilroy-Bold",
-      color: "#ffffff",
+      color: "#000000",
     },
     heightboxunit: {
       fontSize: '22@ratio',
       fontFamily: "Gilroy-Bold",
-      color: "#ffffff",
+      color: "#6B6B70",
       alignSelf: "flex-end",
       marginBottom: '8@ratio',
     },
@@ -469,19 +466,19 @@ function useStyle() {
     heightsliderh1: {
       fontSize: '15@ratio',
       fontFamily: "Gilroy-Bold",
-      color: "rgba(138,140,178,0.5)",
+      color: "#6B6B70",
     },
     heightsliderh2: {
       fontSize: '20@ratio',
       fontFamily: "Gilroy-Bold",
-      color: "rgba(138,140,178,0.5)",
+      color: "#6B6B70",
       flexBasis: "75%",
       textAlign: "center",
     },
     heightsliderh3: {
       fontSize: '15@ratio',
       fontFamily: "Gilroy-Bold",
-      color: "rgba(138,140,178,0.5)",
+      color: "#6B6B70",
     },
     heightsliderscrollcontainer: {
       paddingVertical: '20@ratio',

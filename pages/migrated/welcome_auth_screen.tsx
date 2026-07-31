@@ -15,7 +15,7 @@ export default function WelcomeAuthScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.content}>
           <View style={styles.iconBox}>
-            <Ionicons name="fitness-outline" size={28} color={C.brand50} />
+            <Ionicons name="fitness-outline" size={28} color={C.white} />
           </View>
           <Text style={styles.title}>Â¡Bienvenido a sandow.ai!</Text>
           <Text style={styles.subtitle}>Elige cÃ³mo quieres continuar.</Text>
@@ -28,7 +28,7 @@ export default function WelcomeAuthScreen({ navigation }: any) {
 
             <TouchableOpacity style={styles.facebookBtn} activeOpacity={0.8}>
               <Ionicons name="logo-facebook" size={20} color="#fff" />
-              <Text style={styles.btnText}>Continuar con Facebook</Text>
+              <Text style={[styles.btnText, { color: "#fff" }]}>Continuar con Facebook</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -67,7 +67,7 @@ function useStyle() {
       marginBottom: 24,
     },
     title: { fontSize: 24, fontFamily: FONT.bold, color: C.white, textAlign: "center" },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", marginTop: 8, marginBottom: 40 },
+    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", marginTop: 8, marginBottom: 40 },
     buttons: { width: "100%", gap: 14 },
     googleBtn: {
       flexDirection: "row",
@@ -98,7 +98,7 @@ function useStyle() {
     },
     btnText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },
     footer: { flexDirection: "row", justifyContent: "center", alignItems: "center", paddingBottom: 32 },
-    footerText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5 },
-    footerLink: { fontSize: 14, fontFamily: FONT.semiBold, color: C.brand50 },
+    footerText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
+    footerLink: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray60 },
   });
 }

@@ -27,7 +27,7 @@ function Button({ children, text, style, textstyle, onPress }: ButtonInterface) 
         <LinearGradient
           start={{ x: 0.24, y: -0.09 }}
           end={{ x: 0.5, y: 1 }}
-          colors={["#7773FA", "#5652E5"]}
+          colors={["#1C1C1E", "#000000"]}
           style={[styles.btnbg, style]}
         >
           {children ? children : <Text style={[styles.btntext, textstyle]}>{text}</Text>}

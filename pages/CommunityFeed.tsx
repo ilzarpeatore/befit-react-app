@@ -131,54 +131,52 @@ export default function CommunityFeed({ navigation }: Props) {
 
   if (loading && posts.length === 0) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="chevron-back" size={22} color="#000000" />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Community</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
             <View style={{ width: 40 }} />
           </View>
           {renderSkeleton()}
         </SafeAreaView>
         <StatusBar style="dark" />
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error && posts.length === 0) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="chevron-back" size={22} color="#000000" />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Community</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
             <View style={{ width: 40 }} />
           </View>
           <ErrorRetryMem message={error} onRetry={() => fetchPosts(1)} />
         </SafeAreaView>
         <StatusBar style="dark" />
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-            <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Ionicons name="chevron-back" size={22} color="#000000" />
           </TouchableOpacity>
-          <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Community</Text>
+          <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -224,7 +222,7 @@ export default function CommunityFeed({ navigation }: Props) {
         </TouchableOpacity>
       </SafeAreaView>
       <StatusBar style="dark" />
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -233,7 +231,6 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       backgroundColor: Colors.BG_PRIMARY,
     },
     container: {

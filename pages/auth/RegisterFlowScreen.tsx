@@ -213,7 +213,7 @@ function PasswordStrengthInline({ password }: { password: string }) {
   const styles = useStyle();
   const strength = calcStrength(password);
   const labels = ["", "Weak", "Fair", "Good", "Excellent"];
-  const colors = ["", Colors.DANGER, Colors.ACCENT_ACTIVE, Colors.SUCCESS, Colors.SUCCESS];
+  const colors = ["", Colors.DANGER, Colors.TEXT_PRIMARY, Colors.SUCCESS, Colors.SUCCESS];
   if (!password) return null;
   return (
     <View style={stepStyles.strengthRow}>

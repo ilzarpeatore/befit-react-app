@@ -175,13 +175,13 @@ export default function DietList({ navigation }: Props) {
 
   if (loading && !refreshing) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="chevron-back" size={22} color="#000000" />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Diet List</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
             <View style={{ width: 40 }} />
           </View>
           <View style={styles.skeletonWrap}>
@@ -193,35 +193,35 @@ export default function DietList({ navigation }: Props) {
             ))}
           </View>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error && !refreshing) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="chevron-back" size={22} color="#000000" />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Diet List</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
             <View style={{ width: 40 }} />
           </View>
           <ErrorRetryMem message={error} onRetry={() => fetchData(selectedCategory, searchQuery, 1)} />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1E1C3A', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-            <Ionicons name="chevron-back" size={22} color="#FBFBFB" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Ionicons name="chevron-back" size={22} color="#000000" />
           </TouchableOpacity>
-          <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#FBFBFB' }}>Diet List</Text>
+          <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
           <View style={{ width: 40 }} />
         </View>
         <FlatList
@@ -260,7 +260,7 @@ export default function DietList({ navigation }: Props) {
           onEndReachedThreshold={0.3}
         />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

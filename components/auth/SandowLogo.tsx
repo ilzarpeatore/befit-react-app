@@ -21,14 +21,14 @@ function useStyle() {
       width: 60,
       height: 60,
       borderRadius: 30,
-      backgroundColor: "#E3DCD9",
+      backgroundColor: "#E5E5EA",
       alignItems: "center",
       justifyContent: "center",
       alignSelf: "center",
     },
     letter: {
       fontFamily: "Gilroy-ExtraBold",
-      color: "#1C1C1E",
+      color: "#000000",
       fontSize: 30,
     },
   });
