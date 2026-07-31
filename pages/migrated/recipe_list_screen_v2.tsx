@@ -12,6 +12,8 @@ interface RecipeItem {
   title: string;
   recipeImage?: string;
   calories?: number;
+  isPremium?: boolean;
+  isAccessible?: boolean;
 }
 
 const MEAL_TYPE_OPTIONS = ['breakfast', 'lunch', 'dinner', 'snacks'];
@@ -92,6 +94,8 @@ export default function RecipeListScreenV2(props: any) {
         title: r.title,
         recipeImage: r.recipe_image ?? undefined,
         calories: r.calories,
+        isPremium: r.is_premium,
+        isAccessible: r.is_accessible,
       }));
       if (page === 1) {
         setRecipeList(items);
@@ -181,6 +185,12 @@ export default function RecipeListScreenV2(props: any) {
                     />
                   ) : (
                     <View style={[s.recipeImage, { width: columnWidth, height: 140, backgroundColor: C.surfaceLight }]} />
+                  )}
+                  {item.isPremium && !item.isAccessible && (
+                    <View style={s.lockBadge}>
+                      <Ionicons name="lock-closed" size={12} color={C.white} />
+                      <Text style={[s.lockBadgeText, styles.fontSemiBold]}>Exclusive</Text>
+                    </View>
                   )}
                   <Text style={[s.recipeTitle, styles.fontBold]} numberOfLines={1}>
                     {item.title}
@@ -295,6 +305,19 @@ const s = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   recipeCard: { marginBottom: 16 },
   recipeImage: { borderRadius: 12 },
+  lockBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  lockBadgeText: { fontSize: 11, color: C.white },
   recipeTitle: { fontSize: 14, color: C.white, marginTop: 8 },
   recipeCalories: { fontSize: 12, color: C.gray30, marginTop: 4 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },

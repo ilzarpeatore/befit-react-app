@@ -35,6 +35,11 @@ export interface UnifiedWorkout {
   exerciseCount: number;
   programDayAssignmentId: number | null;
   workoutTemplateId: number | null;
+  // Gating de Workouts sueltos (2026-07-30) — solo se rellena cuando viene por
+  // workoutTemplateId; el flujo por programDayAssignmentId ya implica que el
+  // cliente tiene el programa asignado, siempre accesible.
+  isExclusive: boolean;
+  isAccessible: boolean;
 }
 
 export interface WorkoutViewParams {
@@ -74,6 +79,8 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
       exerciseCount: blocks.reduce((sum, b) => sum + b.exercises.length, 0),
       programDayAssignmentId: params.programDayAssignmentId,
       workoutTemplateId: null,
+      isExclusive: false,
+      isAccessible: true,
     };
   }
 
@@ -107,6 +114,8 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
       exerciseCount: blocks.reduce((sum, b) => sum + b.exercises.length, 0),
       programDayAssignmentId: null,
       workoutTemplateId: params.workoutTemplateId,
+      isExclusive: !!data.is_exclusive,
+      isAccessible: data.is_accessible ?? true,
     };
   }
 
