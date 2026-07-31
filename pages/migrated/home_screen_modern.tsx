@@ -23,6 +23,8 @@ import { workoutsApi } from '../../api/workouts';
 import { workoutHistoryApi } from '../../api/workoutHistory';
 import { dietApi } from '../../api/diet';
 import { blogApi } from '../../api/blog';
+import { workoutTemplateApi, WorkoutTemplateListItem } from '../../api/workoutTemplate';
+import { subscriptionApi, PackageItem } from '../../api/subscription';
 import { useAuth } from '../../store/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -56,6 +58,8 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const [dailyPlan, setDailyPlan] = useState<any>(null);
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [workoutTemplateList, setWorkoutTemplateList] = useState<WorkoutTemplateListItem[]>([]);
+  const [packageList, setPackageList] = useState<PackageItem[]>([]);
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
@@ -131,10 +135,17 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     blogTagText: { fontSize: r(9), fontFamily: FONT.semiBold, color: C.orange },
     blogTitle: { fontSize: r(13), fontFamily: FONT.semiBold, color: C.white, marginTop: r(6) },
     blogDate: { fontSize: r(10), color: C.textSecondary, marginTop: r(4) },
+    seeAllImage: { backgroundColor: C.orange, alignItems: 'center' as const, justifyContent: 'center' as const },
+    lockBadge: { position: 'absolute' as const, top: r(8), right: r(8), flexDirection: 'row' as const, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: r(10), paddingHorizontal: r(7), paddingVertical: r(3), gap: r(4) },
+    lockBadgeText: { fontSize: r(9), color: C.white, fontFamily: FONT.semiBold },
+    programPriceBadge: { position: 'absolute' as const, bottom: r(8), left: r(8), backgroundColor: C.orange, borderRadius: r(10), paddingHorizontal: r(9), paddingVertical: r(3) },
+    programPriceText: { fontSize: r(12), fontFamily: FONT.bold, color: C.white },
     supportCard: { backgroundColor: C.surfaceLight, borderRadius: r(20), borderWidth: 1, borderColor: C.border, padding: r(16), marginHorizontal: r(20), marginBottom: r(12), flexDirection: 'row', alignItems: 'center' },
     supportTitle: { flex: 1, fontSize: r(14), fontFamily: FONT.bold, color: C.white },
     supportLink: { fontSize: r(12), fontFamily: FONT.semiBold, color: C.orange, marginTop: r(6) },
     emptySection: { paddingHorizontal: r(20), paddingVertical: r(12), marginBottom: r(8) },
+    myProgramBadge: { flexDirection: 'row' as const, alignItems: 'center', gap: r(5), paddingHorizontal: r(20), marginBottom: r(8) },
+    myProgramBadgeText: { fontSize: r(11), fontFamily: FONT.semiBold, color: C.brand50 },
     emptyText: { fontSize: r(13), color: C.textSecondary, textAlign: 'center' as const },
     errorBanner: { backgroundColor: C.destructive10, borderRadius: r(12), padding: r(12), marginHorizontal: r(20), marginBottom: r(12), flexDirection: 'row', alignItems: 'center' },
     errorText: { flex: 1, fontSize: r(12), color: C.destructive, marginLeft: r(8) },
@@ -168,12 +179,17 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
 
-      const [dashRes, calendarRes, workoutsRes, dietRes, blogRes] = await Promise.allSettled([
+      const [dashRes, calendarRes, workoutsRes, dietRes, blogRes, workoutTemplatesRes, packagesRes] = await Promise.allSettled([
         dashboardApi.getDashboard(),
         workoutHistoryApi.getMyCalendar(currentMonth, currentYear),
         workoutsApi.getList(1),
         dietApi.getDailyPlan(todayStr),
         blogApi.getList(1, { per_page: 3, order_by: 'created_at', order_dir: 'desc' }),
+        workoutTemplateApi.getList(1, 3),
+        // Un cliente 1:1 no necesita el catálogo de paquetes (ya tiene acceso
+        // completo) — se pide igual porque Promise.allSettled es más simple así,
+        // simplemente no se renderiza para ellos.
+        subscriptionApi.getPackageList(),
       ]);
 
       const errors: string[] = [];
@@ -220,6 +236,14 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
       if (blogRes.status === 'fulfilled') {
         setBlogPosts((blogRes.value.data.data ?? []).slice(0, 3));
+      }
+
+      if (workoutTemplatesRes.status === 'fulfilled') {
+        setWorkoutTemplateList((workoutTemplatesRes.value.data.data ?? []).slice(0, 3));
+      }
+
+      if (packagesRes.status === 'fulfilled') {
+        setPackageList((packagesRes.value.data.data ?? []).slice(0, 3));
       }
 
       if (errors.length > 0) {
@@ -311,13 +335,24 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
           </View>
         )}
 
-        {/* Actividad de hoy */}
+        {/* Actividad de hoy — para un cliente 1:1 esta ES su sección personalizada
+            (viene del calendario que le asigna su coach, ProgramDayAssignment),
+            así que se relabela y se destaca en vez de dejarla igual que
+            cualquier otra sección genérica. */}
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Actividad de Hoy</Text>
+          <Text style={styles.sectionTitle}>
+            {state.user?.is_personal_client ? 'Mi Programa' : 'Actividad de Hoy'}
+          </Text>
           <TouchableOpacity onPress={() => navigation?.navigate('MigratedMyProgramCalendar')}>
             <Text style={styles.seeAll}>Ver Calendario</Text>
           </TouchableOpacity>
         </View>
+        {state.user?.is_personal_client && (
+          <View style={styles.myProgramBadge}>
+            <Ionicons name="person-circle" size={14} color={C.brand50} />
+            <Text style={styles.myProgramBadgeText}>Personalizado por tu coach</Text>
+          </View>
+        )}
         {todayWorkouts.length > 0 ? (
           <View style={styles.todayWorkoutCard}>
             {todayWorkouts.map((w: any, i: number) => (
@@ -370,39 +405,155 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
           </View>
         </View>
 
-        {/* Rutinas */}
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Rutinas</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('MigratedViewWorkouts')}>
-            <Text style={styles.seeAll}>Ver todas</Text>
-          </TouchableOpacity>
-        </View>
-        {workoutList.length > 0 ? (
-          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
-            {workoutList.map((w: any) => (
-              <TouchableOpacity key={w.id} style={styles.workoutCard} onPress={() => navigation?.navigate('MigratedWorkoutDetail', { id: w.id })}>
-                {w.workout_image ? <Image source={{ uri: w.workout_image }} style={styles.workoutImage} resizeMode="cover" /> : <View style={styles.workoutImage} />}
-                <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.workoutGradient} />
-                <View style={styles.workoutLevelBadge}>
-                  <Text style={styles.workoutLevelText}>{w.level_title || 'General'}</Text>
+        {/* Rutinas + Workouts — catálogos genéricos de exploración. Un cliente
+            1:1 ya tiene su entrenamiento real en "Mi Programa" arriba (asignado
+            por su coach) — mostrarle además estos 2 catálogos genéricos es lo
+            que generaba la confusión de "todo se ve igual"; se ocultan para
+            ellos en vez de dejarlos con el mismo peso visual. */}
+        {!state.user?.is_personal_client && (
+          <>
+            {/* Rutinas */}
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionTitle}>Rutinas</Text>
+              <TouchableOpacity onPress={() => navigation?.navigate('MigratedViewWorkouts')}>
+                <Text style={styles.seeAll}>Ver todas</Text>
+              </TouchableOpacity>
+            </View>
+            {workoutList.length > 0 ? (
+              <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+                {workoutList.map((w: any) => (
+                  <TouchableOpacity key={w.id} style={styles.workoutCard} onPress={() => navigation?.navigate('MigratedWorkoutDetail', { id: w.id })}>
+                    {w.workout_image ? <Image source={{ uri: w.workout_image }} style={styles.workoutImage} resizeMode="cover" /> : <View style={styles.workoutImage} />}
+                    <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.workoutGradient} />
+                    <View style={styles.workoutLevelBadge}>
+                      <Text style={styles.workoutLevelText}>{w.level_title || 'General'}</Text>
+                    </View>
+                    <View style={styles.workoutBottomInfo}>
+                      <Text style={styles.workoutCardTitle}>{w.title}</Text>
+                      <Text style={styles.workoutCardMeta}>{w.workout_type_title || 'Rutina'}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (
+              <View style={styles.emptySection}>
+                <Text style={styles.emptyText}>No hay rutinas disponibles</Text>
+              </View>
+            )}
+
+            {/* Workouts sueltos (sistema v2, separado de Rutinas legacy) — 3 tarjetas
+                reales + una 4ª tarjeta fija "Ver todos" (en vez de un link aparte
+                en el título de sección). */}
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionTitle}>Workouts</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+              {workoutTemplateList.map((w) => {
+                const locked = w.is_exclusive && !w.is_accessible;
+                return (
+                  <TouchableOpacity
+                    key={w.id}
+                    style={styles.blogCard}
+                    onPress={() => navigation?.navigate('MigratedWorkoutPreview', { workoutTemplateId: w.id, mTitle: w.title })}
+                  >
+                    {w.thumbnail ? (
+                      <Image source={{ uri: w.thumbnail }} style={styles.blogImage} resizeMode="cover" />
+                    ) : (
+                      <View style={styles.blogImage} />
+                    )}
+                    {locked && (
+                      <View style={styles.lockBadge}>
+                        <Ionicons name="lock-closed" size={11} color={C.white} />
+                        <Text style={styles.lockBadgeText}>Exclusive</Text>
+                      </View>
+                    )}
+                    <View style={styles.blogContent}>
+                      <Text style={styles.blogTitle} numberOfLines={2}>{w.title}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                style={styles.blogCard}
+                onPress={() => navigation?.navigate('MigratedWorkoutTemplateList')}
+              >
+                <View style={[styles.blogImage, styles.seeAllImage]}>
+                  <Ionicons name="arrow-forward-circle" size={32} color={C.white} />
                 </View>
-                <View style={styles.workoutBottomInfo}>
-                  <Text style={styles.workoutCardTitle}>{w.title}</Text>
-                  <Text style={styles.workoutCardMeta}>{w.workout_type_title || 'Rutina'}</Text>
+                <View style={styles.blogContent}>
+                  <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todos los workouts</Text>
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+          </>
+        )}
+
+        {/* Programas — punto de entrada real a la tienda (2026-07-30). Para un
+            cliente 1:1 no tiene sentido mostrar un carrusel de paquetes para
+            comprar (ya tiene acceso completo) — se mantiene el mensaje simple.
+            Para free: 3 tarjetas reales + una 4ª tarjeta fija "Ver todos". */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Programas</Text>
+        </View>
+        {state.user?.is_personal_client ? (
+          <TouchableOpacity
+            style={styles.emptySection}
+            activeOpacity={0.7}
+            onPress={() => navigation?.navigate('MigratedSubscriptionDetail')}
+          >
+            <Text style={styles.emptyText}>Ya tienes acceso completo como cliente 1:1 →</Text>
+          </TouchableOpacity>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+            {packageList.map((p) => (
+              <TouchableOpacity
+                key={p.id}
+                style={styles.blogCard}
+                onPress={() => navigation?.navigate('MigratedSubscribe')}
+              >
+                <View style={styles.blogImage}>
+                  <View style={styles.programPriceBadge}>
+                    <Text style={styles.programPriceText}>${Number(p.price ?? 0).toFixed(0)}</Text>
+                  </View>
+                </View>
+                <View style={styles.blogContent}>
+                  {(p.training_program_title || p.meal_plan_template_title) && (
+                    <View style={{ flexDirection: 'row', gap: 4 }}>
+                      {p.training_program_title && (
+                        <View style={styles.blogTag}>
+                          <Text style={styles.blogTagText}>Entrenamiento</Text>
+                        </View>
+                      )}
+                      {p.meal_plan_template_title && (
+                        <View style={styles.blogTag}>
+                          <Text style={styles.blogTagText}>Nutrición</Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                  <Text style={styles.blogTitle} numberOfLines={2}>{p.name}</Text>
+                  <Text style={styles.blogDate}>/ {p.duration} {p.duration_unit}{p.duration > 1 ? 's' : ''}</Text>
                 </View>
               </TouchableOpacity>
             ))}
+            <TouchableOpacity
+              style={styles.blogCard}
+              onPress={() => navigation?.navigate('MigratedSubscriptionDetail')}
+            >
+              <View style={[styles.blogImage, styles.seeAllImage]}>
+                <Ionicons name="arrow-forward-circle" size={32} color={C.white} />
+              </View>
+              <View style={styles.blogContent}>
+                <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todos los programas</Text>
+              </View>
+            </TouchableOpacity>
           </ScrollView>
-        ) : (
-          <View style={styles.emptySection}>
-            <Text style={styles.emptyText}>No hay rutinas disponibles</Text>
-          </View>
         )}
 
         {/* Nutrición */}
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Nutrición</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('MigratedDiet')}>
+          <TouchableOpacity onPress={() => navigation?.navigate('DietDashboard')}>
             <Text style={styles.seeAll}>Ver dieta</Text>
           </TouchableOpacity>
         </View>
@@ -458,8 +609,8 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
               <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
             </View>
           )}
-          <TouchableOpacity style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedDiet')}>
-            <Text style={styles.nutritionLinkText}>Ver dieta</Text>
+          <TouchableOpacity style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
+            <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
             <Ionicons name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
           </TouchableOpacity>
         </View>

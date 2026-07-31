@@ -36,6 +36,7 @@ export interface UserData {
   updated_at: string;
   user_profile: UserProfile;
   is_subscribe: number;
+  is_personal_client: boolean;
 }
 
 export interface UserResponse {
