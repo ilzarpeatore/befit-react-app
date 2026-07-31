@@ -22,6 +22,7 @@ export interface LoginResponse {
     api_token: string;
     profile_image: string;
     is_subscribe: number;
+    is_personal_client: boolean;
     created_at: string;
     updated_at: string;
   };
@@ -61,6 +62,7 @@ export interface RegisterPayload {
   status?: string;
   phone_number?: string;
   gender?: string;
+  invite_code?: string;
 }
 
 export const authApi = {
@@ -69,6 +71,11 @@ export const authApi = {
 
   register: (payload: RegisterPayload) =>
     apiClient.post('register', payload),
+
+  // Valida un código de invitación de cliente de entrenamiento personal
+  // antes de enviar el registro, para poder mostrar una confirmación.
+  checkInviteCode: (code: string) =>
+    apiClient.post<{ data: { valid: boolean; reason?: string; first_name?: string | null; last_name?: string | null } }>('check-invite-code', { code }),
 
   socialLogin: (payload: SocialLoginPayload) =>
     apiClient.post('social-mail-login', payload),

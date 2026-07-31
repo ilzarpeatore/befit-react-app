@@ -1,54 +1,54 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, Dimensions, ActivityIndicator, Alert } from 'react-native';
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { subscriptionApi, PackageItem } from '../../api/subscription';
+import { useAuth } from '../../store/AuthContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function SubscribeScreen(props: any) {
-  const [subscriptionList, setSubscriptionList] = useState<any[]>([]);
+  const { state } = useAuth();
+  const isPersonalClient = !!state.user?.is_personal_client;
+  const [subscriptionList, setSubscriptionList] = useState<PackageItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    getPackageData();
-  }, []);
+    // Defensa adicional: cliente 1:1 no debería llegar aquí (subscription_detail_screen
+    // ya lo desvía antes), pero si algún futuro punto de entrada lo trae de todas
+    // formas, no tiene sentido pedirle el catálogo de paquetes de pago.
+    if (!isPersonalClient) {
+      getPackageData();
+    }
+  }, [isPersonalClient]);
 
   const getPackageData = async () => {
     setIsLoading(true);
     try {
-      // const value = await getSubscription();
-      // setNumPage(value.pagination.totalPages);
-      // if (page === 1) setSubscriptionList([]);
-      // setSubscriptionList(prev => [...prev, ...value.data]);
-      setIsLoading(false);
+      const res = await subscriptionApi.getPackageList();
+      setSubscriptionList(res.data?.data || []);
     } catch (e) {
-      setIsLastPage(true);
+      console.log('Failed to load packages', e);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const paymentConfirm = async (id?: number) => {
+  // Fase 3 "Niveles de acceso" — sin pago real todavía (Fase 4): se suscribe
+  // directamente vía subscribe-to-package (paid/active, sin pasar por
+  // MigratedPayment) para validar el resto del flujo de punta a punta.
+  const paymentConfirm = async (id: number) => {
     setIsLoading(true);
-    const req = {
-      package_id: id,
-      payment_status: 'paid',
-      payment_type: 'free',
-      txn_id: '',
-      transaction_detail: '',
-    };
     try {
-      // await subscribePackageApi(req);
-      // await getUSerDetail(...);
-      setIsLoading(false);
+      await subscriptionApi.subscribeToPackage(id);
+      Alert.alert('Listo', 'Te has suscrito correctamente.');
       props.navigation.goBack();
-    } catch (e) {
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'No se pudo completar la suscripción.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -59,14 +59,10 @@ export default function SubscribeScreen(props: any) {
       return;
     }
     const selected = subscriptionList[selectedIndex];
-    if (selected.price === 0) {
-      paymentConfirm(selected.id);
-    } else {
-      props.navigation.navigate('MigratedPayment', { mSubscriptionModel: selected });
-    }
+    paymentConfirm(selected.id);
   };
 
-  const renderSubscriptionItem = ({ item, index }: { item: any; index: number }) => (
+  const renderSubscriptionItem = ({ item, index }: { item: PackageItem; index: number }) => (
     <TouchableOpacity
       style={[
         styles.planCard,
@@ -85,15 +81,47 @@ export default function SubscribeScreen(props: any) {
           <Text style={styles.planName} numberOfLines={2}>{item.name || ''}</Text>
         </View>
         <View style={styles.planCardRight}>
-          <Text style={styles.planPrice}>${item.price?.toFixed(2) || '0.00'}</Text>
+          <Text style={styles.planPrice}>${Number(item.price ?? 0).toFixed(2)}</Text>
           <Text style={styles.planDuration}>
-            / {item.duration} {item.durationUnit === 'monthly' ? 'month' : 'year'}
+            / {item.duration} {item.duration_unit}{item.duration > 1 ? 's' : ''}
           </Text>
         </View>
       </View>
+      {(item.training_program_title || item.meal_plan_template_title) && (
+        <View style={styles.includesRow}>
+          {item.training_program_title && (
+            <View style={styles.includesChip}>
+              <Ionicons name="barbell-outline" size={12} color={C.brand5} />
+              <Text style={styles.includesChipText}>Entrenamiento</Text>
+            </View>
+          )}
+          {item.meal_plan_template_title && (
+            <View style={styles.includesChip}>
+              <Ionicons name="nutrition-outline" size={12} color={C.brand5} />
+              <Text style={styles.includesChipText}>Nutrición</Text>
+            </View>
+          )}
+        </View>
+      )}
       <Text style={styles.planDescription}>{item.description || ''}</Text>
     </TouchableOpacity>
   );
+
+  if (isPersonalClient) {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => props.navigation.goBack()}>
+          <Ionicons name="chevron-back" size={28} color={C.white} />
+        </TouchableOpacity>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="checkmark-circle" size={56} color={C.brand5} style={{ marginBottom: 16 }} />
+          <Text style={[styles.emptyText, { textAlign: 'center', paddingHorizontal: 24 }]}>
+            Ya tienes acceso completo como cliente de entrenamiento personal 1:1 — no necesitas comprar ningún plan.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -191,6 +219,17 @@ const styles = StyleSheet.create({
   planName: { fontSize: 18, fontFamily: FONT.bold, color: C.white, flex: 1 },
   planPrice: { fontSize: 20, fontFamily: FONT.bold, color: C.brand5 },
   planDuration: { fontSize: 13, color: C.gray30, fontFamily: FONT.regular },
+  includesRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  includesChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: C.surfaceLight,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  includesChipText: { fontSize: 11, color: C.brand5, fontFamily: FONT.semiBold },
   planDescription: { fontSize: 13, color: C.gray30, marginTop: 10, fontFamily: FONT.regular, lineHeight: 20 },
   subscribeButton: {
     backgroundColor: C.brand5,

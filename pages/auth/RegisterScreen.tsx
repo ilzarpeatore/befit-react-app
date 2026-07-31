@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@store/AuthContext";
 import { Colors } from "@constants/colors";
+import { authApi } from "../../api/auth";
 
 export default function RegisterScreen() {
   const navigation = useNavigation<any>();
@@ -26,6 +27,31 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Código de invitación de cliente de entrenamiento personal (Niveles de
+  // acceso, 2026-07-30) — opcional. Quien se registre con un código válido
+  // queda is_personal_client=true automáticamente (lo decide el backend).
+  const [inviteCode, setInviteCode] = useState("");
+  const [inviteStatus, setInviteStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
+
+  const checkInvite = useCallback(async (code: string) => {
+    if (!code.trim()) {
+      setInviteStatus("idle");
+      return;
+    }
+    setInviteStatus("checking");
+    try {
+      const res = await authApi.checkInviteCode(code.trim());
+      setInviteStatus(res.data?.data?.valid ? "valid" : "invalid");
+    } catch {
+      setInviteStatus("invalid");
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => checkInvite(inviteCode), 500);
+    return () => clearTimeout(timeout);
+  }, [inviteCode, checkInvite]);
 
   const handleRegister = useCallback(async () => {
     if (!name.trim()) {
@@ -60,6 +86,7 @@ export default function RegisterScreen() {
         user_type: "user",
         status: "active",
         gender: "other",
+        invite_code: inviteStatus === "valid" ? inviteCode.trim() : undefined,
       });
     } catch (err: any) {
       const message =
@@ -72,7 +99,7 @@ export default function RegisterScreen() {
     } finally {
       setLoading(false);
     }
-  }, [name, email, password, confirmPassword, authRegister]);
+  }, [name, email, password, confirmPassword, authRegister, inviteCode, inviteStatus]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -165,6 +192,33 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Invitation Code (optional)</Text>
+            <View style={styles.inputWrap}>
+              <Ionicons name="key-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. ABCD-1234"
+                placeholderTextColor={Colors.TEXT_MUTED}
+                value={inviteCode}
+                onChangeText={setInviteCode}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              {inviteStatus === "checking" && <ActivityIndicator size="small" color={Colors.TEXT_SECONDARY} style={styles.eyeBtn} />}
+            </View>
+            {inviteStatus === "valid" && (
+              <Text style={[styles.inviteHint, { color: Colors.SUCCESS }]}>
+                ✓ Código válido — tendrás acceso completo como cliente de entrenamiento personal.
+              </Text>
+            )}
+            {inviteStatus === "invalid" && (
+              <Text style={[styles.inviteHint, { color: Colors.DANGER }]}>
+                Este código no es válido o ya fue usado.
+              </Text>
+            )}
+          </View>
+
           <TouchableOpacity
             style={[styles.btn, loading && styles.btnDisabled]}
             onPress={handleRegister}
@@ -196,6 +250,7 @@ const styles = {
   title: { fontFamily: "Gilroy-ExtraBold" as const, fontSize: 30, color: Colors.TEXT_PRIMARY, marginBottom: 6 } as const,
   subtitle: { fontFamily: "Gilroy-Regular" as const, fontSize: 16, color: Colors.TEXT_SECONDARY, marginBottom: 32 } as const,
   inputGroup: { marginBottom: 18 } as const,
+  inviteHint: { fontFamily: "Gilroy-Regular" as const, fontSize: 13, marginTop: 6 } as const,
   label: { fontFamily: "Gilroy-Medium" as const, fontSize: 14, color: Colors.TEXT_SECONDARY, marginBottom: 8 } as const,
   inputWrap: {
     flexDirection: "row" as const,
