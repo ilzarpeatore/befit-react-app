@@ -100,8 +100,8 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     workoutLevelBadge: { position: 'absolute', top: r(12), left: r(12), backgroundColor: C.surface, borderRadius: r(12), paddingHorizontal: r(8), paddingVertical: r(3) },
     workoutLevelText: { fontSize: r(10), fontFamily: FONT.bold, color: C.textPrimary },
     workoutBottomInfo: { position: 'absolute', bottom: r(12), left: r(12), right: r(12) },
-    workoutCardTitle: { fontSize: r(16), fontFamily: FONT.bold, color: C.white },
-    workoutCardMeta: { fontSize: r(11), color: C.gray10, marginTop: r(4) },
+    workoutCardTitle: { fontSize: r(16), fontFamily: FONT.bold, color: C.black },
+    workoutCardMeta: { fontSize: r(11), color: C.black, marginTop: r(4) },
     nutritionCard: { backgroundColor: C.surfaceLight, borderRadius: r(20), borderWidth: 1, borderColor: C.border, padding: r(16), marginHorizontal: r(20), marginBottom: r(12) },
     nutritionTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: r(12) },
     nutritionCalCenter: { alignItems: 'center' as const },
@@ -137,7 +137,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     blogDate: { fontSize: r(10), color: C.textSecondary, marginTop: r(4) },
     seeAllImage: { backgroundColor: C.orange, alignItems: 'center' as const, justifyContent: 'center' as const },
     lockBadge: { position: 'absolute' as const, top: r(8), right: r(8), flexDirection: 'row' as const, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: r(10), paddingHorizontal: r(7), paddingVertical: r(3), gap: r(4) },
-    lockBadgeText: { fontSize: r(9), color: C.white, fontFamily: FONT.semiBold },
+    lockBadgeText: { fontSize: r(9), color: C.black, fontFamily: FONT.semiBold },
     programPriceBadge: { position: 'absolute' as const, bottom: r(8), left: r(8), backgroundColor: C.orange, borderRadius: r(10), paddingHorizontal: r(9), paddingVertical: r(3) },
     programPriceText: { fontSize: r(12), fontFamily: FONT.bold, color: C.white },
     supportCard: { backgroundColor: C.surfaceLight, borderRadius: r(20), borderWidth: 1, borderColor: C.border, padding: r(16), marginHorizontal: r(20), marginBottom: r(12), flexDirection: 'row', alignItems: 'center' },
@@ -463,7 +463,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                     )}
                     {locked && (
                       <View style={styles.lockBadge}>
-                        <Ionicons name="lock-closed" size={11} color={C.white} />
+                        <Ionicons name="lock-closed" size={11} color={C.black} />
                         <Text style={styles.lockBadgeText}>Exclusive</Text>
                       </View>
                     )}
@@ -696,9 +696,9 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
       <TouchableOpacity
         onPress={() => navigation?.navigate('ScreenExplorer')}
-        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E3DCD9', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#E3DCD9', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#E5E5EA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
       >
-        <Text style={{ fontSize: 28, color: '#1C1C1E', marginTop: -2 }}>+</Text>
+        <Text style={{ fontSize: 28, color: '#000000', marginTop: -2 }}>+</Text>
       </TouchableOpacity>
 
       {/* Menú de usuario (perfil, favoritos, ajustes, salud, comunidad, logout) */}

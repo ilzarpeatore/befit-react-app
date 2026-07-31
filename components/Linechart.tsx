@@ -95,7 +95,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
             {/* label */}
             {showLabels ? (
               <SText
-                fill="#ffffff"
+                fill="#6B6B70"
                 fontSize="14"
                 fontFamily={Platform.OS != "ios" ? "Gilroy-Bold" : ""} //ios fix | ios can't load fonts inside svg for some reason yet
                 fontWeight="bold"
@@ -120,14 +120,14 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
             y1={chart.avglinestartY + Ystartpoint}
             x2="301.5"
             y2={chart.avglinestartY + Ystartpoint}
-            stroke="#8A8CB3"
+            stroke="#6B6B70"
             strokeOpacity="0.5"
             strokeLinecap="round"
             strokeDasharray="1 5"
           />
           {/* text */}
           <SText
-            fill="#8A8CB2"
+            fill="#6B6B70"
             fontSize="10"
             fontFamily={Platform.OS != "ios" ? "Gilroy-Bold" : ""} //ios fix | ios can't load fonts inside svg for some reason yet
             fontWeight="bold"
@@ -152,7 +152,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
       {/*graph dot lines*/}
       <AnimatedPath
         d={svgPath(chart.parsedata, bezierCommand)} //pas parse data to svg path function to return svg path d
-        stroke="#3C3F69"
+        stroke="#1C1C1E"
         strokeWidth="2"
         strokeLinecap="round"
         strokeDasharray={"1 4"}
@@ -167,10 +167,10 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
           y2="0"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop stopColor="#3C3F69" />
-          <Stop offset="0.0001" stopColor="#3C3F69" stopOpacity="0" />
-          <Stop offset="0.514034" stopColor="#8A8CB3" />
-          <Stop offset="1" stopColor="#3C3F69" stopOpacity="0" />
+          <Stop stopColor="#E5E5EA" />
+          <Stop offset="0.0001" stopColor="#E5E5EA" stopOpacity="0" />
+          <Stop offset="0.514034" stopColor="#E5E5EA" />
+          <Stop offset="1" stopColor="#E5E5EA" stopOpacity="0" />
         </SlinearGradient>
         <SlinearGradient
           id="paint7_linear"
@@ -180,10 +180,10 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
           y2="123"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop stopColor="#3C3F69" stopOpacity="0" />
+          <Stop stopColor="#1C1C1E" stopOpacity="0" />
           <Stop offset="0.179336" stopColor="#94CF76" />
-          <Stop offset="0.803064" stopColor="#5652E5" />
-          <Stop offset="1" stopColor="#3C3F69" stopOpacity="0" />
+          <Stop offset="0.803064" stopColor="#1C1C1E" />
+          <Stop offset="1" stopColor="#1C1C1E" stopOpacity="0" />
         </SlinearGradient>
       </Defs>
     </Svg>

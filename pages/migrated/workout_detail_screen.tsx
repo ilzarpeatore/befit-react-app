@@ -22,7 +22,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface DayExerciseModel {
   id: number;
-  workoutDayId: number;
+  workout_day_id: number;
   exercise?: {
     type?: string;
     based?: string;
@@ -34,18 +34,18 @@ interface DayExerciseModel {
 
 interface Workoutday {
   id: number;
-  isRest?: number;
+  is_rest?: number;
   [key: string]: any;
 }
 
 interface WorkoutDetailData {
   id: number;
   title: string;
-  workoutImage?: string;
-  workoutTypeTitle?: string;
-  levelTitle?: string;
-  isFavourite?: number;
-  isPremium?: number;
+  workout_image?: string;
+  workout_type_title?: string;
+  level_title?: string;
+  is_favourite?: number;
+  is_premium?: number;
   description?: string;
   [key: string]: any;
 }
@@ -82,9 +82,10 @@ export default function WorkoutDetailScreen(props: any) {
       await workoutsApi.getDetail(workoutId).then((res) => {
         const value: any = res.data;
         setWorkoutDetail(value.data);
-        setWorkoutDayList(value.workoutday || []);
-        if (value.workoutday?.length > 0) {
-          getDayExerciseData(value.workoutday[0].id);
+        const days = value.data?.workout_day || [];
+        setWorkoutDayList(days);
+        if (days.length > 0) {
+          getDayExerciseData(days[0].id);
         }
       });
     } catch (e) {
@@ -116,9 +117,9 @@ export default function WorkoutDetailScreen(props: any) {
       await workoutsApi.setFavourite(id!);
       if (workoutDetail) {
         const updated = { ...workoutDetail };
-        updated.isFavourite = updated.isFavourite === 1 ? 0 : 1;
+        updated.is_favourite = updated.is_favourite === 1 ? 0 : 1;
         setWorkoutDetail(updated);
-        onCall?.(updated.isFavourite);
+        onCall?.(updated.is_favourite);
       }
     } catch (e) {
     } finally {
@@ -165,14 +166,14 @@ export default function WorkoutDetailScreen(props: any) {
             mExerciseId: item.exercise?.id,
             mExerciseName: item.exercise?.title,
             workOutId: workoutId?.toString(),
-            workoutDayId: item.workoutDayId,
+            workoutDayId: item.workout_day_id,
             isCompleted: true,
             isFrom: 'workoutDetail',
           });
         }}
       >
-        {item.exercise?.image ? (
-          <Image source={{ uri: item.exercise.image }} style={styles.exerciseImage} resizeMode="cover" />
+        {item.exercise?.exercise_image ? (
+          <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} resizeMode="cover" />
         ) : null}
         <View style={styles.exerciseContent}>
           <Text style={styles.exerciseTitle} numberOfLines={1}>
@@ -202,9 +203,9 @@ export default function WorkoutDetailScreen(props: any) {
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
       <View style={styles.heroSection}>
-        {workoutDetail?.workoutImage ? (
+        {workoutDetail?.workout_image ? (
           <Image
-            source={{ uri: workoutDetail.workoutImage }}
+            source={{ uri: workoutDetail.workout_image }}
             style={styles.heroImage}
             resizeMode="cover"
           />
@@ -218,11 +219,11 @@ export default function WorkoutDetailScreen(props: any) {
 
         {/* Back Button */}
         <TouchableOpacity style={styles.backBtn} onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
         {/* Premium Badge */}
-        {workoutDetail?.isPremium === 1 && (
+        {workoutDetail?.is_premium === 1 && (
           <View style={styles.proBadge}>
             <Text style={styles.proText}>PRO</Text>
           </View>
@@ -234,9 +235,9 @@ export default function WorkoutDetailScreen(props: any) {
           onPress={() => setWorkoutFav(workoutDetail?.id)}
         >
           <Ionicons
-            name={workoutDetail?.isFavourite === 1 ? 'heart' : 'heart-outline'}
+            name={workoutDetail?.is_favourite === 1 ? 'heart' : 'heart-outline'}
             size={22}
-            color={workoutDetail?.isFavourite === 1 ? C.brand5 : C.white}
+            color={workoutDetail?.is_favourite === 1 ? C.pink : '#FFFFFF'}
           />
         </TouchableOpacity>
 
@@ -254,8 +255,8 @@ export default function WorkoutDetailScreen(props: any) {
       >
         {/* Data Row */}
         <View style={styles.dataRow}>
-          {renderDataItem('', 'Workout Type', workoutDetail?.workoutTypeTitle || '-')}
-          {renderDataItem('', 'Level', workoutDetail?.levelTitle || '-')}
+          {renderDataItem('', 'Workout Type', workoutDetail?.workout_type_title || '-')}
+          {renderDataItem('', 'Level', workoutDetail?.level_title || '-')}
         </View>
 
         <View style={styles.divider} />
@@ -302,7 +303,7 @@ export default function WorkoutDetailScreen(props: any) {
           workoutDayList.length > 0 && (
             <View style={styles.emptyExerciseContainer}>
               <Text style={styles.emptyExerciseText}>
-                {workoutDayList[currentTabIndex]?.isRest === 1
+                {workoutDayList[currentTabIndex]?.is_rest === 1
                   ? 'Rest Day'
                   : 'No exercises found'}
               </Text>
@@ -312,7 +313,7 @@ export default function WorkoutDetailScreen(props: any) {
 
         {isLoading && (
           <View style={styles.exerciseLoader}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.textPrimary} />
           </View>
         )}
 
@@ -321,7 +322,7 @@ export default function WorkoutDetailScreen(props: any) {
 
       {isDetailLoading && (
         <View style={styles.loaderOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color="#FFFFFF" />
         </View>
       )}
     </SafeAreaView>
@@ -398,7 +399,7 @@ const styles = StyleSheet.create({
     left: 16,
     fontFamily: FONT.bold,
     fontSize: 20,
-    color: C.white,
+    color: '#FFFFFF',
   },
   contentSheet: {
     flex: 1,
@@ -456,7 +457,7 @@ const styles = StyleSheet.create({
   },
   tabActive: {
     borderBottomWidth: 2,
-    borderBottomColor: C.brand5,
+    borderBottomColor: C.textPrimary,
   },
   tabText: {
     fontFamily: FONT.regular,
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FONT.bold,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   exerciseItem: {
     flexDirection: 'row',

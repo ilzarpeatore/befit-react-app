@@ -126,7 +126,7 @@ export default function CommunityScreen(props: any) {
     if (isLoading) return null;
     return (
       <View style={localStyles.emptyContainer}>
-        <Ionicons name="alert-circle-outline" size={80} color={C.gray5} />
+        <Ionicons name="alert-circle-outline" size={80} color={C.gray50} />
         <Text style={localStyles.emptyText}>No posts found</Text>
       </View>
     );

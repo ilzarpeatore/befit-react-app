@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ImageBackground,
   StyleSheet,
   Text,
   View,
@@ -48,10 +47,7 @@ export default function Result() {
     date?: string;
   } | undefined;
   return (
-    <ImageBackground
-      source={require("@assets/bg2.png")}
-      style={styles.bg}
-    >
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container}>
         <View style={styles.container2}>
           <ScrollView contentContainerStyle={styles.scrollviewcontainer}>
@@ -61,10 +57,10 @@ export default function Result() {
                 start={{ x: 0.44, y: -0.81 }}
                 end={{ x: 1.31, y: -0.34 }}
                 colors={[
-                  "rgba(60,63,105,1)",
-                  "rgba(38,40,67,0)",
-                  "rgba(17,18,30,0)",
-                  "rgba(80, 94, 220, 0.32)",
+                  "#E5E5EA",
+                  "rgba(0,0,0,0)",
+                  "rgba(0,0,0,0)",
+                  "#E5E5EA",
                 ]}
                 style={styles.mapbox}
               >
@@ -153,7 +149,7 @@ export default function Result() {
                 <LinearGradient
                   start={{ x: 0.24, y: -0.09 }}
                   end={{ x: 0.26, y: 1.05 }}
-                  colors={["#7773FA", "#5652E5"]}
+                  colors={["#1C1C1E", "#000000"]}
                   style={styles.sharebutton}
                 >
                   <Text style={styles.sharebuttontext}>Share</Text>
@@ -173,7 +169,7 @@ export default function Result() {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -193,7 +189,7 @@ function useStyle() {
       width: "100%",
       height: "100%",
       resizeMode: "cover",
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     map: {
       paddingHorizontal: '16@ratio',
@@ -208,7 +204,7 @@ function useStyle() {
       position: "absolute",
       width: "96%",
       height: "100%",
-      backgroundColor: "rgba(208,210,232,0.04)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       borderRadius: '16@ratio',
       top: '-11@ratio',
       right: "3%",
@@ -216,7 +212,7 @@ function useStyle() {
     mapboxinside: {
       width: "100%",
       height: '289@ratio',
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
       borderRadius: '16@ratio',
     },
     mapboxinsideshadow: {
@@ -237,7 +233,7 @@ function useStyle() {
     mapview: {
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(60, 63, 105, 0.47)",
+      backgroundColor: "#E5E5EA",
       opacity: 0.9,
     },
     actions: {
@@ -262,7 +258,7 @@ function useStyle() {
       marginTop: '15@ratio',
     },
     homebuttontext: {
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
     },
@@ -298,7 +294,7 @@ function useStyle() {
     resaulttitletext: {
       fontFamily: "Gilroy-Bold",
       fontSize: '14@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     resultboxdata: {
       zIndex: 3,
@@ -315,7 +311,7 @@ function useStyle() {
     resultboxdatatitle: {
       fontFamily: "Gilroy-Medium",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       marginBottom: '5@ratio',
     },
     resultboxdatarow: {
@@ -325,12 +321,12 @@ function useStyle() {
     resultboxdatavalue: {
       fontFamily: "Gilroy-ExtraBold",
       fontSize: '24@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     resultboxdataunit: {
       fontFamily: "Gilroy-ExtraBold",
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       marginLeft: '5@ratio',
       marginBottom: '3@ratio',
     },

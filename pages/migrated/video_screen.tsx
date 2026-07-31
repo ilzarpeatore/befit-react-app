@@ -19,7 +19,7 @@ function VideoComponent({ item }: { item: any }) {
         <Text style={styles.videoMeta}>{item.duration || '3:45'}</Text>
       </View>
       <View style={styles.playOverlay}>
-        <Ionicons name="play" size={24} color={C.white} />
+        <Ionicons name="play" size={24} color={C.black} />
       </View>
     </TouchableOpacity>
   );
@@ -59,7 +59,7 @@ export default function VideoScreen(props: any) {
   };
 
   const renderEmpty = () => {
-    if (isLoading) return <ActivityIndicator size="large" color={C.brand5} style={{ marginTop: 60 }} />;
+    if (isLoading) return <ActivityIndicator size="large" color={C.gray50} style={{ marginTop: 60 }} />;
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No videos found</Text>

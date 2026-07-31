@@ -149,7 +149,7 @@ const s = StyleSheet.create({
   paymentList: { padding: 16 },
   paymentItem: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: C.surface, borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: C.border },
   paymentItemSelected: { borderColor: C.brand5, backgroundColor: C.surfaceLight },
-  paymentLabel: { flex: 1, fontSize: 16, fontFamily: FONT.medium, color: C.gray20, marginLeft: 16 },
+  paymentLabel: { flex: 1, fontSize: 16, fontFamily: FONT.medium, color: C.gray40, marginLeft: 16 },
   paymentLabelSelected: { color: C.white },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.gray40, marginTop: 16 },

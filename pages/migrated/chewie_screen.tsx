@@ -75,7 +75,7 @@ export default function ChewieScreen({ route }: any) {
     <View style={styles_local.container}>
       {isLoading ? (
         <View style={styles_local.loadingWrap}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.gray50} />
         </View>
       ) : image ? (
         <Image

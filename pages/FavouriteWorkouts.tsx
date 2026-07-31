@@ -56,7 +56,7 @@ export default function FavouriteWorkouts() {
 
   if (error && !loading) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg} resizeMode="cover">
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container}>
           <View style={styles.header}>
             <Ionicons name="chevron-back" size={24} color={Colors.TEXT_PRIMARY} onPress={() => navigation.goBack()} />
@@ -65,12 +65,12 @@ export default function FavouriteWorkouts() {
           </View>
           <ErrorRetryMem message={error} onRetry={() => fetchFavourites()} />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg} resizeMode="cover">
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Ionicons name="chevron-back" size={24} color={Colors.TEXT_PRIMARY} onPress={() => navigation.goBack()} />
@@ -99,12 +99,12 @@ export default function FavouriteWorkouts() {
             )}
             contentContainerStyle={styles.list}
             ListEmptyComponent={<EmptyStateMem icon="heart-outline" title="No favourites yet" message="Workouts you favourite will appear here." />}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchFavourites(true)} tintColor={Colors.ACCENT_START} />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchFavourites(true)} tintColor={Colors.TEXT_SECONDARY} />}
           />
         )}
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

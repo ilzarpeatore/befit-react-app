@@ -173,7 +173,7 @@ export default function ProfileStats({ navigation }: Props) {
 
   if (loading) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -205,13 +205,13 @@ export default function ProfileStats({ navigation }: Props) {
           </View>
         </SafeAreaView>
         <StatusBar style="dark" />
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error && entries.length === 0) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -230,12 +230,12 @@ export default function ProfileStats({ navigation }: Props) {
           <ErrorRetryMem message={error} onRetry={loadData} />
         </SafeAreaView>
         <StatusBar style="dark" />
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -455,7 +455,7 @@ export default function ProfileStats({ navigation }: Props) {
         </View>
       </Modal>
       <StatusBar style="dark" />
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -464,7 +464,6 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       backgroundColor: Colors.BG_PRIMARY,
     },
     container: {
@@ -665,7 +664,7 @@ function useStyle() {
     modalCancelBtn: {
       flex: 1,
       borderRadius: "12@ratio",
-      backgroundColor: "rgba(138,140,178,0.2)",
+      backgroundColor: "#E5E5EA",
       paddingVertical: "14@ratio",
       alignItems: "center",
     },

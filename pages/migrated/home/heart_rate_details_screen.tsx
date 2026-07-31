@@ -81,8 +81,8 @@ function useStyle() {
       color: C.white,
       marginTop: 8,
     },
-    bpmUnit: { fontSize: 16, fontFamily: FONT.medium, color: C.gray5, marginTop: -4 },
-    dateTime: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, marginTop: 8 },
+    bpmUnit: { fontSize: 16, fontFamily: FONT.medium, color: C.gray50, marginTop: -4 },
+    dateTime: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, marginTop: 8 },
     grid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 32 },
     gridCard: {
       width: "47%",
@@ -93,7 +93,7 @@ function useStyle() {
       borderColor: C.border,
       gap: 8,
     },
-    gridLabel: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5 },
+    gridLabel: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50 },
     gridValue: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
     buttons: { gap: 12 },
     btnPrimary: {

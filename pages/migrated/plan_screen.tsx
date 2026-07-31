@@ -423,7 +423,7 @@ export default function PlanScreen(props: any) {
                 <Ionicons
                   name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
                   size={22}
-                  color={recipe.isComplete ? C.success : C.gray20}
+                  color={recipe.isComplete ? C.success : C.gray40}
                 />
               </TouchableOpacity>
             </View>
@@ -493,7 +493,7 @@ export default function PlanScreen(props: any) {
           <TextInput
             style={s.searchInput}
             placeholder="Search recipes..."
-            placeholderTextColor={C.gray20}
+            placeholderTextColor={C.gray40}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoFocus
@@ -556,7 +556,7 @@ const s = StyleSheet.create({
   weekDayItemSelected: { backgroundColor: C.brand5 },
   weekDayLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray40, marginBottom: 4 },
   weekDayLabelSelected: { color: C.white },
-  weekDayNum: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray20 },
+  weekDayNum: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray40 },
   weekDayNumSelected: { color: C.white },
   weekDayToday: { color: C.brand5 },
   compactBar: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: C.surface, marginHorizontal: 16, marginBottom: 8, borderRadius: 12, padding: 12 },
@@ -586,23 +586,23 @@ const s = StyleSheet.create({
   recipeItemTouchable: { flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 8 },
   recipeImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
   recipeInfo: { flex: 1, marginRight: 8 },
-  recipeName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray10, marginBottom: 4 },
+  recipeName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50, marginBottom: 4 },
   recipeMacrosRow: { flexDirection: 'row', gap: 10 },
   recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.textPrimary },
-  recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5 },
+  recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50 },
   coachBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   coachBadgeText: { fontSize: 10, fontFamily: FONT.medium, color: C.orange },
-  emptyMealText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, paddingVertical: 8 },
+  emptyMealText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, paddingVertical: 8 },
   loadingOverlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
   modalSheet: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 24 },
   modalHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   modalCloseBtn: { padding: 4 },
   modalTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   searchInput: { backgroundColor: C.surfaceLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, fontFamily: FONT.regular, color: C.white, marginBottom: 12 },
-  noResultsText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, textAlign: 'center', marginTop: 20 },
+  noResultsText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: 'center', marginTop: 20 },
   searchResultsScroll: { flex: 1 },
   searchResultRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
   searchResultImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
   searchResultTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-  searchResultMeta: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+  searchResultMeta: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
 });

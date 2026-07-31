@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ImageBackground,
   StyleSheet,
   Text,
   View,
@@ -26,10 +25,7 @@ export default function Congratulation() {
   const params = (route?.params as any) as WorkoutResult | undefined;
   const styles = useStyle();
   return (
-    <ImageBackground
-      source={require("@assets/bg2.png")}
-      style={styles.bg}
-    >
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container}>
         <View style={styles.container2}>
           <ScrollView>
@@ -72,7 +68,7 @@ export default function Congratulation() {
                 <LinearGradient
                   start={{ x: 0.24, y: -0.09 }}
                   end={{ x: 0.26, y: 1.05 }}
-                  colors={["#7773FA", "#5652E5"]}
+                  colors={["#1C1C1E", "#000000"]}
                   style={styles.sharebutton}
                 >
                   <Text style={styles.sharebuttontext}>Show me resault</Text>
@@ -96,7 +92,7 @@ export default function Congratulation() {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -116,7 +112,7 @@ function useStyle() {
       width: "100%",
       height: "100%",
       resizeMode: "cover",
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     trophybox: {
       width: "100%",
@@ -149,7 +145,7 @@ function useStyle() {
       bottom: '105@ratio',
       fontFamily: "Gilroy-Lightitalic",
       fontSize: '26@ratio',
-      color: "#ffffff",
+      color: "#000000",
       textAlign: "center",
     },
     trophyboxt2: {
@@ -158,7 +154,7 @@ function useStyle() {
       bottom: '50@ratio',
       fontFamily: "Gilroy-Bold",
       fontSize: '32@ratio',
-      color: "#ffffff",
+      color: "#000000",
       textAlign: "center",
     },
     actions: {
@@ -183,7 +179,7 @@ function useStyle() {
       marginBottom: '20@ratio',
     },
     homebuttontext: {
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
     },

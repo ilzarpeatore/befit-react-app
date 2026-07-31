@@ -39,10 +39,10 @@ const Statisticblock = ({ children, styles }: StatisticblockPropsInterface) => {
         start={{ x: 0.4, y: -0.1 }}
         end={{ x: 0.74, y: 1.42 }}
         colors={[
-          "rgba(138,140,178,1)",
-          "rgba(138,140,178,0)",
-          "rgba(138,140,178,0)",
-          "rgba(125,169,244,1)",
+          "#E5E5EA",
+          "rgba(0,0,0,0)",
+          "rgba(0,0,0,0)",
+          "#E5E5EA",
         ]}
         locations={[0, 0.348069, 0.596479, 1]}
         style={styles.statisticblockoutline}
@@ -50,7 +50,7 @@ const Statisticblock = ({ children, styles }: StatisticblockPropsInterface) => {
         <LinearGradient
           start={{ x: 0.41, y: -1.16 }}
           end={{ x: 1.57, y: 0.32 }}
-          colors={["#8A8CB3", "#3C3F69"]}
+          colors={["#FFFFFF", "#F7F7F7"]}
           style={styles.statisticblockbg}
         />
       </LinearGradient>
@@ -163,9 +163,9 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
             y2="118.109"
             gradientUnits="userSpaceOnUse"
           >
-            <Stop offset="0.0310714" stopColor="#5652E5" />
-            <Stop offset="0.284608" stopColor="#B5BFFF" stopOpacity="0.47" />
-            <Stop offset="0.533119" stopColor="#9557AD" />
+            <Stop offset="0.0310714" stopColor="#000000" />
+            <Stop offset="0.284608" stopColor="#E5E5EA" stopOpacity="0.47" />
+            <Stop offset="0.533119" stopColor="#000000" />
             <Stop offset="1" stopColor="#F85365" />
           </SlinearGradient>
         </Defs>
@@ -193,7 +193,7 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
           snapToAlignment="center"
           decelerationRate={0}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FBFBFB" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6B6B70" />
           }
         >
           {/* stories */}
@@ -247,7 +247,7 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
               <LinearGradient
                 start={{ x: 0.5, y: 0 }}
                 end={{ x: 0.5, y: 1 }}
-                colors={["rgba(20,18,39,0)", "rgba(20,18,39,1)"]}
+                colors={["rgba(0,0,0,0)", "rgba(235,235,240,1)"]}
                 style={styles.Profileheaderbgmask}
               />
               {/* profile header user avatar*/}
@@ -315,15 +315,15 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
                       start={{ x: 0.11, y: -0.21 }}
                       end={{ x: 0.16, y: 0.62 }}
                       colors={[
-                        "rgba(255,255,255,0.13)",
-                        "rgba(255,255,255,0.13)",
+                        "rgba(0,0,0,0.08)",
+                        "rgba(0,0,0,0.08)",
                       ]}
                       style={styles.Profileactionbtnoutline}
                     >
                       <LinearGradient
                         start={{ x: 0.24, y: -0.09 }}
                         end={{ x: 0.28, y: 1.05 }}
-                        colors={["#7773FA", "#5652E5"]}
+                        colors={["#1C1C1E", "#000000"]}
                         style={styles.Profileactionbtnbg}
                       >
                         {/* profile header actions button text*/}
@@ -342,19 +342,19 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
                       start={{ x: 0.11, y: -0.21 }}
                       end={{ x: 0.16, y: 0.62 }}
                       colors={[
-                        "rgba(255,255,255,0.13)",
-                        "rgba(255,255,255,0.13)",
+                        "rgba(0,0,0,0.08)",
+                        "rgba(0,0,0,0.08)",
                       ]}
                       style={styles.Profileactionbtnoutline}
                     >
                       <LinearGradient
                         start={{ x: -0.28, y: -3.53 }}
                         end={{ x: -0.29, y: 0.98 }}
-                        colors={["#FBFBFB", "#8A8CB3"]}
+                        colors={["#E5E5EA", "#E5E5EA"]}
                         style={styles.Profileactionbtnbg}
                       >
                         {/* profile header actions button text*/}
-                        <Text style={styles.Profileactionbtntext}>
+                        <Text style={[styles.Profileactionbtntext, { color: "#000000" }]}>
                           Message
                         </Text>
                       </LinearGradient>
@@ -475,7 +475,7 @@ function useStyle() {
   const styles = useResponsiveStyleSheet({
     container: {
       flex: 1,
-      backgroundColor: "#141227",
+      backgroundColor: "#EBEBF0",
     },
     avatar: {
       width: '116@ratio'
@@ -484,7 +484,7 @@ function useStyle() {
       flex: 1,
     },
     container3: {
-      backgroundColor: "#141227",
+      backgroundColor: "#EBEBF0",
       overflow: "hidden",
     },
     backbutton: {
@@ -494,7 +494,7 @@ function useStyle() {
       width: '42@ratio',
       height: '42@ratio',
       borderRadius: Platform.OS == "ios" ? '21@ratio' : '42@ratio', //ios fix
-      backgroundColor: "rgba(60,63,105,0.49)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       alignItems: "center",
       justifyContent: "center",
       zIndex: 9999,
@@ -511,7 +511,7 @@ function useStyle() {
       width: '42@ratio',
       height: '42@ratio',
       borderRadius: Platform.OS == "ios" ? '21@ratio' : '42@ratio',
-      backgroundColor: "rgba(60,63,105,0.49)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       alignItems: "center",
       justifyContent: "center",
       zIndex: 9999,
@@ -568,7 +568,7 @@ function useStyle() {
       borderRadius: Platform.OS == "ios" ? '16@ratio' : '32@ratio', //ios fix
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "#8A8CB2",
+      backgroundColor: "#E5E5EA",
     },
     Profileheaderavatarchangeimg: {
       width: '20@ratio',
@@ -606,11 +606,11 @@ function useStyle() {
       flex: 1,
       alignItems: "center",
       borderLeftWidth: '1@ratio',
-      borderLeftColor: "rgba(138,140,178,0.15)",
+      borderLeftColor: "#E5E5EA",
     },
     Profiledatatitle: {
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Medium",
     },
     Profiledatarow: {
@@ -618,12 +618,12 @@ function useStyle() {
     },
     Profiledatalabel: {
       fontSize: '30@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-ExtraBold",
     },
     Profiledataunit: {
       fontSize: '12@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-ExtraBold",
       alignSelf: "flex-end",
       marginBottom: '5@ratio',
@@ -677,7 +677,7 @@ function useStyle() {
     },
     statisticblock2title: {
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Medium",
       marginTop: '20@ratio',
     },
@@ -687,12 +687,12 @@ function useStyle() {
     },
     statisticblock2label: {
       fontSize: '30@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-ExtraBold",
     },
     statisticblock2unit: {
       fontSize: '12@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-ExtraBold",
       alignSelf: "flex-end",
       marginBottom: '5@ratio',
@@ -712,7 +712,7 @@ function useStyle() {
       width: "100%",
       height: "100%",
       borderRadius: '16@ratio',
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
     },
     statisticblocktitle: {
       flexDirection: "row",
@@ -722,7 +722,7 @@ function useStyle() {
     },
     statisticblocktitletxt: {
       fontSize: '16@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
       flex: 1,
     },
@@ -731,12 +731,12 @@ function useStyle() {
     },
     statisticblocktitletxt2: {
       fontSize: '18@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-ExtraBold",
     },
     statisticblocktitleunit: {
       fontSize: '14@ratio',
-      color: "#8A8CB3",
+      color: "#6B6B70",
       fontFamily: "Gilroy-ExtraBold",
       alignSelf: "flex-end",
       marginLeft: '2@ratio',
@@ -748,7 +748,7 @@ function useStyle() {
     },
     statisticblock3title: {
       fontSize: '32@ratio',
-      color: "#ffffff",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
     },
     statisticblock3x: {
@@ -758,7 +758,7 @@ function useStyle() {
     },
     statisticblock3label: {
       fontSize: '16@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-SemiBold",
       marginBottom: '19@ratio',
     },

@@ -105,7 +105,7 @@ function useStyle() {
   return useResponsiveStyleSheet({
     root: { flex: 1, backgroundColor: C.bg },
     skipRow: { alignItems: "flex-end", paddingHorizontal: 20, paddingTop: 8, minHeight: 40 },
-    skipText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray5 },
+    skipText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray50 },
     page: { width: SCREEN_W, alignItems: "center", justifyContent: "center", paddingHorizontal: 40 },
     iconCircle: {
       width: 120,
@@ -117,7 +117,7 @@ function useStyle() {
       marginBottom: 32,
     },
     title: { fontSize: 24, fontFamily: FONT.bold, color: C.white, textAlign: "center", marginBottom: 12 },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", lineHeight: 22 },
+    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", lineHeight: 22 },
     dotsRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", paddingVertical: 16 },
     dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.gray30, marginHorizontal: 4 },
     dotActive: { width: 20, backgroundColor: C.brand50 },

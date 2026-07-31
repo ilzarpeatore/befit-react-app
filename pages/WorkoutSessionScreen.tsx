@@ -45,7 +45,7 @@ interface RouteParams {
 export default function WorkoutSessionScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { exercises, workoutId, workoutDayId } = route.params as RouteParams;
+  const { exercises = [], workoutId, workoutDayId } = (route.params ?? {}) as Partial<RouteParams>;
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = Math.min(winW / 375, winH / 812);
   const r = (n: number) => Math.round(n * sc);
@@ -69,7 +69,7 @@ export default function WorkoutSessionScreen() {
 
   const exercise = exercises[currentIndex];
   const exerciseData = allExerciseData[currentIndex];
-  const allSetsCompleted = exerciseData.sets.every((s) => s.completed);
+  const allSetsCompleted = exerciseData?.sets?.every((s) => s.completed) ?? false;
   const isLastExercise = currentIndex === exercises.length - 1;
 
   // elapsed workout timer
@@ -99,6 +99,18 @@ export default function WorkoutSessionScreen() {
       if (restRef.current) clearInterval(restRef.current);
     };
   }, [isRestMode, restTimer > 0]);
+
+  if (exercises.length === 0 || !exercise || !exerciseData) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 }}>
+          <Text style={{ fontFamily: FONT.regular, fontSize: 15, color: C.textSecondary, textAlign: "center" }}>
+            No hay ejercicios en esta sesión.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -153,6 +165,7 @@ export default function WorkoutSessionScreen() {
   };
 
   const finishWorkout = async () => {
+    if (!workoutId) return;
     if (timerRef.current) clearInterval(timerRef.current);
     const totalTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
@@ -170,6 +183,7 @@ export default function WorkoutSessionScreen() {
           exercise_id: ex.id,
           sets: completedSets,
           date: today,
+          workout_day_id: workoutDayId,
         });
       }
       navigation.replace("WorkoutSummary", {
@@ -200,10 +214,8 @@ export default function WorkoutSessionScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={{ flex: 1, backgroundColor: C.bg }}
-      resizeMode="cover"
     >
       <SafeAreaView style={{ flex: 1 }} edges={["right", "left", "top"]}>
         <StatusBar style="dark" />
@@ -386,7 +398,7 @@ export default function WorkoutSessionScreen() {
                   keyboardType="numeric"
                   editable={!set.completed}
                   placeholder={String(exercise.reps)}
-                  placeholderTextColor={C.gray20}
+                  placeholderTextColor={C.gray40}
                   style={{
                     backgroundColor: C.surface,
                     borderRadius: r(10),
@@ -407,7 +419,7 @@ export default function WorkoutSessionScreen() {
                   keyboardType="numeric"
                   editable={!set.completed}
                   placeholder="0"
-                  placeholderTextColor={C.gray20}
+                  placeholderTextColor={C.gray40}
                   style={{
                     backgroundColor: C.surface,
                     borderRadius: r(10),
@@ -549,6 +561,6 @@ export default function WorkoutSessionScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }

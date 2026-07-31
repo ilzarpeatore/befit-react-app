@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  ImageBackground,
   Platform,
   Dimensions,
 } from "react-native";
@@ -95,7 +94,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
                 cx="28.5"
                 cy="28.5"
                 r="27.5"
-                stroke="#8A8CB3"
+                stroke="#AEAEB2"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -125,13 +124,13 @@ export default function Club({ navigation }: ClubPropsInterface) {
                   y2="57.5"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <Stop offset="0.0310714" stopColor="#5652E5" />
+                  <Stop offset="0.0310714" stopColor="#000000" />
                   <Stop
                     offset="0.284608"
-                    stopColor="#B5BFFF"
+                    stopColor="#E5E5EA"
                     stopOpacity="0.47"
                   />
-                  <Stop offset="0.533119" stopColor="#9557AD" />
+                  <Stop offset="0.533119" stopColor="#000000" />
                   <Stop offset="1" stopColor="#F85365" />
                 </SLinearGradient>
               </Defs>
@@ -159,8 +158,8 @@ export default function Club({ navigation }: ClubPropsInterface) {
                   y2="56"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <Stop stopColor="white" />
-                  <Stop offset="1" stopColor="#8A8CB3" />
+                  <Stop stopColor="#E5E5EA" />
+                  <Stop offset="1" stopColor="#AEAEB2" />
                 </SLinearGradient>
               </Defs>
             </Svg>
@@ -263,10 +262,10 @@ export default function Club({ navigation }: ClubPropsInterface) {
             start={{ x: 0, y: 1 }}
             end={{ x: 0, y: 0 }}
             colors={[
-              "rgba(60,63,105,1)",
-              "rgba(60,63,105,0)",
-              "rgba(60,63,105,1)",
-              "rgba(60,63,105,0)",
+              "rgba(0,0,0,0.08)",
+              "rgba(0,0,0,0)",
+              "rgba(0,0,0,0.08)",
+              "rgba(0,0,0,0)",
             ]}
             locations={[0, 0.0001, 0.514034, 1]}
             style={styles.eventbulletline}
@@ -299,7 +298,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
         <LinearGradient
           start={{ x: 0.32, y: -0.85 }}
           end={{ x: 0.42, y: 1.24 }}
-          colors={["#8A8CB3", "#3C3F69"]}
+          colors={["#FFFFFF", "#EBEBF0"]}
           style={styles.eventbox}
         >
           {/*event number start*/}
@@ -313,7 +312,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
             <LinearGradient
               start={{ x: 0.41, y: -0.3 }}
               end={{ x: 0.74, y: 1.69 }}
-              colors={["rgba(60,63,105,1)", "rgba(60,63,105,0)"]}
+              colors={["rgba(0,0,0,1)", "rgba(0,0,0,0)"]}
               style={styles.eventlabelmaskbg}
             ></LinearGradient>
           </MaskedView>
@@ -373,7 +372,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
           <LinearGradient
             start={{ x: 0.26, y: -0.5 }}
             end={{ x: 0.83, y: 0.93 }}
-            colors={["rgba(208, 210, 232, 0.15)", "rgba(208, 210, 232, 0)"]}
+            colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0)"]}
             style={styles.mapbox}
           >
             <View style={styles.mapboxbg} />
@@ -381,9 +380,9 @@ export default function Club({ navigation }: ClubPropsInterface) {
               start={{ x: 0.5, y: 0 }}
               end={{ x: 0.5, y: 1 }}
               colors={[
-                "rgba(60, 63, 105, 0.47)",
-                "rgba(60, 63, 105, 0.25)",
-                "rgba(60, 63, 105, 0)",
+                "rgba(0,0,0,0.08)",
+                "rgba(0,0,0,0.04)",
+                "rgba(0,0,0,0)",
               ]}
               locations={[0, 0.458569, 1]}
               style={styles.mapboxinside}
@@ -416,7 +415,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
               <View style={styles.mapmembergreendot} />
               <BlurView
                 intensity={Platform.OS == "ios" ? 69 : 100}
-                tint={"dark"}
+                tint={"light"}
                 style={styles.mapmembersbox}
               >
                 <View style={styles.mapmembersboxinside}>
@@ -446,7 +445,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
                       <LinearGradient
                         start={{ x: 0.5, y: 0 }}
                         end={{ x: 0.5, y: 1 }}
-                        colors={["rgba(60,63,105,1)", "rgba(60,63,105,0.72)"]}
+                        colors={["#1C1C1E", "#000000"]}
                         style={styles.membersmore}
                       >
                         <Text style={styles.membersmoretext}>
@@ -465,7 +464,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
                     <LinearGradient
                       start={{ x: -0.12, y: -0.34 }}
                       end={{ x: 0.67, y: 1 }}
-                      colors={["#505EDC", "#FB558B"]}
+                      colors={["#1C1C1E", "#000000"]}
                       style={styles.mapmemberscanbtn}
                     >
                       <Image
@@ -491,10 +490,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
     navigation.navigate("Clubnav", { screen: "Stories" });
   }
   return (
-    <ImageBackground
-      source={require("@assets/bg2.png")}
-      style={styles.bg}
-    >
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={['right', 'top', 'left']}>
         {/*toolbar start*/}
         <View style={styles.topbar}>
@@ -568,7 +564,7 @@ export default function Club({ navigation }: ClubPropsInterface) {
         {/*navigation end*/}
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -594,7 +590,7 @@ function useStyle() {
       height: "100%",
       resizeMode: "cover",
       paddingTop: '44@ratio',
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     topbar: {
       width: "100%",
@@ -691,7 +687,7 @@ function useStyle() {
       borderRadius: '48@ratio',
       left: '3.5@ratio',
       top: '3.5@ratio',
-      backgroundColor: "rgba(60,63,105,0.74)",
+      backgroundColor: "rgba(0,0,0,0.5)",
       zIndex: 2,
     },
     storyicon: {
@@ -764,7 +760,7 @@ function useStyle() {
       position: "absolute",
       width: "96%",
       height: "100%",
-      backgroundColor: "rgba(208,210,232,0.04)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       borderRadius: '16@ratio',
       top: '-11@ratio',
       right: "3%",
@@ -772,7 +768,7 @@ function useStyle() {
     mapboxinside: {
       width: "100%",
       height: '256@ratio',
-      backgroundColor: "#141227",
+      backgroundColor: "#FFFFFF",
       borderRadius: '16@ratio',
     },
     mapboxinsideshadow: {
@@ -793,7 +789,7 @@ function useStyle() {
     mapview: {
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(60, 63, 105, 0.47)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       opacity: 0.9,
     },
     mapmembersbox: {
@@ -809,7 +805,7 @@ function useStyle() {
     mapmembersboxinside: {
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(60,63,105,0.69)",
+      backgroundColor: "#FFFFFF",
       borderRadius: '16@ratio',
       justifyContent: "center",
       flexDirection: "row",
@@ -889,7 +885,7 @@ function useStyle() {
     eventtitle: {
       fontFamily: "Gilroy-Bold",
       fontSize: '16@ratio',
-      color: "#ffffff",
+      color: "#000000",
       marginBottom: '20@ratio',
       paddingLeft: '8@ratio',
       marginTop: '32@ratio',
@@ -974,7 +970,7 @@ function useStyle() {
     },
     eventlabel: {
       fontSize: '14@ratio',
-      color: "white",
+      color: "#000000",
       fontFamily: "Gilroy-Bold",
       marginRight: '25@ratio',
       flex: 1,
@@ -982,7 +978,7 @@ function useStyle() {
     },
     eventtime: {
       fontSize: '14@ratio',
-      color: "#8A8CB2",
+      color: "#6B6B70",
       fontFamily: "Gilroy-Bold",
       marginRight: '15@ratio',
       textAlign: "center",

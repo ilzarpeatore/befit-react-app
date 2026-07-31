@@ -1,7 +1,7 @@
 import React, { startTransition, useCallback, useRef, useState } from "react";
 import {
-  ImageBackground,
   StyleSheet,
+  View,
   Platform,
   ScrollView,
   Dimensions,
@@ -89,10 +89,8 @@ export default function Unboarding({ navigation }: any) {
    * render
    */
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <ScrollView
@@ -122,7 +120,7 @@ export default function Unboarding({ navigation }: any) {
         </ScrollView>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 /**
@@ -140,20 +138,20 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     sliderdotstyle: {
       width: '16@ratio',
       height: '8@ratio',
       borderRadius: '8@ratio',
-      backgroundColor: "#505EDC",
+      backgroundColor: "#000000",
       marginHorizontal: '-4@ratio',
     },
     sliderinactivedotstyle: {
       width: '16@ratio',
       height: '16@ratio',
       borderRadius: Platform.OS == "ios" ? '8@ratio' : '16@ratio', //ios fix
-      backgroundColor: "#ffffff",
+      backgroundColor: "#E5E5EA",
       marginHorizontal: '-16@ratio',
     }
   });

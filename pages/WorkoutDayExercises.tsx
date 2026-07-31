@@ -136,10 +136,8 @@ export default function WorkoutDayExercises() {
 
   if (loading) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
-        resizeMode="cover"
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.container2}>
@@ -173,16 +171,14 @@ export default function WorkoutDayExercises() {
           </View>
           <StatusBar style="dark" />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <ImageBackground
-        source={require("@assets/bg3.png")}
+      <View
         style={styles.bg}
-        resizeMode="cover"
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.container2}>
@@ -206,15 +202,13 @@ export default function WorkoutDayExercises() {
           </View>
           <StatusBar style="dark" />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.container2}>
@@ -283,7 +277,7 @@ export default function WorkoutDayExercises() {
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -336,7 +330,7 @@ function useStyle() {
       width: "32@ratio",
       height: "32@ratio",
       borderRadius: "16@ratio",
-      backgroundColor: "rgba(80,94,220,0.3)",
+      backgroundColor: "#E5E5EA",
       alignItems: "center",
       justifyContent: "center",
       marginRight: "12@ratio",
@@ -344,7 +338,7 @@ function useStyle() {
     exerciseIndexText: {
       fontFamily: "Gilroy-Bold",
       fontSize: "14@ratio",
-      color: Colors.ACCENT_ACTIVE,
+      color: "#000000",
     },
     exerciseImage: {
       width: "56@ratio",

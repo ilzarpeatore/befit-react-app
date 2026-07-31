@@ -35,7 +35,7 @@ export default function WeightLoseGainChoiceScreen({ navigation }: any) {
               <Text style={styles.choiceTitle}>Perder peso</Text>
               <Text style={styles.choiceSubtitle}>Reducir tu peso corporal actual</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={C.gray5} />
+            <Ionicons name="chevron-forward" size={20} color={C.gray50} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -49,7 +49,7 @@ export default function WeightLoseGainChoiceScreen({ navigation }: any) {
               <Text style={styles.choiceTitle}>Ganar peso</Text>
               <Text style={styles.choiceSubtitle}>Aumentar tu masa corporal</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={C.gray5} />
+            <Ionicons name="chevron-forward" size={20} color={C.gray50} />
           </TouchableOpacity>
 
           {choice && (
@@ -71,14 +71,14 @@ function useStyle() {
     backBtn: { marginBottom: 8, width: 40, height: 40, justifyContent: "center" },
     iconWrap: { alignSelf: "center", width: 120, height: 120, borderRadius: 60, backgroundColor: C.brand5, justifyContent: "center", alignItems: "center", marginBottom: 28, borderWidth: 2, borderColor: C.brand50 },
     title: { fontSize: 26, fontFamily: FONT.bold, color: C.white, textAlign: "center", marginBottom: 8 },
-    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", marginBottom: 32 },
+    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", marginBottom: 32 },
     choiceCard: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 16, padding: 18, marginBottom: 14, borderWidth: 2, borderColor: C.border, gap: 14 },
     choiceCardActiveLose: { borderColor: C.destructive50 },
     choiceCardActiveGain: { borderColor: C.success50 },
     choiceIcon: { width: 52, height: 52, borderRadius: 26, justifyContent: "center", alignItems: "center" },
     choiceContent: { flex: 1 },
     choiceTitle: { fontSize: 17, fontFamily: FONT.semiBold, color: C.white, marginBottom: 2 },
-    choiceSubtitle: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5 },
+    choiceSubtitle: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50 },
     continueBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, marginTop: 20, gap: 8 },
     continueBtnText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
   });

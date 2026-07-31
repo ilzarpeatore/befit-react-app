@@ -169,7 +169,7 @@ const chartStyles = StyleSheet.create({
   barLabel: { width: 50, fontSize: 10, color: C.gray40, textAlign: 'right', marginRight: 6 },
   barTrack: { flex: 1, height: 16, backgroundColor: C.gray70, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 16, backgroundColor: C.brand5, borderRadius: 3 },
-  barValue: { width: 70, fontSize: 10, color: C.gray20, marginLeft: 6 },
+  barValue: { width: 70, fontSize: 10, color: C.gray40, marginLeft: 6 },
 });
 
 const s = StyleSheet.create({

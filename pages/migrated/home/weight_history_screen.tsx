@@ -48,7 +48,7 @@ export default function WeightHistoryScreen({ navigation }: any) {
             {ENTRIES.map((entry, i) => (
               <View key={i} style={styles.entryCard}>
                 <View style={styles.entryLeft}>
-                  <Ionicons name="scale-outline" size={18} color={C.gray5} />
+                  <Ionicons name="scale-outline" size={18} color={C.gray50} />
                   <View>
                     <Text style={styles.entryDate}>{entry.date}</Text>
                     <Text style={styles.entryWeight}>{entry.weight.toFixed(1)} kg</Text>
@@ -87,17 +87,17 @@ function useStyle() {
     filterRow: { flexDirection: "row", gap: 10, marginBottom: 24 },
     filterChip: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
     filterChipActive: { backgroundColor: C.brand50, borderColor: C.brand50 },
-    filterText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray5 },
+    filterText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray50 },
     filterTextActive: { color: C.white },
     list: { gap: 8 },
     entryCard: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: C.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border },
     entryLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
-    entryDate: { fontSize: 13, fontFamily: FONT.medium, color: C.gray5 },
+    entryDate: { fontSize: 13, fontFamily: FONT.medium, color: C.gray50 },
     entryWeight: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white, marginTop: 2 },
     entryRight: { alignItems: "flex-end" },
     changeBadge: { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingVertical: 4, paddingHorizontal: 8, gap: 4 },
     changeText: { fontSize: 12, fontFamily: FONT.semiBold },
-    noChange: { fontSize: 14, fontFamily: FONT.medium, color: C.gray10 },
+    noChange: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50 },
     fab: { position: "absolute", bottom: 24, right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: C.brand50, justifyContent: "center", alignItems: "center", elevation: 4 },
   });
 }

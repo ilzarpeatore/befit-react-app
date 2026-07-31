@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator, Slider } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
@@ -42,7 +42,7 @@ interface ExerciseDurationScreencastProps {
 }
 
 export default function ExerciseDurationScreencast(props: ExerciseDurationScreencastProps) {
-  const { mExerciseModel, workOutId, workoutDayId } = props.route.params;
+  const { mExerciseModel, workOutId, workoutDayId } = props.route?.params ?? {};
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
@@ -169,6 +169,7 @@ export default function ExerciseDurationScreencast(props: ExerciseDurationScreen
           exercise_id: mExerciseModel.data.id,
           sets: [],
           date: new Date().toISOString().split('T')[0],
+          workout_day_id: workoutDayId,
         });
       }
       props.navigation.pop();
@@ -211,7 +212,7 @@ export default function ExerciseDurationScreencast(props: ExerciseDurationScreen
       {/* App Bar */}
       <View style={localStyles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={localStyles.appBarTitle} numberOfLines={1}>
           {mExerciseModel?.data?.title || ''}
@@ -234,7 +235,7 @@ export default function ExerciseDurationScreencast(props: ExerciseDurationScreen
                 <View style={localStyles.controlsOverlay}>
                   <View style={localStyles.controlsCenter}>
                     <TouchableOpacity onPress={pauseWorkout} style={localStyles.controlCircle}>
-                      <Ionicons name={isPlaying ? 'pause' : 'play'} size={30} color={C.white} />
+                      <Ionicons name={isPlaying ? 'pause' : 'play'} size={30} color="#FFFFFF" />
                     </TouchableOpacity>
                   </View>
                   <View style={localStyles.controlsBottom}>
@@ -312,7 +313,7 @@ export default function ExerciseDurationScreencast(props: ExerciseDurationScreen
 
       {isLoading && (
         <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       )}
     </View>
@@ -408,7 +409,7 @@ const localStyles = StyleSheet.create({
     height: 190,
     borderRadius: 95,
     borderWidth: 10,
-    borderColor: C.brand5,
+    borderColor: C.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -419,7 +420,7 @@ const localStyles = StyleSheet.create({
   countdownText: {
     fontFamily: FONT.bold,
     fontSize: 48,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   countdownLabel: {
     fontFamily: FONT.bold,
@@ -436,7 +437,7 @@ const localStyles = StyleSheet.create({
   },
   completeBtn: {
     marginHorizontal: 20,
-    backgroundColor: C.brand5,
+    backgroundColor: C.brand50,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

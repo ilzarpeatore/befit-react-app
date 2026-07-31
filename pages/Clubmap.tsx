@@ -115,7 +115,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
                   strokeLinejoin="round"
                 />
               </G>
-              <Ellipse cx="30" cy="60.5" rx="6" ry="2.5" fill="#141227" />
+              <Ellipse cx="30" cy="60.5" rx="6" ry="2.5" fill="rgba(0,0,0,0.08)" />
               <Defs>
                 <SLinearGradient
                   id="paint0_linear"
@@ -240,7 +240,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
           ]}
           disabled={open_memebers_box} // disable when box is open
         >
-          <BlurView intensity={Platform.OS == "ios" ? 69 : 100} tint={"dark"}>
+          <BlurView intensity={Platform.OS == "ios" ? 69 : 100} tint={"light"}>
             <View style={styles.mapmembersboxinside}>
               {/*map members bg start*/}
               {open_memebers_box ?? (
@@ -314,7 +314,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
                     <LinearGradient
                       start={{ x: 0.5, y: 0 }}
                       end={{ x: 0.5, y: 1 }}
-                      colors={["rgba(60,63,105,1)", "rgba(60,63,105,0.72)"]}
+                      colors={["#1C1C1E", "#000000"]}
                       style={[
                         styles.membersmore,
                         open_memebers_box ? { display: "none" } : {},
@@ -351,7 +351,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
           <LinearGradient
             start={{ x: -0.12, y: -0.34 }}
             end={{ x: 0.67, y: 1 }}
-            colors={["#505EDC", "#FB558B"]}
+            colors={["#1C1C1E", "#000000"]}
             style={styles.membermarkerpinicon}
           >
             <Image
@@ -365,7 +365,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
         <BlurView
           style={styles.membermarkerbox}
           intensity={Platform.OS == "ios" ? 69 : 100}
-          tint={"dark"}
+          tint={"light"}
         >
           <View
             style={[
@@ -566,7 +566,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
             <LinearGradient
               start={{ x: -0.37, y: -1.15 }}
               end={{ x: 0.67, y: 1 }}
-              colors={["#FBFBFB", "#8A8CB3"]}
+              colors={["#FBFBFB", "#AEAEB2"]}
               style={styles.locationbg}
             >
               <Image
@@ -599,12 +599,12 @@ function useStyle() {
     },
     container: {
       flex: 1,
-      backgroundColor: "#1A1735",
+      backgroundColor: "#EBEBF0",
     },
     mapview: {
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(60, 63, 105, 0.47)",
+      backgroundColor: "#EBEBF0",
     },
     returnbutton: {
       position: "absolute",
@@ -613,7 +613,7 @@ function useStyle() {
       width: '44@ratio',
       height: '44@ratio',
       borderRadius: Platform.OS == "ios" ? '22@ratio' : '44@ratio', // ios fix
-      backgroundColor: "rgba(60,63,105,0.49)",
+      backgroundColor: "rgba(0,0,0,0.08)",
       justifyContent: "center",
       alignItems: "center",
     },
@@ -656,7 +656,7 @@ function useStyle() {
     mapmembersboxinside: {
       width: "100%",
       height: "100%",
-      backgroundColor: "rgba(60,63,105,0.69)",
+      backgroundColor: "#FFFFFF",
       borderRadius: '16@ratio',
       justifyContent: "center",
       alignItems: "center",
@@ -696,7 +696,7 @@ function useStyle() {
     memberusername: {
       fontFamily: "Gilroy-SemiBold",
       fontSize: '12@ratio',
-      color: "#ffffff",
+      color: "#6B6B70",
       marginTop: '5@ratio',
       textAlign: "center",
     },
@@ -805,7 +805,7 @@ function useStyle() {
     membermarkerinfoname: {
       fontFamily: "Gilroy-SemiBold",
       fontSize: '18@ratio',
-      color: "#ffffff",
+      color: "#000000",
     },
     membermarkerinfostatus: {
       flexDirection: "row",
@@ -826,12 +826,12 @@ function useStyle() {
     membermarkerinfodistance: {
       fontFamily: "Gilroy-SemiBold",
       fontSize: '18@ratio',
-      color: "#ffffff",
+      color: "#6B6B70",
     },
     membermarkerinfodistanceunit: {
       fontFamily: "Gilroy-Bold",
       fontSize: '14@ratio',
-      color: "#ffffff",
+      color: "#6B6B70",
       marginLeft: '3@ratio',
       marginTop: '4@ratio',
     },

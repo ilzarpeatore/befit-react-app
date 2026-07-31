@@ -231,7 +231,7 @@ const styles_local = StyleSheet.create({
     marginRight: 48,
     gap: 8,
   },
-  botMessageText: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.gray10, lineHeight: 20 },
+  botMessageText: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.gray50, lineHeight: 20 },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   botLoadingText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray40 },
   inputBar: {

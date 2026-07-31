@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,18 @@ import {
   FlatList,
   SafeAreaView,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { workoutsApi } from '../../api/workouts';
+import { exercisesApi, BodyPartItem } from '../../api/exercises';
+
+interface FilterOption {
+  id: number;
+  title: string;
+}
 
 interface WorkoutItem {
   id: number;
@@ -40,29 +47,55 @@ export default function ViewWorkoutsScreen(props: any) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
+  // Filtros — solo aplicables al modo de navegación libre (no isFav/isAssign,
+  // que ya son listas acotadas por su propio endpoint).
+  const canFilter = !isFav && !isAssign;
+  const [searchText, setSearchText] = useState('');
+  const [types, setTypes] = useState<FilterOption[]>([]);
+  const [levels, setLevels] = useState<FilterOption[]>([]);
+  const [bodyParts, setBodyParts] = useState<BodyPartItem[]>([]);
+  const [selectedType, setSelectedType] = useState<number | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedBodyPart, setSelectedBodyPart] = useState<number | null>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    getWorkoutData();
+    getWorkoutData(1);
+    if (canFilter) {
+      workoutsApi.getTypes().then((res) => setTypes(res.data?.data ?? [])).catch(() => {});
+      workoutsApi.getLevels().then((res) => setLevels(res.data?.data ?? [])).catch(() => {});
+      exercisesApi.getBodyParts().then((res) => setBodyParts(res.data?.data ?? [])).catch(() => {});
+    }
   }, []);
 
   useEffect(() => {
     if (numPage && page > 1) {
-      getWorkoutData();
+      getWorkoutData(page);
     }
   }, [page]);
 
-  const getWorkoutData = async () => {
+  const getWorkoutData = async (pageNum: number) => {
     setIsLoading(true);
     try {
+      const hasFilters = canFilter && (!!selectedType || !!selectedLevel || !!selectedBodyPart || !!searchText.trim());
       const apiCall = isFav
-        ? workoutsApi.getFavourite(page)
+        ? workoutsApi.getFavourite(pageNum)
         : isAssign
-          ? workoutsApi.getAssigned(page)
-          : workoutsApi.getList(page);
+          ? workoutsApi.getAssigned(pageNum)
+          : hasFilters
+            ? workoutsApi.getFilteredList({
+                page: pageNum,
+                ...(selectedType ? { workout_type_id: selectedType } : {}),
+                ...(selectedLevel ? { level_ids: selectedLevel } : {}),
+                ...(selectedBodyPart ? { bodypart_ids: String(selectedBodyPart) } : {}),
+                ...(searchText.trim() ? { title: searchText.trim() } : {}),
+              })
+            : workoutsApi.getList(pageNum);
       await apiCall.then((res) => {
         const value: any = res.data;
         setNumPage(value.pagination?.total_pages ?? null);
         setIsLastPage(false);
-        if (page === 1) setWorkoutList([]);
+        if (pageNum === 1) setWorkoutList([]);
         const items = (value.data ?? []).map((w: any) => ({
           id: w.id,
           title: w.title,
@@ -72,7 +105,7 @@ export default function ViewWorkoutsScreen(props: any) {
           isFavourite: w.is_favourite,
           isPremium: w.is_premium,
         }));
-        setWorkoutList((prev) => [...prev, ...items]);
+        setWorkoutList((prev) => (pageNum === 1 ? items : [...prev, ...items]));
       });
     } catch (e) {
       setIsLastPage(true);
@@ -81,11 +114,47 @@ export default function ViewWorkoutsScreen(props: any) {
     }
   };
 
+  const refetchWithFilters = useCallback(() => {
+    setPage(1);
+    getWorkoutData(1);
+  }, [selectedType, selectedLevel, selectedBodyPart, searchText]);
+
+  const handleSearchChange = (text: string) => {
+    setSearchText(text);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setPage(1);
+      getWorkoutData(1);
+    }, 400);
+  };
+
+  const toggleType = (id: number) => {
+    setSelectedType((prev) => (prev === id ? null : id));
+  };
+
+  const toggleLevel = (id: number) => {
+    setSelectedLevel((prev) => (prev === id ? null : id));
+  };
+
+  const toggleBodyPart = (id: number) => {
+    setSelectedBodyPart((prev) => (prev === id ? null : id));
+  };
+
+  const isFirstFilterRun = useRef(true);
+  useEffect(() => {
+    if (!canFilter) return;
+    if (isFirstFilterRun.current) {
+      isFirstFilterRun.current = false;
+      return;
+    }
+    refetchWithFilters();
+  }, [selectedType, selectedLevel, selectedBodyPart]);
+
   const handleRefresh = () => {
     if (isFav) {
       setWorkoutList([]);
       setPage(1);
-      getWorkoutData();
+      getWorkoutData(1);
     }
   };
 
@@ -141,6 +210,68 @@ export default function ViewWorkoutsScreen(props: any) {
         </View>
       )}
 
+      {canFilter && (
+        <>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={18} color={C.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search workouts..."
+              placeholderTextColor={C.textSecondary}
+              value={searchText}
+              onChangeText={handleSearchChange}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={() => handleSearchChange('')}>
+                <Ionicons name="close-circle" size={18} color={C.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {types.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {types.map((t) => (
+                <TouchableOpacity
+                  key={t.id}
+                  style={[styles.chip, selectedType === t.id && styles.chipActive]}
+                  onPress={() => toggleType(t.id)}
+                >
+                  <Text style={[styles.chipText, selectedType === t.id && styles.chipTextActive]}>{t.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {levels.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {levels.map((l) => (
+                <TouchableOpacity
+                  key={l.id}
+                  style={[styles.chip, selectedLevel === l.id && styles.chipActive]}
+                  onPress={() => toggleLevel(l.id)}
+                >
+                  <Text style={[styles.chipText, selectedLevel === l.id && styles.chipTextActive]}>{l.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {bodyParts.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {bodyParts.map((bp) => (
+                <TouchableOpacity
+                  key={bp.id}
+                  style={[styles.chip, selectedBodyPart === bp.id && styles.chipActive]}
+                  onPress={() => toggleBodyPart(bp.id)}
+                >
+                  <Text style={[styles.chipText, selectedBodyPart === bp.id && styles.chipTextActive]}>{bp.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </>
+      )}
+
       <View style={styles.body}>
         {workoutList.length > 0 ? (
           <ScrollView
@@ -164,7 +295,7 @@ export default function ViewWorkoutsScreen(props: any) {
 
         {isLoading && (
           <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color="#FFFFFF" />
           </View>
         )}
       </View>
@@ -188,6 +319,46 @@ const styles = StyleSheet.create({
     fontFamily: FONT.semiBold,
     fontSize: 18,
     color: C.white,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.surfaceLight,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: FONT.regular,
+    fontSize: 14,
+    color: C.white,
+    padding: 0,
+  },
+  chipRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  chip: {
+    backgroundColor: C.surfaceLight,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  chipActive: {
+    backgroundColor: '#1C1C1E',
+  },
+  chipText: {
+    fontFamily: FONT.medium,
+    fontSize: 13,
+    color: C.textSecondary,
+  },
+  chipTextActive: {
+    color: '#FFFFFF',
   },
   body: { flex: 1 },
   scrollContent: { paddingVertical: 4, paddingHorizontal: 16 },

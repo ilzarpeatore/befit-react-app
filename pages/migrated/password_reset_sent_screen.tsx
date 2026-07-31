@@ -48,13 +48,13 @@ function useStyle() {
     content: { flex: 1, paddingHorizontal: 24, justifyContent: "center", alignItems: "center" },
     imgPlaceholder: { width: 120, height: 120, borderRadius: 60, backgroundColor: C.surface, justifyContent: "center", alignItems: "center", marginBottom: 32 },
     title: { fontSize: 24, fontFamily: FONT.bold, color: C.white, textAlign: "center" },
-    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", marginTop: 8, marginBottom: 32, lineHeight: 22 },
+    subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", marginTop: 8, marginBottom: 32, lineHeight: 22 },
     primaryBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, gap: 10, width: "100%" },
     primaryBtnText: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
     resendRow: { flexDirection: "row", marginTop: 20 },
-    resendText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5 },
-    resendLink: { fontSize: 13, fontFamily: FONT.semiBold, color: C.brand50 },
+    resendText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50 },
+    resendLink: { fontSize: 13, fontFamily: FONT.semiBold, color: C.gray60 },
     footer: { alignItems: "center", paddingBottom: 32 },
-    loginLink: { fontSize: 14, fontFamily: FONT.semiBold, color: C.brand50 },
+    loginLink: { fontSize: 14, fontFamily: FONT.semiBold, color: C.gray60 },
   });
 }

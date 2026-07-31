@@ -14,15 +14,33 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { C, FONT } from './theme';
+import { C, FONT, SHADOW } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
+import { workoutTemplateApi } from '../../api/workoutTemplate';
 import {
   fetchUnifiedWorkout,
   formatPrescribedSubtitle,
   UnifiedWorkout,
+  UnifiedExercise,
 } from './workoutViewShared';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+function getSeriesCount(prescribed: Record<string, any>): number | null {
+  const series = parseInt(prescribed?.series, 10);
+  return Number.isFinite(series) && series > 0 ? series : null;
+}
+
+function formatLastPerformance(ex: UnifiedExercise): string | null {
+  const sets = ex.lastPerformance?.sets;
+  if (!sets || sets.length === 0) return null;
+  const first = sets[0];
+  const parts: string[] = [];
+  if (first.carga != null && first.carga !== '') parts.push(`${first.carga} kg`);
+  if (first.reps != null && first.reps !== '') parts.push(`${first.reps} reps`);
+  if (parts.length === 0) return `Completado la última vez (${sets.length} series)`;
+  return `Última vez: ${parts.join(' × ')}`;
+}
 
 interface Props {
   navigation?: any;
@@ -40,7 +58,6 @@ export default function WorkoutPreviewScreen(props: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFavourite, setIsFavourite] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -52,6 +69,7 @@ export default function WorkoutPreviewScreen(props: Props) {
         fallbackTitle,
       });
       setWorkout(data);
+      setIsFavourite(data.isFavourite);
     } catch (e) {
       setError(true);
     } finally {
@@ -62,6 +80,20 @@ export default function WorkoutPreviewScreen(props: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  const onToggleFavourite = () => {
+    if (!workoutTemplateId) return;
+    const next = !isFavourite;
+    setIsFavourite(next);
+    workoutTemplateApi.setFavourite(workoutTemplateId).catch(() => {
+      setIsFavourite(!next);
+    });
+  };
+
+  const totalSeries = (workout?.blocks ?? []).reduce(
+    (sum, block) => sum + block.exercises.reduce((s, ex) => s + (getSeriesCount(ex.prescribed) ?? 0), 0),
+    0
+  );
 
   const onStart = () => {
     navigation?.navigate('MigratedWorkoutSession', {
@@ -146,7 +178,7 @@ export default function WorkoutPreviewScreen(props: Props) {
             </LinearGradient>
           )}
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={22} color={C.white} />
+            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
@@ -155,22 +187,44 @@ export default function WorkoutPreviewScreen(props: Props) {
           <Text style={styles.title} numberOfLines={2}>
             {workout.title}
           </Text>
-          <View style={styles.titleActions}>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => setIsSaved((v) => !v)}>
-              <Ionicons name={isSaved ? 'bookmark' : 'bookmark-outline'} size={18} color={C.white} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => setIsFavourite((v) => !v)}>
-              <Ionicons name={isFavourite ? 'star' : 'star-outline'} size={18} color={C.white} />
-            </TouchableOpacity>
-          </View>
+          {workoutTemplateId ? (
+            <View style={styles.titleActions}>
+              <TouchableOpacity style={styles.iconBtn} onPress={onToggleFavourite}>
+                <Ionicons name={isFavourite ? 'bookmark' : 'bookmark-outline'} size={18} color={C.white} />
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
 
         {workout.description ? (
           <Text style={styles.description}>{workout.description}</Text>
         ) : null}
 
-        {/* Exercises header */}
-        <Text style={styles.sectionHeader}>{workout.exerciseCount} EJERCICIOS</Text>
+        {/* Stats row */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{workout.exerciseCount}</Text>
+            <Text style={styles.statLabel}>Ejercicios</Text>
+          </View>
+          {totalSeries > 0 && (
+            <>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{totalSeries}</Text>
+                <Text style={styles.statLabel}>Series totales</Text>
+              </View>
+            </>
+          )}
+          {workout.blocks.length > 1 && (
+            <>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{workout.blocks.length}</Text>
+                <Text style={styles.statLabel}>Bloques</Text>
+              </View>
+            </>
+          )}
+        </View>
 
         {/* Exercise list */}
         <View style={styles.exerciseList}>
@@ -179,22 +233,44 @@ export default function WorkoutPreviewScreen(props: Props) {
               {workout.blocks.length > 1 && block.title ? (
                 <Text style={styles.blockTitle}>{block.title}</Text>
               ) : null}
-              {block.exercises.map((ex, idx) => (
-                <View key={ex.id}>
-                  <View style={styles.exerciseRow}>
-                    <ExerciseThumbMem image={ex.image} />
-                    <View style={styles.exerciseInfo}>
-                      <Text style={styles.exerciseTitle} numberOfLines={2}>
-                        {ex.title}
-                      </Text>
-                      <Text style={styles.exerciseSubtitle}>
-                        {formatPrescribedSubtitle(ex.prescribed)}
-                      </Text>
+              {block.exercises.map((ex) => {
+                const seriesCount = getSeriesCount(ex.prescribed);
+                const lastPerformance = formatLastPerformance(ex);
+                return (
+                  <View key={ex.id} style={styles.exerciseCard}>
+                    <View style={styles.exerciseRow}>
+                      <ExerciseThumbMem image={ex.image} />
+                      <View style={styles.exerciseInfo}>
+                        <Text style={styles.exerciseTitle} numberOfLines={2}>
+                          {ex.title}
+                        </Text>
+                        <View style={styles.exerciseMetaRow}>
+                          {seriesCount != null && (
+                            <View style={styles.seriesChip}>
+                              <Text style={styles.seriesChipText}>{seriesCount} series</Text>
+                            </View>
+                          )}
+                          <Text style={styles.exerciseSubtitle} numberOfLines={1}>
+                            {formatPrescribedSubtitle(ex.prescribed)}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
+                    {lastPerformance && (
+                      <View style={styles.lastPerformanceRow}>
+                        <Ionicons name="time-outline" size={13} color={C.textSecondary} />
+                        <Text style={styles.lastPerformanceText}>{lastPerformance}</Text>
+                      </View>
+                    )}
+                    {ex.coachNotes ? (
+                      <View style={styles.coachNoteRow}>
+                        <Ionicons name="chatbubble-ellipses-outline" size={13} color={C.textSecondary} />
+                        <Text style={styles.coachNoteText}>{ex.coachNotes}</Text>
+                      </View>
+                    ) : null}
                   </View>
-                  {idx < block.exercises.length - 1 && <View style={styles.separator} />}
-                </View>
-              ))}
+                );
+              })}
             </View>
           ))}
         </View>
@@ -272,43 +348,110 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
-  sectionHeader: {
-    fontFamily: FONT.bold,
-    fontSize: 13,
-    color: C.textSecondary,
-    letterSpacing: 0.5,
-    paddingHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 12,
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginTop: 20,
+    paddingVertical: 14,
+    ...SHADOW.card,
   },
-  exerciseList: { paddingHorizontal: 20 },
+  statItem: { flex: 1, alignItems: 'center' },
+  statValue: {
+    fontFamily: FONT.extraBold,
+    fontSize: 20,
+    color: C.textPrimary,
+  },
+  statLabel: {
+    fontFamily: FONT.regular,
+    fontSize: 11,
+    color: C.textSecondary,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: C.border,
+  },
+  exerciseList: { paddingHorizontal: 20, marginTop: 24 },
   blockTitle: {
     fontFamily: FONT.bold,
     fontSize: 14,
-    color: C.white,
+    color: C.textSecondary,
+    letterSpacing: 0.5,
     marginTop: 14,
-    marginBottom: 8,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+  },
+  exerciseCard: {
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 10,
+    ...SHADOW.card,
   },
   exerciseRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
   },
   exerciseInfo: { flex: 1, marginLeft: 14 },
   exerciseTitle: {
     fontFamily: FONT.bold,
     fontSize: 15,
-    color: C.white,
+    color: C.textPrimary,
+  },
+  exerciseMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 8,
+  },
+  seriesChip: {
+    backgroundColor: C.brand50,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  seriesChipText: {
+    fontFamily: FONT.bold,
+    fontSize: 11,
+    color: C.textPrimary,
   },
   exerciseSubtitle: {
+    flex: 1,
     fontFamily: FONT.regular,
     fontSize: 13,
     color: C.textSecondary,
-    marginTop: 4,
   },
-  separator: {
-    height: 1,
-    backgroundColor: C.border,
+  lastPerformanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  lastPerformanceText: {
+    fontFamily: FONT.medium,
+    fontSize: 12,
+    color: C.textSecondary,
+  },
+  coachNoteRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 6,
+  },
+  coachNoteText: {
+    flex: 1,
+    fontFamily: FONT.regular,
+    fontSize: 12,
+    color: C.textSecondary,
+    lineHeight: 17,
+    fontStyle: 'italic',
   },
   stickyFooter: {
     position: 'absolute',

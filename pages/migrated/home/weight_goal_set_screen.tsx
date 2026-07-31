@@ -34,7 +34,7 @@ function useStyle() {
     container: { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32 },
     iconCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: C.success5, justifyContent: "center", alignItems: "center", marginBottom: 32, borderWidth: 2, borderColor: C.success50 },
     title: { fontSize: 26, fontFamily: FONT.bold, color: C.white, textAlign: "center", marginBottom: 12 },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray5, textAlign: "center", marginBottom: 48 },
+    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", marginBottom: 48 },
     continueBtn: { backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 64 },
     continueBtnText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
   });

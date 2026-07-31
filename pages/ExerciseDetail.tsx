@@ -50,7 +50,7 @@ export default function ExerciseDetail() {
 
   if (error) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -64,13 +64,13 @@ export default function ExerciseDetail() {
           </View>
           <ErrorRetryMem message={error} onRetry={fetchDetail} />
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   if (loading || !exercise) {
     return (
-      <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+      <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -89,12 +89,12 @@ export default function ExerciseDetail() {
             <LoadingSkeletonMem width="100%" height="80@ratio" borderRadius={8} />
           </ScrollView>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -211,7 +211,7 @@ export default function ExerciseDetail() {
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -303,7 +303,7 @@ function useStyle() {
       marginBottom: "20@ratio",
     },
     tag: {
-      backgroundColor: "rgba(90,93,135,0.3)",
+      backgroundColor: "#E5E5EA",
       borderRadius: "20@ratio",
       paddingHorizontal: "12@ratio",
       paddingVertical: "5@ratio",
@@ -331,7 +331,7 @@ function useStyle() {
     setRow: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "rgba(90,93,135,0.2)",
+      backgroundColor: "#F7F7F7",
       borderRadius: "12@ratio",
       paddingHorizontal: "14@ratio",
       paddingVertical: "10@ratio",

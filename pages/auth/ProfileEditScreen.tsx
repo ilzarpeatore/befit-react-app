@@ -53,10 +53,8 @@ export default function ProfileEditScreen() {
   }, [displayName, phone, updateUser, navigation]);
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView
@@ -116,7 +114,7 @@ export default function ProfileEditScreen() {
         </KeyboardAvoidingView>
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

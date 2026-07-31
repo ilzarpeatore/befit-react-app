@@ -14,10 +14,8 @@ export default function WelcomeAuthScreen() {
   const styles = useStyle();
 
   return (
-    <ImageBackground
-      source={require("@assets/bg3.png")}
+    <View
       style={styles.bg}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.top}>
@@ -51,7 +49,7 @@ export default function WelcomeAuthScreen() {
 
         <StatusBar style="dark" />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

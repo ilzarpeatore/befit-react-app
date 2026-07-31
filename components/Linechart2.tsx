@@ -112,10 +112,10 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
         y2="107.5"
         gradientUnits="userSpaceOnUse"
       >
-        <Stop stopColor="#FB558B" stopOpacity="0" />
-        <Stop offset="0.261464" stopColor="#E95694" />
-        <Stop offset="0.706385" stopColor="#655DD2" />
-        <Stop offset="1" stopColor="#505EDC" stopOpacity="0" />
+        <Stop stopColor="#1C1C1E" stopOpacity="0" />
+        <Stop offset="0.261464" stopColor="#1C1C1E" />
+        <Stop offset="0.706385" stopColor="#1C1C1E" />
+        <Stop offset="1" stopColor="#1C1C1E" stopOpacity="0" />
       </SlinearGradient>
       <SlinearGradient
         id="paint1_linear"
@@ -125,8 +125,8 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
         y2="162"
         gradientUnits="userSpaceOnUse"
       >
-        <Stop stopColor="#505EDC" />
-        <Stop offset="1" stopColor="#505EDC" stopOpacity="0" />
+        <Stop stopColor="#000000" />
+        <Stop offset="1" stopColor="#000000" stopOpacity="0" />
       </SlinearGradient>
       <SlinearGradient
         id="paint2_linear"
@@ -136,10 +136,10 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
         y2="0"
         gradientUnits="userSpaceOnUse"
       >
-        <Stop stopColor="#3C3F69" />
-        <Stop offset="0.0001" stopColor="#3C3F69" stopOpacity="0" />
-        <Stop offset="0.514034" stopColor="#8A8CB3" />
-        <Stop offset="1" stopColor="#3C3F69" stopOpacity="0" />
+        <Stop stopColor="#E5E5EA" />
+        <Stop offset="0.0001" stopColor="#E5E5EA" stopOpacity="0" />
+        <Stop offset="0.514034" stopColor="#E5E5EA" />
+        <Stop offset="1" stopColor="#E5E5EA" stopOpacity="0" />
       </SlinearGradient>
       <SlinearGradient
         id="paint3_linear"
@@ -149,10 +149,10 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
         y2="0"
         gradientUnits="userSpaceOnUse"
       >
-        <Stop stopColor="#3C3F69" />
-        <Stop offset="0.0001" stopColor="#3C3F69" stopOpacity="0" />
-        <Stop offset="0.514034" stopColor="#8A8CB3" />
-        <Stop offset="1" stopColor="#3C3F69" stopOpacity="0" />
+        <Stop stopColor="#E5E5EA" />
+        <Stop offset="0.0001" stopColor="#E5E5EA" stopOpacity="0" />
+        <Stop offset="0.514034" stopColor="#E5E5EA" />
+        <Stop offset="1" stopColor="#E5E5EA" stopOpacity="0" />
       </SlinearGradient>
       <SlinearGradient
         id="paint4_linear"
@@ -162,10 +162,10 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
         y2="0"
         gradientUnits="userSpaceOnUse"
       >
-        <Stop stopColor="#3C3F69" />
-        <Stop offset="0.0001" stopColor="#3C3F69" stopOpacity="0" />
-        <Stop offset="0.514034" stopColor="#8A8CB3" />
-        <Stop offset="1" stopColor="#3C3F69" stopOpacity="0" />
+        <Stop stopColor="#E5E5EA" />
+        <Stop offset="0.0001" stopColor="#E5E5EA" stopOpacity="0" />
+        <Stop offset="0.514034" stopColor="#E5E5EA" />
+        <Stop offset="1" stopColor="#E5E5EA" stopOpacity="0" />
       </SlinearGradient>
     </Defs>
     {/* gradients */}

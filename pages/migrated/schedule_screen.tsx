@@ -281,7 +281,7 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   // weekDayBoxSelected usaba C.white como fondo - ese token ahora es el color
-  // de TEXTO principal (#1C1C1E), no una superficie blanca real; C.surface es
+  // de TEXTO principal (#000000), no una superficie blanca real; C.surface es
   // el token correcto para un fondo blanco.
   weekDayBoxSelected: { backgroundColor: C.surface, borderColor: C.orange, borderWidth: 1.5 },
   weekDayLetter: { fontSize: 13, fontWeight: '500', color: C.gray40 },

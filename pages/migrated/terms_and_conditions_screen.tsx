@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   htmlContent: {
     fontSize: 14,
     fontFamily: FONT.regular,
-    color: C.gray10,
+    color: C.gray50,
     lineHeight: 22,
   },
 });

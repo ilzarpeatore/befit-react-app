@@ -67,7 +67,7 @@ export default function SettingsScreen({ navigation }: Props) {
   );
 
   return (
-    <ImageBackground source={require("@assets/bg3.png")} style={styles.bg}>
+    <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -145,7 +145,7 @@ export default function SettingsScreen({ navigation }: Props) {
         </ScrollView>
       </SafeAreaView>
       <StatusBar style="dark" />
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -154,7 +154,6 @@ function useStyle() {
     bg: {
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       backgroundColor: Colors.BG_PRIMARY,
     },
     container: {
@@ -214,7 +213,7 @@ function useStyle() {
     },
     settingRowBorder: {
       borderBottomWidth: "1@ratio",
-      borderBottomColor: "rgba(138,140,178,0.12)",
+      borderBottomColor: "#E5E5EA",
     },
     settingLeft: {
       flexDirection: "row",
@@ -225,7 +224,7 @@ function useStyle() {
       width: "36@ratio",
       height: "36@ratio",
       borderRadius: "10@ratio",
-      backgroundColor: "rgba(138,140,178,0.15)",
+      backgroundColor: "#EBEBF0",
       alignItems: "center",
       justifyContent: "center",
     },

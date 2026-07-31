@@ -80,7 +80,7 @@ export default function HeartRateScreen({ navigation }: any) {
               <Text style={styles.alertTitle}>Abnormality Detected</Text>
               <Text style={styles.alertText}>Elevated heart rate on Jun 23 during rest</Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={C.gray5} />
+            <Ionicons name="chevron-forward" size={16} color={C.gray50} />
           </TouchableOpacity>
 
           <View style={styles.highlightsRow}>
@@ -185,7 +185,7 @@ function useStyle() {
       marginBottom: 20,
     },
     bpmValue: { fontSize: 64, fontFamily: FONT.extraBold, color: C.white, marginTop: 8 },
-    bpmUnit: { fontSize: 16, fontFamily: FONT.medium, color: C.gray5 },
+    bpmUnit: { fontSize: 16, fontFamily: FONT.medium, color: C.gray50 },
     periodRow: { flexDirection: "row", gap: 8, marginBottom: 20 },
     periodBtn: {
       flex: 1,
@@ -197,7 +197,7 @@ function useStyle() {
       alignItems: "center",
     },
     periodBtnActive: { backgroundColor: C.brand50, borderColor: C.brand50 },
-    periodText: { fontSize: 14, fontFamily: FONT.medium, color: C.gray5 },
+    periodText: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50 },
     periodTextActive: { color: C.white },
     chartContainer: {
       backgroundColor: C.surface,
@@ -223,7 +223,7 @@ function useStyle() {
       marginBottom: 20,
     },
     alertTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-    alertText: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
+    alertText: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
     highlightsRow: { flexDirection: "row", gap: 12, marginBottom: 24 },
     highlightCard: {
       flex: 1,
@@ -233,7 +233,7 @@ function useStyle() {
       borderWidth: 1,
       borderColor: C.border,
     },
-    highlightLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginBottom: 4 },
+    highlightLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginBottom: 4 },
     highlightValue: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
     sectionTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.white, marginBottom: 12 },
     entry: {
@@ -249,7 +249,7 @@ function useStyle() {
     },
     entryLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
     dot: { width: 10, height: 10, borderRadius: 5 },
-    entryTime: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5 },
+    entryTime: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
     entryBpm: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
     deviceInfo: {
       flexDirection: "row",
@@ -272,7 +272,7 @@ function useStyle() {
       borderColor: C.border,
       marginBottom: 8,
     },
-    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5 },
+    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
     actionRow: { flexDirection: "row", gap: 12, marginTop: 24 },
     actionBtn: {
       flex: 1,
