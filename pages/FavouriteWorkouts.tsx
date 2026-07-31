@@ -102,7 +102,7 @@ export default function FavouriteWorkouts() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchFavourites(true)} tintColor={Colors.ACCENT_START} />}
           />
         )}
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

@@ -107,7 +107,7 @@ export default function ForgotPasswordEmailScreen() {
             />
           </ScrollView>
         </KeyboardAvoidingView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

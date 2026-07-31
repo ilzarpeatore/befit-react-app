@@ -347,7 +347,7 @@ export default function Cycling({ navigation }: CyclingPropsInterface) {
         />
       </TouchableOpacity>
       {/*return button end*/}
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </SafeAreaView>
   );
 }

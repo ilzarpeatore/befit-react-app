@@ -702,7 +702,7 @@ export default function Home({ navigation }: HomePropsInterface) {
             </TouchableOpacity>
 
           </SafeAreaView>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
         </AnimatedImageBackground>
       </TouchableOpacity>
     </ImageBackground>

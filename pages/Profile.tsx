@@ -462,7 +462,7 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
           </Animated.View>
           {/* profile end */}
         </ScrollView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </View>
     </SafeAreaView>
   );

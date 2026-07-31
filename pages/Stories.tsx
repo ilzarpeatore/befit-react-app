@@ -155,7 +155,7 @@ export default function Stories({ navigation }: StoriesPropsInterface) {
     >
       {/*stories slider start*/}
       {_render_stories_slider()}
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       {/*stories slider end*/}
     </ImageBackground>
   );

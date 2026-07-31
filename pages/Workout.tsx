@@ -273,7 +273,7 @@ export default function Workout({ navigation, route }: Props) {
             </TouchableOpacity>
           </ScrollView>
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

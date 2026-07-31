@@ -370,7 +370,7 @@ export default function Challenges({ navigation }: ChallengesPropsInterface) {
         {/*navigation start (remove comment when you don't want to use react native navigation bottom tab)*/}
         {/*<Navigation activepageindex={2} />*/}
         {/*navigation end*/}
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

@@ -171,7 +171,7 @@ export default function WorkoutDayExercises() {
               ))}
             </View>
           </View>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
         </SafeAreaView>
       </ImageBackground>
     );
@@ -204,7 +204,7 @@ export default function WorkoutDayExercises() {
             </View>
             <ErrorRetryMem message={error} onRetry={fetchExercises} />
           </View>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
         </SafeAreaView>
       </ImageBackground>
     );
@@ -281,7 +281,7 @@ export default function WorkoutDayExercises() {
             }
           />
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

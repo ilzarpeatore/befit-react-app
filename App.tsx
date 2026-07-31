@@ -729,11 +729,11 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <GluestackUIProvider mode="dark">
+      <GluestackUIProvider mode="light">
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <AuthProvider>
             <NavigationContainer
-              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#1A1735" } }}
+              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#F2F2F7" } }}
               onReady={onLayoutRootView}
             >
               <RootNavigator />

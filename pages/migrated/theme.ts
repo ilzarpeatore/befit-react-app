@@ -1,16 +1,21 @@
+// Theme claro estilo Bevel (Encargo 2, 2026-07-31). Migrado desde la paleta
+// oscura original — se mantienen los mismos nombres de clave para que las
+// 173 pantallas existentes seguuan funcionando sin tocarlas, solo cambian
+// los valores. Ver docs/Encargo2_Theme_Bevel.md para el origen de estos
+// valores (estimados visualmente de 18 capturas reales de Bevel).
 export const C = {
-  bg: "#1A1735",
-  surface: "#141227",
-  surfaceLight: "#1E1C3A",
-  border: "#2A2844",
-  white: "#FBFBFB",
-  gray5: "#8A8CB2",
-  gray10: "#6B6D8A",
-  gray20: "#4A4C6A",
-  gray30: "#3A3C5A",
-  gray40: "#2A2C4A",
-  gray50: "#1A1C3A",
-  gray60: "#0F1128",
+  bg: "#F2F2F7",
+  surface: "#FFFFFF",
+  surfaceLight: "#F7F7F9",
+  border: "#E5E5EA",
+  white: "#1C1C1E",
+  gray5: "#F2F2F7",
+  gray10: "#E5E5EA",
+  gray20: "#D1D1D6",
+  gray30: "#C7C7CC",
+  gray40: "#AEAEB2",
+  gray50: "#8E8E93",
+  gray60: "#636366",
   gray70: "#7773FA",
   gray80: "#5652E5",
   brand5: "rgba(119,115,250,0.08)",
@@ -18,30 +23,30 @@ export const C = {
   brand20: "rgba(119,115,250,0.25)",
   brand50: "#7773FA",
   brand60: "#5652E5",
-  success: "#34D399",
-  success5: "rgba(52,211,153,0.1)",
-  success10: "rgba(52,211,153,0.15)",
-  success50: "#34D399",
-  success60: "#10B981",
-  warning: "#FBBF24",
-  warning5: "rgba(251,191,36,0.1)",
-  warning10: "rgba(251,191,36,0.15)",
-  warning40: "#FBBF24",
-  warning50: "#F59E0B",
-  warning60: "#D97706",
-  destructive: "#F87171",
-  destructive5: "rgba(248,113,113,0.1)",
-  destructive10: "rgba(248,113,113,0.15)",
-  destructive20: "rgba(248,113,113,0.25)",
-  destructive50: "#F87171",
-  destructive60: "#EF4444",
-  blue: "#60A5FA",
-  blue5: "rgba(96,165,250,0.1)",
-  blue10: "rgba(96,165,250,0.15)",
-  blue20: "rgba(96,165,250,0.25)",
-  blue50: "#60A5FA",
-  blue60: "#3B82F6",
-  blue70: "#2563EB",
+  success: "#34C759",
+  success5: "rgba(52,199,89,0.1)",
+  success10: "rgba(52,199,89,0.15)",
+  success50: "#34C759",
+  success60: "#248A3D",
+  warning: "#FF9500",
+  warning5: "rgba(255,149,0,0.1)",
+  warning10: "rgba(255,149,0,0.15)",
+  warning40: "#FF9500",
+  warning50: "#FF9500",
+  warning60: "#C93400",
+  destructive: "#FF3B30",
+  destructive5: "rgba(255,59,48,0.1)",
+  destructive10: "rgba(255,59,48,0.15)",
+  destructive20: "rgba(255,59,48,0.25)",
+  destructive50: "#FF3B30",
+  destructive60: "#D70015",
+  blue: "#007AFF",
+  blue5: "rgba(0,122,255,0.1)",
+  blue10: "rgba(0,122,255,0.15)",
+  blue20: "rgba(0,122,255,0.25)",
+  blue50: "#007AFF",
+  blue60: "#0062CC",
+  blue70: "#004999",
   purple: "#A78BFA",
   purple5: "rgba(167,139,250,0.1)",
   purple50: "#A78BFA",
@@ -49,21 +54,36 @@ export const C = {
   orange: "#FF6B35",
   orangeGradient1: "#FF8A2B",
   orangeGradient2: "#FF6000",
-  amber: "#FFA000",
-  blue80: "#1E40AF",
-  blue30: "#93C5FD",
-  red: "#F87171",
+  amber: "#FF9500",
+  blue80: "#003166",
+  blue30: "#66B2FF",
+  red: "#FF3B30",
   pink: "#FB558B",
-  textWhite: "#FBFBFB",
-  textPrimary: "#FBFBFB",
-  textSecondary: "#8A8CB2",
+  textWhite: "#1C1C1E",
+  textPrimary: "#1C1C1E",
+  textSecondary: "#8E8E93",
+  textTertiary: "#C7C7CC",
   primary: "#7773FA",
   primaryLight: "rgba(119,115,250,0.15)",
-  gray: "#8A8CB2",
-  text: "#FBFBFB",
-  card: "#141227",
-  textMuted: "#5A5D87",
-};
+  gray: "#8E8E93",
+  text: "#1C1C1E",
+  card: "#FFFFFF",
+  textMuted: "#C7C7CC",
+
+  // Tokens semánticos con nombre (sección 1 del Encargo 2) — reutilizar
+  // estos por significado, en vez de success/warning/destructive/blue
+  // sueltos, para pantallas nuevas que sigan el patrón de color de Bevel.
+  statusSuccess: "#34C759",
+  statusWarning: "#FF9500",
+  statusDanger: "#FF3B30",
+  statusInfo: "#007AFF",
+  statusRest: "#FFCC00",
+  statusCycle: "#FFD1DC",
+
+  // Acento neutro para CTAs principales tipo Bevel (botones "Continuar",
+  // "Guardar") — negro casi puro, no el brand50/60 morado de la app.
+  accentBlack: "#000000",
+} as const;
 
 export const FONT = {
   light: "Gilroy-Light",
@@ -77,7 +97,43 @@ export const FONT = {
 
 export const GRADIENT = {
   accent: ["#7773FA", "#5652E5"] as const,
-  card: ["#5A5D87", "#3C3F69"] as const,
+  card: ["#FFFFFF", "#F7F7F9"] as const,
   orange: ["#FF8A2B", "#FF6000"] as const,
-  border: ["rgba(138,140,178,0.4)", "rgba(138,140,178,0)"] as const,
+  border: ["rgba(0,0,0,0.08)", "rgba(0,0,0,0)"] as const,
 };
+
+// Tokens de espaciado y forma (sección 0.2 del Encargo 2).
+export const RADIUS = {
+  sm: 12,
+  md: 20,
+  lg: 28,
+  pill: 999,
+} as const;
+
+export const SPACING = {
+  cardPadding: 20,
+  screenPadding: 16,
+  gapBetweenCards: 12,
+  gapBetweenSections: 28,
+} as const;
+
+export const SHADOW = {
+  card: {
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+} as const;
+
+// Tipografía estimada (sección 0.3 del Encargo 2).
+export const TYPE = {
+  screenTitle: { fontSize: 32, fontWeight: "700" as const },
+  sectionTitle: { fontSize: 22, fontWeight: "700" as const },
+  cardTitle: { fontSize: 17, fontWeight: "600" as const },
+  bodyText: { fontSize: 15, fontWeight: "400" as const },
+  label: { fontSize: 13, fontWeight: "500" as const, color: C.textSecondary },
+  ringValueLarge: { fontSize: 48, fontWeight: "700" as const },
+  ringLabel: { fontSize: 15, fontWeight: "500" as const },
+} as const;
