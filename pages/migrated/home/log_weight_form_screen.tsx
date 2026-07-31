@@ -16,7 +16,7 @@ export default function LogWeightFormScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.scaleIcon}>
-          <Ionicons name="scale-outline" size={80} color={C.primary} />
+          <Ionicons name="scale-outline" size={80} color={C.textPrimary} />
         </View>
 
         <Text style={styles.weightDisplay}>70.0 kg</Text>

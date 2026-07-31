@@ -32,7 +32,7 @@ export default function StepGoalScreen({ navigation }: any) {
           style={styles.editButton}
           onPress={() => setShowEditSheet(true)}
         >
-          <Ionicons name="create-outline" size={18} color={C.primary} />
+          <Ionicons name="create-outline" size={18} color={C.textPrimary} />
           <Text style={styles.editButtonText}>Editar meta</Text>
         </TouchableOpacity>
 
@@ -52,7 +52,7 @@ export default function StepGoalScreen({ navigation }: any) {
           <Text style={styles.sheetGoal}>{goal.toLocaleString()} pasos</Text>
           <View style={styles.sliderRow}>
             <TouchableOpacity onPress={() => setGoal(Math.max(1000, goal - 1000))}>
-              <Ionicons name="remove-circle" size={32} color={C.primary} />
+              <Ionicons name="remove-circle" size={32} color={C.textPrimary} />
             </TouchableOpacity>
             <View style={styles.sliderTrack}>
               <View
@@ -63,7 +63,7 @@ export default function StepGoalScreen({ navigation }: any) {
               />
             </View>
             <TouchableOpacity onPress={() => setGoal(Math.min(20000, goal + 1000))}>
-              <Ionicons name="add-circle" size={32} color={C.primary} />
+              <Ionicons name="add-circle" size={32} color={C.textPrimary} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   percentageText: {
     fontSize: 36,
     fontFamily: FONT.bold,
-    color: C.primary,
+    color: C.textPrimary,
   },
   stepsText: {
     fontSize: 18,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 14,
     fontFamily: FONT.medium,
-    color: C.primary,
+    color: C.textPrimary,
   },
   insightsButton: {
     flexDirection: "row",
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   sheetGoal: {
     fontSize: 32,
     fontFamily: FONT.bold,
-    color: C.primary,
+    color: C.textPrimary,
     textAlign: "center",
     marginBottom: 20,
   },

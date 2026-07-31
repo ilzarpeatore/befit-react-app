@@ -47,7 +47,7 @@ export default function HeartRateInsightScreen({ navigation }: any) {
             <View style={styles.overviewRow}>
               {OVERVIEW.map((item) => (
                 <View key={item.label} style={styles.overviewCard}>
-                  <Ionicons name={item.icon as any} size={18} color={C.brand50} />
+                  <Ionicons name={item.icon as any} size={18} color={C.textPrimary} />
                   <Text style={styles.overviewValue}>{item.value}</Text>
                   <Text style={styles.overviewLabel}>{item.label}</Text>
                 </View>

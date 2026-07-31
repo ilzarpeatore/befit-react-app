@@ -387,7 +387,7 @@ const localStyles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },

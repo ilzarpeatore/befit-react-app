@@ -42,7 +42,7 @@ export default function LogStepsFormScreen({ navigation }: any) {
         <Text style={styles.title}>Registrar pasos</Text>
 
         <View style={styles.datePickerRow}>
-          <Ionicons name="calendar-outline" size={20} color={C.primary} />
+          <Ionicons name="calendar-outline" size={20} color={C.textPrimary} />
           <Text style={styles.dateText}>{formatDate(selectedDate)}</Text>
           <TouchableOpacity
             onPress={() => {

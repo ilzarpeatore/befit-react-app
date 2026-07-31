@@ -7,7 +7,7 @@ import { C, FONT } from "../theme";
 
 const METRICS = [
   { label: "BMI", value: "22.9", subtitle: "Normal", color: C.success50 },
-  { label: "Meta", value: "65 kg", subtitle: "objetivo", color: C.brand50 },
+  { label: "Meta", value: "65 kg", subtitle: "objetivo", color: C.textPrimary },
   { label: "Cambio/mes", value: "-1.2 kg", subtitle: "progreso", color: C.blue50 },
   { label: "Grasa corporal", value: "18%", subtitle: "estimado", color: C.warning40 },
 ];

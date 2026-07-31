@@ -132,7 +132,7 @@ export default function ExerciseInfoScreen(props: Props) {
           onToggleFavourite={() => {}}
         />
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.brand50} />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </View>
       </SafeAreaView>
     );
@@ -388,7 +388,7 @@ function AnalysisTab({
   if (loading) {
     return (
       <View style={{ paddingVertical: 30 }}>
-        <ActivityIndicator size="small" color={C.brand50} />
+        <ActivityIndicator size="small" color={C.textPrimary} />
       </View>
     );
   }
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   muscleBadgeText: {
     fontFamily: FONT.bold,
     fontSize: 11,
-    color: C.brand50,
+    color: C.textPrimary,
     letterSpacing: 0.5,
   },
   popularBadge: {
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     width: 28,
     fontFamily: FONT.bold,
     fontSize: 14,
-    color: C.brand50,
+    color: C.textPrimary,
   },
   stepText: {
     flex: 1,
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 12,
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
   },
   equipmentImageFallback: {
     alignItems: 'center',

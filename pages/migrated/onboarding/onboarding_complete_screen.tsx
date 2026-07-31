@@ -59,7 +59,7 @@ export default function OnboardingCompleteScreen({ navigation }: any) {
           <Ionicons name="trophy" size={64} color={C.white} />
         </Animated.View>
 
-        <Text style={[localStyles.title, { color: C.primary }]}>Â¡Todo listo!</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Â¡Todo listo!</Text>
         <Text style={[localStyles.subtitle, { color: C.gray }]}>
           Tu entrenador te contactarÃ¡ pronto para comenzar tu transformaciÃ³n.
         </Text>
@@ -67,7 +67,7 @@ export default function OnboardingCompleteScreen({ navigation }: any) {
         <View style={localStyles.checkList}>
           {["Perfil completado", "Plan seleccionado", "Objetivos definidos"].map((item, idx) => (
             <View key={idx} style={localStyles.checkRow}>
-              <Ionicons name="checkmark-circle" size={22} color={C.primary} />
+              <Ionicons name="checkmark-circle" size={22} color={C.textPrimary} />
               <Text style={[localStyles.checkText, { color: C.white }]}>{item}</Text>
             </View>
           ))}

@@ -379,15 +379,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   goalInput: {
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
     borderRadius: 12,
     padding: 12,
     fontSize: 16,
-    color: C.gray80,
+    color: C.textPrimary,
     marginTop: 8,
   },
   goalSaveBtn: {
-    backgroundColor: C.white,
+    backgroundColor: C.surface,
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',

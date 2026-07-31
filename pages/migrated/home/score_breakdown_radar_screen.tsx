@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   sliderBtn: {
     fontSize: 18,
     fontFamily: FONT.bold,
-    color: C.primary,
+    color: C.textPrimary,
   },
   sliderValue: {
     fontSize: 14,

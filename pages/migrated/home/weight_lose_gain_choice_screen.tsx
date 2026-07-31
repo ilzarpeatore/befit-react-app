@@ -18,7 +18,7 @@ export default function WeightLoseGainChoiceScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <View style={styles.iconWrap}>
-            <Ionicons name="scale" size={64} color={C.brand50} />
+            <Ionicons name="scale" size={64} color={C.textPrimary} />
           </View>
 
           <Text style={styles.title}>{"\u00BFCu\u00E1l es tu objetivo?"}</Text>

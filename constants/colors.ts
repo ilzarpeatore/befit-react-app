@@ -13,13 +13,16 @@ export const Colors = {
   TEXT_SECONDARY: C.textSecondary,
   TEXT_MUTED: C.textMuted,
 
-  BORDER_START: "rgba(138,140,178,0.4)",
-  BORDER_END: "rgba(138,140,178,0)",
+  // Hex sueltos, no pasan por C - no se tocaron en la migracion a theme claro
+  // (Encargo 2) hasta ahora. Actualizados para que DietCard (unico consumidor)
+  // tenga un fondo real claro en vez de quedar oscuro con texto oscuro encima.
+  BORDER_START: "rgba(0,0,0,0.08)",
+  BORDER_END: "rgba(0,0,0,0)",
 
   PINK_ACCENT: C.pink,
   SUCCESS: C.success,
   DANGER: C.destructive,
 
-  CARD_START: "#5A5D87",
-  CARD_END: "#3C3F69",
+  CARD_START: "#FFFFFF",
+  CARD_END: "#F7F7F9",
 } as const;

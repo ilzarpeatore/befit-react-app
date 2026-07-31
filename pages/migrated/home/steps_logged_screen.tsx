@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   stepsText: {
     fontSize: 18,
     fontFamily: FONT.bold,
-    color: C.primary,
+    color: C.textPrimary,
     marginBottom: 8,
   },
   subtitle: {

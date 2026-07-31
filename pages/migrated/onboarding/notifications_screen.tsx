@@ -10,18 +10,18 @@ export default function NotificationsScreen({ navigation }: any) {
     <SafeAreaView style={localStyles.container}>
       <View style={localStyles.content}>
         <View style={[localStyles.iconContainer, { backgroundColor: C.primary + "15" }]}>
-          <Ionicons name="notifications" size={64} color={C.primary} />
+          <Ionicons name="notifications" size={64} color={C.textPrimary} />
         </View>
 
-        <Text style={[localStyles.title, { color: C.primary }]}>Activar notificaciones</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Activar notificaciones</Text>
         <Text style={[localStyles.subtitle, { color: C.gray }]}>
           Recibe recordatorios para alcanzar tus objetivos fitness, sesiones de entrenamiento y consejos personalizados.
         </Text>
 
         <View style={localStyles.previewCard}>
           <View style={localStyles.previewHeader}>
-            <Ionicons name="fitness" size={20} color={C.primary} />
-            <Text style={[localStyles.previewAppName, { color: C.primary }]}>MightyFitness</Text>
+            <Ionicons name="fitness" size={20} color={C.textPrimary} />
+            <Text style={[localStyles.previewAppName, { color: C.textPrimary }]}>MightyFitness</Text>
           </View>
           <Text style={[localStyles.previewTitle, { color: C.white }]}>Â¡Hora de entrenar! ðŸ'ª</Text>
           <Text style={[localStyles.previewBody, { color: C.gray }]}>Tu sesiÃ³n de cardio de 30 min te espera. Â¡Dale!</Text>

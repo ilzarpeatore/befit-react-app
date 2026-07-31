@@ -79,7 +79,7 @@ export default function ViewDietCategoryScreen(props: any) {
     <View style={styles.container}>
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.gray80} />
+          <Ionicons name="arrow-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.appBarTitle}>Diet Categories</Text>
       </View>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 12,
   },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.gray80 },
+  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.textPrimary },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 },
   grid: {
     gap: 16,

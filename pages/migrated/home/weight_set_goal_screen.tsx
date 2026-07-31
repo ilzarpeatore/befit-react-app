@@ -61,7 +61,7 @@ export default function WeightGoalSetScreen({ navigation }: any) {
           <Text style={styles.rulerLabel}>Desliza para ajustar</Text>
           <View style={styles.rulerContainer}>
             <View style={styles.rulerArrow}>
-              <Ionicons name="caret-down" size={16} color={C.brand50} />
+              <Ionicons name="caret-down" size={16} color={C.textPrimary} />
             </View>
             <ScrollView
               horizontal
@@ -120,7 +120,7 @@ function useStyle() {
     rulerLineMajor: { height: 30, backgroundColor: C.gray10 },
     rulerLineSelected: { height: 40, backgroundColor: C.brand50, width: 3 },
     rulerNumber: { fontSize: 11, fontFamily: FONT.medium, color: C.gray5, marginTop: 6 },
-    rulerNumberSelected: { color: C.brand50, fontFamily: FONT.bold },
+    rulerNumberSelected: { color: C.textPrimary, fontFamily: FONT.bold },
     applyBtn: { backgroundColor: C.brand50, borderRadius: 16, paddingVertical: 16, alignItems: "center" },
     applyBtnText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
   });

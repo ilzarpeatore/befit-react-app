@@ -33,7 +33,7 @@ export default function WeightGoalSummaryScreen({ navigation }: any) {
               <Text style={styles.weightLabel}>Actual</Text>
               <Text style={styles.weightValue}>{currentWeight.toFixed(1)} kg</Text>
             </View>
-            <Ionicons name="arrow-forward" size={24} color={C.brand50} />
+            <Ionicons name="arrow-forward" size={24} color={C.textPrimary} />
             <View style={[styles.weightCard, styles.weightCardGoal]}>
               <Text style={styles.weightLabel}>Meta</Text>
               <Text style={[styles.weightValue, { color: C.success50 }]}>{goalWeight.toFixed(1)} kg</Text>
@@ -53,7 +53,7 @@ export default function WeightGoalSummaryScreen({ navigation }: any) {
           </View>
 
           <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate("MigratedWeightSetGoal")}>
-            <Ionicons name="pencil" size={18} color={C.brand50} />
+            <Ionicons name="pencil" size={18} color={C.textPrimary} />
             <Text style={styles.editBtnText}>Editar meta</Text>
           </TouchableOpacity>
 
@@ -87,7 +87,7 @@ function useStyle() {
     ringLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray5 },
     distanceText: { fontSize: 14, fontFamily: FONT.medium, color: C.gray5, marginTop: 12 },
     editBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.brand5, borderRadius: 14, paddingVertical: 14, marginBottom: 12, borderWidth: 1, borderColor: C.brand50, gap: 8 },
-    editBtnText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.brand50 },
+    editBtnText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.textPrimary },
     deadlineBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.brand50, borderRadius: 14, paddingVertical: 14, gap: 8 },
     deadlineBtnText: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },
   });

@@ -33,7 +33,7 @@ export default function LinkDeviceListScreen({ navigation }: any) {
           {DEVICES.map((device) => (
             <View key={device.name} style={styles.deviceCard}>
               <View style={styles.deviceIcon}>
-                <Ionicons name={device.icon as any} size={28} color={C.brand50} />
+                <Ionicons name={device.icon as any} size={28} color={C.textPrimary} />
               </View>
               <View style={styles.deviceInfo}>
                 <Text style={styles.deviceName}>{device.name}</Text>

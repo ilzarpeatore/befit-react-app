@@ -25,7 +25,7 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
             onPress={() => navigation.navigate("MigratedLinkDeviceList")}
           >
             <View style={[styles.optionIcon, { backgroundColor: C.brand10 }]}>
-              <Ionicons name="watch" size={32} color={C.brand50} />
+              <Ionicons name="watch" size={32} color={C.textPrimary} />
             </View>
             <Text style={styles.optionTitle}>Wearable Device</Text>
             <Text style={styles.optionDesc}>Connect via Bluetooth</Text>
@@ -46,7 +46,7 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.helpBtn}>
-            <Ionicons name="help-circle-outline" size={20} color={C.brand50} />
+            <Ionicons name="help-circle-outline" size={20} color={C.textPrimary} />
             <Text style={styles.helpText}>Need help connecting?</Text>
           </TouchableOpacity>
         </View>
@@ -99,6 +99,6 @@ function useStyle() {
       gap: 8,
       marginTop: 20,
     },
-    helpText: { fontSize: 14, fontFamily: FONT.medium, color: C.brand50 },
+    helpText: { fontSize: 14, fontFamily: FONT.medium, color: C.textPrimary },
   });
 }

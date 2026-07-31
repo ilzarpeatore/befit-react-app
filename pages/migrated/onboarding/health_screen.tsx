@@ -27,7 +27,7 @@ export default function HealthScreen({ navigation }: any) {
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.primary }]}>Tu salud</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Tu salud</Text>
 
         <View style={localStyles.card}>
           <View style={localStyles.cardHeader}>
@@ -71,7 +71,7 @@ export default function HealthScreen({ navigation }: any) {
         {TIPS.map((tip, idx) => (
           <View key={idx} style={localStyles.tipCard}>
             <View style={[localStyles.tipIcon, { backgroundColor: C.primary + "15" }]}>
-              <Ionicons name={tip.icon} size={24} color={C.primary} />
+              <Ionicons name={tip.icon} size={24} color={C.textPrimary} />
             </View>
             <View style={localStyles.tipContent}>
               <Text style={[localStyles.tipTitle, { color: C.white }]}>{tip.title}</Text>
@@ -105,7 +105,7 @@ const localStyles = StyleSheet.create({
   gaugeFill: { flex: 1 },
   gaugeMid: { flex: 1 },
   gaugeEnd: { flex: 1 },
-  gaugeIndicator: { position: "absolute", top: 0, width: 4, height: 20, backgroundColor: C.white, borderRadius: 2 },
+  gaugeIndicator: { position: "absolute", top: 0, width: 4, height: 20, backgroundColor: C.surface, borderRadius: 2 },
   gaugeLabels: { flexDirection: "row", justifyContent: "space-between" },
   gaugeLabel: { fontSize: 11 },
   chartContainer: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", height: 140, paddingTop: 10 },
