@@ -3,7 +3,7 @@
 ## Ruta del proyecto
 
 ```
-C:\Users\hamza\Desktop\Befit-App-2024\React App\pages
+C:\Users\hamza\Desktop\PROYECTOS\APP\BeFit react\React App\pages
 ```
 
 Las dos pantallas nuevas van dentro de esta carpeta, siguiendo la
@@ -75,7 +75,8 @@ sin confirmar antes que no existe ya.
 GET /api/v1/workout-template-detail?id={id}
 ```
 (o el endpoint de detalle equivalente que ya use `FullWorkoutScreen` en
-Flutter — revisar `training_api_service.dart` como referencia exacta del
+la antigua app Flutter — `C:\Users\hamza\Desktop\PROYECTOS\APP\mightyfitness\mightyfitness_flutter` —
+revisar `training_api_service.dart` ahí como referencia exacta del
 contrato de datos, ya que esta pantalla React debe mostrar la misma
 información).
 

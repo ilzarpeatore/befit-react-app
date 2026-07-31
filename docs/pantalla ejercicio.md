@@ -2,7 +2,7 @@
 
 ## Ruta del proyecto
 ```
-C:\Users\hamza\Desktop\Befit-App-2024\React App\pages
+C:\Users\hamza\Desktop\PROYECTOS\APP\BeFit react\React App\pages
 ```
 
 No se especifica paleta de colores — mantener la estética ya usada en el

@@ -1,6 +1,6 @@
 # Mapa de Pantallas — Befit App (React Native)
 
-Catálogo completo de las 173 pantallas registradas en `pages/ScreenExplorer.tsx`, con su archivo real, el nombre de ruta usado en `App.tsx`, el nombre visible en pantalla, las APIs/endpoints que consume hoy, y con qué parte del backend Laravel (`C:\Users\hamza\Desktop\proyect\fitness-backend`) está o debería estar conectada.
+Catálogo completo de las 173 pantallas registradas en `pages/ScreenExplorer.tsx`, con su archivo real, el nombre de ruta usado en `App.tsx`, el nombre visible en pantalla, las APIs/endpoints que consume hoy, y con qué parte del backend Laravel (`C:\Users\hamza\Desktop\PROYECTOS\APP\mightyfitness\fitness-backend`) está o debería estar conectada.
 
 ## Cómo se generó este documento
 
@@ -131,7 +131,7 @@ y se cruzó cada endpoint contra `routes/api.php` del backend Laravel para ident
 | Search | pages/migrated/search_screen.tsx | MigratedSearch | Migrated - Exercise | Ninguna (estática/local; `getExerciseApi`/`getEquipmentListApi`/`getLevelListApi` son funciones stub locales que devuelven arrays vacíos, no llaman a `api/*.ts`) — (sin título visible; solo barra de búsqueda con placeholder "Search Exercise") | Sugerido: GET exercise-list con parámetro `title` (ExerciseController::getList), GET equipment-list, GET level-list — todos ya expuestos en `api/exercises.ts` pero sin conectar aquí |
 ## Screens Batch C — Diet, Recipes, Products, Shopping, Social, Content
 
-Backend controller paths are relative to `C:\Users\hamza\Desktop\proyect\fitness-backend\app\Http\Controllers\API\`.
+Backend controller paths are relative to `C:\Users\hamza\Desktop\PROYECTOS\APP\mightyfitness\fitness-backend\app\Http\Controllers\API\`.
 
 | Pantalla | Archivo | Ruta (route name) | Categoría | APIs/Endpoints usados | Módulo backend |
 |---|---|---|---|---|---|
