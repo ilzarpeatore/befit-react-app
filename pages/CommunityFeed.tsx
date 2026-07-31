@@ -145,7 +145,7 @@ export default function CommunityFeed({ navigation }: Props) {
           </View>
           {renderSkeleton()}
         </SafeAreaView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </ImageBackground>
     );
   }
@@ -166,7 +166,7 @@ export default function CommunityFeed({ navigation }: Props) {
           </View>
           <ErrorRetryMem message={error} onRetry={() => fetchPosts(1)} />
         </SafeAreaView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </ImageBackground>
     );
   }
@@ -223,7 +223,7 @@ export default function CommunityFeed({ navigation }: Props) {
           </LinearGradient>
         </TouchableOpacity>
       </SafeAreaView>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </ImageBackground>
   );
 }

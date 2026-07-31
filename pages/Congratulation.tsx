@@ -94,7 +94,7 @@ export default function Congratulation() {
             {/*actions end*/}
           </ScrollView>
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

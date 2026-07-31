@@ -285,7 +285,7 @@ export default function Weight({ navigation }: WeightPropsInterface) {
             {/*weight actions end*/}
           </ScrollView>
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

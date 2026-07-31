@@ -69,7 +69,7 @@ export default function WorkoutSummary() {
       resizeMode="cover"
     >
       <SafeAreaView style={{ flex: 1 }} edges={["right", "left", "top"]}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <ScrollView
           contentContainerStyle={{
             paddingHorizontal: r(20),

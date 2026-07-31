@@ -583,7 +583,7 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
           : _render_member_maker_box()}
         {/*map members end*/}
       </View>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </SafeAreaView>
   );
 }

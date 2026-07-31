@@ -114,7 +114,7 @@ export default function ProfileEditScreen() {
             </ScrollView>
           </View>
         </KeyboardAvoidingView>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

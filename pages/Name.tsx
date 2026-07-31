@@ -202,7 +202,7 @@ export default function Name({ navigation }: NamePropsInterface) {
             {/*actions end*/}
           </ScrollView>
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

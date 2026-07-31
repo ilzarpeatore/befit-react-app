@@ -171,7 +171,7 @@ export default function Result() {
             {/* actions end */}
           </ScrollView>
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

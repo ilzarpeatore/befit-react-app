@@ -243,7 +243,7 @@ export default function WorkoutList({ navigation }: Props) {
             />
           )}
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

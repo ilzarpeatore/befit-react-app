@@ -287,7 +287,7 @@ export default function Height({ navigation }: HeightPropsInterface) {
             {/*height actions end*/}
           </ScrollView>
         </View>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

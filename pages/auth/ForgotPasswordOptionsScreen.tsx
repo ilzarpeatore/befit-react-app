@@ -62,7 +62,7 @@ export default function ForgotPasswordOptionsScreen() {
           onPress={() => navigation.goBack()}
         />
 
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
       </SafeAreaView>
     </ImageBackground>
   );

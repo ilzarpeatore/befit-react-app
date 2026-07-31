@@ -144,7 +144,7 @@ export default function SettingsScreen({ navigation }: Props) {
           <Text style={styles.versionText}>BeFit v1.0.0</Text>
         </ScrollView>
       </SafeAreaView>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
     </ImageBackground>
   );
 }
