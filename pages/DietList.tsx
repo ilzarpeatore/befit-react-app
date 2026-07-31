@@ -137,7 +137,7 @@ export default function DietList({ navigation }: Props) {
       </View>
 
       <FlatList
-        data={[{ id: 0, title: "All", category_image: "" } as DietCategory, ...categories]}
+        data={[{ id: 0, title: "All", categorydiet_image: "" } as DietCategory, ...categories]}
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}

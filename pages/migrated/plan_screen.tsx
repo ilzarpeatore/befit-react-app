@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, FlatList, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C, FONT } from './theme';
 import { dietApi } from '../../api/diet';
-import { recipesApi } from '../../api/recipes';
+import { recipesApi, RecipeListItem } from '../../api/recipes';
 
 function formatDateYMD(d: Date): string {
   const y = d.getFullYear();
@@ -38,6 +39,12 @@ interface DailyPlanRecipeItem {
   isComplete?: boolean;
   recipeName?: string;
   recipeImage?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fats?: number;
+  isCoachAssigned?: boolean;
+  assignedByName?: string;
 }
 
 function getWeekDays(weekOffset: number): Date[] {
@@ -91,6 +98,16 @@ export default function PlanScreen(props: any) {
   const [plannedDays, setPlannedDays] = useState<string[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
 
+  const [addMealFor, setAddMealFor] = useState<{ key: string; label: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<RecipeListItem[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchLoadingMore, setSearchLoadingMore] = useState(false);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchIsLastPage, setSearchIsLastPage] = useState(false);
+  const [savingRecipeId, setSavingRecipeId] = useState<number | null>(null);
+
+  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -141,7 +158,13 @@ export default function PlanScreen(props: any) {
         mealType: entry.meal_type,
         isComplete: !!entry.is_complete,
         recipeName: entry.recipe?.title,
-        recipeImage: entry.recipe?.recipe_image,
+        recipeImage: entry.recipe?.recipe_image ?? undefined,
+        calories: entry.calories,
+        protein: entry.protein,
+        carbs: entry.carbs,
+        fats: entry.fats,
+        isCoachAssigned: !!entry.is_coach_assigned,
+        assignedByName: entry.assigned_by?.name,
       }));
     });
     setMealRecipes(recipesByMeal);
@@ -188,6 +211,14 @@ export default function PlanScreen(props: any) {
     }
   };
 
+  const openRecipeDetail = (recipe: DailyPlanRecipeItem) => {
+    if (!recipe.recipeId) return;
+    props.navigation?.navigate('MigratedDietDetail', {
+      recipeId: recipe.recipeId,
+      recipeImage: recipe.recipeImage,
+    });
+  };
+
   const clearDailyPlan = () => {
     if (!dailyPlanId) return;
     Alert.alert('Clear Plan', 'Are you sure you want to clear all recipes for this day?', [
@@ -210,12 +241,78 @@ export default function PlanScreen(props: any) {
     ]);
   };
 
-  const navigateToRecipeList = (mealType: string) => {
-    props.navigation?.navigate('MigratedDailyPlanRecipeList', {
-      mealType,
-      dailyPlanId,
-      date: formatDateYMD(selectedDay),
-    });
+  const searchRecipes = useCallback(async (mealKey: string, query: string, page: number) => {
+    if (page === 1) {
+      setSearchLoading(true);
+    } else {
+      setSearchLoadingMore(true);
+    }
+    try {
+      const res = await recipesApi.getFilteredList({
+        meal_type: [mealKey],
+        title: query || undefined,
+        per_page: 20,
+        page,
+      });
+      const items = res.data?.data ?? [];
+      setSearchResults((prev) => (page === 1 ? items : [...prev, ...items]));
+      const totalPages = res.data?.pagination?.totalPages ?? 1;
+      setSearchIsLastPage(page >= totalPages);
+    } catch {
+      if (page === 1) setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+      setSearchLoadingMore(false);
+    }
+  }, []);
+
+  const openAddMeal = useCallback(
+    (key: string, label: string) => {
+      setAddMealFor({ key, label });
+      setSearchQuery('');
+      setSearchResults([]);
+      setSearchPage(1);
+      setSearchIsLastPage(false);
+      searchRecipes(key, '', 1);
+    },
+    [searchRecipes]
+  );
+
+  useEffect(() => {
+    if (!addMealFor) return;
+    const timeout = setTimeout(() => {
+      setSearchPage(1);
+      setSearchIsLastPage(false);
+      searchRecipes(addMealFor.key, searchQuery, 1);
+    }, 350);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, addMealFor]);
+
+  const handleSearchScroll = (event: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 40;
+    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
+      if (!searchIsLastPage && !searchLoading && !searchLoadingMore && addMealFor) {
+        const nextPage = searchPage + 1;
+        setSearchPage(nextPage);
+        searchRecipes(addMealFor.key, searchQuery, nextPage);
+      }
+    }
+  };
+
+  const addRecipeToPlan = async (recipe: RecipeListItem) => {
+    if (!dailyPlanId || !addMealFor) return;
+    setSavingRecipeId(recipe.id);
+    try {
+      await recipesApi.saveDailyPlanRecipe(dailyPlanId, recipe.id, addMealFor.key);
+      setAddMealFor(null);
+      await fetchDailyPlan();
+    } catch {
+      Alert.alert('Error', 'Could not add this meal. Please try again.');
+    } finally {
+      setSavingRecipeId(null);
+    }
   };
 
   const renderWeekDays = (offset: number) => {
@@ -285,24 +382,53 @@ export default function PlanScreen(props: any) {
             <Text style={s.mealTitle}>{displayName}</Text>
             <Text style={s.mealCalories}>{total.totalCalories ?? 0} kcal | P: {total.totalProtein ?? 0}g | C: {total.totalCarbs ?? 0}g | F: {total.totalFats ?? 0}g</Text>
           </View>
-          <TouchableOpacity style={s.addMealBtn} onPress={() => navigateToRecipeList(key)}>
-            <Ionicons name="add-circle-outline" size={24} color={C.brand5} />
+          <TouchableOpacity style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
+            <Ionicons name="add-circle-outline" size={24} color={C.brand50} />
           </TouchableOpacity>
         </View>
-        {recipes.map((recipe, i) => (
-          <View key={i} style={s.recipeItem}>
-            <View style={s.recipeInfo}>
-              <Text style={s.recipeName}>{recipe.recipeName ?? 'Recipe'}</Text>
+        {recipes.length === 0 ? (
+          <Text style={s.emptyMealText}>No {displayName.toLowerCase()} logged yet.</Text>
+        ) : (
+          recipes.map((recipe, i) => (
+            <View key={i} style={s.recipeItem}>
+              <TouchableOpacity
+                style={s.recipeItemTouchable}
+                activeOpacity={0.7}
+                onPress={() => openRecipeDetail(recipe)}
+              >
+                {recipe.recipeImage ? (
+                  <Image source={{ uri: recipe.recipeImage }} style={s.recipeImage} />
+                ) : (
+                  <View style={s.recipeImage} />
+                )}
+                <View style={s.recipeInfo}>
+                  <Text style={s.recipeName} numberOfLines={1}>{recipe.recipeName ?? 'Recipe'}</Text>
+                  <View style={s.recipeMacrosRow}>
+                    <Text style={s.recipeMacroCal}>{recipe.calories ?? 0} kcal</Text>
+                    <Text style={s.recipeMacro}>P {recipe.protein ?? 0}g</Text>
+                    <Text style={s.recipeMacro}>C {recipe.carbs ?? 0}g</Text>
+                    <Text style={s.recipeMacro}>F {recipe.fats ?? 0}g</Text>
+                  </View>
+                  {recipe.isCoachAssigned && (
+                    <View style={s.coachBadge}>
+                      <Ionicons name="ribbon-outline" size={11} color={C.orange} />
+                      <Text style={s.coachBadgeText}>
+                        Assigned by {recipe.assignedByName ?? 'your coach'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => toggleRecipeCompletion(recipe, key)}>
+                <Ionicons
+                  name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={22}
+                  color={recipe.isComplete ? C.success : C.gray20}
+                />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => toggleRecipeCompletion(recipe, key)}>
-              <Ionicons
-                name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
-                size={22}
-                color={recipe.isComplete ? C.success : C.gray40}
-              />
-            </TouchableOpacity>
-          </View>
-        ))}
+          ))
+        )}
       </View>
     );
   };
@@ -349,9 +475,70 @@ export default function PlanScreen(props: any) {
       </ScrollView>
       {isLoading && (
         <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.brand50} />
         </View>
       )}
+
+      <Modal visible={!!addMealFor} animationType="slide" onRequestClose={() => setAddMealFor(null)}>
+        <KeyboardAvoidingView
+          style={[s.modalSheet, { paddingTop: insets.top + 12 }]}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={s.modalHeaderRow}>
+            <Text style={s.modalTitle}>Add to {addMealFor?.label ?? ''}</Text>
+            <TouchableOpacity onPress={() => setAddMealFor(null)} style={s.modalCloseBtn}>
+              <Ionicons name="close" size={26} color={C.white} />
+            </TouchableOpacity>
+          </View>
+          <TextInput
+            style={s.searchInput}
+            placeholder="Search recipes..."
+            placeholderTextColor={C.gray20}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
+          {searchLoading ? (
+            <ActivityIndicator size="small" color={C.brand50} style={{ marginTop: 20 }} />
+          ) : searchResults.length === 0 ? (
+            <Text style={s.noResultsText}>No recipes found.</Text>
+          ) : (
+            <ScrollView
+              style={s.searchResultsScroll}
+              onScroll={handleSearchScroll}
+              scrollEventThrottle={16}
+              keyboardShouldPersistTaps="handled"
+            >
+              {searchResults.map((recipe) => (
+                <TouchableOpacity
+                  key={recipe.id}
+                  style={s.searchResultRow}
+                  disabled={savingRecipeId === recipe.id}
+                  onPress={() => addRecipeToPlan(recipe)}
+                >
+                  {recipe.recipe_image ? (
+                    <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                  ) : (
+                    <View style={s.searchResultImage} />
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+                    <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+                  </View>
+                  {savingRecipeId === recipe.id ? (
+                    <ActivityIndicator size="small" color={C.brand50} />
+                  ) : (
+                    <Ionicons name="add-circle-outline" size={26} color={C.brand50} />
+                  )}
+                </TouchableOpacity>
+              ))}
+              {searchLoadingMore && (
+                <ActivityIndicator size="small" color={C.brand50} style={{ marginVertical: 16 }} />
+              )}
+            </ScrollView>
+          )}
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -396,7 +583,26 @@ const s = StyleSheet.create({
   mealCalories: { fontSize: 12, color: C.gray40, marginTop: 2 },
   addMealBtn: { padding: 4 },
   recipeItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, borderTopWidth: 0.5, borderTopColor: C.border },
-  recipeInfo: { flex: 1 },
-  recipeName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray10 },
+  recipeItemTouchable: { flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 8 },
+  recipeImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
+  recipeInfo: { flex: 1, marginRight: 8 },
+  recipeName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray10, marginBottom: 4 },
+  recipeMacrosRow: { flexDirection: 'row', gap: 10 },
+  recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.brand50 },
+  recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5 },
+  coachBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  coachBadgeText: { fontSize: 10, fontFamily: FONT.medium, color: C.orange },
+  emptyMealText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray5, paddingVertical: 8 },
   loadingOverlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+  modalSheet: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 24 },
+  modalHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  modalCloseBtn: { padding: 4 },
+  modalTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
+  searchInput: { backgroundColor: C.surfaceLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, fontFamily: FONT.regular, color: C.white, marginBottom: 12 },
+  noResultsText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray5, textAlign: 'center', marginTop: 20 },
+  searchResultsScroll: { flex: 1 },
+  searchResultRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
+  searchResultImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
+  searchResultTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
+  searchResultMeta: { fontSize: 12, fontFamily: FONT.regular, color: C.gray5, marginTop: 2 },
 });

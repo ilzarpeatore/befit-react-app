@@ -21,6 +21,7 @@ interface DietModel {
   description?: string;
   isFavourite?: number;
   isPremium?: number;
+  isAccessible?: number;
   [key: string]: any;
 }
 
@@ -93,14 +94,15 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
           setDietState({
             id: d.id,
             title: d.title,
-            dietImage: recipeImageParam,
+            dietImage: d.recipe_image || recipeImageParam,
             calories: String(d.calories ?? ''),
             carbs: String(d.carbs ?? ''),
             fat: String(d.fats ?? ''),
             protein: String(d.protein ?? ''),
             totalTime: d.preparation_time ? `${d.preparation_time} min` : '',
             description: d.description,
-            isPremium: 0,
+            isPremium: d.is_premium ? 1 : 0,
+            isAccessible: d.is_accessible === false ? 0 : 1,
             isFavourite: d.is_favourite ?? 0,
           });
           setRecipeIngredients(res.data?.recipe_ingredients ?? []);
@@ -135,14 +137,22 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
 
   const getVitamins = (icon: string, title: string, subTitle: string) => (
     <View style={localStyles.vitaminItem}>
-      <Ionicons name={icon as any} size={26} color={C.brand5} />
+      <Ionicons name={icon as any} size={26} color={C.brand50} />
       <Text style={localStyles.vitaminTitle}>{title}</Text>
       <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
     </View>
   );
 
+  const isLockedRecipe = isRecipeMode && dietState.isPremium === 1 && dietState.isAccessible === 0;
+
   const ingredients = () =>
-    isRecipeMode ? (
+    isLockedRecipe ? (
+      <View style={localStyles.htmlContent}>
+        <Text style={localStyles.htmlText}>
+          Contenido exclusivo — hazte cliente 1:1 o compra un paquete con acceso completo a Recetas.
+        </Text>
+      </View>
+    ) : isRecipeMode ? (
       <View style={localStyles.htmlContent}>
         {recipeIngredients.length === 0 ? (
           <Text style={localStyles.htmlText}>No ingredients listed.</Text>
@@ -165,7 +175,13 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
     );
 
   const instruction = () =>
-    isRecipeMode ? (
+    isLockedRecipe ? (
+      <View style={localStyles.htmlContent}>
+        <Text style={localStyles.htmlText}>
+          Contenido exclusivo — hazte cliente 1:1 o compra un paquete con acceso completo a Recetas.
+        </Text>
+      </View>
+    ) : isRecipeMode ? (
       <View style={localStyles.htmlContent}>
         {recipeSteps.length === 0 ? (
           <Text style={localStyles.htmlText}>No instructions listed.</Text>
@@ -218,7 +234,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             <Ionicons
               name={dietState.isFavourite === 1 ? 'heart' : 'heart-outline'}
               size={20}
-              color={dietState.isFavourite === 1 ? C.brand5 : C.white}
+              color={dietState.isFavourite === 1 ? C.red : C.white}
             />
           </View>
         </TouchableOpacity>
@@ -279,7 +295,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
 
       {isLoading && (
         <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.brand50} />
         </View>
       )}
     </View>
@@ -418,7 +434,7 @@ const localStyles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: C.brand5,
+    borderBottomColor: C.brand50,
   },
   tabText: {
     fontFamily: FONT.bold,
@@ -426,7 +442,7 @@ const localStyles = StyleSheet.create({
     color: C.gray30,
   },
   activeTabText: {
-    color: C.brand5,
+    color: C.brand50,
   },
   htmlContent: {
     paddingHorizontal: 8,
@@ -446,7 +462,7 @@ const localStyles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: C.brand5,
+    backgroundColor: C.brand50,
     marginRight: 10,
   },
   ingredientQty: {

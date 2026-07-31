@@ -28,7 +28,7 @@ export interface DietListResponse {
 export interface DietCategory {
   id: number;
   title: string;
-  category_image: string;
+  categorydiet_image: string;
 }
 
 export interface DailyPlanMealTypeSummary {
@@ -75,6 +75,8 @@ export interface DailyPlanRecipeEntry {
     carbs: number;
   } | null;
   is_complete: number;
+  is_coach_assigned?: boolean;
+  assigned_by?: { id: number; name: string } | null;
   created_at: string;
   updated_at: string;
 }
@@ -147,9 +149,46 @@ export interface RecipeDetailResponse {
   recipe_ingredients: RecipeIngredient[];
 }
 
+export interface AssignedMealRecipe {
+  id: number;
+  title: string;
+  recipe_image: string | null;
+  calories: number;
+  protein: number;
+  fats: number;
+  carbs: number;
+}
+
+export interface AssignedMealsSummary {
+  goal: { kcal: number; protein: number; carbs: number; fats: number };
+  meals: {
+    breakfast: AssignedMealRecipe[];
+    lunch: AssignedMealRecipe[];
+    dinner: AssignedMealRecipe[];
+    snacks: AssignedMealRecipe[];
+  };
+}
+
+export interface DietMealItemsResponse {
+  diet: { id: number; title: string };
+  meals: {
+    breakfast: AssignedMealRecipe[];
+    lunch: AssignedMealRecipe[];
+    dinner: AssignedMealRecipe[];
+    snacks: AssignedMealRecipe[];
+  };
+}
+
+export interface DietDashboardResponse {
+  category_diet: DietCategory[];
+  best_diet: DietListItem[];
+  diet: DietListItem[];
+  assign_diet: { id: number; diet: DietListItem }[];
+}
+
 export const dietApi = {
   getDashboard: () =>
-    apiClient.get<{ data: DietListItem[] }>('diet-dashboard'),
+    apiClient.get<DietDashboardResponse>('diet-dashboard'),
 
   getList: (params: { is_featured?: boolean; categorydiet_id?: number; page?: number }) =>
     apiClient.get<DietListResponse>('diet-list', { params }),
@@ -168,6 +207,12 @@ export const dietApi = {
 
   getAssignedDiets: (page: number = 1) =>
     apiClient.get<DietListResponse>(`assign-diet-list?page=${page}`),
+
+  getAssignedMealsSummary: () =>
+    apiClient.get<AssignedMealsSummary>('assigned-meals-summary'),
+
+  getDietMealItems: (id: number) =>
+    apiClient.get<DietMealItemsResponse>(`diet-meal-items?id=${id}`),
 
   getDailyPlan: (date: string) =>
     apiClient.get<DailyPlanDetailResponse>(`daily-plan-detail?date=${date}`),

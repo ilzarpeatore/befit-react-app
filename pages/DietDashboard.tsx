@@ -6,14 +6,13 @@ import {
   TouchableOpacity,
   RefreshControl,
   ImageBackground,
-  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
-import { dietApi, DietListItem } from "../api/diet";
+import { dietApi, DietListItem, AssignedMealsSummary } from "../api/diet";
 import { DietCardMem } from "../components/DietCard";
 import { EmptyStateMem } from "../components/EmptyState";
 import { ErrorRetryMem } from "../components/ErrorRetry";
@@ -25,8 +24,8 @@ interface Props {
 
 export default function DietDashboard({ navigation }: Props) {
   const styles = useStyle();
-  const [data, setData] = useState<DietListItem[]>([]);
-  const [assignedDiets, setAssignedDiets] = useState<DietListItem[]>([]);
+  const [otherDiets, setOtherDiets] = useState<DietListItem[]>([]);
+  const [assignedMealsGoal, setAssignedMealsGoal] = useState<AssignedMealsSummary["goal"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,15 +34,15 @@ export default function DietDashboard({ navigation }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const [dashboardRes, assignedRes] = await Promise.allSettled([
+      const [dashboardRes, assignedMealsRes] = await Promise.allSettled([
         dietApi.getDashboard(),
-        dietApi.getAssignedDiets(),
+        dietApi.getAssignedMealsSummary(),
       ]);
       if (dashboardRes.status === "fulfilled") {
-        setData(dashboardRes.value.data?.data ?? []);
+        setOtherDiets(dashboardRes.value.data?.diet ?? []);
       }
-      if (assignedRes.status === "fulfilled") {
-        setAssignedDiets(assignedRes.value.data?.data ?? []);
+      if (assignedMealsRes.status === "fulfilled") {
+        setAssignedMealsGoal(assignedMealsRes.value.data?.goal ?? null);
       }
       if (dashboardRes.status === "rejected") {
         setError("Failed to load diet dashboard.");
@@ -66,14 +65,14 @@ export default function DietDashboard({ navigation }: Props) {
   }, [fetchData]);
 
   const openDietDetail = useCallback(
-    (id: number) => {
-      navigation.navigate("Migrated", { screen: "MigratedDietDetail", params: { id } });
+    (id: number, title: string) => {
+      navigation.navigate("Migrated", {
+        screen: "MigratedAssignedMeals",
+        params: { dietId: id, dietTitle: title },
+      });
     },
     [navigation]
   );
-
-  const featuredDiets = data.filter((d) => d.is_featured === "1");
-  const recentMeals = data.filter((d) => d.is_featured !== "1");
 
   if (loading && !refreshing) {
     return (
@@ -141,115 +140,76 @@ export default function DietDashboard({ navigation }: Props) {
             />
           }
         >
-          {data.length === 0 && assignedDiets.length === 0 ? (
-            <EmptyStateMem
-              icon="nutrition-outline"
-              title="No Diet Data"
-              message="Start tracking your meals to see your dashboard."
-            />
-          ) : (
-            <>
-              {assignedDiets.length > 0 && (
-                <View style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Assigned to Me</Text>
-                  </View>
-                  {assignedDiets.map((item) => (
-                    <DietCardMem
-                      key={`assigned-${item.id}`}
-                      title={item.title}
-                      calories={Number(item.calories)}
-                      image={item.diet_image}
-                      onPress={() => openDietDetail(item.id)}
-                    />
-                  ))}
-                </View>
-              )}
-
-              <LinearGradient
-                start={{ x: 0.24, y: -0.09 }}
-                end={{ x: 0.78, y: 0.93 }}
-                colors={[Colors.CARD_START, Colors.CARD_END]}
-                style={styles.summaryCard}
+          <>
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Assigned to Me</Text>
+              </View>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate("Migrated", { screen: "MigratedAssignedMeals" })}
               >
-                <View style={styles.summaryRow}>
-                  <View style={styles.summaryItem}>
-                    <Ionicons name="flame-outline" size={28} color={Colors.ACCENT_START} />
-                    <Text style={styles.summaryValue}>
-                      {data.reduce((sum, d) => sum + Number(d.calories || 0), 0)}
-                    </Text>
-                    <Text style={styles.summaryLabel}>Total kcal</Text>
+                <LinearGradient
+                  start={{ x: 0.24, y: -0.09 }}
+                  end={{ x: 0.78, y: 0.93 }}
+                  colors={[Colors.CARD_START, Colors.CARD_END]}
+                  style={styles.summaryCard}
+                >
+                  <View style={styles.summaryKcalRow}>
+                    <Ionicons name="flame-outline" size={26} color={Colors.ACCENT_START} />
+                    <Text style={styles.summaryKcalValue}>{assignedMealsGoal?.kcal ?? 0}</Text>
+                    <Text style={styles.summaryKcalLabel}>kcal / day goal</Text>
                   </View>
-                  <View style={styles.summaryDivider} />
-                  <View style={styles.summaryItem}>
-                    <Ionicons name="leaf-outline" size={28} color={Colors.SUCCESS} />
-                    <Text style={styles.summaryValue}>
-                      {data.reduce((sum, d) => sum + Number(d.protein || 0), 0)}
-                    </Text>
-                    <Text style={styles.summaryLabel}>Protein (g)</Text>
+                  <View style={styles.summaryRow}>
+                    <View style={styles.summaryItem}>
+                      <Text style={styles.summaryValue}>{assignedMealsGoal?.protein ?? 0}g</Text>
+                      <Text style={styles.summaryLabel}>Protein</Text>
+                    </View>
+                    <View style={styles.summaryDivider} />
+                    <View style={styles.summaryItem}>
+                      <Text style={styles.summaryValue}>{assignedMealsGoal?.carbs ?? 0}g</Text>
+                      <Text style={styles.summaryLabel}>Carbs</Text>
+                    </View>
+                    <View style={styles.summaryDivider} />
+                    <View style={styles.summaryItem}>
+                      <Text style={styles.summaryValue}>{assignedMealsGoal?.fats ?? 0}g</Text>
+                      <Text style={styles.summaryLabel}>Fats</Text>
+                    </View>
                   </View>
-                  <View style={styles.summaryDivider} />
-                  <View style={styles.summaryItem}>
-                    <Ionicons name="flash-outline" size={28} color={Colors.PINK_ACCENT} />
-                    <Text style={styles.summaryValue}>
-                      {data.reduce((sum, d) => sum + Number(d.carbs || 0), 0)}
-                    </Text>
-                    <Text style={styles.summaryLabel}>Carbs (g)</Text>
+                  <View style={styles.viewPlanRow}>
+                    <Text style={styles.viewPlanText}>View my assigned meals</Text>
+                    <Ionicons name="arrow-forward" size={14} color={Colors.TEXT_PRIMARY} />
                   </View>
-                </View>
-              </LinearGradient>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
 
-              {featuredDiets.length > 0 && (
-                <View style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Featured Diets</Text>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("DietList")}
-                    >
-                      <Text style={styles.viewAll}>View All</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <FlatList
-                    data={featuredDiets}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({ item }) => (
-                      <View style={styles.featuredItem}>
-                        <DietCardMem
-                          title={item.title}
-                          calories={Number(item.calories)}
-                          image={item.diet_image}
-                          onPress={() =>
-                            openDietDetail(item.id)
-                          }
-                        />
-                      </View>
-                    )}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Otras dietas</Text>
+                <TouchableOpacity onPress={() => navigation.navigate("DietList")}>
+                  <Text style={styles.viewAll}>View All</Text>
+                </TouchableOpacity>
+              </View>
+              {otherDiets.length === 0 ? (
+                <EmptyStateMem
+                  icon="nutrition-outline"
+                  title="No Diets Yet"
+                  message="Your coach hasn't published any public diets yet."
+                />
+              ) : (
+                otherDiets.map((item) => (
+                  <DietCardMem
+                    key={item.id.toString()}
+                    title={item.title}
+                    calories={Number(item.calories)}
+                    image={item.diet_image}
+                    onPress={() => openDietDetail(item.id, item.title)}
                   />
-                </View>
+                ))
               )}
-
-              {recentMeals.length > 0 && (
-                <View style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Recent Meals</Text>
-                  </View>
-                  {recentMeals.map((item) => (
-                    <DietCardMem
-                      key={item.id.toString()}
-                      title={item.title}
-                      calories={Number(item.calories)}
-                      image={item.diet_image}
-                      onPress={() =>
-                        openDietDetail(item.id)
-                      }
-                    />
-                  ))}
-                </View>
-              )}
-            </>
-          )}
+            </View>
+          </>
         </ScrollView>
       </SafeAreaView>
     </ImageBackground>
@@ -291,6 +251,23 @@ function useStyle() {
       padding: "20@ratio",
       marginBottom: "24@ratio",
     },
+    summaryKcalRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8@ratio",
+      marginBottom: "16@ratio",
+    },
+    summaryKcalValue: {
+      fontFamily: "Gilroy-ExtraBold",
+      fontSize: "22@ratio",
+      color: Colors.TEXT_PRIMARY,
+    },
+    summaryKcalLabel: {
+      fontFamily: "Gilroy-Regular",
+      fontSize: "12@ratio",
+      color: Colors.TEXT_SECONDARY,
+    },
     summaryRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -316,6 +293,21 @@ function useStyle() {
       height: "40@ratio",
       backgroundColor: Colors.TEXT_MUTED,
     },
+    viewPlanRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "6@ratio",
+      marginTop: "16@ratio",
+      paddingTop: "12@ratio",
+      borderTopWidth: 1,
+      borderTopColor: "rgba(255,255,255,0.15)",
+    },
+    viewPlanText: {
+      fontFamily: "Gilroy-SemiBold",
+      fontSize: "13@ratio",
+      color: Colors.TEXT_PRIMARY,
+    },
     section: {
       marginBottom: "24@ratio",
     },
@@ -334,10 +326,6 @@ function useStyle() {
       fontFamily: "Gilroy-SemiBold",
       fontSize: "14@ratio",
       color: Colors.ACCENT_START,
-    },
-    featuredItem: {
-      width: "280@ratio",
-      marginRight: "12@ratio",
     },
   });
 }
