@@ -351,6 +351,9 @@ import ProfileSetupIntroScreen from "@pages/migrated/onboarding/profile_setup_in
 // @ts-ignore
 import RecommendationsScreen from "@pages/migrated/onboarding/recommendations_screen";
 
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import '@/global.css';
+
 enableScreens();
 const Stack = createStackNavigator();
 
@@ -724,15 +727,17 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <AuthProvider>
-        <NavigationContainer
-          theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#1A1735" } }}
-          onReady={onLayoutRootView}
-        >
-          <RootNavigator />
-        </NavigationContainer>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GluestackUIProvider mode="dark">
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <AuthProvider>
+          <NavigationContainer
+            theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#1A1735" } }}
+            onReady={onLayoutRootView}
+          >
+            <RootNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GluestackUIProvider>
   );
 }
