@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from "expo-font";
@@ -727,17 +728,19 @@ export default function App() {
   }
 
   return (
-    <GluestackUIProvider mode="dark">
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <AuthProvider>
-          <NavigationContainer
-            theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#1A1735" } }}
-            onReady={onLayoutRootView}
-          >
-            <RootNavigator />
-          </NavigationContainer>
-        </AuthProvider>
-      </SafeAreaProvider>
-    </GluestackUIProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GluestackUIProvider mode="dark">
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <AuthProvider>
+            <NavigationContainer
+              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#1A1735" } }}
+              onReady={onLayoutRootView}
+            >
+              <RootNavigator />
+            </NavigationContainer>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GluestackUIProvider>
+    </GestureHandlerRootView>
   );
 }
