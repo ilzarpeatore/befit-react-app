@@ -13,6 +13,7 @@ export interface WorkoutTemplateExerciseModel {
   title: string | null;
   exercise_image: string | null;
   video_url: string | null;
+  last_performance?: { sets: Record<string, any>[] } | null;
   exercise?: {
     id: number;
     title: string;
