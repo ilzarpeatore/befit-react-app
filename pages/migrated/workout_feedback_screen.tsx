@@ -34,42 +34,48 @@ export default function WorkoutFeedbackScreen(props: Props) {
     mTitle,
     durationSeconds = 0,
     volumeKg = 0,
+    caloriesBurned = 0,
     exerciseCount = 0,
     completedSets = 0,
+    exerciseIds = [],
   } = route?.params ?? {};
 
   const [difficulty, setDifficulty] = useState<number | null>(null);
   const [comment, setComment] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const goToSummary = () => {
+  const goToSummary = (caloriesFinal?: number | null, achievements?: any) => {
     navigation?.replace('MigratedWorkoutSummary', {
       mTitle,
       durationSeconds,
       volumeKg,
+      caloriesBurned: caloriesFinal ?? caloriesBurned,
       exerciseCount,
       completedSets,
       difficultyRating: difficulty,
+      achievements,
     });
   };
 
   const onContinue = async () => {
     setIsSaving(true);
     try {
-      await workoutHistoryApi.finishCalendarSession({
+      const res = await workoutHistoryApi.finishCalendarSession({
         program_day_assignment_id: programDayAssignmentId,
         workout_template_id: workoutTemplateId,
         duration_seconds: durationSeconds,
         volume_kg: volumeKg,
         difficulty_rating: difficulty ?? undefined,
         comment: comment.trim() || undefined,
+        exercise_ids: exerciseIds,
       });
+      goToSummary(res.data?.data?.calories_burned, res.data?.achievements);
     } catch (e) {
       // No bloqueamos el resumen local por un fallo de red — el dato ya
       // se fue guardando serie a serie durante la sesión.
+      goToSummary();
     } finally {
       setIsSaving(false);
-      goToSummary();
     }
   };
 
