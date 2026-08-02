@@ -19,9 +19,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
+import { ConfirmDialogMem } from '../../components/ConfirmDialog';
+import { useAuth } from '../../store/AuthContext';
 import { workoutHistoryApi } from '../../api/workoutHistory';
 import { MetricCatalogItem } from '../../api/workoutTemplate';
-import { exercisesApi, ExerciseItem } from '../../api/exercises';
+import { exercisesApi, ExerciseItem, BodyPartItem } from '../../api/exercises';
 import {
   fetchUnifiedWorkout,
   formatPrescribedSubtitle,
@@ -31,6 +33,8 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ADHOC_DEFAULT_METRICS = ['carga', 'reps'];
+const RESISTANCE_TRAINING_MET = 5.0;
+const FALLBACK_WEIGHT_KG = 70;
 
 interface Props {
   navigation?: any;
@@ -78,6 +82,7 @@ function formatTimer(totalSeconds: number): string {
 
 export default function WorkoutSessionScreen(props: Props) {
   const { navigation, route } = props;
+  const { state } = useAuth();
   const insets = useSafeAreaInsets();
   const programDayAssignmentId: number | undefined = route?.params?.programDayAssignmentId;
   const workoutTemplateId: number | undefined = route?.params?.workoutTemplateId;
@@ -94,9 +99,28 @@ export default function WorkoutSessionScreen(props: Props) {
   const [pickerQuery, setPickerQuery] = useState('');
   const [pickerResults, setPickerResults] = useState<ExerciseItem[]>([]);
   const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerLoadingMore, setPickerLoadingMore] = useState(false);
+  const [pickerPage, setPickerPage] = useState(1);
+  const [pickerIsLastPage, setPickerIsLastPage] = useState(false);
+  const [bodyParts, setBodyParts] = useState<BodyPartItem[]>([]);
+  const [selectedBodyPartId, setSelectedBodyPartId] = useState<number | null>(null);
+  const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
+  const [emptyFinishConfirmVisible, setEmptyFinishConfirmVisible] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pagerRef = useRef<FlatList>(null);
+
+  // Peso real del perfil (si existe) para el estimado de calorias en vivo -
+  // el valor final/autoritativo se calcula en el backend con el mismo MET
+  // al cerrar sesion (finishSession), esto es solo para el contador en vivo.
+  const weightKg = useMemo(() => {
+    const profile = state.user?.user_profile;
+    const raw = profile?.weight ? parseFloat(profile.weight) : NaN;
+    if (!Number.isFinite(raw) || raw <= 0) return FALLBACK_WEIGHT_KG;
+    return profile?.weight_unit === 'lbs' ? raw * 0.453592 : raw;
+  }, [state.user]);
+
+  const liveCalories = Math.round(RESISTANCE_TRAINING_MET * weightKg * (elapsedSeconds / 3600));
 
   useEffect(() => {
     timerRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
@@ -169,6 +193,11 @@ export default function WorkoutSessionScreen(props: Props) {
     return Math.round(total);
   }, [allExercises]);
 
+  const hasAnyProgress = useMemo(
+    () => allExercises.some((ex) => ex.rows.some((r) => r.completed)),
+    [allExercises]
+  );
+
   const syncExerciseLog = useCallback(
     (ex: SessionExercise) => {
       const loggedSets = ex.rows
@@ -187,6 +216,7 @@ export default function WorkoutSessionScreen(props: Props) {
           exercise_id: ex.isAdhoc ? ex.exerciseId : undefined,
           logged_sets: loggedSets,
           program_day_assignment_id: programDayAssignmentId ?? null,
+          notes: ex.note.trim() || undefined,
         })
         .catch(() => {});
     },
@@ -215,6 +245,10 @@ export default function WorkoutSessionScreen(props: Props) {
       rows[rowIndex] = { ...rows[rowIndex], values: { ...rows[rowIndex].values, [key]: value } };
       return { ...ex, rows };
     });
+  };
+
+  const setNoteValue = (blockIdx: number, exIdx: number, note: string) => {
+    updateExercise(blockIdx, exIdx, (ex) => ({ ...ex, note }));
   };
 
   const toggleRowComplete = (blockIdx: number, exIdx: number, rowIndex: number) => {
@@ -257,24 +291,67 @@ export default function WorkoutSessionScreen(props: Props) {
     });
   };
 
-  const runPickerSearch = useCallback(async (query: string) => {
-    setPickerLoading(true);
+  const openExerciseInfo = (ex: SessionExercise) => {
+    navigation?.navigate('MigratedExerciseInfo', {
+      mExerciseId: ex.exerciseId,
+      mExerciseName: ex.title,
+    });
+  };
+
+  // ─────────────────────── Picker "Añadir ejercicio" ───────────────────────
+  const runPickerSearch = useCallback(async (query: string, bodyPartId: number | null, page: number) => {
+    if (page === 1) setPickerLoading(true);
+    else setPickerLoadingMore(true);
     try {
-      const res = query.trim()
-        ? await exercisesApi.search(query.trim())
-        : await exercisesApi.getList();
-      setPickerResults(res.data?.data ?? []);
+      const res = await exercisesApi.getFilteredList({
+        title: query.trim() || undefined,
+        bodypart_id: bodyPartId ?? undefined,
+        page,
+        per_page: 20,
+      });
+      const items = res.data?.data ?? [];
+      setPickerResults((prev) => (page === 1 ? items : [...prev, ...items]));
+      const totalPages = res.data?.pagination?.totalPages ?? 1;
+      setPickerIsLastPage(page >= totalPages);
     } catch (e) {
-      setPickerResults([]);
+      if (page === 1) setPickerResults([]);
     } finally {
       setPickerLoading(false);
+      setPickerLoadingMore(false);
     }
   }, []);
 
   const openExercisePicker = () => {
     setPickerQuery('');
+    setSelectedBodyPartId(null);
+    setPickerPage(1);
+    setPickerIsLastPage(false);
     setIsPickerVisible(true);
-    runPickerSearch('');
+    runPickerSearch('', null, 1);
+    if (bodyParts.length === 0) {
+      exercisesApi
+        .getBodyParts(1)
+        .then((res) => setBodyParts(res.data?.data ?? []))
+        .catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    if (!isPickerVisible) return;
+    const timeout = setTimeout(() => {
+      setPickerPage(1);
+      setPickerIsLastPage(false);
+      runPickerSearch(pickerQuery, selectedBodyPartId, 1);
+    }, 350);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pickerQuery, selectedBodyPartId, isPickerVisible]);
+
+  const onPickerEndReached = () => {
+    if (pickerIsLastPage || pickerLoading || pickerLoadingMore) return;
+    const nextPage = pickerPage + 1;
+    setPickerPage(nextPage);
+    runPickerSearch(pickerQuery, selectedBodyPartId, nextPage);
   };
 
   const onAddExercise = (item: ExerciseItem) => {
@@ -316,16 +393,36 @@ export default function WorkoutSessionScreen(props: Props) {
     setPageIndex(idx);
   };
 
-  const onFinish = () => {
+  const navigateToFeedback = () => {
+    const exerciseIds = Array.from(new Set(allExercises.map((ex) => ex.exerciseId)));
     navigation?.navigate('MigratedWorkoutFeedback', {
       programDayAssignmentId,
       workoutTemplateId,
       mTitle,
       durationSeconds: elapsedSeconds,
       volumeKg,
+      caloriesBurned: liveCalories,
       exerciseCount: allExercises.length,
       completedSets: allExercises.reduce((sum, ex) => sum + ex.rows.filter((r) => r.completed).length, 0),
+      exerciseIds,
     });
+  };
+
+  const onFinish = () => {
+    const completedSets = allExercises.reduce((sum, ex) => sum + ex.rows.filter((r) => r.completed).length, 0);
+    if (completedSets === 0) {
+      setEmptyFinishConfirmVisible(true);
+      return;
+    }
+    navigateToFeedback();
+  };
+
+  const onClose = () => {
+    if (!hasAnyProgress) {
+      navigation?.goBack();
+      return;
+    }
+    setCloseConfirmVisible(true);
   };
 
   if (isLoading) {
@@ -364,29 +461,45 @@ export default function WorkoutSessionScreen(props: Props) {
         {block.exercises.map((ex, exIdx) =>
           exIdx === activeExIdx ? (
             <View key={ex.id} style={styles.activeCard}>
-              <TouchableOpacity
-                style={styles.activeHeaderRow}
-                activeOpacity={0.7}
-                onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }))}
-              >
-                <ExerciseThumbMem image={ex.image} size={56} />
-                <View style={styles.activeInfo}>
-                  <Text style={styles.activeTitle} numberOfLines={2}>
-                    {ex.title}
-                  </Text>
-                  <Text style={styles.activeSubtitle}>
-                    {formatPrescribedSubtitle(ex.prescribed)}
-                  </Text>
+              <View style={styles.activeHeaderRow}>
+                <TouchableOpacity
+                  style={styles.activeHeaderTapArea}
+                  activeOpacity={0.7}
+                  onPress={() => openExerciseInfo(ex)}
+                >
+                  <ExerciseThumbMem image={ex.image} size={56} />
+                  <View style={styles.activeInfo}>
+                    <Text style={styles.activeTitle} numberOfLines={2}>
+                      {ex.title}
+                    </Text>
+                    <Text style={styles.activeSubtitle}>
+                      {formatPrescribedSubtitle(ex.prescribed)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.collapseBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: -1 }))}
+                >
+                  <Ionicons name="chevron-up" size={20} color={C.textSecondary} />
+                </TouchableOpacity>
+              </View>
+
+              {ex.coachNotes ? (
+                <View style={styles.coachNoteBanner}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={14} color={C.warning60} />
+                  <Text style={styles.coachNoteText}>{ex.coachNotes}</Text>
                 </View>
-                <Ionicons name="chevron-up" size={20} color={C.textSecondary} />
-              </TouchableOpacity>
+              ) : null}
 
               <TextInput
                 style={styles.noteInput}
                 placeholder="Añadir nota..."
                 placeholderTextColor={C.textSecondary}
                 value={ex.note}
-                onChangeText={(t) => updateExercise(blockIdx, exIdx, (e) => ({ ...e, note: t }))}
+                onChangeText={(t) => setNoteValue(blockIdx, exIdx, t)}
+                onBlur={() => syncExerciseLog(ex)}
               />
 
               <View style={styles.table}>
@@ -448,7 +561,9 @@ export default function WorkoutSessionScreen(props: Props) {
               activeOpacity={0.7}
               onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }))}
             >
-              <ExerciseThumbMem image={ex.image} size={48} />
+              <TouchableOpacity activeOpacity={0.7} onPress={() => openExerciseInfo(ex)}>
+                <ExerciseThumbMem image={ex.image} size={48} />
+              </TouchableOpacity>
               <View style={styles.collapsedInfo}>
                 <Text style={styles.collapsedTitle} numberOfLines={2}>
                   {ex.title}
@@ -469,7 +584,7 @@ export default function WorkoutSessionScreen(props: Props) {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
+        <TouchableOpacity onPress={onClose}>
           <Ionicons name="close" size={26} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
@@ -488,8 +603,8 @@ export default function WorkoutSessionScreen(props: Props) {
           <Text style={styles.statLabel}>Duración</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>0</Text>
-          <Text style={styles.statLabel}>Calorías</Text>
+          <Text style={styles.statValue}>{liveCalories}</Text>
+          <Text style={styles.statLabel}>Calorías (est.)</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{volumeKg}</Text>
@@ -557,11 +672,40 @@ export default function WorkoutSessionScreen(props: Props) {
             placeholder="Buscar ejercicio..."
             placeholderTextColor={C.textSecondary}
             value={pickerQuery}
-            onChangeText={(t) => {
-              setPickerQuery(t);
-              runPickerSearch(t);
-            }}
+            onChangeText={setPickerQuery}
           />
+          {bodyParts.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.bodyPartRow}
+            >
+              <TouchableOpacity
+                style={[styles.bodyPartChip, selectedBodyPartId === null && styles.bodyPartChipActive]}
+                onPress={() => setSelectedBodyPartId(null)}
+              >
+                <Text style={[styles.bodyPartChipText, selectedBodyPartId === null && styles.bodyPartChipTextActive]}>
+                  Todos
+                </Text>
+              </TouchableOpacity>
+              {bodyParts.map((bp) => (
+                <TouchableOpacity
+                  key={bp.id}
+                  style={[styles.bodyPartChip, selectedBodyPartId === bp.id && styles.bodyPartChipActive]}
+                  onPress={() => setSelectedBodyPartId(selectedBodyPartId === bp.id ? null : bp.id)}
+                >
+                  <Text
+                    style={[
+                      styles.bodyPartChipText,
+                      selectedBodyPartId === bp.id && styles.bodyPartChipTextActive,
+                    ]}
+                  >
+                    {bp.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
           {pickerLoading ? (
             <View style={styles.loader}>
               <ActivityIndicator size="large" color={C.textPrimary} />
@@ -571,8 +715,15 @@ export default function WorkoutSessionScreen(props: Props) {
               data={pickerResults}
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
+              onEndReached={onPickerEndReached}
+              onEndReachedThreshold={0.4}
               ListEmptyComponent={
                 <Text style={styles.emptyText}>No se encontraron ejercicios.</Text>
+              }
+              ListFooterComponent={
+                pickerLoadingMore ? (
+                  <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
+                ) : null
               }
               renderItem={({ item }) => (
                 <TouchableOpacity style={styles.pickerRow} onPress={() => onAddExercise(item)}>
@@ -591,6 +742,36 @@ export default function WorkoutSessionScreen(props: Props) {
           )}
         </SafeAreaView>
       </Modal>
+
+      <ConfirmDialogMem
+        visible={closeConfirmVisible}
+        icon="log-out-outline"
+        destructive
+        title="Salir del entrenamiento"
+        message="Todavía no has finalizado esta sesión. Si sales ahora se perderá la duración y el feedback (las series ya marcadas quedan guardadas)."
+        confirmText="Salir sin finalizar"
+        cancelText="Seguir entrenando"
+        onCancel={() => setCloseConfirmVisible(false)}
+        onConfirm={() => {
+          setCloseConfirmVisible(false);
+          navigation?.goBack();
+        }}
+      />
+
+      <ConfirmDialogMem
+        visible={emptyFinishConfirmVisible}
+        icon="alert-circle-outline"
+        destructive
+        title="No has registrado ninguna serie"
+        message="¿Seguro que quieres finalizar el entrenamiento sin apuntar ningún dato?"
+        confirmText="Finalizar igualmente"
+        cancelText="Seguir entrenando"
+        onCancel={() => setEmptyFinishConfirmVisible(false)}
+        onConfirm={() => {
+          setEmptyFinishConfirmVisible(false);
+          navigateToFeedback();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -663,6 +844,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: C.textPrimary,
   },
+  bodyPartRow: {
+    paddingHorizontal: 20,
+    gap: 8,
+    paddingBottom: 12,
+  },
+  bodyPartChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: C.surfaceLight,
+    marginRight: 8,
+  },
+  bodyPartChipActive: {
+    backgroundColor: C.accentBlack,
+  },
+  bodyPartChipText: {
+    fontFamily: FONT.semiBold,
+    fontSize: 12.5,
+    color: C.textSecondary,
+  },
+  bodyPartChipTextActive: {
+    color: '#FFFFFF',
+  },
   pickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -692,9 +896,27 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   activeHeaderRow: { flexDirection: 'row', alignItems: 'center' },
+  activeHeaderTapArea: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  collapseBtn: { padding: 4, marginLeft: 8 },
   activeInfo: { flex: 1, marginLeft: 12 },
   activeTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary },
   activeSubtitle: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
+  coachNoteBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 14,
+    backgroundColor: C.warning5,
+    borderRadius: 12,
+    padding: 10,
+  },
+  coachNoteText: {
+    flex: 1,
+    fontFamily: FONT.regular,
+    fontSize: 12.5,
+    color: C.textSecondary,
+    lineHeight: 18,
+  },
   noteInput: {
     marginTop: 14,
     backgroundColor: C.surface,
@@ -742,12 +964,12 @@ const styles = StyleSheet.create({
     borderTopColor: C.border,
   },
   finishBtn: {
-    backgroundColor: C.brand50,
+    backgroundColor: C.accentBlack,
     borderRadius: 30,
     paddingVertical: 15,
     alignItems: 'center',
   },
-  finishBtnText: { fontFamily: FONT.bold, fontSize: 14, color: C.textPrimary, letterSpacing: 0.5 },
+  finishBtnText: { fontFamily: FONT.bold, fontSize: 14, color: '#FFFFFF', letterSpacing: 0.5 },
   rowActions: {
     flexDirection: 'row',
     alignItems: 'center',

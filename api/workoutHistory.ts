@@ -110,6 +110,7 @@ export const workoutHistoryApi = {
     exercise_id?: number;
     logged_sets: Record<string, any>[];
     program_day_assignment_id?: number | null;
+    notes?: string;
   }) => apiClient.post('v1/my-calendar-log-sets', payload),
 
   finishCalendarSession: (payload: {
@@ -121,5 +122,19 @@ export const workoutHistoryApi = {
     volume_kg?: number;
     difficulty_rating?: number;
     comment?: string;
-  }) => apiClient.post('v1/my-calendar-finish-session', payload),
+    // IDs reales de ejercicio (Exercise.id) tocados en la sesion, solo para
+    // que el backend calcule los logros del resumen (cargas/reps/RPE
+    // mejorados respecto a la vez anterior) - no se persisten.
+    exercise_ids?: number[];
+  }) => apiClient.post<{
+    data: { calories_burned: number | null; [key: string]: any };
+    achievements: {
+      weight_up_count: number;
+      weight_up_exercises: string[];
+      reps_up_count: number;
+      reps_up_exercises: string[];
+      better_rpe_count: number;
+      better_rpe_exercises: string[];
+    };
+  }>('v1/my-calendar-finish-session', payload),
 };

@@ -105,7 +105,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
         prescribed: e.prescribed || {},
         enabledMetrics: e.enabled_metrics || [],
         coachNotes: e.notes,
-        lastPerformance: null,
+        lastPerformance: e.last_performance ?? null,
         sequence: e.sequence,
       })),
     }));
