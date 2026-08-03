@@ -117,7 +117,7 @@ export default function OtherUserProfileScreen(props: any) {
               <Text style={s.emptyText}>No posts yet</Text>
             </View>
           ) : null}
-          {isLoading && <ActivityIndicator size="small" color={C.brand5} style={{ marginVertical: 16 }} />}
+          {isLoading && <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />}
         </View>
       </ScrollView>
     </View>

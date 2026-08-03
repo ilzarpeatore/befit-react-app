@@ -252,7 +252,7 @@ export default function BlogScreen({ navigation }: any) {
 
         {loading ? (
           <View style={styles_local.loadingWrap}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : isSearching ? (
           <View style={styles_local.section}>
@@ -369,7 +369,7 @@ const styles_local = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  viewMoreText: { fontSize: 13, fontFamily: FONT.medium, color: C.brand5 },
+  viewMoreText: { fontSize: 13, fontFamily: FONT.medium, color: C.textPrimary },
   featuredScroll: { paddingLeft: 8 },
   featuredCard: {
     width: SCREEN_WIDTH * 0.75,
@@ -398,7 +398,7 @@ const styles_local = StyleSheet.create({
     left: 16,
     right: 16,
   },
-  featuredTitle: { fontSize: 16, fontFamily: FONT.bold, color: C.white, textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
+  featuredTitle: { fontSize: 16, fontFamily: FONT.bold, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
   blogCard: {
     flexDirection: 'row',
     backgroundColor: C.surface,

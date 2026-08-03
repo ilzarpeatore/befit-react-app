@@ -97,10 +97,10 @@ export default function ChattingScreen({ navigation }: any) {
       </View>
 
       <View style={styles_local.botMessage}>
-        <Ionicons name="hardware-chip-outline" size={18} color={C.brand5} />
+        <Ionicons name="hardware-chip-outline" size={18} color={C.textPrimary} />
         {item.isLoading ? (
           <View style={styles_local.loadingRow}>
-            <ActivityIndicator size="small" color={C.brand5} />
+            <ActivityIndicator size="small" color={C.orange} />
             <Text style={styles_local.botLoadingText}>Pensando...</Text>
           </View>
         ) : (
@@ -129,7 +129,7 @@ export default function ChattingScreen({ navigation }: any) {
       <View style={styles_local.body}>
         {isLoadingHistory ? (
           <View style={styles_local.emptyWrap}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : messages.length > 0 ? (
           <FlatList

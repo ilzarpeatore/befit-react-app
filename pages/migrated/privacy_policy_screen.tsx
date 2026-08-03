@@ -12,7 +12,7 @@ export default function PrivacyPolicyScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>Privacy Policy</Text>
         <View style={{ width: 24 }} />

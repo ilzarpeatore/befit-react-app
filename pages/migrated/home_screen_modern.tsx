@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AppIcon from '@components/AppIcon';
+import AnimatedRing from '@components/AnimatedRing';
 import { C, FONT } from './theme';
 import { dashboardApi } from '../../api/dashboard';
 import { workoutsApi } from '../../api/workouts';
@@ -25,6 +27,7 @@ import { dietApi } from '../../api/diet';
 import { blogApi } from '../../api/blog';
 import { workoutTemplateApi, WorkoutTemplateListItem } from '../../api/workoutTemplate';
 import { subscriptionApi, PackageItem } from '../../api/subscription';
+import { resourcesApi, ResourceListItem } from '../../api/resources';
 import { useAuth } from '../../store/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -59,6 +62,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [workoutTemplateList, setWorkoutTemplateList] = useState<WorkoutTemplateListItem[]>([]);
+  const [resourcesList, setResourcesList] = useState<ResourceListItem[]>([]);
   const [packageList, setPackageList] = useState<PackageItem[]>([]);
 
   const styles = useMemo(() => StyleSheet.create({
@@ -67,11 +71,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     headerTop: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: r(20), paddingTop: r(16) },
     avatar: { width: r(40), height: r(40), borderRadius: r(20), backgroundColor: C.gray70 },
     headerTitle: { flex: 1, fontSize: r(16), fontFamily: FONT.bold, color: C.white, textAlign: 'center' as const },
-    notifBtn: { width: r(40), height: r(40), borderRadius: r(20), backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center' as const, justifyContent: 'center' as const },
+    notifBtn: { width: r(40), height: r(40), borderRadius: r(20), backgroundColor: C.brand5, alignItems: 'center' as const, justifyContent: 'center' as const },
     notifBadge: { position: 'absolute', top: r(6), right: r(6), width: r(16), height: r(16), borderRadius: r(8), backgroundColor: C.destructive, alignItems: 'center' as const, justifyContent: 'center' as const },
-    notifBadgeText: { fontSize: r(8), fontFamily: FONT.bold, color: C.white },
+    notifBadgeText: { fontSize: r(8), fontFamily: FONT.bold, color: '#FFFFFF' },
     scoreRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: r(20), marginTop: 16 },
-    scoreBox: { width: r(64), height: r(64), borderRadius: r(20), backgroundColor: C.orange, alignItems: 'center' as const, justifyContent: 'center' as const, marginRight: r(14) },
     scoreText: { fontSize: r(28), fontFamily: FONT.extraBold, color: C.white },
     scoreTitle: { fontSize: r(16), fontFamily: FONT.bold, color: C.white },
     scoreSub: { fontSize: r(13), color: C.white, marginTop: r(4) },
@@ -80,7 +83,6 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     seeAll: { fontSize: r(13), fontFamily: FONT.semiBold, color: C.orange },
     todayWorkoutCard: { backgroundColor: C.surfaceLight, borderRadius: r(20), borderWidth: 1, borderColor: C.border, padding: r(16), marginHorizontal: r(20), marginBottom: r(12) },
     todayWorkoutTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: r(12) },
-    todayWorkoutIcon: { width: r(44), height: r(44), borderRadius: r(12), backgroundColor: 'rgba(255,107,53,0.15)', alignItems: 'center' as const, justifyContent: 'center' as const, marginRight: r(12) },
     todayWorkoutTitle: { fontSize: r(15), fontFamily: FONT.bold, color: C.white },
     todayWorkoutSub: { fontSize: r(12), color: C.textSecondary, marginTop: r(2) },
     noWorkoutText: { fontSize: r(13), color: C.textSecondary },
@@ -100,8 +102,8 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     workoutLevelBadge: { position: 'absolute', top: r(12), left: r(12), backgroundColor: C.surface, borderRadius: r(12), paddingHorizontal: r(8), paddingVertical: r(3) },
     workoutLevelText: { fontSize: r(10), fontFamily: FONT.bold, color: C.textPrimary },
     workoutBottomInfo: { position: 'absolute', bottom: r(12), left: r(12), right: r(12) },
-    workoutCardTitle: { fontSize: r(16), fontFamily: FONT.bold, color: C.black },
-    workoutCardMeta: { fontSize: r(11), color: C.black, marginTop: r(4) },
+    workoutCardTitle: { fontSize: r(16), fontFamily: FONT.bold, color: '#FFFFFF' },
+    workoutCardMeta: { fontSize: r(11), color: '#FFFFFF', marginTop: r(4) },
     nutritionCard: { backgroundColor: C.surfaceLight, borderRadius: r(20), borderWidth: 1, borderColor: C.border, padding: r(16), marginHorizontal: r(20), marginBottom: r(12) },
     nutritionTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: r(12) },
     nutritionCalCenter: { alignItems: 'center' as const },
@@ -137,9 +139,9 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     blogDate: { fontSize: r(10), color: C.textSecondary, marginTop: r(4) },
     seeAllImage: { backgroundColor: C.orange, alignItems: 'center' as const, justifyContent: 'center' as const },
     lockBadge: { position: 'absolute' as const, top: r(8), right: r(8), flexDirection: 'row' as const, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: r(10), paddingHorizontal: r(7), paddingVertical: r(3), gap: r(4) },
-    lockBadgeText: { fontSize: r(9), color: C.black, fontFamily: FONT.semiBold },
+    lockBadgeText: { fontSize: r(9), color: '#FFFFFF', fontFamily: FONT.semiBold },
     programPriceBadge: { position: 'absolute' as const, bottom: r(8), left: r(8), backgroundColor: C.orange, borderRadius: r(10), paddingHorizontal: r(9), paddingVertical: r(3) },
-    programPriceText: { fontSize: r(12), fontFamily: FONT.bold, color: C.white },
+    programPriceText: { fontSize: r(12), fontFamily: FONT.bold, color: '#FFFFFF' },
     supportCard: { backgroundColor: C.surfaceLight, borderRadius: r(20), borderWidth: 1, borderColor: C.border, padding: r(16), marginHorizontal: r(20), marginBottom: r(12), flexDirection: 'row', alignItems: 'center' },
     supportTitle: { flex: 1, fontSize: r(14), fontFamily: FONT.bold, color: C.white },
     supportLink: { fontSize: r(12), fontFamily: FONT.semiBold, color: C.orange, marginTop: r(6) },
@@ -160,8 +162,6 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     menuCloseBtn: { width: r(32), height: r(32), borderRadius: r(16), backgroundColor: C.surfaceLight, alignItems: 'center' as const, justifyContent: 'center' as const },
     menuDivider: { height: 1, backgroundColor: C.border, marginHorizontal: r(20) },
     menuItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: r(20), paddingVertical: r(14) },
-    menuItemIcon: { width: r(36), height: r(36), borderRadius: r(12), backgroundColor: C.brand10, alignItems: 'center' as const, justifyContent: 'center' as const, marginRight: r(14) },
-    menuItemIconDanger: { backgroundColor: C.destructive10 },
     menuItemText: { flex: 1, fontSize: r(15), fontFamily: FONT.semiBold, color: C.white },
     menuItemTextDanger: { color: C.destructive },
   }), [sc]);
@@ -179,7 +179,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
 
-      const [dashRes, calendarRes, workoutsRes, dietRes, blogRes, workoutTemplatesRes, packagesRes] = await Promise.allSettled([
+      const [dashRes, calendarRes, workoutsRes, dietRes, blogRes, workoutTemplatesRes, packagesRes, resourcesRes] = await Promise.allSettled([
         dashboardApi.getDashboard(),
         workoutHistoryApi.getMyCalendar(currentMonth, currentYear),
         workoutsApi.getList(1),
@@ -190,6 +190,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         // completo) — se pide igual porque Promise.allSettled es más simple así,
         // simplemente no se renderiza para ellos.
         subscriptionApi.getPackageList(),
+        resourcesApi.getList({ per_page: 3 }),
       ]);
 
       const errors: string[] = [];
@@ -240,6 +241,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
       if (workoutTemplatesRes.status === 'fulfilled') {
         setWorkoutTemplateList((workoutTemplatesRes.value.data.data ?? []).slice(0, 3));
+      }
+
+      if (resourcesRes.status === 'fulfilled') {
+        setResourcesList((resourcesRes.value.data.data ?? []).slice(0, 3));
       }
 
       if (packagesRes.status === 'fulfilled') {
@@ -311,9 +316,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
           {/* Sandow Score → Solo acceso rápido a Progreso (sin número hardcodeado) */}
           <TouchableOpacity style={styles.scoreRow} onPress={() => navigation?.navigate('MigratedProgress')}>
-            <View style={styles.scoreBox}>
-              <Ionicons name="trending-up" size={28} color={C.white} />
-            </View>
+            <AppIcon name="trending-up" size={28} color="#FFFFFF" bg={C.orange} containerSize={r(64)} borderRadius={r(20)} style={{ marginRight: r(14) }} />
             <View style={{ flex: 1 }}>
               <Text style={styles.scoreTitle}>Mi Progreso</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
@@ -362,9 +365,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                 onPress={() => navigation?.navigate('MigratedWorkoutPreview', { programDayAssignmentId: w.assignment_id, mTitle: w.title || 'Entrenamiento' })}
               >
                 <View style={styles.todayWorkoutTopRow}>
-                  <View style={styles.todayWorkoutIcon}>
-                    <Ionicons name="barbell" size={22} color={C.orange} />
-                  </View>
+                  <AppIcon name="barbell" size={22} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={r(44)} borderRadius={r(12)} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.todayWorkoutTitle}>{w.title || 'Entrenamiento'}</Text>
                     <Text style={styles.todayWorkoutSub}>Toca para ver detalles</Text>
@@ -376,7 +377,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
           </View>
         ) : (
           <View style={[styles.todayWorkoutCard, { alignItems: 'center' }]}>
-            <Ionicons name="bed-outline" size={32} color={C.textSecondary} />
+            <AppIcon name="bed-outline" size={26} color={C.textSecondary} bg={C.brand10} containerSize={r(48)} />
             <Text style={[styles.noWorkoutText, { marginTop: r(8) }]}>Día de descanso</Text>
             <Text style={[styles.noWorkoutText, { fontSize: r(11) }]}>No hay entrenamientos programados para hoy</Text>
           </View>
@@ -463,7 +464,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                     )}
                     {locked && (
                       <View style={styles.lockBadge}>
-                        <Ionicons name="lock-closed" size={11} color={C.black} />
+                        <Ionicons name="lock-closed" size={11} color={'#FFFFFF'} />
                         <Text style={styles.lockBadgeText}>Exclusive</Text>
                       </View>
                     )}
@@ -478,10 +479,52 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                 onPress={() => navigation?.navigate('MigratedWorkoutTemplateList')}
               >
                 <View style={[styles.blogImage, styles.seeAllImage]}>
-                  <Ionicons name="arrow-forward-circle" size={32} color={C.white} />
+                  <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
                 </View>
                 <View style={styles.blogContent}>
                   <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todos los workouts</Text>
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+          </>
+        )}
+
+        {/* Recursos — visible para todos (free y 1:1), a diferencia de
+            Rutinas/Workouts: un cliente 1:1 tambien puede tener guias o
+            documentos asignados individualmente por su coach. */}
+        {resourcesList.length > 0 && (
+          <>
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionTitle}>Recursos</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+              {resourcesList.map((r) => (
+                <TouchableOpacity
+                  key={r.id}
+                  style={styles.blogCard}
+                  onPress={() => navigation?.navigate('MigratedResourceDetail', { resourceId: r.id, title: r.title })}
+                >
+                  <View style={[styles.blogImage, styles.seeAllImage]}>
+                    <Ionicons
+                      name={r.type === 'video' ? 'play-circle-outline' : r.type === 'link' ? 'link-outline' : 'document-text-outline'}
+                      size={32}
+                      color="#FFFFFF"
+                    />
+                  </View>
+                  <View style={styles.blogContent}>
+                    <Text style={styles.blogTitle} numberOfLines={2}>{r.title}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={styles.blogCard}
+                onPress={() => navigation?.navigate('MigratedResourcesList')}
+              >
+                <View style={[styles.blogImage, styles.seeAllImage]}>
+                  <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
+                </View>
+                <View style={styles.blogContent}>
+                  <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todos los recursos</Text>
                 </View>
               </TouchableOpacity>
             </ScrollView>
@@ -562,12 +605,21 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             <>
               <View style={styles.nutritionTopRow}>
                 <View style={styles.nutritionSide}>
-                  <Text style={styles.nutritionSideLabel}>Consumido</Text>
-                  <Text style={styles.nutritionSideValue}>{dailyPlan.eaten ?? 0}</Text>
+                  <Text style={styles.nutritionSideLabel}>Objetivo</Text>
+                  <Text style={styles.nutritionSideValue}>{dailyPlan.daily_kcal ?? 0}</Text>
                 </View>
                 <View style={styles.nutritionCalCenter}>
-                  <Text style={styles.nutritionCalValue}>{dailyPlan.daily_kcal ?? 0}</Text>
-                  <Text style={styles.nutritionCalLabel}>kcal objetivo</Text>
+                  <AnimatedRing
+                    size={r(84)}
+                    strokeWidth={r(7)}
+                    percent={Math.min(((dailyPlan.eaten ?? 0) / Math.max(dailyPlan.daily_kcal ?? 1, 1)) * 100, 100)}
+                    color={C.orange}
+                    trackColor={C.gray70}
+                    duration={900}
+                  >
+                    <Text style={styles.nutritionCalValue}>{dailyPlan.eaten ?? 0}</Text>
+                    <Text style={styles.nutritionCalLabel}>consumido</Text>
+                  </AnimatedRing>
                 </View>
                 <View style={styles.nutritionSide}>
                   <Text style={styles.nutritionSideLabel}>Restante</Text>
@@ -605,7 +657,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             </>
           ) : (
             <View style={{ alignItems: 'center', paddingVertical: r(12) }}>
-              <Ionicons name="nutrition-outline" size={32} color={C.textSecondary} />
+              <AppIcon name="nutrition-outline" size={26} color={C.success} bg={C.success10} containerSize={r(48)} />
               <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
             </View>
           )}
@@ -688,7 +740,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             <Text style={styles.supportTitle}>¿Necesitas ayuda? Soluciona tus dudas con el bot</Text>
             <Text style={styles.supportLink}>Be Stronger AI</Text>
           </View>
-          <Ionicons name="chatbubble-ellipses" size={36} color={C.orange} />
+          <AppIcon name="chatbubble-ellipses" size={28} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={r(52)} />
         </TouchableOpacity>
 
         <View style={{ height: r(16) }} />
@@ -723,33 +775,25 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             <View style={styles.menuDivider} />
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Profile')}>
-              <View style={styles.menuItemIcon}>
-                <Ionicons name="person-outline" size={18} color={C.textPrimary} />
-              </View>
+              <AppIcon name="person-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Mi Perfil</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('FavouriteWorkouts')}>
-              <View style={styles.menuItemIcon}>
-                <Ionicons name="heart-outline" size={18} color={C.textPrimary} />
-              </View>
+              <AppIcon name="heart-outline" size={18} color={C.destructive} bg={C.destructive10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Mis Favoritos</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Settings')}>
-              <View style={styles.menuItemIcon}>
-                <Ionicons name="settings-outline" size={18} color={C.textPrimary} />
-              </View>
+              <AppIcon name="settings-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Configuración General</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
             </TouchableOpacity>
 
             <View style={styles.menuItem}>
-              <View style={styles.menuItemIcon}>
-                <Ionicons name="fitness-outline" size={18} color={C.textPrimary} />
-              </View>
+              <AppIcon name="fitness-outline" size={18} color={C.success} bg={C.success10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Apple Health</Text>
               <Switch
                 value={appleHealthOn}
@@ -760,9 +804,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             </View>
 
             <View style={styles.menuItem}>
-              <View style={styles.menuItemIcon}>
-                <Ionicons name="watch-outline" size={18} color={C.textPrimary} />
-              </View>
+              <AppIcon name="watch-outline" size={18} color={C.blue} bg={C.blue10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Smart Watch</Text>
               <Switch
                 value={smartWatchOn}
@@ -773,9 +815,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             </View>
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('CommunityFeed')}>
-              <View style={styles.menuItemIcon}>
-                <Ionicons name="people-outline" size={18} color={C.textPrimary} />
-              </View>
+              <AppIcon name="people-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Community</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
             </TouchableOpacity>
@@ -783,9 +823,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             <View style={styles.menuDivider} />
 
             <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-              <View style={[styles.menuItemIcon, styles.menuItemIconDanger]}>
-                <Ionicons name="log-out-outline" size={18} color={C.destructive} />
-              </View>
+              <AppIcon name="log-out-outline" size={18} color={C.destructive} bg={C.destructive10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={[styles.menuItemText, styles.menuItemTextDanger]}>Cerrar sesión</Text>
             </TouchableOpacity>
           </Pressable>

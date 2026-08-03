@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppIcon from '@components/AppIcon';
 import { C, FONT } from './theme';
 import { notificationsApi, NotificationItem } from '../../api/notifications';
 
@@ -45,9 +46,7 @@ function mapNotification(item: NotificationItem): DisplayNotification {
 function NotificationCard({ item }: { item: DisplayNotification }) {
   return (
     <View style={[s.card, item.isUnread && s.cardUnread]}>
-      <View style={[s.iconBox, { backgroundColor: item.iconBg }]}>
-        <Ionicons name={item.icon} size={22} color={item.iconColor} />
-      </View>
+      <AppIcon name={item.icon} size={22} color={item.iconColor} bg={item.iconBg} containerSize={44} borderRadius={12} />
       <View style={s.cardContent}>
         <View style={s.cardTitleRow}>
           <Text style={[s.cardTitle, item.isUnread && s.cardTitleUnread]} numberOfLines={1}>{item.title}</Text>
@@ -108,7 +107,7 @@ export default function NotificationScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>Notificaciones</Text>
         {unreadCount > 0 ? (
@@ -122,11 +121,11 @@ export default function NotificationScreen(props: any) {
 
       {isLoading && notifications.length === 0 ? (
         <View style={s.center}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       ) : notifications.length === 0 ? (
         <View style={s.center}>
-          <Ionicons name="notifications-off-outline" size={48} color={C.gray60} />
+          <AppIcon name="notifications-off-outline" size={40} color={C.gray50} bg={C.brand10} containerSize={72} borderRadius={36} />
           <Text style={s.emptyTitle}>Sin notificaciones</Text>
         </View>
       ) : (
@@ -138,7 +137,7 @@ export default function NotificationScreen(props: any) {
           renderItem={({ item }) => <NotificationCard item={item} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
-          ListFooterComponent={isLoading ? <ActivityIndicator size="small" color={C.brand5} style={{ marginVertical: 16 }} /> : null}
+          ListFooterComponent={isLoading ? <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} /> : null}
         />
       )}
     </View>
@@ -157,7 +156,6 @@ const s = StyleSheet.create({
   listContent: { padding: 20 },
   card: { flexDirection: 'row', padding: 14, backgroundColor: C.bg, borderRadius: 14 },
   cardUnread: { backgroundColor: C.gray80, borderWidth: 0.5, borderColor: C.surfaceLight },
-  iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   cardContent: { flex: 1, marginLeft: 14 },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center' },
   cardTitle: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white },

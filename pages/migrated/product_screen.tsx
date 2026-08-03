@@ -88,7 +88,7 @@ export default function ProductScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>Shop</Text>
         <View style={{ width: 24 }} />
@@ -122,7 +122,7 @@ export default function ProductScreen(props: any) {
         />
         {isLoading && (
           <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>
@@ -144,7 +144,7 @@ const s = StyleSheet.create({
   categoryIconActive: { borderWidth: 1.5, borderColor: C.brand5 },
   categoryImage: { width: 56, height: 56, borderRadius: 16 },
   categoryLabel: { fontSize: 11, color: C.gray30, marginTop: 6, textAlign: 'center' },
-  categoryLabelActive: { color: C.brand5 },
+  categoryLabelActive: { color: C.textPrimary },
   productList: { padding: 20 },
   productRow: { justifyContent: 'space-between' },
   productCard: { width: (Dimensions.get('window').width - 52) / 2, backgroundColor: C.surfaceLight, borderRadius: 16, marginBottom: 12, overflow: 'hidden' },

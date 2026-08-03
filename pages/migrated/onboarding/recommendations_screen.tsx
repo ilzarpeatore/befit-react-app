@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +12,7 @@ const ACTIVITIES = [
 ];
 
 const MACROS = [
-  { label: "ProteÃ­na", value: 65, color: "#E91E63" },
+  { label: "Proteína", value: 65, color: "#E91E63" },
   { label: "Carbohidratos", value: 45, color: "#FF9800" },
   { label: "Grasas", value: 30, color: "#4CAF50" },
 ];
@@ -22,7 +22,7 @@ const MUSCLE_ZONES = [
   { label: "Brazos", top: "30%", left: "12%" },
   { label: "Piernas", top: "58%", left: "30%" },
   { label: "Core", top: "38%", left: "38%" },
-];
+] as const;
 
 export default function RecommendationsScreen({ navigation }: any) {
   return (
@@ -63,7 +63,7 @@ export default function RecommendationsScreen({ navigation }: any) {
             <Ionicons name="person" size={32} color={C.textPrimary} />
           </View>
           <View style={localStyles.coachInfo}>
-            <Text style={[localStyles.coachName, { color: C.white }]}>Coach Ana MartÃ­nez</Text>
+            <Text style={[localStyles.coachName, { color: C.white }]}>Coach Ana Martínez</Text>
             <Text style={[localStyles.coachSpec, { color: C.gray }]}>Especialista en fuerza y resistencia</Text>
             <View style={localStyles.coachRating}>
               <Ionicons name="star" size={14} color="#FFD700" />
@@ -80,11 +80,11 @@ export default function RecommendationsScreen({ navigation }: any) {
           </View>
           <View style={localStyles.planRow}>
             <Ionicons name="time-outline" size={20} color={C.textPrimary} />
-            <Text style={[localStyles.planText, { color: C.white }]}>60 min por sesiÃ³n</Text>
+            <Text style={[localStyles.planText, { color: C.white }]}>60 min por sesión</Text>
           </View>
           <View style={localStyles.planRow}>
             <Ionicons name="trending-up-outline" size={20} color={C.textPrimary} />
-            <Text style={[localStyles.planText, { color: C.white }]}>ProgresiÃ³n semanal</Text>
+            <Text style={[localStyles.planText, { color: C.white }]}>Progresión semanal</Text>
           </View>
         </View>
 

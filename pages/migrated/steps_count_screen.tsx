@@ -2,6 +2,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedRing from '@components/AnimatedRing';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 
@@ -56,7 +57,7 @@ export default function StepsCountScreen(props: any) {
     <View style={styles.container}>
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.brand5} />
+          <Ionicons name="arrow-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.appBarTitle}>Step Tracker</Text>
       </View>
@@ -67,25 +68,13 @@ export default function StepsCountScreen(props: any) {
         </View>
 
         <View style={styles.progressContainer}>
-          <View style={styles.progressRing}>
-            <View style={styles.progressTrack} />
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  borderColor: C.brand5,
-                  transform: [{ rotate: '-90deg' }],
-                  borderBottomColor: progress > 0.5 ? C.brand5 : 'transparent',
-                  borderRightColor: progress > 0.25 ? C.brand5 : 'transparent',
-                },
-              ]}
-            />
+          <AnimatedRing size={240} strokeWidth={12} percent={progress * 100} color={C.orange} trackColor={C.gray10}>
             <View style={styles.progressInner}>
-              <Ionicons name="walk-sharp" size={60} color={C.brand5} />
+              <Ionicons name="walk-sharp" size={60} color={C.orange} />
               <Text style={styles.stepCount}>{steps}</Text>
               <Text style={styles.stepsLabel}>Steps</Text>
             </View>
-          </View>
+          </AnimatedRing>
         </View>
 
         <LinearGradient
@@ -96,7 +85,7 @@ export default function StepsCountScreen(props: any) {
         >
           <View style={styles.dailyGoalHeader}>
             <View style={styles.dailyGoalTitleRow}>
-              <Ionicons name="water-drop" size={20} color={C.white} />
+              <Ionicons name="water" size={20} color="#FFFFFF" />
               <Text style={styles.dailyGoalTitle}>Daily Goal</Text>
             </View>
             <TouchableOpacity
@@ -105,7 +94,7 @@ export default function StepsCountScreen(props: any) {
               <Ionicons
                 name={dailyGoal === 0 ? 'add' : 'create'}
                 size={22}
-                color={C.white}
+                color="#FFFFFF"
               />
             </TouchableOpacity>
           </View>
@@ -166,7 +155,7 @@ export default function StepsCountScreen(props: any) {
             </View>
           </View>
         ) : isLoading ? (
-          <ActivityIndicator size="large" color={C.brand5} style={{ marginTop: 20 }} />
+          <ActivityIndicator size="large" color={C.orange} style={{ marginTop: 20 }} />
         ) : null}
 
         <View style={{ height: 30 }} />
@@ -185,7 +174,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 12,
   },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.semiBold, color: C.brand5 },
+  appBarTitle: { fontSize: 20, fontFamily: FONT.semiBold, color: C.textPrimary },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 30 },
   goalInfoBox: {
     backgroundColor: C.brand10,
@@ -194,39 +183,23 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 25,
   },
-  goalInfoText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.brand5, textAlign: 'center' },
+  goalInfoText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.textPrimary, textAlign: 'center' },
   progressContainer: { alignItems: 'center', marginVertical: 20 },
-  progressRing: { width: 240, height: 240, justifyContent: 'center', alignItems: 'center' },
-  progressTrack: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 12,
-    borderColor: C.white,
-  },
-  progressFill: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 12,
-  },
   progressInner: { alignItems: 'center' },
-  stepCount: { color: C.brand5, fontSize: 40, fontFamily: FONT.bold, marginTop: 8 },
-  stepsLabel: { fontSize: 16, color: C.gray30, fontFamily: FONT.regular },
+  stepCount: { color: C.textPrimary, fontSize: 40, fontFamily: FONT.bold, marginTop: 8 },
+  stepsLabel: { fontSize: 16, color: C.gray40, fontFamily: FONT.regular },
   dailyGoalCard: { borderRadius: 16, padding: 16, marginVertical: 20 },
   dailyGoalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   dailyGoalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dailyGoalTitle: { fontSize: 20, fontFamily: FONT.semiBold, color: C.white },
-  dailyGoalValue: { fontSize: 18, fontFamily: FONT.medium, color: C.white, marginTop: 8 },
+  dailyGoalTitle: { fontSize: 20, fontFamily: FONT.semiBold, color: '#FFFFFF' },
+  dailyGoalValue: { fontSize: 18, fontFamily: FONT.medium, color: '#FFFFFF', marginTop: 8 },
   pickerContainer: { height: 150, marginTop: 12 },
   pickerScroll: { flex: 1 },
   pickerItem: { paddingVertical: 8, alignItems: 'center' },
-  pickerItemActive: { backgroundColor: C.brand5, borderRadius: 8 },
-  pickerItemText: { fontSize: 22, fontFamily: FONT.semiBold, color: C.white },
+  pickerItemActive: { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 8 },
+  pickerItemText: { fontSize: 22, fontFamily: FONT.semiBold, color: '#FFFFFF' },
   saveButton: {
-    backgroundColor: C.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
@@ -244,12 +217,12 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  chartTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.brand5 },
+  chartTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
   filterRow: { flexDirection: 'row', gap: 8 },
   filterChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   filterChipActive: { backgroundColor: C.brand10 },
-  filterText: { fontSize: 13, color: C.gray30, fontFamily: FONT.regular },
-  filterTextActive: { color: C.brand5, fontFamily: FONT.semiBold },
+  filterText: { fontSize: 13, color: C.gray40, fontFamily: FONT.regular },
+  filterTextActive: { color: C.textPrimary, fontFamily: FONT.semiBold },
   chartPlaceholder: { height: 200, justifyContent: 'center', alignItems: 'center' },
   chartPlaceholderText: { color: C.gray30, fontSize: 14 },
 });

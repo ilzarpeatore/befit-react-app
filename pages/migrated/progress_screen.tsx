@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppIcon from '@components/AppIcon';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { profileApi } from '../../api/profile';
@@ -99,7 +100,7 @@ export default function ProgressScreen(props: any) {
   const renderHeading = (title: string, onPress: () => void) => (
     <TouchableOpacity style={s.headingRow} onPress={onPress}>
       <Text style={s.headingText}>{title}</Text>
-      <Ionicons name="chevron-forward" size={20} color={C.brand5} />
+      <Ionicons name="chevron-forward" size={20} color={C.textPrimary} />
     </TouchableOpacity>
   );
 
@@ -116,7 +117,7 @@ export default function ProgressScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>Report</Text>
         <TouchableOpacity style={s.settingsBtn} onPress={() => props.navigation?.navigate('MigratedProgressSetting')}>
@@ -126,24 +127,24 @@ export default function ProgressScreen(props: any) {
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={s.summaryRow}>
           <View style={s.summaryCard}>
-            <Ionicons name="footsteps-outline" size={28} color={C.brand5} />
+            <AppIcon name="footsteps-outline" size={24} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={52} borderRadius={16} />
             <Text style={s.summaryLabel}>Steps</Text>
             <Text style={s.summaryValue}>--</Text>
           </View>
           <View style={s.summaryCard}>
-            <Ionicons name="body-outline" size={28} color={C.orange} />
+            <AppIcon name="body-outline" size={24} color={C.blue} bg={C.blue10} containerSize={52} borderRadius={16} />
             <Text style={s.summaryLabel}>BMI</Text>
             <Text style={s.summaryValue}>--</Text>
           </View>
         </View>
         <View style={s.summaryRow}>
           <View style={s.summaryCard}>
-            <Ionicons name="pulse-outline" size={28} color={C.destructive} />
+            <AppIcon name="pulse-outline" size={24} color={C.destructive} bg={C.destructive10} containerSize={52} borderRadius={16} />
             <Text style={s.summaryLabel}>BMR</Text>
             <Text style={s.summaryValue}>--</Text>
           </View>
           <View style={s.summaryCard}>
-            <Ionicons name="fitness-outline" size={28} color={C.success} />
+            <AppIcon name="fitness-outline" size={24} color={C.success} bg={C.success10} containerSize={52} borderRadius={16} />
             <Text style={s.summaryLabel}>Ideal Weight</Text>
             <Text style={s.summaryValue}>--</Text>
           </View>
@@ -155,7 +156,7 @@ export default function ProgressScreen(props: any) {
         </View>
         {isLoading && (
           <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </ScrollView>
@@ -168,7 +169,7 @@ const chartStyles = StyleSheet.create({
   barRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   barLabel: { width: 50, fontSize: 10, color: C.gray40, textAlign: 'right', marginRight: 6 },
   barTrack: { flex: 1, height: 16, backgroundColor: C.gray70, borderRadius: 3, overflow: 'hidden' },
-  barFill: { height: 16, backgroundColor: C.brand5, borderRadius: 3 },
+  barFill: { height: 16, backgroundColor: C.orange, borderRadius: 3 },
   barValue: { width: 70, fontSize: 10, color: C.gray40, marginLeft: 6 },
 });
 

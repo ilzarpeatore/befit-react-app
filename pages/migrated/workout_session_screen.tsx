@@ -61,17 +61,27 @@ interface SessionBlock {
   exercises: SessionExercise[];
 }
 
-function buildDefaultRow(prescribed: Record<string, any>, enabledMetrics: string[]): SetRow {
-  const values: Record<string, string> = {};
-  enabledMetrics.forEach((key) => {
-    if (prescribed?.[key] != null) values[key] = String(prescribed[key]);
+// Cada fila se rellena con lo que el cliente hizo REALMENTE la ultima vez
+// (serie por serie, ej. 20/25/30/40 kg) en vez del objetivo marcado por el
+// coach - asi el cliente ve y edita desde su progreso real, no desde cero.
+// El numero de filas sigue el plan actual (prescribed.series), no el numero
+// de series de la ultima sesion. El objetivo del coach (prescribed) se
+// muestra aparte, como referencia, en la propia celda (ver renderizado).
+function buildInitialRows(ex: UnifiedExercise): SetRow[] {
+  const count = Number(ex.prescribed?.series) || 1;
+  const lastSets = ex.lastPerformance?.sets ?? [];
+  return Array.from({ length: count }, (_, i) => {
+    const lastSet = lastSets[i];
+    const values: Record<string, string> = {};
+    ex.enabledMetrics.forEach((key) => {
+      if (lastSet && lastSet[key] != null && lastSet[key] !== '') {
+        values[key] = String(lastSet[key]);
+      } else if (ex.prescribed?.[key] != null) {
+        values[key] = String(ex.prescribed[key]);
+      }
+    });
+    return { values, completed: false };
   });
-  return { values, completed: false };
-}
-
-function buildInitialRows(prescribed: Record<string, any>, enabledMetrics: string[]): SetRow[] {
-  const count = Number(prescribed?.series) || 1;
-  return Array.from({ length: count }, () => buildDefaultRow(prescribed, enabledMetrics));
 }
 
 function formatTimer(totalSeconds: number): string {
@@ -143,7 +153,7 @@ export default function WorkoutSessionScreen(props: Props) {
         title: b.title,
         exercises: b.exercises.map((ex) => ({
           ...ex,
-          rows: buildInitialRows(ex.prescribed, ex.enabledMetrics),
+          rows: buildInitialRows(ex),
           note: '',
         })),
       }));
@@ -356,7 +366,7 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const onAddExercise = (item: ExerciseItem) => {
     const targetBlockIdx = Math.min(pageIndex, blocks.length - 1);
-    const newExercise: SessionExercise = {
+    const baseExercise: UnifiedExercise = {
       id: -item.id, // synthetic, solo para key de React - no se envia al backend
       exerciseId: item.id,
       title: item.title,
@@ -367,7 +377,10 @@ export default function WorkoutSessionScreen(props: Props) {
       coachNotes: null,
       lastPerformance: null,
       sequence: (blocks[targetBlockIdx]?.exercises.length ?? 0) + 1,
-      rows: buildInitialRows({}, ADHOC_DEFAULT_METRICS),
+    };
+    const newExercise: SessionExercise = {
+      ...baseExercise,
+      rows: buildInitialRows(baseExercise),
       note: '',
       isAdhoc: true,
     };
@@ -516,17 +529,26 @@ export default function WorkoutSessionScreen(props: Props) {
                 {ex.rows.map((row, rowIdx) => (
                   <View key={rowIdx} style={styles.tableRow}>
                     <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
-                    {ex.enabledMetrics.map((key) => (
-                      <TextInput
-                        key={key}
-                        style={[styles.tableInput, styles.metricCol]}
-                        value={row.values[key] ?? ''}
-                        onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
-                        keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
-                        placeholder="-"
-                        placeholderTextColor={C.textSecondary}
-                      />
-                    ))}
+                    {ex.enabledMetrics.map((key) => {
+                      const target = ex.prescribed?.[key];
+                      return (
+                        <View key={key} style={styles.metricCol}>
+                          <TextInput
+                            style={styles.tableInput}
+                            value={row.values[key] ?? ''}
+                            onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
+                            keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
+                            placeholder="-"
+                            placeholderTextColor={C.textSecondary}
+                          />
+                          {target != null && target !== '' ? (
+                            <Text style={styles.targetHint} numberOfLines={1}>
+                              Obj: {target}
+                            </Text>
+                          ) : null}
+                        </View>
+                      );
+                    })}
                     <TouchableOpacity
                       style={styles.checkCol}
                       onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
@@ -951,6 +973,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: C.textPrimary,
     textAlign: 'center',
+  },
+  targetHint: {
+    fontFamily: FONT.regular,
+    fontSize: 9.5,
+    color: C.textSecondary,
+    textAlign: 'center',
+    marginTop: 2,
   },
   serieCol: { width: 26 },
   metricCol: { flex: 1 },

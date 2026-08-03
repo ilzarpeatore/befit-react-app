@@ -105,10 +105,10 @@ export default function ChattingImageScreen({ navigation }: any) {
 
       {/* Bot response */}
       <View style={styles_local.botMessage}>
-        <Ionicons name="hardware-chip-outline" size={18} color={C.brand5} />
+        <Ionicons name="hardware-chip-outline" size={18} color={C.textPrimary} />
         {item.isLoading ? (
           <View style={styles_local.loadingRow}>
-            <ActivityIndicator size="small" color={C.brand5} />
+            <ActivityIndicator size="small" color={C.orange} />
             <Text style={styles_local.botLoadingText}>Thinking...</Text>
           </View>
         ) : (
@@ -121,7 +121,7 @@ export default function ChattingImageScreen({ navigation }: any) {
   if (!showUI) {
     return (
       <View style={styles_local.loadingContainer}>
-        <ActivityIndicator size="large" color={C.brand5} />
+        <ActivityIndicator size="large" color={C.orange} />
       </View>
     );
   }
@@ -211,7 +211,7 @@ const styles_local = StyleSheet.create({
   userMessage: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: C.brand6,
+    backgroundColor: C.brand60,
     borderRadius: 16,
     borderBottomRightRadius: 4,
     padding: 12,

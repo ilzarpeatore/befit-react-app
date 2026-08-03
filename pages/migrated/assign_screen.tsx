@@ -91,7 +91,7 @@ const styles_local = StyleSheet.create({
     color: C.gray40,
   },
   tabTextActive: {
-    color: C.brand5,
+    color: C.textPrimary,
   },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   placeholder: { alignItems: 'center', gap: 12 },

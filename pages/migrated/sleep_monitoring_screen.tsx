@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   weekBarsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 100 },
   weekBarCol: { alignItems: 'center', flex: 1 },
   todayBadge: { backgroundColor: C.orange, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  todayBadgeText: { fontSize: 9, color: C.white, fontFamily: FONT.regular },
+  todayBadgeText: { fontSize: 9, color: '#FFFFFF', fontFamily: FONT.regular },
   weekBar: { width: 32, borderRadius: 8 },
   weekBarHours: { fontSize: 10, fontFamily: FONT.semiBold, marginTop: 4 },
   weekLabelsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },

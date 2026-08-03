@@ -66,7 +66,7 @@ export default function RecipeTagListScreen(props: any) {
       <View style={s.body}>
         {isLoading ? (
           <View style={s.center}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : mTagList.length === 0 ? (
           <View style={s.center}>
@@ -83,7 +83,7 @@ export default function RecipeTagListScreen(props: any) {
                   onPress={() => handleTagPress(item)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[s.tagText, { color: C.brand5 }]}>{item.title}</Text>
+                  <Text style={[s.tagText, { color: C.textPrimary }]}>{item.title}</Text>
                   {item.recipeTagImage ? (
                     <Image
                       source={{ uri: item.recipeTagImage }}

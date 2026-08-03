@@ -40,7 +40,7 @@ export default function OTPScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <View style={{ width: 24 }} />
       </View>
@@ -81,7 +81,7 @@ export default function OTPScreen(props: any) {
       </ScrollView>
       {isLoading && (
         <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </View>

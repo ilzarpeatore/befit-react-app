@@ -200,7 +200,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
           <View style={localStyles.imageSection}>
             {renderProfileImage()}
             <TouchableOpacity style={localStyles.cameraBtn} onPress={pickImage}>
-              <Ionicons name="camera" size={20} color={C.brand5} />
+              <Ionicons name="camera" size={20} color={C.textPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -338,7 +338,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
         {isLoading && (
           <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>

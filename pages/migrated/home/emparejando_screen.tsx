@@ -34,7 +34,7 @@ export default function EmparejandoScreen({ navigation }: any) {
     dotAnimations.forEach((a) => a.start());
 
     const timer = setTimeout(() => {
-      navigation.replace("DeviceConnected");
+      navigation.replace("MigratedDeviceConnected");
     }, 3000);
 
     return () => {

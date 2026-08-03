@@ -9,7 +9,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface PostData {
   id: number;
-  users?: { id: number };
+  users?: { id: number; profileImage?: string; displayName?: string };
   canEdit?: boolean;
   [key: string]: any;
 }
@@ -154,7 +154,7 @@ export default function CommunityScreen(props: any) {
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             refreshControl={
-              <RefreshControl refreshing={isRefreshing} onRefresh={_onRefresh} tintColor={C.brand5} />
+              <RefreshControl refreshing={isRefreshing} onRefresh={_onRefresh} tintColor={C.orange} />
             }
             contentContainerStyle={{ paddingBottom: 20 }}
           />
@@ -163,7 +163,7 @@ export default function CommunityScreen(props: any) {
         )}
         {isLoading && (
           <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>
@@ -195,7 +195,7 @@ const localStyles = StyleSheet.create({
     paddingVertical: 6,
   },
   postButtonText: {
-    color: C.white,
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: FONT.bold,
     marginLeft: 4,

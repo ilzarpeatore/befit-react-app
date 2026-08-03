@@ -73,7 +73,7 @@ export default function ShoppingListScreen(props: any) {
       <View style={s.body}>
         {isLoading && shoppingLists.length === 0 ? (
           <View style={s.loadingContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : shoppingLists.length === 0 ? (
           <View style={s.emptyContainer}>
@@ -116,14 +116,14 @@ export default function ShoppingListScreen(props: any) {
               onPress={() => setSelectedOption(0)}
             >
               <View style={[s.optionIconContainer, selectedOption === 0 && s.optionIconSelected]}>
-                <Ionicons name="calendar-outline" size={24} color={selectedOption === 0 ? C.brand5 : C.gray40} />
+                <Ionicons name="calendar-outline" size={24} color={selectedOption === 0 ? C.orange : C.gray40} />
               </View>
               <View style={s.optionTextWrap}>
-                <Text style={[s.optionTitle, selectedOption === 0 && { color: C.brand5 }, styles.fontBold]}>Date</Text>
+                <Text style={[s.optionTitle, selectedOption === 0 && { color: C.textPrimary }, styles.fontBold]}>Date</Text>
                 <Text style={[s.optionSubtitle, styles.fontRegular]}>Select a specific date</Text>
               </View>
               {selectedOption === 0 ? (
-                <Ionicons name="checkmark-circle" size={24} color={C.brand5} />
+                <Ionicons name="checkmark-circle" size={24} color={C.success} />
               ) : (
                 <Ionicons name="chevron-forward" size={24} color={C.gray40} />
               )}
@@ -135,14 +135,14 @@ export default function ShoppingListScreen(props: any) {
               onPress={() => setSelectedOption(1)}
             >
               <View style={[s.optionIconContainer, selectedOption === 1 && s.optionIconSelected]}>
-                <Ionicons name="date-range-outline" size={24} color={selectedOption === 1 ? C.brand5 : C.gray40} />
+                <Ionicons name="calendar-outline" size={24} color={selectedOption === 1 ? C.orange : C.gray40} />
               </View>
               <View style={s.optionTextWrap}>
-                <Text style={[s.optionTitle, selectedOption === 1 && { color: C.brand5 }, styles.fontBold]}>Date Range</Text>
+                <Text style={[s.optionTitle, selectedOption === 1 && { color: C.textPrimary }, styles.fontBold]}>Date Range</Text>
                 <Text style={[s.optionSubtitle, styles.fontRegular]}>Pick start and end dates</Text>
               </View>
               {selectedOption === 1 ? (
-                <Ionicons name="checkmark-circle" size={24} color={C.brand5} />
+                <Ionicons name="checkmark-circle" size={24} color={C.success} />
               ) : (
                 <Ionicons name="chevron-forward" size={24} color={C.gray40} />
               )}

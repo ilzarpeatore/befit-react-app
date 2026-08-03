@@ -52,7 +52,7 @@ export default function TipsScreen(props: any) {
               />
             ) : (
               <View style={[styles.videoThumbnail, styles.videoPlaceholder]}>
-                <Ionicons name="play-circle" size={48} color={C.brand5} />
+                <Ionicons name="play-circle" size={48} color={C.orange} />
               </View>
             )}
           </View>
@@ -66,13 +66,13 @@ export default function TipsScreen(props: any) {
           >
             <View style={styles.tipsHeader}>
               <View style={styles.tipsTitleRow}>
-                <Ionicons name="information-circle-outline" size={25} color={C.brand5} />
+                <Ionicons name="information-circle-outline" size={25} color={C.textPrimary} />
                 <Text style={styles.tipsTitle}>Tips</Text>
               </View>
               <Ionicons
                 name={select ? 'chevron-down' : 'chevron-up'}
                 size={30}
-                color={C.brand5}
+                color={C.textPrimary}
               />
             </View>
             {!select && mTips ? (

@@ -135,7 +135,7 @@ export default function AddPostScreen({ navigation, route }: any) {
 
       {loading && (
         <View style={styles_local.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </View>

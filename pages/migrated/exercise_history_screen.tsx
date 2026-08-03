@@ -90,7 +90,7 @@ export default function ExerciseHistoryScreen(props: ExerciseHistoryScreenProps)
     <SafeAreaView style={localStyles.container}>
       <View style={localStyles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={localStyles.appBarTitle}>Exercise History</Text>
         <View style={{ width: 40 }} />
@@ -115,7 +115,7 @@ export default function ExerciseHistoryScreen(props: ExerciseHistoryScreenProps)
         />
         {isLoading && (
           <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>

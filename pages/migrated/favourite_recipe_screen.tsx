@@ -114,7 +114,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
     <SafeAreaView style={localStyles.container}>
       <View style={localStyles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={localStyles.appBarTitle}>Favourite Recipe</Text>
         <View style={{ width: 40 }} />
@@ -139,7 +139,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
         />
         {isLoading && (
           <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>

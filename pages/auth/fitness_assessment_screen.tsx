@@ -1,16 +1,16 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { C, FONT } from "../migrated/theme";
 
 const { width: SW } = Dimensions.get("window");
 const TOTAL_STEPS = 4;
 
 const GOALS = [
   { key: "lose_weight", icon: "flame-outline" as const, label: "Perder peso", color: C.orange },
-  { key: "gain_muscle", icon: "barbell-outline" as const, label: "Ganar mÃºsculo", color: C.white },
+  { key: "gain_muscle", icon: "barbell-outline" as const, label: "Ganar músculo", color: C.white },
   { key: "stay_fit", icon: "heart-outline" as const, label: "Mantenerme en forma", color: C.success50 },
   { key: "improve_endurance", icon: "walk-outline" as const, label: "Mejorar resistencia", color: C.blue50 },
   { key: "improve_flexibility", icon: "body-outline" as const, label: "Mejorar flexibilidad", color: C.purple50 },
@@ -19,15 +19,15 @@ const GOALS = [
 const EXPERIENCE = [
   { key: "beginner", label: "Principiante", desc: "Nuevo en el ejercicio" },
   { key: "intermediate", label: "Intermedio", desc: "6-18 meses" },
-  { key: "advanced", label: "Avanzado", desc: "1-3 aÃ±os" },
-  { key: "expert", label: "Experto", desc: "3+ aÃ±os" },
+  { key: "advanced", label: "Avanzado", desc: "1-3 años" },
+  { key: "expert", label: "Experto", desc: "3+ años" },
 ];
 
 const EQUIPMENT = [
   { key: "bodyweight", icon: "body-outline" as const, label: "Peso corporal" },
   { key: "dumbbells", icon: "barbell-outline" as const, label: "Mancuernas" },
   { key: "full_gym", icon: "fitness-outline" as const, label: "Gimnasio completo" },
-  { key: "machines", icon: "settings-outline" as const, label: "MÃ¡quinas" },
+  { key: "machines", icon: "settings-outline" as const, label: "Máquinas" },
   { key: "kettlebells", icon: "ellipse-outline" as const, label: "Pesanillas" },
 ];
 
@@ -75,7 +75,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
           <TouchableOpacity onPress={() => (step > 0 ? setStep(step - 1) : navigation.goBack())} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color={C.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>EvaluaciÃ³n Fitness</Text>
+          <Text style={styles.headerTitle}>Evaluación Fitness</Text>
           <Text style={styles.counter}>{step + 1}/{TOTAL_STEPS}</Text>
         </View>
         <View style={styles.progressTrack}>
@@ -86,7 +86,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
       <ScrollView ref={scrollRef} horizontal pagingEnabled scrollEnabled={false} showsHorizontalScrollIndicator={false}>
         {/* Step 0: Goal */}
         <View style={styles.stepPage}>
-          <Text style={styles.stepTitle}>Â¿CuÃ¡l es tu objetivo principal?</Text>
+          <Text style={styles.stepTitle}>¿Cuál es tu objetivo principal?</Text>
           <View style={{ gap: 12, width: "100%" }}>
             {GOALS.map(g => (
               <TouchableOpacity
@@ -106,7 +106,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
 
         {/* Step 1: Experience */}
         <View style={styles.stepPage}>
-          <Text style={styles.stepTitle}>Â¿CuÃ¡l es tu nivel de experiencia?</Text>
+          <Text style={styles.stepTitle}>¿Cuál es tu nivel de experiencia?</Text>
           <View style={{ gap: 12, width: "100%" }}>
             {EXPERIENCE.map(e => (
               <TouchableOpacity
@@ -126,7 +126,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
 
         {/* Step 2: Equipment */}
         <View style={styles.stepPage}>
-          <Text style={styles.stepTitle}>Â¿QuÃ© equipamiento tienes disponible?</Text>
+          <Text style={styles.stepTitle}>¿Qué equipamiento tienes disponible?</Text>
           <View style={{ gap: 12, width: "100%" }}>
             {EQUIPMENT.map(eq => (
               <TouchableOpacity
@@ -146,12 +146,12 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
 
         {/* Step 3: Frequency */}
         <View style={styles.stepPage}>
-          <Text style={styles.stepTitle}>Â¿CuÃ¡ntos dÃ­as por semana puedes entrenar?</Text>
+          <Text style={styles.stepTitle}>¿Cuántos días por semana puedes entrenar?</Text>
 
           <View style={styles.freqCard}>
             <View style={styles.freqHeader}>
               <Ionicons name="trending-up" size={20} color={C.gray50} />
-              <Text style={styles.freqLabel}>HÃ¡bito de entrenamiento</Text>
+              <Text style={styles.freqLabel}>Hábito de entrenamiento</Text>
             </View>
             <View style={styles.freqBar}>
               <View style={[styles.freqFill, { width: `${(frequency / 7) * 100}%` }]} />
@@ -193,8 +193,8 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
               {frequency <= 2
                 ? "Una frecuencia baja es ideal para principiantes. Puedes aumentar gradualmente."
                 : frequency <= 4
-                ? "Excelente frecuencia. Esto te ayudarÃ¡ a mantener un progreso constante."
-                : "Frecuencia alta. AsegÃºrate de incluir dÃ­as de descanso para recuperaciÃ³n."}
+                ? "Excelente frecuencia. Esto te ayudará a mantener un progreso constante."
+                : "Frecuencia alta. Asegúrate de incluir días de descanso para recuperación."}
             </Text>
           </View>
         </View>

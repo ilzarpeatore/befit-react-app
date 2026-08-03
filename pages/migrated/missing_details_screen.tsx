@@ -69,7 +69,7 @@ export default function MissingDetailsScreen(props: MissingDetailsScreenProps) {
       </View>
       {isLoading && (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </SafeAreaView>

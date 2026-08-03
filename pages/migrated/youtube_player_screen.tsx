@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -205,7 +205,7 @@ export default function YoutubePlayerScreen(props: YoutubePlayerScreenProps) {
         {visibleOption && (
           <View style={styles.topBar}>
             <TouchableOpacity style={styles.closeCircle} onPress={exitScreen}>
-              <Ionicons name="close" size={25} color={C.black} />
+              <Ionicons name="close" size={25} color={'#FFFFFF'} />
             </TouchableOpacity>
             {Platform.OS === 'android' && (
               <TouchableOpacity
@@ -215,7 +215,7 @@ export default function YoutubePlayerScreen(props: YoutubePlayerScreenProps) {
                   // SimplePip.enterPipMode() equivalent
                 }}
               >
-                <Ionicons name="pip" size={25} color={C.black} />
+                <Ionicons name="copy-outline" size={25} color={'#FFFFFF'} />
               </TouchableOpacity>
             )}
           </View>
@@ -239,7 +239,7 @@ export default function YoutubePlayerScreen(props: YoutubePlayerScreenProps) {
           {/* Rewind 10s */}
           {!isPlaying && isPlayerReady && (
             <TouchableOpacity style={styles.controlBtn} onPress={goBackward10}>
-              <Ionicons name="play-back" size={30} color={C.black} />
+              <Ionicons name="play-back" size={30} color={'#FFFFFF'} />
             </TouchableOpacity>
           )}
 
@@ -249,7 +249,7 @@ export default function YoutubePlayerScreen(props: YoutubePlayerScreenProps) {
           {/* Forward 10s */}
           {!isPlaying && isPlayerReady && (
             <TouchableOpacity style={styles.controlBtn} onPress={goForward10}>
-              <Ionicons name="play-forward" size={30} color={C.black} />
+              <Ionicons name="play-forward" size={30} color={'#FFFFFF'} />
             </TouchableOpacity>
           )}
         </View>
@@ -325,11 +325,11 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: FONT.regular,
     fontSize: 16,
-    color: C.black,
+    color: '#FFFFFF',
     marginBottom: 20,
   },
   closeBtn: {
-    backgroundColor: C.black,
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 8,

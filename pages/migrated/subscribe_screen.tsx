@@ -76,7 +76,7 @@ export default function SubscribeScreen(props: any) {
           <Ionicons
             name={selectedIndex === index ? 'radio-button-on' : 'radio-button-off'}
             size={20}
-            color={C.brand5}
+            color={C.textPrimary}
           />
           <Text style={styles.planName} numberOfLines={2}>{item.name || ''}</Text>
         </View>
@@ -91,13 +91,13 @@ export default function SubscribeScreen(props: any) {
         <View style={styles.includesRow}>
           {item.training_program_title && (
             <View style={styles.includesChip}>
-              <Ionicons name="barbell-outline" size={12} color={C.brand5} />
+              <Ionicons name="barbell-outline" size={12} color={C.textPrimary} />
               <Text style={styles.includesChipText}>Entrenamiento</Text>
             </View>
           )}
           {item.meal_plan_template_title && (
             <View style={styles.includesChip}>
-              <Ionicons name="nutrition-outline" size={12} color={C.brand5} />
+              <Ionicons name="nutrition-outline" size={12} color={C.textPrimary} />
               <Text style={styles.includesChipText}>Nutrición</Text>
             </View>
           )}
@@ -114,7 +114,7 @@ export default function SubscribeScreen(props: any) {
           <Ionicons name="chevron-back" size={28} color={C.white} />
         </TouchableOpacity>
         <View style={styles.emptyContainer}>
-          <Ionicons name="checkmark-circle" size={56} color={C.brand5} style={{ marginBottom: 16 }} />
+          <Ionicons name="checkmark-circle" size={56} color={C.success} style={{ marginBottom: 16 }} />
           <Text style={[styles.emptyText, { textAlign: 'center', paddingHorizontal: 24 }]}>
             Ya tienes acceso completo como cliente de entrenamiento personal 1:1 — no necesitas comprar ningún plan.
           </Text>
@@ -148,7 +148,7 @@ export default function SubscribeScreen(props: any) {
         <Text style={styles.subtitle}>Select the subscription that fits your fitness goals.</Text>
 
         {isLoading && subscriptionList.length === 0 ? (
-          <ActivityIndicator size="large" color={C.brand5} style={{ marginTop: 30 }} />
+          <ActivityIndicator size="large" color={C.orange} style={{ marginTop: 30 }} />
         ) : subscriptionList.length > 0 ? (
           <>
             {subscriptionList.map((item, index) => (
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     right: 100,
     fontSize: 26,
     fontFamily: FONT.bold,
-    color: C.brand5,
+    color: C.textPrimary,
     lineHeight: 34,
   },
   subtitle: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   planCardLeft: { flex: 2, flexDirection: 'row', alignItems: 'center', gap: 8 },
   planCardRight: { flex: 2, alignItems: 'flex-end' },
   planName: { fontSize: 18, fontFamily: FONT.bold, color: C.white, flex: 1 },
-  planPrice: { fontSize: 20, fontFamily: FONT.bold, color: C.brand5 },
+  planPrice: { fontSize: 20, fontFamily: FONT.bold, color: C.textPrimary },
   planDuration: { fontSize: 13, color: C.gray30, fontFamily: FONT.regular },
   includesRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
   includesChip: {
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  includesChipText: { fontSize: 11, color: C.brand5, fontFamily: FONT.semiBold },
+  includesChipText: { fontSize: 11, color: C.textPrimary, fontFamily: FONT.semiBold },
   planDescription: { fontSize: 13, color: C.gray30, marginTop: 10, fontFamily: FONT.regular, lineHeight: 20 },
   subscribeButton: {
     backgroundColor: C.brand5,

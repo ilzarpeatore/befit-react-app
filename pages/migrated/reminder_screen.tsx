@@ -58,7 +58,7 @@ export default function ReminderScreen(props: any) {
         </TouchableOpacity>
         <Text style={[s.headerTitle, styles.fontBold]}>Daily Reminders</Text>
         <TouchableOpacity onPress={handleAddReminder} style={s.backBtn}>
-          <Ionicons name="add" size={28} color={C.brand5} />
+          <Ionicons name="add" size={28} color={C.textPrimary} />
         </TouchableOpacity>
       </View>
 

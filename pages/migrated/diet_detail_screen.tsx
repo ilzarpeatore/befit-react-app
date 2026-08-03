@@ -215,7 +215,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
           style={localStyles.backBtn}
           onPress={() => props.navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color={C.black} />
+          <Ionicons name="chevron-back" size={24} color={'#FFFFFF'} />
         </TouchableOpacity>
 
         {/* Premium Badge */}
@@ -245,7 +245,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             {dietState.title || ''}
           </Text>
           <View style={localStyles.timeBadge}>
-            <Ionicons name="time-outline" size={16} color={C.black} />
+            <Ionicons name="time-outline" size={16} color={'#FFFFFF'} />
             <Text style={localStyles.timeText}>{dietState.totalTime || ''}</Text>
           </View>
         </View>
@@ -334,7 +334,7 @@ const localStyles = StyleSheet.create({
   premiumText: {
     fontFamily: FONT.bold,
     fontSize: 10,
-    color: C.white,
+    color: '#FFFFFF',
   },
   favBtn: {
     position: 'absolute',
@@ -359,7 +359,7 @@ const localStyles = StyleSheet.create({
     flex: 1,
     fontFamily: FONT.bold,
     fontSize: 20,
-    color: C.black,
+    color: '#FFFFFF',
     marginRight: 12,
   },
   timeBadge: {
@@ -373,7 +373,7 @@ const localStyles = StyleSheet.create({
   timeText: {
     fontFamily: FONT.regular,
     fontSize: 13,
-    color: C.black,
+    color: '#FFFFFF',
     marginLeft: 4,
   },
   contentSheet: {

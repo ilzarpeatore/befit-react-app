@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
@@ -19,7 +19,7 @@ function VideoComponent({ item }: { item: any }) {
         <Text style={styles.videoMeta}>{item.duration || '3:45'}</Text>
       </View>
       <View style={styles.playOverlay}>
-        <Ionicons name="play" size={24} color={C.black} />
+        <Ionicons name="play" size={24} color={'#FFFFFF'} />
       </View>
     </TouchableOpacity>
   );
