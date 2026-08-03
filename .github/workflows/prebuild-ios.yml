@@ -1,0 +1,27 @@
+name: Prebuild iOS
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Expo prebuild (iOS only)
+        env:
+          CI: "1"
+        run: npx expo prebuild --platform ios
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-project
+          path: ios/
+          retention-days: 7
