@@ -339,6 +339,6 @@ const styles = StyleSheet.create({
   getStartedFooterText: {
     fontFamily: FONT.bold,
     fontSize: 12,
-    color: C.white,
+    color: '#FFFFFF',
   },
 });

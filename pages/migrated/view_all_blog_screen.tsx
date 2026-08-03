@@ -116,7 +116,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={C.brand5} />
+        <ActivityIndicator size="small" color={C.orange} />
       </View>
     );
   };
@@ -125,7 +125,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
     if (loading) {
       return (
         <View style={styles.emptyWrap}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       );
     }

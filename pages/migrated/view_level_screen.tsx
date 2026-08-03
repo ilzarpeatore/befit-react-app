@@ -133,7 +133,7 @@ export default function ViewLevelScreen(props: any) {
 
         {isLoading && (
           <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>

@@ -63,7 +63,7 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
     timeRow: { flexDirection: 'row', alignItems: 'center' },
     timeText: { fontSize: '14@ratio', fontFamily: FONT.regular, color: C.textSecondary, marginRight: '8@ratio' },
     divider: { height: 1, backgroundColor: C.border },
-    saveBtn: { color: C.brand5, fontSize: '16@ratio', fontFamily: FONT.semiBold },
+    saveBtn: { color: C.textPrimary, fontSize: '16@ratio', fontFamily: FONT.semiBold },
     loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
     topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: '16@ratio', paddingTop: '16@ratio' },
   });
@@ -198,7 +198,7 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
       </ScrollView>
       {isSaving && (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </SafeAreaView>

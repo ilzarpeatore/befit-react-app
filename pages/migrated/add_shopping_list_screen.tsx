@@ -176,7 +176,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
           )}
 
           {isFetchingPlan && isSpecificDate && (
-            <ActivityIndicator size="small" color={C.brand5} style={{ marginTop: 8 }} />
+            <ActivityIndicator size="small" color={C.orange} style={{ marginTop: 8 }} />
           )}
         </View>
 

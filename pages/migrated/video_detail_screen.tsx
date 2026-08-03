@@ -15,7 +15,7 @@ export default function VideoDetailScreen(props: any) {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.videoPlaceholder}>
-          <Ionicons name="play-circle" size={64} color={C.brand5} />
+          <Ionicons name="play-circle" size={64} color={C.orange} />
         </View>
 
         <View style={styles.contentSection}>

@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   scoreText: {
     fontSize: 48,
     fontFamily: FONT.bold,
-    color: C.white,
+    color: '#FFFFFF',
   },
   scoreLabel: {
     fontSize: 12,

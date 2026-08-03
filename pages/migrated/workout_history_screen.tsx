@@ -157,7 +157,7 @@ export default function WorkoutHistoryScreen(props: any) {
 
         {isLoading && (
           <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   proText: {
     fontFamily: FONT.bold,
     fontSize: 10,
-    color: C.white,
+    color: '#FFFFFF',
   },
   emptyContainer: {
     flex: 1,

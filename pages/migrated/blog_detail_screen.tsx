@@ -99,7 +99,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
   if (loading) {
     return (
       <View style={styles.loadingWrap}>
-        <ActivityIndicator size="large" color={C.brand5} />
+        <ActivityIndicator size="large" color={C.orange} />
       </View>
     );
   }
@@ -165,7 +165,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
           {blog?.bibliography && blog.bibliography.trim().length > 0 && (
             <View style={styles.bibliographySection}>
               <View style={styles.bibliographyHeader}>
-                <Ionicons name="book-outline" size={20} color={C.brand5} />
+                <Ionicons name="book-outline" size={20} color={C.textPrimary} />
                 <Text style={styles.bibliographyTitle}>Sources & References</Text>
               </View>
               <View style={styles.bibliographyDivider} />
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     right: 16,
     fontSize: 20,
     fontFamily: FONT.bold,
-    color: C.white,
+    color: '#FFFFFF',
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: C.brand5,
   },
-  tagText: { fontSize: 12, fontFamily: FONT.regular, color: C.brand5 },
+  tagText: { fontSize: 12, fontFamily: FONT.regular, color: C.textPrimary },
   htmlContent: { paddingHorizontal: 8, marginTop: 4 },
   webView: { width: '100%' },
   bibliographySection: {
@@ -295,5 +295,5 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   bibliographyText: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.gray30, lineHeight: 20 },
-  bibliographyLink: { flex: 1, fontSize: 13, fontFamily: FONT.regular, color: C.brand5, lineHeight: 18 },
+  bibliographyLink: { flex: 1, fontSize: 13, fontFamily: FONT.regular, color: C.textPrimary, lineHeight: 18 },
 });

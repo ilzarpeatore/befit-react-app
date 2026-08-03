@@ -156,7 +156,7 @@ export default function RecipeListScreenV2(props: any) {
       <View style={s.body}>
         {isLoading && page === 1 ? (
           <View style={s.center}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : !isLoading && recipeList.length === 0 ? (
           <View style={s.center}>
@@ -204,7 +204,7 @@ export default function RecipeListScreenV2(props: any) {
               ))}
             </View>
             {isLoading && page > 1 && (
-              <ActivityIndicator size="small" color={C.brand5} style={{ marginVertical: 16 }} />
+              <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
             )}
           </ScrollView>
         )}
@@ -317,8 +317,8 @@ const s = StyleSheet.create({
     paddingVertical: 4,
     gap: 4,
   },
-  lockBadgeText: { fontSize: 11, color: C.white },
-  recipeTitle: { fontSize: 14, color: C.white, marginTop: 8 },
+  lockBadgeText: { fontSize: 11, color: '#FFFFFF' },
+  recipeTitle: { fontSize: 14, color: '#FFFFFF', marginTop: 8 },
   recipeCalories: { fontSize: 12, color: C.gray30, marginTop: 4 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   filterSheet: { backgroundColor: C.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },

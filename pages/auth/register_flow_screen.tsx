@@ -1,30 +1,30 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { C, FONT } from "../migrated/theme";
 
 const { width: SW } = Dimensions.get("window");
-const STEPS = ["Cuenta", "GÃ©nero", "Edad", "MÃ©tricas", "Objetivo", "Actividad", "Dieta"];
+const STEPS = ["Cuenta", "Género", "Edad", "Métricas", "Objetivo", "Actividad", "Dieta"];
 
 const GOALS = [
   { key: "lose_weight", icon: "flame-outline" as const, label: "Perder peso" },
-  { key: "gain_muscle", icon: "barbell-outline" as const, label: "Ganar mÃºsculo" },
+  { key: "gain_muscle", icon: "barbell-outline" as const, label: "Ganar músculo" },
   { key: "stay_fit", icon: "heart-outline" as const, label: "Mantenerme en forma" },
 ];
 
 const ACTIVITIES = [
   { key: "sedentary", label: "Sedentario", desc: "Poco o nada de ejercicio" },
-  { key: "light", label: "Ligero", desc: "1-3 dÃ­as/semana" },
-  { key: "moderate", label: "Moderado", desc: "3-5 dÃ­as/semana" },
-  { key: "active", label: "Activo", desc: "6-7 dÃ­as/semana" },
+  { key: "light", label: "Ligero", desc: "1-3 días/semana" },
+  { key: "moderate", label: "Moderado", desc: "3-5 días/semana" },
+  { key: "active", label: "Activo", desc: "6-7 días/semana" },
   { key: "very_active", label: "Muy Activo", desc: "Ejercicio intenso diario" },
 ];
 
 const DIETS = [
   { key: "balanced", label: "Equilibrada" },
-  { key: "high_protein", label: "Alta en proteÃ­na" },
+  { key: "high_protein", label: "Alta en proteína" },
   { key: "low_carb", label: "Baja en carbohidratos" },
   { key: "keto", label: "Keto" },
   { key: "custom", label: "Personalizada" },
@@ -53,7 +53,7 @@ function PasswordStrength({ password }: { password: string }) {
   if (/[0-9]/.test(password)) strength++;
   if (/[^A-Za-z0-9]/.test(password)) strength++;
   const colors = [C.destructive50, C.orange, C.warning40, C.success50, C.success60];
-  const labels = ["Muy dÃ©bil", "DÃ©bil", "Regular", "Fuerte", "Muy fuerte"];
+  const labels = ["Muy débil", "Débil", "Regular", "Fuerte", "Muy fuerte"];
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 }}>
       {[0, 1, 2, 3].map(i => (
@@ -111,14 +111,14 @@ export default function RegisterFlowScreen({ navigation }: any) {
             <View style={styles.inputWrap}><Ionicons name="person-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="Tu nombre" placeholderTextColor={C.gray40} value={name} onChangeText={setName} /></View>
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputWrap}><Ionicons name="mail-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="tucorreo@email.com" placeholderTextColor={C.gray40} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" /></View>
-            <Text style={styles.label}>TelÃ©fono</Text>
+            <Text style={styles.label}>Teléfono</Text>
             <View style={styles.inputWrap}><Ionicons name="call-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="+34 600 000 000" placeholderTextColor={C.gray40} value={phone} onChangeText={setPhone} keyboardType="phone-pad" /></View>
-            <Text style={styles.label}>ContraseÃ±a</Text>
-            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" placeholderTextColor={C.gray40} value={password} onChangeText={setPassword} secureTextEntry={!showPass} /><TouchableOpacity onPress={() => setShowPass(!showPass)}><Ionicons name={showPass ? "eye-off-outline" : "eye-outline"} size={20} color={C.gray50} /></TouchableOpacity></View>
+            <Text style={styles.label}>Contraseña</Text>
+            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="••••••••" placeholderTextColor={C.gray40} value={password} onChangeText={setPassword} secureTextEntry={!showPass} /><TouchableOpacity onPress={() => setShowPass(!showPass)}><Ionicons name={showPass ? "eye-off-outline" : "eye-outline"} size={20} color={C.gray50} /></TouchableOpacity></View>
             <PasswordStrength password={password} />
-            <Text style={styles.label}>Confirmar contraseÃ±a</Text>
-            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" placeholderTextColor={C.gray40} value={confirm} onChangeText={setConfirm} secureTextEntry /></View>
-            {confirm.length > 0 && password !== confirm && <Text style={{ fontSize: 12, color: C.destructive50, fontFamily: FONT.medium, marginTop: 4 }}>Las contraseÃ±as no coinciden</Text>}
+            <Text style={styles.label}>Confirmar contraseña</Text>
+            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="••••••••" placeholderTextColor={C.gray40} value={confirm} onChangeText={setConfirm} secureTextEntry /></View>
+            {confirm.length > 0 && password !== confirm && <Text style={{ fontSize: 12, color: C.destructive50, fontFamily: FONT.medium, marginTop: 4 }}>Las contraseñas no coinciden</Text>}
           </>
         );
       case 1:
@@ -136,7 +136,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
         return (
           <View style={{ alignItems: "center" }}>
             <Text style={styles.bigNumber}>{age}</Text>
-            <Text style={styles.bigLabel}>aÃ±os</Text>
+            <Text style={styles.bigLabel}>años</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 20 }} contentContainerStyle={{ paddingHorizontal: 40 }}>
               {Array.from({ length: 85 }).map((_, i) => {
                 const v = i + 16;
@@ -219,7 +219,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
             </View>
             {diet === "custom" && (
               <View style={{ gap: 16 }}>
-                <MacroSlider label="ProteÃ­na" value={proteinPct} color={C.orange} onChange={setProteinPct} />
+                <MacroSlider label="Proteína" value={proteinPct} color={C.orange} onChange={setProteinPct} />
                 <MacroSlider label="Grasas" value={fatPct} color={C.purple50} onChange={setFatPct} />
                 <MacroSlider label="Carbohidratos" value={carbPct} color={C.blue50} onChange={setCarbPct} />
                 <Text style={{ fontSize: 12, color: C.gray50, fontFamily: FONT.medium, textAlign: "center" }}>Total: {proteinPct + fatPct + carbPct}%</Text>

@@ -203,7 +203,7 @@ const styles_local = StyleSheet.create({
   periodBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
   periodBtnActive: { backgroundColor: C.orange },
   periodText: { fontSize: 13, fontFamily: FONT.semiBold, color: C.gray30, textAlign: 'center' },
-  periodTextActive: { color: C.white },
+  periodTextActive: { color: '#FFFFFF' },
   statsRow: { flexDirection: 'row', paddingHorizontal: 20, marginTop: 24, gap: 12 },
   statCard: {
     flex: 1,

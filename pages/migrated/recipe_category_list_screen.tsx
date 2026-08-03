@@ -70,7 +70,7 @@ export default function RecipeCategoryListScreen(props: any) {
       <View style={s.body}>
         {isLoading ? (
           <View style={s.center}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : mCategoryList.length === 0 ? (
           <View style={s.center}>

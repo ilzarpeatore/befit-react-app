@@ -8,7 +8,7 @@ import { useAuth } from "@store/AuthContext";
 
 const CONFETTI_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
 
-function ConfettiDot({ delay, color, left }: { delay: number; color: string; left: string }) {
+function ConfettiDot({ delay, color, left }: { delay: number; color: string; left: `${number}%` }) {
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

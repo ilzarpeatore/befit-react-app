@@ -37,7 +37,7 @@ export default function HeartRateInsightScreen({ navigation }: any) {
         <ScrollView>
           <LinearGradient colors={[C.gray60, C.bg]} style={styles.header}>
             <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={22} color={C.white} />
+              <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
             </TouchableOpacity>
             <Ionicons name="heart" size={24} color={C.destructive50} />
             <Text style={styles.headerTitle}>Heart Rate Insight</Text>
@@ -131,7 +131,7 @@ function useStyle() {
       justifyContent: "center",
       alignItems: "center",
     },
-    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
+    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: '#FFFFFF' },
     content: { padding: 20, paddingBottom: 40 },
     overviewRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 28 },
     overviewCard: {

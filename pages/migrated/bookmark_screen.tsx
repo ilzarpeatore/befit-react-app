@@ -86,7 +86,7 @@ export default function BookmarkScreen({ navigation }: any) {
             <Text style={styles_local.actionCount}>{postData?.commentCount ?? 0}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7}>
-            <Ionicons name="bookmark" size={22} color={C.brand5} />
+            <Ionicons name="bookmark" size={22} color={C.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -106,7 +106,7 @@ export default function BookmarkScreen({ navigation }: any) {
       <View style={styles_local.body}>
         {loading ? (
           <View style={styles_local.centerWrap}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : postList.length > 0 ? (
           <ScrollView

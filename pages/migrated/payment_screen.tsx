@@ -101,7 +101,7 @@ export default function PaymentScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>Payments</Text>
         <View style={{ width: 24 }} />
@@ -109,7 +109,7 @@ export default function PaymentScreen(props: any) {
       <View style={s.body}>
         {isLoading && paymentList.length === 0 ? (
           <View style={s.loadingContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : paymentList.length > 0 ? (
           <ScrollView contentContainerStyle={s.paymentList}>
@@ -119,9 +119,9 @@ export default function PaymentScreen(props: any) {
                 style={[s.paymentItem, selectedPaymentType === gw.type && s.paymentItemSelected]}
                 onPress={() => setSelectedPaymentType(gw.type)}
               >
-                <Ionicons name={gw.icon} size={24} color={selectedPaymentType === gw.type ? C.brand5 : C.gray30} />
+                <Ionicons name={gw.icon} size={24} color={selectedPaymentType === gw.type ? C.orange : C.gray30} />
                 <Text style={[s.paymentLabel, selectedPaymentType === gw.type && s.paymentLabelSelected]}>{gw.label}</Text>
-                {selectedPaymentType === gw.type && <Ionicons name="checkmark-circle" size={22} color={C.brand5} />}
+                {selectedPaymentType === gw.type && <Ionicons name="checkmark-circle" size={22} color={C.success} />}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -133,7 +133,7 @@ export default function PaymentScreen(props: any) {
         )}
         {isLoading && paymentList.length > 0 && (
           <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>

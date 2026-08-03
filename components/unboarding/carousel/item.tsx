@@ -10,9 +10,9 @@ import { ItemPropsInterface } from "./_types/Item.i";
  * <ItemMem item={{
         source: require("@assets/slider/healthy.png"),
         sources: {
-          2: require('@assets/slider/healthy@2x.png'),
-          3: require('@assets/slider/healthy@3x.png'),
-          4: require('@assets/slider/healthy@4x.png'),
+          2: require('@assets/slider/healthy-2x.png'),
+          3: require('@assets/slider/healthy-3x.png'),
+          4: require('@assets/slider/healthy-4x.png'),
         },
         titlel: "Be",
         title: "Healthy",

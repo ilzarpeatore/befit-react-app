@@ -17,7 +17,7 @@ export default function ChewieScreen({ route }: any) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
-  const videoRef = useRef<Video>(null);
+  const videoRef = useRef<any>(null);
 
   useEffect(() => {
     initializePlayer();

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppIcon from '@components/AppIcon';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 
@@ -12,16 +13,6 @@ export default function AboutUsScreen({ navigation }: any) {
       await Linking.openURL(url);
     }
   };
-
-  const mSocialOption = (icon: string) => (
-    <TouchableOpacity
-      style={[styles_local.socialIcon, { marginHorizontal: 16 }]}
-      onPress={() => launchUrl(icon)}
-      activeOpacity={0.7}
-    >
-      <Ionicons name={icon as any} size={30} color={C.brand5} />
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles_local.container}>
@@ -41,17 +32,17 @@ export default function AboutUsScreen({ navigation }: any) {
         </Text>
 
         <TouchableOpacity style={styles_local.infoRow} activeOpacity={0.7}>
-          <Ionicons name="mail-outline" size={20} color={C.gray30} />
+          <AppIcon name="mail-outline" size={18} color={C.blue} bg={C.blue10} containerSize={36} borderRadius={12} />
           <Text style={styles_local.infoText}>{'contact@example.com'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles_local.infoRow} activeOpacity={0.7}>
-          <Ionicons name="chatbubble-ellipses-outline" size={20} color={C.gray30} />
+          <AppIcon name="chatbubble-ellipses-outline" size={18} color={C.success} bg={C.success10} containerSize={36} borderRadius={12} />
           <Text style={styles_local.infoText}>{'support.example.com'}</Text>
         </TouchableOpacity>
 
         <View style={styles_local.infoRow}>
-          <Ionicons name="call-outline" size={20} color={C.gray30} />
+          <AppIcon name="call-outline" size={18} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={36} borderRadius={12} />
           <Text style={styles_local.infoText}>{'+1 234 567 890'}</Text>
         </View>
       </ScrollView>
@@ -59,17 +50,17 @@ export default function AboutUsScreen({ navigation }: any) {
       <View style={styles_local.bottomBar}>
         <Text style={styles_local.followUsText}>Follow Us</Text>
         <View style={styles_local.socialRow}>
-          <TouchableOpacity style={styles_local.socialBtn} onPress={() => launchUrl('https://facebook.com')}>
-            <Ionicons name="logo-facebook" size={28} color={C.brand5} />
+          <TouchableOpacity onPress={() => launchUrl('https://facebook.com')} activeOpacity={0.7}>
+            <AppIcon name="logo-facebook" size={22} color={C.blue} bg={C.blue10} containerSize={48} borderRadius={16} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.socialBtn} onPress={() => launchUrl('https://instagram.com')}>
-            <Ionicons name="logo-instagram" size={28} color={C.brand5} />
+          <TouchableOpacity onPress={() => launchUrl('https://instagram.com')} activeOpacity={0.7}>
+            <AppIcon name="logo-instagram" size={22} color={C.destructive} bg={C.destructive10} containerSize={48} borderRadius={16} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.socialBtn} onPress={() => launchUrl('https://twitter.com')}>
-            <Ionicons name="logo-twitter" size={28} color={C.brand5} />
+          <TouchableOpacity onPress={() => launchUrl('https://twitter.com')} activeOpacity={0.7}>
+            <AppIcon name="logo-twitter" size={22} color={C.blue} bg={C.blue10} containerSize={48} borderRadius={16} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.socialBtn} onPress={() => launchUrl('https://linkedin.com')}>
-            <Ionicons name="logo-linkedin" size={28} color={C.brand5} />
+          <TouchableOpacity onPress={() => launchUrl('https://linkedin.com')} activeOpacity={0.7}>
+            <AppIcon name="logo-linkedin" size={22} color={C.blue} bg={C.blue10} containerSize={48} borderRadius={16} />
           </TouchableOpacity>
         </View>
         <Text style={styles_local.copyright}>{'\u00A9 2024 MightyFitness. All rights reserved.'}</Text>

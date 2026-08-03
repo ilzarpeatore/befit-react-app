@@ -307,7 +307,7 @@ const s = StyleSheet.create({
     height: 56,
     gap: 8,
   },
-  exploreBtnText: { fontSize: 16, color: C.white, fontWeight: '700' },
+  exploreBtnText: { fontSize: 16, color: '#FFFFFF', fontWeight: '700' },
   workoutListContent: { padding: 20, paddingTop: 8 },
   workoutCard: {
     flexDirection: 'row',

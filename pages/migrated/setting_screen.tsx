@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppIcon from '@components/AppIcon';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 
 interface SettingOption {
   icon: string;
+  iconBg?: string;
   title: string;
   onPress: () => void;
   requireLogin?: boolean;
@@ -54,29 +56,34 @@ export default function SettingScreen(props: any) {
   const settings: SettingOption[] = [
     {
       icon: 'barbell-outline',
+      iconBg: 'rgba(255,107,53,0.15)',
       title: 'Mi programa',
       onPress: () => props.navigation.navigate('MigratedMyProgramCalendar'),
       requireLogin: true,
     },
     {
       icon: 'settings-outline',
+      iconBg: C.brand10,
       title: 'Metrics Settings',
       onPress: () => props.navigation.navigate('MigratedProgressSetting'),
       requireLogin: true,
     },
     {
       icon: 'flame-outline',
+      iconBg: 'rgba(255,107,53,0.15)',
       title: 'Goal Calories & Macros',
       onPress: () => props.navigation.navigate('MigratedGoalCaloriesMacros'),
       requireLogin: true,
     },
     {
       icon: 'globe-outline',
+      iconBg: C.brand10,
       title: 'Select Language',
       onPress: () => props.navigation.navigate('MigratedLanguage'),
     },
     {
       icon: 'color-palette-outline',
+      iconBg: C.brand10,
       title: 'App Themes',
       onPress: () => {
         // Show theme selection dialog
@@ -84,12 +91,14 @@ export default function SettingScreen(props: any) {
     },
     {
       icon: 'key-outline',
+      iconBg: C.brand10,
       title: 'Change Password',
       onPress: () => props.navigation.navigate('MigratedChangePwd'),
       visible: !isSocial && isLoggedIn,
     },
     {
       icon: 'trash-outline',
+      iconBg: C.destructive10,
       title: 'Delete Account',
       onPress: handleDeleteAccount,
       requireLogin: true,
@@ -104,13 +113,15 @@ export default function SettingScreen(props: any) {
 
     return (
       <TouchableOpacity key={option.title} style={s.optionRow} onPress={option.onPress} activeOpacity={0.6}>
-        <View style={s.optionIconContainer}>
-          <Ionicons
-            name={option.icon as any}
-            size={22}
-            color={isDelete ? C.red : C.brand5}
-          />
-        </View>
+        <AppIcon
+          name={option.icon as keyof typeof Ionicons.glyphMap}
+          size={22}
+          color={isDelete ? C.red : C.textPrimary}
+          bg={option.iconBg ?? C.brand10}
+          containerSize={40}
+          borderRadius={12}
+          style={{ marginRight: 12 }}
+        />
         <Text style={[s.optionTitle, styles.fontRegular, isDelete && { color: C.red }]}>
           {option.title}
         </Text>
@@ -152,15 +163,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 12,
-  },
-  optionIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: C.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
   },
   optionTitle: { flex: 1, fontSize: 16, color: C.white },
   divider: { height: 1, backgroundColor: C.border, marginHorizontal: 12 },

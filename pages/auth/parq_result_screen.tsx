@@ -1,9 +1,9 @@
-﻿import React from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { C, FONT } from "../migrated/theme";
 
 export default function ParqResultScreen({ navigation, route }: any) {
   const styles = useStyle();
@@ -14,7 +14,7 @@ export default function ParqResultScreen({ navigation, route }: any) {
     age: "28",
     weight: "70 kg",
     height: "175 cm",
-    goal: "Ganar mÃºsculo",
+    goal: "Ganar músculo",
     activity: "Moderado",
   };
 
@@ -26,11 +26,11 @@ export default function ParqResultScreen({ navigation, route }: any) {
             <Ionicons name={cleared ? "checkmark-circle" : "warning"} size={48} color={cleared ? C.success50 : C.warning50} />
           </View>
 
-          <Text style={styles.title}>{cleared ? "Â¡Listo para entrenar!" : "Consulta mÃ©dica recomendada"}</Text>
+          <Text style={styles.title}>{cleared ? "¡Listo para entrenar!" : "Consulta médica recomendada"}</Text>
           <Text style={styles.desc}>
             {cleared
               ? "Has completado el cuestionario PAR-Q exitosamente. No se identificaron riesgos para tu salud al realizar ejercicio."
-              : "Basado en tus respuestas, te recomendamos consultar con un mÃ©dico antes de iniciar un programa de ejercicio fÃ­sico."}
+              : "Basado en tus respuestas, te recomendamos consultar con un médico antes de iniciar un programa de ejercicio físico."}
           </Text>
 
           <View style={styles.profileCard}>
@@ -41,7 +41,7 @@ export default function ParqResultScreen({ navigation, route }: any) {
             <ProfileRow icon="resize-outline" label="Altura" value={profile.height} />
             <ProfileRow icon="flag-outline" label="Objetivo" value={profile.goal} />
             <ProfileRow icon="flash-outline" label="Actividad" value={profile.activity} />
-            <ProfileRow icon={cleared ? "checkmark-circle-outline" : "alert-circle-outline"} label="PAR-Q" value={cleared ? "Aprobado" : "Requiere revisiÃ³n"} />
+            <ProfileRow icon={cleared ? "checkmark-circle-outline" : "alert-circle-outline"} label="PAR-Q" value={cleared ? "Aprobado" : "Requiere revisión"} />
           </View>
 
           <TouchableOpacity

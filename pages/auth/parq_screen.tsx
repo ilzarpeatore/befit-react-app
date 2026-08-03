@@ -1,20 +1,20 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { C, FONT } from "../migrated/theme";
 
 const { width: SW } = Dimensions.get("window");
 
 const QUESTIONS = [
-  "Â¿Ha dicho algÃºn mÃ©dico que tiene algÃºn problema cardÃ­aco y que solo deberÃ­a realizar actividad fÃ­sica recomendada por un mÃ©dico?",
-  "Â¿Siente dolor en el pecho cuando realiza actividad fÃ­sica?",
-  "Ha sentido dolor en el pecho en el Ãºltimo mes?",
-  "Â¿Se ha mareado o perdido la conciencia como resultado de una lesiÃ³n?",
-  "Â¿Tiene algÃºn problema Ã³seo o articular que pudiera empeorar con la actividad fÃ­sica?",
-  "Â¿Toma algÃºn medicamento para la presiÃ³n arterial o una condiciÃ³n cardÃ­aca?",
-  "Â¿Conoce alguna otra razÃ³n por la que no deberÃ­a realizar actividad fÃ­sica?",
+  "¿Ha dicho algún médico que tiene algún problema cardíaco y que solo debería realizar actividad física recomendada por un médico?",
+  "¿Siente dolor en el pecho cuando realiza actividad física?",
+  "Ha sentido dolor en el pecho en el último mes?",
+  "¿Se ha mareado o perdido la conciencia como resultado de una lesión?",
+  "¿Tiene algún problema óseo o articular que pudiera empeorar con la actividad física?",
+  "¿Toma algún medicamento para la presión arterial o una condición cardíaca?",
+  "¿Conoce alguna otra razón por la que no debería realizar actividad física?",
 ];
 
 export default function ParqScreen({ navigation }: any) {
@@ -54,7 +54,7 @@ export default function ParqScreen({ navigation }: any) {
 
       <View style={styles.infoBanner}>
         <Ionicons name="information-circle-outline" size={20} color={C.blue50} />
-        <Text style={styles.infoText}>El cuestionario PAR-Q determina si estÃ¡s listo para iniciar un programa de ejercicio. Responde con honestidad.</Text>
+        <Text style={styles.infoText}>El cuestionario PAR-Q determina si estás listo para iniciar un programa de ejercicio. Responde con honestidad.</Text>
       </View>
 
       <ScrollView ref={scrollRef} horizontal pagingEnabled scrollEnabled={false} showsHorizontalScrollIndicator={false}>
@@ -73,7 +73,7 @@ export default function ParqScreen({ navigation }: any) {
               </TouchableOpacity>
               <TouchableOpacity style={styles.yesBtn} onPress={() => handleAnswer(true)}>
                 <Ionicons name="close-circle-outline" size={22} color={C.destructive50} />
-                <Text style={styles.yesText}>SÃ­</Text>
+                <Text style={styles.yesText}>Sí</Text>
               </TouchableOpacity>
             </View>
           </View>

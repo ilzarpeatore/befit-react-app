@@ -83,7 +83,7 @@ export default function ProfileScreenSandow(props: any) {
               )}
             </View>
             <TouchableOpacity style={s.editAvatarBtn} onPress={() => props.navigation?.navigate('MigratedEditProfile')}>
-              <Ionicons name="pencil" size={14} color={C.white} />
+              <Ionicons name="pencil" size={14} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
           <Text style={s.profileName}>{userName}</Text>

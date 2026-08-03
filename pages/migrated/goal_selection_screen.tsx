@@ -93,7 +93,7 @@ export default function GoalSelectionScreen(props: GoalSelectionScreenProps) {
       {step === 7 && renderStep7()}
       {isLoading && (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </SafeAreaView>

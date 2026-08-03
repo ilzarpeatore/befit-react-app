@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
@@ -41,7 +41,7 @@ export default function PostDetailsScreen(props: any) {
       <View style={s.container}>
         <View style={s.appBar}>
           <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={C.brand5} />
+            <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
           </TouchableOpacity>
           <View style={{ width: 24 }} />
         </View>
@@ -80,7 +80,7 @@ export default function PostDetailsScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={28} color={C.brand5} />
+          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
         </TouchableOpacity>
         <View style={{ width: 24 }} />
       </View>
@@ -122,7 +122,7 @@ export default function PostDetailsScreen(props: any) {
               <Text style={s.actionText}>{postData.commentsCount ?? 0}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.actionBtn} onPress={toggleBookmark}>
-              <Ionicons name={isBookmarked ? 'bookmark' : 'bookmark-outline'} size={22} color={isBookmarked ? C.brand5 : C.gray30} />
+              <Ionicons name={isBookmarked ? 'bookmark' : 'bookmark-outline'} size={22} color={isBookmarked ? C.orange : C.gray30} />
             </TouchableOpacity>
             <TouchableOpacity style={s.actionBtn}>
               <Ionicons name="share-outline" size={22} color={C.gray30} />

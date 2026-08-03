@@ -355,7 +355,7 @@ export default function PlanScreen(props: any) {
       </View>
       <View style={s.nutrientRow}>
         {[
-          { label: 'Protein', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.brand5 },
+          { label: 'Protein', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
           { label: 'Carbs', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
           { label: 'Fat', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
         ].map((n, i) => (
@@ -437,7 +437,7 @@ export default function PlanScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>Daily Plan</Text>
         <TouchableOpacity onPress={clearDailyPlan} style={s.clearBtn}>
@@ -558,7 +558,7 @@ const s = StyleSheet.create({
   weekDayLabelSelected: { color: C.white },
   weekDayNum: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray40 },
   weekDayNumSelected: { color: C.white },
-  weekDayToday: { color: C.brand5 },
+  weekDayToday: { color: C.textPrimary },
   compactBar: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: C.surface, marginHorizontal: 16, marginBottom: 8, borderRadius: 12, padding: 12 },
   compactStat: { alignItems: 'flex-start' },
   compactStatLabel: { fontSize: 10, color: C.gray40, fontFamily: FONT.regular },

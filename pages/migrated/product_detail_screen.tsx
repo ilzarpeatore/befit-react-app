@@ -39,7 +39,7 @@ export default function ProductDetailScreen(props: any) {
           </View>
         )}
         <TouchableOpacity style={s.backBtn} onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={28} color={C.brand5} />
+          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
         </TouchableOpacity>
       </View>
       <View style={s.detailSheet}>
@@ -79,7 +79,7 @@ const s = StyleSheet.create({
   handle: { width: 40, height: 4, backgroundColor: C.gray60, borderRadius: 2, alignSelf: 'center', marginTop: 12 },
   detailContent: { padding: 16, paddingTop: 12 },
   productTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
-  productPrice: { fontSize: 20, fontFamily: FONT.bold, color: C.brand5, marginBottom: 8 },
+  productPrice: { fontSize: 20, fontFamily: FONT.bold, color: C.textPrimary, marginBottom: 8 },
   divider: { height: 1, backgroundColor: C.gray70, marginVertical: 12, marginHorizontal: 16 },
   productDescription: { fontSize: 14, fontFamily: FONT.regular, color: C.gray40, lineHeight: 22 },
   footer: { padding: 16, paddingBottom: 32 },

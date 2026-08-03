@@ -233,7 +233,7 @@ export default function ShoppingListDetailScreen(props: any) {
 
       {isLoading ? (
         <View style={s.loadingContainer}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       ) : !detailData ? (
         <View style={s.emptyContainer}>
@@ -336,7 +336,7 @@ function AddItemSheet({
             <View style={sAdd.handle} />
             <View style={sAdd.headerRow}>
               <View style={sAdd.headerIcon}>
-                <Ionicons name="add" size={24} color={C.brand5} />
+                <Ionicons name="add" size={24} color={C.textPrimary} />
               </View>
               <View style={sAdd.headerTextWrap}>
                 <Text style={[sAdd.sheetTitle, styles.fontBold]}>Add Item</Text>
@@ -350,7 +350,7 @@ function AddItemSheet({
             <View style={sAdd.divider} />
 
             {loadingUnits ? (
-              <ActivityIndicator size="large" color={C.brand5} style={{ padding: 32 }} />
+              <ActivityIndicator size="large" color={C.orange} style={{ padding: 32 }} />
             ) : (
               <View style={sAdd.form}>
                 <Text style={[sAdd.label, styles.fontBold]}>Item</Text>

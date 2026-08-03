@@ -84,14 +84,14 @@ export default function ForgotPwdScreen(props: ForgotPwdScreenProps) {
               <Ionicons name="mail-outline" size={20} color={C.gray40} />
             </View>
           </View>
-          {error ? <Text style={{ color: C.destructive, marginBottom: '8@ratio' }}>{error}</Text> : null}
+          {error ? <Text style={{ color: C.destructive, marginBottom: 8 }}>{error}</Text> : null}
           <TouchableOpacity style={styles.btn} onPress={resetPassword} activeOpacity={0.8}>
             <Text style={styles.btnText}>Continue</Text>
           </TouchableOpacity>
         </ScrollView>
         {isLoading && (
           <View style={styles.loader}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </KeyboardAvoidingView>

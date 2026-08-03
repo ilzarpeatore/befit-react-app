@@ -2,7 +2,16 @@
 
 Checklist para dejar todo funcionando cada vez que se enciende el ordenador.
 
-**Para Claude Code**: si el usuario pide "arranca todo" / "levanta el entorno" / "arranca la app desde cero", este documento tiene todos los comandos exactos para hacerlo sin tener que redescubrir rutas, puertos ni binarios. Ejecuta los pasos 1-5 en orden usando Bash con `run_in_background: true` para los procesos que quedan corriendo (backend y Metro), y verifica cada uno con el comando de chequeo indicado antes de pasar al siguiente paso. No asumas que algo quedó bien solo porque el comando no dio error — comprueba con curl/adb como se indica.
+**Para Claude Code**: si el usuario pide "arranca todo" / "levanta el entorno" / "arranca la app desde cero", este documento tiene todos los comandos exactos para hacerlo sin tener que redescubrir rutas, puertos ni binarios. Ejecuta los pasos 1-5 siempre (son el mínimo para probar la app móvil); los pasos 6 (admin panel) y 7 (MobAI) solo si el usuario los pide explícitamente o si va a necesitar controlar el móvil/el panel web. Usa Bash con `run_in_background: true` para los procesos que quedan corriendo (backend, Metro, admin panel), y verifica cada uno con el comando de chequeo indicado antes de pasar al siguiente paso. No asumas que algo quedó bien solo porque el comando no dio error — comprueba con curl/adb como se indica. Presta atención a la ruta correcta en cada `cd`: cada paso indica la ruta del proyecto donde debe correr ese comando.
+
+## Contexto del proyecto (leer antes de trabajar en tareas nuevas)
+
+**Para Claude Code**: antes de asumir arquitectura o estado del proyecto por tu cuenta, consulta estas fuentes — evitan re-investigar desde cero algo que ya está documentado:
+
+- **[Esquema de arquitectura — BeFit App](https://claude.ai/code/artifact/0d4b2bbf-b3bb-4c16-8ff0-53dbd8831ecf)** (artifact) — mapa visual de las 4 láminas del proyecto: Nutrición, Entrenamiento, Niveles de acceso (Full access / Free / Paquetes de pago), y Recursos. Incluye diagramas de flujo, qué está construido vs. qué es brecha (`gap`), bugs reales encontrados y corregidos, y una sección final de "Decisiones abiertas" con las preguntas de producto/arquitectura pendientes. Es el resumen ejecutivo más alto nivel — empezar por aquí para entender el estado general antes de entrar en detalle.
+- **`docs/TAREAS.md`** — historial detallado de trabajo de conexión backend/app: qué se completó (con el motivo, archivos y endpoints exactos) y qué queda pendiente por prioridad. Tiene el detalle de implementación que el artifact no cubre (nombres de archivo, líneas de código, bugs concretos). Consultar antes de retomar cualquier tarea de la sección "Pendientes".
+- **`docs/backend-app-analysis.md`** — análisis técnico del backend + app: diagrama entidad-relación completo (ERD, ~150 tablas), diagrama de arquitectura cliente-servidor, diagramas de flujo de datos por feature, y un gap analysis de qué está conectado de punta a punta vs. admin-only/backend-only vs. no conectado en absoluto.
+- **`docs/PANTALLAS.md`** — catálogo de las 173 pantallas de la app: archivo real, nombre de ruta en `App.tsx`, título visible, APIs que consume hoy, y el controlador Laravel correspondiente (o el endpoint sugerido si aún no está conectada). Consultar antes de tocar o navegar hacia cualquier pantalla para saber su estado real de conexión.
 
 ## Rutas de los proyectos
 
@@ -85,17 +94,7 @@ timeout 30 adb logcat -v time | grep --line-buffered -iE "ReactNativeJS|AxiosErr
 ```
 Debe aparecer `Running "main"` sin ningún `AxiosError` ni `Unable to load script`.
 
-## Resumen rápido (orden de arranque)
-
-1. Laragon → Start All
-2. `C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe artisan serve --host=0.0.0.0 --port=8000` (en `fitness-backend`, background)
-3. `npm start` (en `React App`, background)
-4. `adb reverse tcp:8081 tcp:8081` y `adb reverse tcp:8000 tcp:8000`
-5. Abrir/relanzar la app en el Samsung
-
-## Opcional: arrancar el admin panel (Vite + React)
-
-Solo si se va a trabajar en el panel de administración web — no hace falta para probar la app móvil.
+## 6. Arrancar el admin panel (Vite + React)
 
 Ruta: `C:\Users\hamza\Desktop\PROYECTOS\APP\Next.js admin panel`
 
@@ -104,6 +103,38 @@ npm run dev
 ```
 
 Sirve en `http://localhost:5173` (puerto por defecto de Vite). Ya tiene su propio `.env` apuntando a `http://localhost:8000/api` (el mismo backend del paso 2) — no necesita `adb reverse` ni configuración de IP porque corre en el navegador del propio PC, no en el teléfono.
+
+**Verificación:**
+```bash
+curl -s -m 5 -o /dev/null -w "HTTP %{http_code}\n" http://localhost:5173
+```
+Debe devolver `HTTP 200`.
+
+## 7. Verificar MobAI (control de dispositivo desde Claude Code)
+
+MobAI es la app de escritorio (`C:\Program Files\MobAI\MobAI.exe`) que expone el servidor MCP que usa Claude Code para controlar el Samsung (skill `controlling-mobile-devices`). No se arranca por terminal como los demás procesos — es una app normal de Windows que debe estar abierta. Normalmente ya está corriendo en segundo plano; solo hay que comprobarlo, no relanzarlo salvo que falte.
+
+**Verificación:**
+```bash
+tasklist | grep -i mobai
+```
+Debe aparecer `MobAI.exe`. Si no aparece, abrir la app manualmente desde el menú de inicio o ejecutando `C:\Program Files\MobAI\MobAI.exe`.
+
+También se puede confirmar que el servidor MCP está conectado con:
+```bash
+claude mcp list
+```
+Debe mostrar `mobai: http://127.0.0.1:8686/mcp (HTTP) - ✔ Connected`.
+
+## Resumen rápido (orden de arranque)
+
+1. Laragon → Start All
+2. `C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe artisan serve --host=0.0.0.0 --port=8000` (en `fitness-backend`, background)
+3. `npm start` (en `React App`, background)
+4. `adb reverse tcp:8081 tcp:8081` y `adb reverse tcp:8000 tcp:8000`
+5. Abrir/relanzar la app en el Samsung
+6. `npm run dev` (en `Next.js admin panel`, background) — solo si se va a trabajar en el panel web
+7. Comprobar que `MobAI.exe` está corriendo (normalmente ya lo está) — solo si se va a controlar el móvil desde Claude Code
 
 ## Si algo no carga — checklist de diagnóstico
 

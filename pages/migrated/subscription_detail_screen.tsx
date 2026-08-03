@@ -206,7 +206,7 @@ export default function SubscriptionDetailScreen(props: any) {
 
         {isLoading && (
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     borderBottomColor: C.brand5,
   },
   tabText: { fontSize: 15, fontFamily: FONT.regular, color: C.gray30 },
-  tabTextActive: { color: C.brand5, fontFamily: FONT.semiBold },
+  tabTextActive: { color: C.textPrimary, fontFamily: FONT.semiBold },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
   emptyTitle: { fontSize: 16, fontFamily: FONT.bold, color: C.gray30, marginBottom: 8 },
   emptySubtitle: { fontSize: 14, color: C.gray40, fontFamily: FONT.regular, marginBottom: 50, textAlign: 'center' },
