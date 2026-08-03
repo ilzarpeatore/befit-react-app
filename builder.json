@@ -1,0 +1,18 @@
+{
+  "project": "befitapp",
+  "platform": "ios",
+  "github": {
+    "owner": "ilzarpeatore",
+    "repo": "befit-react-app"
+  },
+  "ios": {
+    "path": "ios"
+  },
+  "flutter": {
+    "watch": {}
+  },
+  "reactNative": {
+    "expo": true
+  },
+  "mobai": {}
+}
