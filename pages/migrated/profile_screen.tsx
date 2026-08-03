@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppIcon from '@components/AppIcon';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 
@@ -8,29 +9,32 @@ interface MenuItem {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   iconColor?: string;
+  iconBg?: string;
   textColor?: string;
   route: string;
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { icon: 'person-outline', title: 'Edit Profile', route: 'MigratedEditProfile' },
-  { icon: 'heart-outline', title: 'Favorites', route: 'Favourites' },
-  { icon: 'time-outline', title: 'Workout History', route: 'WorkoutHistory' },
-  { icon: 'trending-up', title: 'Progress', route: 'Progress' },
-  { icon: 'notifications-outline', title: 'Notifications', route: 'Notifications' },
-  { icon: 'language-outline', title: 'Language', route: 'Language' },
-  { icon: 'information-circle-outline', title: 'About', route: 'AboutApp' },
-  { icon: 'log-out-outline', title: 'Sign Out', iconColor: C.destructive, textColor: C.destructive, route: 'Logout' },
+  { icon: 'person-outline', title: 'Edit Profile', iconBg: C.brand10, route: 'MigratedEditProfile' },
+  { icon: 'heart-outline', title: 'Favorites', iconBg: C.destructive10, route: 'Favourites' },
+  { icon: 'time-outline', title: 'Workout History', iconBg: C.blue10, route: 'WorkoutHistory' },
+  { icon: 'trending-up', title: 'Progress', iconBg: C.success10, route: 'Progress' },
+  { icon: 'notifications-outline', title: 'Notifications', iconBg: C.warning10, route: 'Notifications' },
+  { icon: 'language-outline', title: 'Language', iconBg: C.brand10, route: 'Language' },
+  { icon: 'information-circle-outline', title: 'About', iconBg: C.brand10, route: 'AboutApp' },
+  { icon: 'log-out-outline', title: 'Sign Out', iconColor: C.destructive, iconBg: C.destructive10, textColor: C.destructive, route: 'Logout' },
 ];
 
 interface StatTileProps {
   label: string;
   value: string;
+  icon: keyof typeof Ionicons.glyphMap;
 }
 
-function StatTile({ label, value }: StatTileProps) {
+function StatTile({ label, value, icon }: StatTileProps) {
   return (
     <View style={s.statTile}>
+      <AppIcon name={icon} size={20} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={40} style={{ marginBottom: 8 }} />
       <Text style={s.statValue}>{value}</Text>
       <Text style={s.statLabel}>{label}</Text>
     </View>
@@ -82,7 +86,7 @@ export default function ProfileScreen(props: any) {
               )}
             </View>
             <TouchableOpacity style={s.editAvatarBtn} onPress={() => props.navigation?.navigate('MigratedEditProfile')}>
-              <Ionicons name="pencil" size={14} color={C.white} />
+              <Ionicons name="pencil" size={14} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
           <Text style={s.profileName}>{userName}</Text>
@@ -90,15 +94,22 @@ export default function ProfileScreen(props: any) {
         </View>
 
         <View style={s.statsRow}>
-          <StatTile label="Weight" value={`${userWeight} kg`} />
-          <StatTile label="Height" value={`${userHeight} cm`} />
-          <StatTile label="Age" value={userAge} />
+          <StatTile label="Weight" value={`${userWeight} kg`} icon="scale-outline" />
+          <StatTile label="Height" value={`${userHeight} cm`} icon="resize-outline" />
+          <StatTile label="Age" value={userAge} icon="calendar-outline" />
         </View>
 
         <View style={s.menuSection}>
           {MENU_ITEMS.map((item, index) => (
             <TouchableOpacity key={index} style={s.menuItem} onPress={() => handleMenuItemPress(item)}>
-              <Ionicons name={item.icon} size={22} color={item.iconColor ?? C.gray30} />
+              <AppIcon
+                name={item.icon}
+                size={22}
+                color={item.iconColor ?? C.textPrimary}
+                bg={item.iconBg ?? C.brand10}
+                containerSize={40}
+                borderRadius={12}
+              />
               <Text style={[s.menuLabel, item.textColor ? { color: item.textColor } : null]}>{item.title}</Text>
               <Ionicons name="chevron-forward" size={20} color={C.gray50} />
             </TouchableOpacity>

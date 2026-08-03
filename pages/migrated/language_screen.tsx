@@ -81,7 +81,7 @@ export default function LanguageScreen(props: LanguageScreenProps) {
           {isSelected ? (
             <Ionicons name="radio-button-on" size={20} color={C.white} />
           ) : (
-            <Ionicons name="radio-button-off" size={20} color={C.brand5} />
+            <Ionicons name="radio-button-off" size={20} color={C.textPrimary} />
           )}
         </View>
       </TouchableOpacity>

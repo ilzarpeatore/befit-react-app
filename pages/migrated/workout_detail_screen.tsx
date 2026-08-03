@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   proText: {
     fontFamily: FONT.bold,
     fontSize: 10,
-    color: C.white,
+    color: '#FFFFFF',
   },
   favBtn: {
     position: 'absolute',

@@ -140,7 +140,7 @@ export default function SetReminderScreen(props: any) {
           <View style={s.repeatSection}>
             <Text style={[s.sectionTitle, styles.fontBold]}>Repeat</Text>
             <TouchableOpacity onPress={toggleEveryDay}>
-              <Text style={[s.everyDayText, { color: C.brand5 }]}>Everyday</Text>
+              <Text style={[s.everyDayText, { color: C.textPrimary }]}>Everyday</Text>
             </TouchableOpacity>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.dayChips}>
               {weekdays.map((day, index) => {
@@ -220,7 +220,7 @@ const s = StyleSheet.create({
     marginRight: 12,
   },
   dayChipSelected: { backgroundColor: C.brand5 },
-  dayChipText: { fontSize: 16, color: C.brand5 },
+  dayChipText: { fontSize: 16, color: C.textPrimary },
   dayChipTextSelected: { color: C.white },
   label: { fontSize: 14, color: C.white, marginBottom: 8 },
   textInput: {

@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   headerValue: {
     fontSize: 40,
     fontFamily: FONT.bold,
-    color: C.white,
+    color: '#FFFFFF',
   },
   section: {
     padding: 20,

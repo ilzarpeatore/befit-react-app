@@ -189,7 +189,7 @@ export default function FilterWorkoutScreen(props: FilterWorkoutScreenProps) {
           </TouchableOpacity>
         )}
       </View>
-      <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: '20@ratio' }}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 20 }}>
         {types.length > 0 && (
           <View style={styles.filterRow}>
             {types.map((t) => (
@@ -235,9 +235,9 @@ export default function FilterWorkoutScreen(props: FilterWorkoutScreenProps) {
             ))}
           </ScrollView>
         )}
-        <View style={{ height: '8@ratio' }} />
+        <View style={{ height: 8 }} />
         {mWorkoutList.length > 0 ? (
-          <View style={{ paddingHorizontal: '16@ratio' }}>
+          <View style={{ paddingHorizontal: 16 }}>
             {mWorkoutList.map((item, index) => (
               <TouchableOpacity key={`${item.id}-${index}`} style={styles.workoutCard} onPress={() => handleWorkoutTap(item)}>
                 {item.workoutImage ? (

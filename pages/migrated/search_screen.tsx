@@ -247,7 +247,7 @@ export default function SearchScreen(props: any) {
           {/* Search Bar */}
           <View style={s.searchRow}>
             <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-              <Ionicons name="chevron-back" size={28} color={C.brand5} />
+              <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
             </TouchableOpacity>
             <View style={s.searchInputContainer}>
               <TextInput
@@ -312,7 +312,7 @@ export default function SearchScreen(props: any) {
 
         {isLoading && (
           <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>

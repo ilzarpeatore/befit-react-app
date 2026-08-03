@@ -175,6 +175,8 @@ import WorkoutTemplateListScreen from "@pages/migrated/workout_template_list_scr
 import RecipeTagListScreen from "@pages/migrated/recipe_tag_list_screen";
 // @ts-ignore
 import ReminderScreen from "@pages/migrated/reminder_screen";
+import ResourceDetailScreen from "@pages/migrated/resource_detail_screen";
+import ResourcesListScreen from "@pages/migrated/resources_list_screen";
 // @ts-ignore
 import ScheduleScreen from "@pages/migrated/schedule_screen";
 // @ts-ignore
@@ -495,6 +497,8 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedRecipeMain" component={RecipeMainScreen} />
       <MStack.Screen name="MigratedRecipeTagList" component={RecipeTagListScreen} />
       <MStack.Screen name="MigratedReminder" component={ReminderScreen} />
+      <MStack.Screen name="MigratedResourceDetail" component={ResourceDetailScreen} />
+      <MStack.Screen name="MigratedResourcesList" component={ResourcesListScreen} />
       <MStack.Screen name="MigratedSchedule" component={ScheduleScreen} />
       <MStack.Screen name="MigratedSearch" component={SearchScreen} />
       <MStack.Screen name="MigratedSetReminder" component={SetReminderScreen} />

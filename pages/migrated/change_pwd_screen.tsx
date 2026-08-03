@@ -138,7 +138,7 @@ export default function ChangePwdScreen({ navigation }: any) {
 
       {loading && (
         <View style={styles_local.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </View>

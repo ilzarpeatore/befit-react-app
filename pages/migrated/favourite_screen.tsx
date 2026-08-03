@@ -31,7 +31,7 @@ export default function FavouriteScreen(props: FavouriteScreenProps) {
       {/* App Bar */}
       <View style={localStyles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={localStyles.appBarTitle}>Favourite Workouts & Nutritions</Text>
         <View style={{ width: 40 }} />
@@ -94,7 +94,7 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
   if (isLoading) {
     return (
       <View style={localStyles.centerContent}>
-        <ActivityIndicator size="large" color={C.brand5} />
+        <ActivityIndicator size="large" color={C.orange} />
       </View>
     );
   }
@@ -148,7 +148,7 @@ function DietFavContent({ navigation }: { navigation: any }) {
   if (isLoading) {
     return (
       <View style={localStyles.centerContent}>
-        <ActivityIndicator size="large" color={C.brand5} />
+        <ActivityIndicator size="large" color={C.orange} />
       </View>
     );
   }
@@ -220,7 +220,7 @@ const localStyles = StyleSheet.create({
     color: C.gray30,
   },
   activeTabText: {
-    color: C.brand5,
+    color: C.textPrimary,
   },
   body: { flex: 1 },
   centerContent: {

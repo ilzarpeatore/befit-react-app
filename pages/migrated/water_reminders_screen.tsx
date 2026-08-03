@@ -143,7 +143,7 @@ export default function WaterRemindersScreen(props: any) {
       <Text style={styles.pickerItemText}>
         {item === 1 ? '1 hour' : `${item} hours`}
       </Text>
-      {item === everyHours && <Ionicons name="checkmark" size={22} color={C.brand5} />}
+      {item === everyHours && <Ionicons name="checkmark" size={22} color={C.textPrimary} />}
     </TouchableOpacity>
   );
 
@@ -214,7 +214,7 @@ export default function WaterRemindersScreen(props: any) {
 
         {isSaving && (
           <View style={styles.savingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   saveBtn: {
     fontFamily: FONT.semiBold,
     fontSize: 16,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   body: { flex: 1, padding: 16 },
   card: {

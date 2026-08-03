@@ -491,7 +491,7 @@ export default function WorkoutSessionScreen() {
                   borderRadius: r(14),
                 }}
               >
-                <Text style={{ fontFamily: FONT.bold, fontSize: r(16), color: C.textWhite }}>
+                <Text style={{ fontFamily: FONT.bold, fontSize: r(16), color: '#FFFFFF' }}>
                   Mark Set Done
                 </Text>
               </LinearGradient>
@@ -521,10 +521,10 @@ export default function WorkoutSessionScreen() {
                   gap: r(8),
                 }}
               >
-                <Text style={{ fontFamily: FONT.bold, fontSize: r(16), color: C.textWhite }}>
+                <Text style={{ fontFamily: FONT.bold, fontSize: r(16), color: '#FFFFFF' }}>
                   Next Exercise
                 </Text>
-                <Ionicons name="arrow-forward" size={r(18)} color={C.textWhite} />
+                <Ionicons name="arrow-forward" size={r(18)} color="#FFFFFF" />
               </LinearGradient>
             </TouchableOpacity>
           )}

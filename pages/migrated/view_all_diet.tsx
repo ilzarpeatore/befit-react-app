@@ -95,7 +95,7 @@ export default function ViewAllDiet(props: any) {
   };
 
   const renderEmpty = () => {
-    if (isLoading) return <ActivityIndicator size="large" color={C.brand5} style={{ marginTop: 60 }} />;
+    if (isLoading) return <ActivityIndicator size="large" color={C.orange} style={{ marginTop: 60 }} />;
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No results found</Text>

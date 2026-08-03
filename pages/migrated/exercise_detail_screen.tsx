@@ -227,7 +227,7 @@ export default function ExerciseDetailScreen(props: ExerciseDetailScreenProps) {
   if (isLoading && !mExerciseModel) {
     return (
       <View style={localStyles.loadingContainer}>
-        <ActivityIndicator size="large" color={C.brand5} />
+        <ActivityIndicator size="large" color={C.orange} />
       </View>
     );
   }
@@ -237,13 +237,13 @@ export default function ExerciseDetailScreen(props: ExerciseDetailScreenProps) {
       {/* App Bar */}
       <View style={localStyles.appBar}>
         <TouchableOpacity onPress={handleBack} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={localStyles.appBarTitle} numberOfLines={1}>
           {mExerciseName || ''}
         </Text>
         <TouchableOpacity onPress={handleTips} style={localStyles.tipsBtn}>
-          <Ionicons name="menu" size={24} color={C.brand5} />
+          <Ionicons name="menu" size={24} color={C.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -261,7 +261,7 @@ export default function ExerciseDetailScreen(props: ExerciseDetailScreenProps) {
         <View style={localStyles.levelRow}>
           {mExerciseModel?.levelTitle ? (
             <View style={localStyles.levelBadge}>
-              <Ionicons name="bar-chart" size={16} color={C.brand5} />
+              <Ionicons name="bar-chart" size={16} color={C.textPrimary} />
               <Text style={localStyles.levelText}>{mExerciseModel.levelTitle}</Text>
             </View>
           ) : null}
@@ -449,7 +449,7 @@ const localStyles = StyleSheet.create({
   setWeight: {
     fontFamily: FONT.regular,
     fontSize: 14,
-    color: C.brand5,
+    color: C.textPrimary,
     marginTop: 4,
   },
   noSets: {

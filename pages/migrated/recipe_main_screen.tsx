@@ -156,7 +156,7 @@ export default function RecipeMainScreen(props: any) {
         </TouchableOpacity>
         <View style={{ marginBottom: 24 }}>
           {isTagsLoading ? (
-            <ActivityIndicator size="small" color={C.brand5} style={{ paddingVertical: 16 }} />
+            <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
           ) : tags.length === 0 ? null : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
               {tags.map((item) => (
@@ -170,7 +170,7 @@ export default function RecipeMainScreen(props: any) {
                     })
                   }
                 >
-                  <Text style={[s.tagText, { color: C.brand5 }]}>{item.title}</Text>
+                  <Text style={[s.tagText, { color: C.textPrimary }]}>{item.title}</Text>
                   {item.recipeTagImage ? (
                     <Image
                       source={{ uri: item.recipeTagImage }}
@@ -190,7 +190,7 @@ export default function RecipeMainScreen(props: any) {
         </TouchableOpacity>
         <View style={{ marginBottom: 24 }}>
           {isCategoriesLoading ? (
-            <ActivityIndicator size="small" color={C.brand5} style={{ paddingVertical: 16 }} />
+            <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
           ) : categories.length === 0 ? null : (
             <View style={s.categoryGrid}>
               {displayCategories.map((item, index) => (
@@ -224,7 +224,7 @@ export default function RecipeMainScreen(props: any) {
                   onPress={navigateToCategoryList}
                 >
                   <View style={[s.viewMoreBox, { width: categoryWidth, height: 100 }]}>
-                    <Ionicons name="add" size={28} color={C.brand5} />
+                    <Ionicons name="add" size={28} color={C.textPrimary} />
                   </View>
                   <Text style={[s.categoryTitle, styles.fontBold]}>View More</Text>
                 </TouchableOpacity>
@@ -240,7 +240,7 @@ export default function RecipeMainScreen(props: any) {
         </TouchableOpacity>
         <View style={{ marginBottom: 16 }}>
           {isRecipesLoading ? (
-            <ActivityIndicator size="small" color={C.brand5} style={{ paddingVertical: 16 }} />
+            <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
           ) : recipes.length === 0 ? null : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {recipes.map((item) => (

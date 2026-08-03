@@ -90,7 +90,7 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
     if (selectedScreen < 3) {
       setSelectedScreen(selectedScreen + 1);
     } else {
-      navigation?.replace('ChattingImageScreen');
+      navigation?.replace('MigratedChattingImage');
     }
   };
 
@@ -106,7 +106,7 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
     <TouchableOpacity key={item.title} style={[styles.goalCard, isSelected && styles.goalCardSelected]} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.goalCardRow}>
         <View style={styles.goalIconBox}>
-          <Ionicons name={item.icon} size={28} color={isSelected ? C.white : C.brand5} />
+          <Ionicons name={item.icon} size={28} color={isSelected ? C.orange : C.gray40} />
         </View>
         <Text style={[styles.goalTitle, { color: isSelected ? C.white : C.white }]}>{item.title}</Text>
       </View>
@@ -119,12 +119,12 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
       {/* AppBar */}
       <View style={styles.appBar}>
         <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-          <Ionicons name="chevron-back" size={28} color={C.brand5} />
+          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.appBarTitle}>MightyFitness AI</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: '40@ratio' }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {/* Avatar placeholder */}
         <View style={styles.avatarImage} />
 
@@ -159,30 +159,30 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
                 <Ionicons name="trending-up" size={20} color={C.white} />
                 <Text style={styles.habitLabel}>Easy Habit Formation</Text>
               </View>
-              <View style={{ height: '8@ratio' }}>
-                <View style={{ height: '6@ratio', borderRadius: '3@ratio', backgroundColor: C.brand10, overflow: 'hidden' }}>
-                  <View style={{ height: '6@ratio', borderRadius: '3@ratio', backgroundColor: C.brand5, width: `${Math.min((0.9 / sliderValue) * 100, 100)}%` }} />
+              <View style={{ height: 8 }}>
+                <View style={{ height: 6, borderRadius: 3, backgroundColor: C.brand10, overflow: 'hidden' }}>
+                  <View style={{ height: 6, borderRadius: 3, backgroundColor: C.brand5, width: `${Math.min((0.9 / sliderValue) * 100, 100)}%` }} />
                 </View>
               </View>
-              <View style={[styles.habitRow, { marginTop: '16@ratio' }]}>
+              <View style={[styles.habitRow, { marginTop: 16 }]}>
                 <Ionicons name="speedometer" size={20} color={C.white} />
                 <Text style={styles.habitLabel}>Progression Speed</Text>
               </View>
-              <View style={{ height: '8@ratio' }}>
-                <View style={{ height: '6@ratio', borderRadius: '3@ratio', backgroundColor: C.brand10, overflow: 'hidden' }}>
-                  <View style={{ height: '6@ratio', borderRadius: '3@ratio', backgroundColor: C.brand5, width: `${(sliderValue / 10) * 100}%` }} />
+              <View style={{ height: 8 }}>
+                <View style={{ height: 6, borderRadius: 3, backgroundColor: C.brand10, overflow: 'hidden' }}>
+                  <View style={{ height: 6, borderRadius: 3, backgroundColor: C.brand5, width: `${(sliderValue / 10) * 100}%` }} />
                 </View>
               </View>
             </View>
             {/* Slider */}
-            <View style={{ marginHorizontal: '16@ratio' }}>
+            <View style={{ marginHorizontal: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 {[1, 2, 3, 4, 5, 6, 7].map((v) => (
                   <TouchableOpacity
                     key={v}
                     onPress={() => setSliderValue(v)}
                     style={{
-                      width: '36@ratio', height: '36@ratio', borderRadius: '18@ratio',
+                      width: 36, height: 36, borderRadius: 18,
                       backgroundColor: v === sliderValue ? C.brand5 : C.surfaceLight,
                       alignItems: 'center', justifyContent: 'center',
                     }}

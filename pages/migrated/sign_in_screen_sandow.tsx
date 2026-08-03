@@ -142,11 +142,11 @@ export default function SignInScreenSandow(props: any) {
               onPress={() => setRememberMe((p) => !p)}
             >
               <View style={[s.checkbox, rememberMe && s.checkboxActive]}>
-                {rememberMe && <Ionicons name="checkmark" size={12} color={sandowWhite} />}
+                {rememberMe && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
               </View>
               <Text style={[s.rememberText, styles.fontRegular]}>Remember me</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => props.navigation.navigate('MigratedForgotPasswordOptionsAuth')}>
+            <TouchableOpacity onPress={() => props.navigation.navigate('MigratedForgotPwd')}>
               <Text style={[s.forgotText, styles.fontMedium]}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
@@ -179,7 +179,7 @@ export default function SignInScreenSandow(props: any) {
           {/* Sign Up */}
           <View style={s.signUpRow}>
             <Text style={[s.signUpText, styles.fontRegular]}>New user?</Text>
-            <TouchableOpacity onPress={() => props.navigation.navigate('MigratedSignUp')}>
+            <TouchableOpacity onPress={() => props.navigation.navigate('MigratedSignUpSandow')}>
               <Text style={[s.signUpLink, styles.fontSemiBold]}> Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -235,7 +235,7 @@ const s = StyleSheet.create({
     height: 52,
     justifyContent: 'center',
   },
-  signInBtnText: { fontSize: 16, color: sandowWhite, fontWeight: '600' },
+  signInBtnText: { fontSize: 16, color: '#FFFFFF', fontWeight: '600' },
   orDivider: { flexDirection: 'row', alignItems: 'center', marginTop: 24 },
   dividerLine: { flex: 1, height: 1, backgroundColor: sandowDark },
   orText: { fontSize: 13, color: sandowGray, marginHorizontal: 16 },

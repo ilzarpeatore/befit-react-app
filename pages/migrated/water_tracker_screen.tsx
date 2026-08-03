@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedRing from '@components/AnimatedRing';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 
@@ -100,7 +101,7 @@ export default function WaterTrackerScreen(props: any) {
 
   const roundBtn = (icon: string, onPress: () => void) => (
     <TouchableOpacity style={styles.roundBtn} onPress={onPress}>
-      <Ionicons name={icon as any} size={24} color={C.white} />
+      <Ionicons name={icon as any} size={24} color={C.blue} />
     </TouchableOpacity>
   );
 
@@ -108,7 +109,7 @@ export default function WaterTrackerScreen(props: any) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.brand5} />
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Water Tracker</Text>
         <View style={{ width: 24 }} />
@@ -124,27 +125,13 @@ export default function WaterTrackerScreen(props: any) {
 
         {/* Circular Progress */}
         <View style={styles.progressContainer}>
-          <View style={styles.progressOuter}>
-            <View style={[styles.progressTrack, { borderColor: C.brand5 }]} />
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  borderColor: C.brand5,
-                  transform: [{ rotate: '-90deg' }],
-                  borderTopColor: progress > 0 ? C.brand5 : 'transparent',
-                  borderRightColor: progress > 0.25 ? C.brand5 : 'transparent',
-                  borderBottomColor: progress > 0.5 ? C.brand5 : 'transparent',
-                  borderLeftColor: progress > 0.75 ? C.brand5 : 'transparent',
-                },
-              ]}
-            />
-          </View>
-          <View style={styles.progressInner}>
-            <Ionicons name="water" size={60} color={C.brand5} />
-            <Text style={styles.consumedValue}>{consumed}</Text>
-            <Text style={styles.glassesLabel}>Glasses</Text>
-          </View>
+          <AnimatedRing size={240} strokeWidth={12} percent={progress * 100} color={C.blue} trackColor={C.gray10}>
+            <View style={styles.progressInner}>
+              <Ionicons name="water" size={60} color={C.blue} />
+              <Text style={styles.consumedValue}>{consumed}</Text>
+              <Text style={styles.glassesLabel}>Glasses</Text>
+            </View>
+          </AnimatedRing>
         </View>
 
         {/* Counter */}
@@ -168,11 +155,11 @@ export default function WaterTrackerScreen(props: any) {
         >
           <View style={styles.goalHeader}>
             <View style={styles.goalHeaderLeft}>
-              <Ionicons name="water" size={22} color={C.white} />
+              <Ionicons name="water" size={22} color="#FFFFFF" />
               <Text style={styles.goalTitle}>Daily Goal</Text>
             </View>
             <TouchableOpacity onPress={() => setEditingGoal(!editingGoal)}>
-              <Ionicons name="pencil" size={20} color={C.white} />
+              <Ionicons name="pencil" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 
@@ -234,7 +221,7 @@ export default function WaterTrackerScreen(props: any) {
 
       {isLoading && (
         <View style={styles.loaderOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </SafeAreaView>
@@ -256,7 +243,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: FONT.semiBold,
     fontSize: 20,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -270,7 +257,7 @@ const styles = StyleSheet.create({
   bannerText: {
     fontFamily: FONT.semiBold,
     fontSize: 14,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   progressContainer: {
     width: 240,
@@ -280,27 +267,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  progressOuter: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-  },
-  progressTrack: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 12,
-    borderColor: C.gray70,
-  },
-  progressFill: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 12,
-    borderColor: 'transparent',
-  },
   progressInner: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -308,7 +274,7 @@ const styles = StyleSheet.create({
   consumedValue: {
     fontFamily: FONT.bold,
     fontSize: 40,
-    color: C.brand5,
+    color: C.textPrimary,
     marginTop: 8,
   },
   glassesLabel: {
@@ -328,7 +294,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: C.brand5,
+    backgroundColor: C.blue10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -340,7 +306,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   logBtn: {
-    backgroundColor: C.brand5,
+    backgroundColor: C.blue,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 40,
@@ -351,7 +317,7 @@ const styles = StyleSheet.create({
   logBtnText: {
     fontFamily: FONT.semiBold,
     fontSize: 16,
-    color: C.white,
+    color: '#FFFFFF',
   },
   goalCard: {
     borderRadius: 16,
@@ -370,12 +336,12 @@ const styles = StyleSheet.create({
   goalTitle: {
     fontFamily: FONT.semiBold,
     fontSize: 20,
-    color: C.white,
+    color: '#FFFFFF',
   },
   goalValue: {
     fontFamily: FONT.medium,
     fontSize: 18,
-    color: C.white,
+    color: '#FFFFFF',
     marginTop: 8,
   },
   goalInput: {
@@ -418,7 +384,7 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontFamily: FONT.bold,
     fontSize: 17,
-    color: C.brand5,
+    color: C.textPrimary,
   },
   filterRow: {
     flexDirection: 'row',
@@ -429,18 +395,18 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: C.brand5,
+    borderColor: C.border,
   },
   filterChipActive: {
-    backgroundColor: C.brand5,
+    backgroundColor: C.blue10,
   },
   filterChipText: {
     fontFamily: FONT.regular,
     fontSize: 12,
-    color: C.brand5,
+    color: C.textSecondary,
   },
   filterChipTextActive: {
-    color: C.white,
+    color: C.blue,
   },
   chartPlaceholder: {
     height: 200,

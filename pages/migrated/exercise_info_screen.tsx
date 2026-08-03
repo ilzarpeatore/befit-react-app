@@ -209,7 +209,7 @@ export default function ExerciseInfoScreen(props: Props) {
                 <Ionicons
                   name="thumbs-up"
                   size={20}
-                  color={detail.user_feedback === 'like' ? C.white : C.textSecondary}
+                  color={detail.user_feedback === 'like' ? '#FFFFFF' : C.textSecondary}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -219,7 +219,7 @@ export default function ExerciseInfoScreen(props: Props) {
                 <Ionicons
                   name="thumbs-down"
                   size={20}
-                  color={detail.user_feedback === 'dislike' ? C.white : C.textSecondary}
+                  color={detail.user_feedback === 'dislike' ? '#FFFFFF' : C.textSecondary}
                 />
               </TouchableOpacity>
             </View>

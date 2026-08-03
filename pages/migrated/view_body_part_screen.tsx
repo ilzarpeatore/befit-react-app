@@ -103,7 +103,7 @@ export default function ViewBodyPartScreen(props: any) {
 
         {isLoading && (
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         )}
       </View>
@@ -119,7 +119,7 @@ export default function ViewBodyPartScreen(props: any) {
           </TouchableOpacity>
           <Text style={styles.appBarTitle}>Body Part Exercises</Text>
         </View>
-        <ActivityIndicator size="large" color={C.brand5} style={{ flex: 1 }} />
+        <ActivityIndicator size="large" color={C.orange} style={{ flex: 1 }} />
       </View>
     );
   }

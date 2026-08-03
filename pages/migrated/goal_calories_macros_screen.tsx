@@ -47,7 +47,7 @@ export default function GoalCaloriesMacrosScreen(props: GoalCaloriesMacrosScreen
           activeOpacity={0.7}
         >
           <View style={styles.optionIcon}>
-            <Ionicons name={opt.icon} size={20} color={C.brand5} />
+            <Ionicons name={opt.icon} size={20} color={C.textPrimary} />
           </View>
           <Text style={styles.optionText}>{opt.label}</Text>
           <Ionicons name="chevron-forward" size={20} style={styles.chevron} />

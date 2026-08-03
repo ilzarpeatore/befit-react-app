@@ -96,7 +96,7 @@ export default function ViewAllProductScreen(props: any) {
           </View>
         </ScrollView>
       ) : isLoading ? (
-        <ActivityIndicator size="large" color={C.brand5} style={{ marginTop: 60 }} />
+        <ActivityIndicator size="large" color={C.orange} style={{ marginTop: 60 }} />
       ) : (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No results found</Text>
@@ -105,7 +105,7 @@ export default function ViewAllProductScreen(props: any) {
 
       {isLoading && productList.length > 0 && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.brand5} />
+          <ActivityIndicator size="large" color={C.orange} />
         </View>
       )}
     </View>
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   productImage: { width: '100%', height: CARD_WIDTH },
   productInfo: { padding: 10 },
   productTitle: { fontSize: 13, fontFamily: FONT.semiBold, color: C.white, marginBottom: 4 },
-  productPrice: { fontSize: 14, fontFamily: FONT.bold, color: C.brand5 },
+  productPrice: { fontSize: 14, fontFamily: FONT.bold, color: C.textPrimary },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { fontSize: 14, color: C.gray30, fontFamily: FONT.regular },
   loadingOverlay: {

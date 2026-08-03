@@ -179,7 +179,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginTop: 32,
   },
-  createBtnText: { fontSize: 16, color: sandowWhite, fontWeight: '600' },
+  createBtnText: { fontSize: 16, color: '#FFFFFF', fontWeight: '600' },
   signInRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
   signInText: { fontSize: 14, color: sandowGray },
   signInLink: { fontSize: 14, color: sandowOrange, fontWeight: '600' },

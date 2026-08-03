@@ -209,7 +209,7 @@ export default function WorkoutSummary() {
                 borderRadius: r(16),
               }}
             >
-              <Text style={{ fontFamily: FONT.bold, fontSize: r(17), color: C.textWhite }}>
+              <Text style={{ fontFamily: FONT.bold, fontSize: r(17), color: '#FFFFFF' }}>
                 Done
               </Text>
             </LinearGradient>

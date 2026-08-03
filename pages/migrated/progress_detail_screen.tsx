@@ -145,7 +145,7 @@ export default function ProgressDetailScreen(props: any) {
     <View style={s.container}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={C.brand5} />
+          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.appBarTitle}>{mTitle}</Text>
         <View style={s.appBarActions}>
@@ -170,7 +170,7 @@ export default function ProgressDetailScreen(props: any) {
       <View style={s.body}>
         {isLoading ? (
           <View style={s.loadingContainer}>
-            <ActivityIndicator size="large" color={C.brand5} />
+            <ActivityIndicator size="large" color={C.orange} />
           </View>
         ) : graphData.length > 0 ? (
           <ScrollView ref={scrollRef} contentContainerStyle={s.scrollContent}>
