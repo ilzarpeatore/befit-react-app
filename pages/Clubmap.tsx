@@ -97,7 +97,6 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
             longitude: marker.longitude,
           }}
           onPress={() => {
-            //console.log(marker);
           }}
         >
           <View>
@@ -542,7 +541,6 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
       {/*return button start*/}
       <TouchableOpacity
         onPress={() => {
-          console.log("click");
           navigation.goBack();
         }}
         style={styles.returnbutton}
@@ -559,7 +557,6 @@ export default function Clubmap({ navigation }: ClubmapPropsInterface) {
           show_online_memeber_box ? (
           <TouchableOpacity
             onPress={() => {
-              console.log("click");
             }}
             style={styles.location}
           >

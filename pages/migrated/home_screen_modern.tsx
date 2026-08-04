@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   SafeAreaView,
   Image,
@@ -45,8 +47,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const user = state.user;
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const firstLoadDone = useRef(false);
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
   const r = (n: number) => Math.round(n * sc);
@@ -166,12 +170,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     menuItemTextDanger: { color: C.destructive },
   }), [sc]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (mode?: 'initial' | 'silent') => {
+    if (mode !== 'silent') {
+      setIsLoading(true);
+    }
     setErrorMessage(null);
     try {
       const now = new Date();
@@ -258,8 +260,16 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       setErrorMessage('Error al cargar los datos. Desliza para reintentar.');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData(firstLoadDone.current ? 'silent' : 'initial');
+      firstLoadDone.current = true;
+    }, [fetchData])
+  );
 
   if (isLoading) {
     return (
@@ -292,6 +302,16 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => {
+              setIsRefreshing(true);
+              fetchData('silent');
+            }}
+            tintColor={C.orange}
+          />
+        }
       >
         {/* Header */}
         <View style={styles.darkHeader}>
