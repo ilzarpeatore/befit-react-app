@@ -40,8 +40,5 @@
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts"
-  ],
-  "exclude": [
-    "pages/migrated/**/*"
   ]
 }

@@ -78,7 +78,6 @@ export default function Congratulation() {
               {/*actions go home start*/}
               <TouchableOpacity
                 onPress={() => {
-                  console.log("click");
                   navigation.navigate("Home"); // navigate to Home page
                 }}
                 style={styles.homebutton}

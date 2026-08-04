@@ -54,305 +54,160 @@ import SettingsScreen from "@pages/SettingsScreen";
 import FavouriteWorkouts from "@pages/FavouriteWorkouts";
 import ScreenExplorer from "@pages/ScreenExplorer";
 
-// @ts-ignore
 import AboutAppScreen from "@pages/migrated/about_app_screen";
-// @ts-ignore
 import AboutUsScreen from "@pages/migrated/about_us_screen";
-// @ts-ignore
 import ActivityTrackerScreen from "@pages/migrated/activity_tracker_screen";
-// @ts-ignore
 import AddPostScreen from "@pages/migrated/add_post_screen";
-// @ts-ignore
 import AddShoppingListScreen from "@pages/migrated/add_shopping_list_screen";
-// @ts-ignore
 import AssignScreen from "@pages/migrated/assign_screen";
-// @ts-ignore
 import BlogDetailScreen from "@pages/migrated/blog_detail_screen";
-// @ts-ignore
 import BlogScreen from "@pages/migrated/blog_screen";
-// @ts-ignore
 import BookmarkScreen from "@pages/migrated/bookmark_screen";
-// @ts-ignore
 import ChangePwdScreen from "@pages/migrated/change_pwd_screen";
-// @ts-ignore
 import ChattingImageScreen from "@pages/migrated/chatting_image_screen";
-// @ts-ignore
 import ChattingScreen from "@pages/migrated/chatting_screen";
-// @ts-ignore
 import ChewieScreen from "@pages/migrated/chewie_screen";
-// @ts-ignore
 import CommunityScreen from "@pages/migrated/community_screen";
 
-// @ts-ignore
 import DietDetailScreen from "@pages/migrated/diet_detail_screen";
-// @ts-ignore
 import AssignedMealsScreen from "@pages/migrated/assigned_meals_screen";
-// @ts-ignore
 import EditProfileScreen from "@pages/migrated/edit_profile_screen";
-// @ts-ignore
 import ExerciseDetailScreen from "@pages/migrated/exercise_detail_screen";
-// @ts-ignore
 import ExerciseInfoScreen from "@pages/migrated/exercise_info_screen";
-// @ts-ignore
 import ExerciseDurationScreen from "@pages/migrated/exercise_duration_screen";
-// @ts-ignore
 import ExerciseDurationScreencast from "@pages/migrated/exercise_duration_screencast";
-// @ts-ignore
 import ExerciseHistoryScreen from "@pages/migrated/exercise_history_screen";
-// @ts-ignore
 import ExerciseListScreen from "@pages/migrated/exercise_list_screen";
-// @ts-ignore
 import FavouriteRecipeScreen from "@pages/migrated/favourite_recipe_screen";
-// @ts-ignore
 import FavouriteScreen from "@pages/migrated/favourite_screen";
-// @ts-ignore
 import FilterWorkoutScreen from "@pages/migrated/filter_workout_screen";
-// @ts-ignore
 import ForgotPwdScreen from "@pages/migrated/forgot_pwd_screen";
-// @ts-ignore
 import GoalCaloriesMacrosScreen from "@pages/migrated/goal_calories_macros_screen";
-// @ts-ignore
 import GoalSelectionScreen from "@pages/migrated/goal_selection_screen";
 
 import HomeScreenModern from "@pages/migrated/home_screen_modern";
-// @ts-ignore
 import LanguageScreen from "@pages/migrated/language_screen";
-// @ts-ignore
 import MainGoalScreen from "@pages/migrated/main_goal_screen";
-// @ts-ignore
 import MealsRemindersScreen from "@pages/migrated/meals_reminders_screen";
-// @ts-ignore
 import MealsWaterReminderScreen from "@pages/migrated/meals_water_reminder_screen";
-// @ts-ignore
 import MissingDetailsScreen from "@pages/migrated/missing_details_screen";
-// @ts-ignore
 import MyProgramCalendarScreen from "@pages/migrated/my_program_calendar_screen";
-// @ts-ignore
 import NoDataScreen from "@pages/migrated/no_data_screen";
-// @ts-ignore
 import NoInternetScreen from "@pages/migrated/no_internet_screen";
-// @ts-ignore
 import NotificationScreen from "@pages/migrated/notification_screen";
-// @ts-ignore
 import OnboardingScreen from "@pages/migrated/onboarding_screen";
-// @ts-ignore
 import OtherUserProfileScreen from "@pages/migrated/other_user_profile_screen";
-// @ts-ignore
 import OTPScreen from "@pages/migrated/otp_screen";
-// @ts-ignore
 import PaymentScheduledScreen from "@pages/migrated/payment_scheduled_screen";
-// @ts-ignore
 import PaymentScreen from "@pages/migrated/payment_screen";
-// @ts-ignore
 import PlanScreen from "@pages/migrated/plan_screen";
-// @ts-ignore
 import PostDetailsScreen from "@pages/migrated/post_details_screen";
-// @ts-ignore
 import PrivacyPolicyScreen from "@pages/migrated/privacy_policy_screen";
-// @ts-ignore
 import ProductDetailScreen from "@pages/migrated/product_detail_screen";
-// @ts-ignore
 import ProductScreen from "@pages/migrated/product_screen";
-// @ts-ignore
 import ProfileScreenMigrated from "@pages/migrated/profile_screen";
-// @ts-ignore
 import ProfileScreenSandow from "@pages/migrated/profile_screen_sandow";
-// @ts-ignore
 import ProgressDetailScreen from "@pages/migrated/progress_detail_screen";
-// @ts-ignore
 import ProgressScreen from "@pages/migrated/progress_screen";
-// @ts-ignore
 import ProgressSettingScreen from "@pages/migrated/progress_setting_screen";
-// @ts-ignore
 import RecipeCategoryListScreen from "@pages/migrated/recipe_category_list_screen";
-// @ts-ignore
 import RecipeListScreenV2 from "@pages/migrated/recipe_list_screen_v2";
-// @ts-ignore
 import RecipeMainScreen from "@pages/migrated/recipe_main_screen";
-// @ts-ignore
 import WorkoutTemplateListScreen from "@pages/migrated/workout_template_list_screen";
-// @ts-ignore
 import RecipeTagListScreen from "@pages/migrated/recipe_tag_list_screen";
-// @ts-ignore
 import ReminderScreen from "@pages/migrated/reminder_screen";
 import ResourceDetailScreen from "@pages/migrated/resource_detail_screen";
 import ResourcesListScreen from "@pages/migrated/resources_list_screen";
-// @ts-ignore
 import ScheduleScreen from "@pages/migrated/schedule_screen";
-// @ts-ignore
 import SearchScreen from "@pages/migrated/search_screen";
-// @ts-ignore
 import SetReminderScreen from "@pages/migrated/set_reminder_screen";
-// @ts-ignore
 import SettingScreen from "@pages/migrated/setting_screen";
-// @ts-ignore
 import ShoppingListDetailScreen from "@pages/migrated/shopping_list_detail_screen";
-// @ts-ignore
 import ShoppingListScreen from "@pages/migrated/shopping_list_screen";
-// @ts-ignore
 import SignInScreenSandow from "@pages/migrated/sign_in_screen_sandow";
-// @ts-ignore
 import SignUpScreenSandow from "@pages/migrated/sign_up_screen_sandow";
 
-// @ts-ignore
 import SleepMonitoringScreen from "@pages/migrated/sleep_monitoring_screen";
-// @ts-ignore
 import SplashScreenMigrated from "@pages/migrated/splash_screen";
-// @ts-ignore
 import StepsCountScreen from "@pages/migrated/steps_count_screen";
-// @ts-ignore
 import SubscribeScreen from "@pages/migrated/subscribe_screen";
-// @ts-ignore
 import SubscriptionDetailScreen from "@pages/migrated/subscription_detail_screen";
-// @ts-ignore
 import TermsAndConditionsScreen from "@pages/migrated/terms_and_conditions_screen";
-// @ts-ignore
 import TipsScreen from "@pages/migrated/tips_screen";
-// @ts-ignore
 import VerifyOtpScreen from "@pages/migrated/verify_otp_screen";
-// @ts-ignore
 import VideoDetailScreen from "@pages/migrated/video_detail_screen";
-// @ts-ignore
 import VideoScreen from "@pages/migrated/video_screen";
-// @ts-ignore
 import ViewAllBlogScreen from "@pages/migrated/view_all_blog_screen";
-// @ts-ignore
 import ViewAllDiet from "@pages/migrated/view_all_diet";
-// @ts-ignore
 import ViewAllProductScreen from "@pages/migrated/view_all_product_screen";
-// @ts-ignore
 import ViewBodyPartScreen from "@pages/migrated/view_body_part_screen";
-// @ts-ignore
 import ViewDietCategoryScreen from "@pages/migrated/view_diet_category_screen";
-// @ts-ignore
 import ViewEquipmentScreen from "@pages/migrated/view_equipment_screen";
-// @ts-ignore
 import ViewLevelScreen from "@pages/migrated/view_level_screen";
-// @ts-ignore
 import ViewProductCategoryScreen from "@pages/migrated/view_product_category_screen";
-// @ts-ignore
 import ViewWorkoutsScreen from "@pages/migrated/view_workouts_screen";
-// @ts-ignore
 import WalkThroughScreen from "@pages/migrated/walk_through_screen";
-// @ts-ignore
 import WaterRemindersScreen from "@pages/migrated/water_reminders_screen";
-// @ts-ignore
 import WaterTrackerScreen from "@pages/migrated/water_tracker_screen";
-// @ts-ignore
 import WebViewScreen from "@pages/migrated/web_view_screen";
-// @ts-ignore
 import WorkoutDetailScreenMig from "@pages/migrated/workout_detail_screen";
-// @ts-ignore
 import WorkoutHistoryScreen from "@pages/migrated/workout_history_screen";
-// @ts-ignore
 import WorkoutPreviewScreen from "@pages/migrated/workout_preview_screen";
-// @ts-ignore
 import WorkoutSessionScreenMig from "@pages/migrated/workout_session_screen";
-// @ts-ignore
 import WorkoutFeedbackScreen from "@pages/migrated/workout_feedback_screen";
-// @ts-ignore
 import WorkoutSummaryScreenMig from "@pages/migrated/workout_summary_screen";
-// @ts-ignore
 import YoutubePlayerScreen from "@pages/migrated/youtube_player_screen";
 
 
 
-// @ts-ignore
 import DeviceConnectedScreen from "@pages/migrated/home/device_connected_screen";
-// @ts-ignore
 import EmparejandoScreen from "@pages/migrated/home/emparejando_screen";
-// @ts-ignore
 import FitnessMetricsScreen from "@pages/migrated/home/fitness_metrics_screen";
-// @ts-ignore
 import HealthMetricInsightScreen from "@pages/migrated/home/health_metric_insight_screen";
-// @ts-ignore
 import HeartRateDetailsScreen from "@pages/migrated/home/heart_rate_details_screen";
-// @ts-ignore
 import HeartRateHistoryScreen from "@pages/migrated/home/heart_rate_history_screen";
-// @ts-ignore
 import HeartRateInsightScreen from "@pages/migrated/home/heart_rate_insight_screen";
-// @ts-ignore
 import HeartRateScreen from "@pages/migrated/home/heart_rate_screen";
-// @ts-ignore
 import HeartRateZoneScreen from "@pages/migrated/home/heart_rate_zones_screen";
-// @ts-ignore
 import HomeEmptyScreen from "@pages/migrated/home/home_empty_screen";
-// @ts-ignore
 import LinkDeviceChoiceScreen from "@pages/migrated/home/link_device_choice_screen";
-// @ts-ignore
 import LinkDeviceListScreen from "@pages/migrated/home/link_device_list_screen";
-// @ts-ignore
 import LogStepsFormScreen from "@pages/migrated/home/log_steps_form_screen";
-// @ts-ignore
 import LogWeightFormScreen from "@pages/migrated/home/log_weight_form_screen";
-// @ts-ignore
 import LogWeightKeyboardScreen from "@pages/migrated/home/log_weight_keyboard_screen";
-// @ts-ignore
 import ManageHealthMetricsScreen from "@pages/migrated/home/manage_health_metrics_screen";
-// @ts-ignore
 import SandowScoreScreenHome from "@pages/migrated/home/sandow_score_screen";
-// @ts-ignore
 import ScoreBreakdownRadarScreenHome from "@pages/migrated/home/score_breakdown_radar_screen";
-// @ts-ignore
 import StepGoalCompletedScreen from "@pages/migrated/home/step_goal_completed_screen";
-// @ts-ignore
 import StepGoalScreen from "@pages/migrated/home/step_goal_screen";
-// @ts-ignore
 import StepsDetailsScreen from "@pages/migrated/home/steps_details_screen";
-// @ts-ignore
 import StepsHistoryScreen from "@pages/migrated/home/steps_history_screen";
-// @ts-ignore
 import StepsInsightScreenHome from "@pages/migrated/home/steps_insight_screen";
-// @ts-ignore
 import StepsLoggedScreen from "@pages/migrated/home/steps_logged_screen";
-// @ts-ignore
 import StepsScreen from "@pages/migrated/home/steps_screen";
-// @ts-ignore
 import WeightDeadlineScreen from "@pages/migrated/home/weight_deadline_screen";
-// @ts-ignore
 import WeightDetailsScreen from "@pages/migrated/home/weight_details_screen";
-// @ts-ignore
 import WeightGoalCompletedScreen from "@pages/migrated/home/weight_goal_completed_screen";
-// @ts-ignore
 import WeightGoalSetScreenHome from "@pages/migrated/home/weight_goal_set_screen";
-// @ts-ignore
 import WeightGoalSummaryScreen from "@pages/migrated/home/weight_goal_summary_screen";
-// @ts-ignore
 import WeightHistoryScreen from "@pages/migrated/home/weight_history_screen";
-// @ts-ignore
 import WeightInsightScreenHome from "@pages/migrated/home/weight_insight_screen";
-// @ts-ignore
 import WeightLoggedScreenHome from "@pages/migrated/home/weight_logged_screen";
-// @ts-ignore
 import WeightLoseGainChoiceScreen from "@pages/migrated/home/weight_lose_gain_choice_screen";
-// @ts-ignore
 import WeightReminderScreen from "@pages/migrated/home/weight_reminder_screen";
-// @ts-ignore
 import WeightScreenMigrated from "@pages/migrated/home/weight_screen";
-// @ts-ignore
 import WeightSetGoalScreen from "@pages/migrated/home/weight_set_goal_screen";
 
-// @ts-ignore
 import ArticlesScreen from "@pages/migrated/onboarding/articles_screen";
-// @ts-ignore
 import AssessmentResultScreen from "@pages/migrated/onboarding/assessment_result_screen";
-// @ts-ignore
 import AvatarSetupScreen from "@pages/migrated/onboarding/avatar_setup_screen";
-// @ts-ignore
 import ChoosePlanScreen from "@pages/migrated/onboarding/choose_plan_screen";
-// @ts-ignore
 import HealthScreen from "@pages/migrated/onboarding/health_screen";
-// @ts-ignore
 import NotificationsScreen from "@pages/migrated/onboarding/notifications_screen";
-// @ts-ignore
 import OnboardingCompleteScreen from "@pages/migrated/onboarding/onboarding_complete_screen";
-// @ts-ignore
 import PrivacyPolicyScreenOnboard from "@pages/migrated/onboarding/privacy_policy_screen";
-// @ts-ignore
 import ProfileSetupFormScreen from "@pages/migrated/onboarding/profile_setup_form_screen";
-// @ts-ignore
 import ProfileSetupIntroScreen from "@pages/migrated/onboarding/profile_setup_intro_screen";
-// @ts-ignore
 import RecommendationsScreen from "@pages/migrated/onboarding/recommendations_screen";
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
