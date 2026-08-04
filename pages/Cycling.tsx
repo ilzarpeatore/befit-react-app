@@ -91,7 +91,6 @@ export default function Cycling({ navigation }: CyclingPropsInterface) {
           {/*record box finish record btn*/}
           <TouchableOpacity
             onPress={() => {
-              console.log("finish");
               navigation.navigate("Clubnav", { screen: "Congratulation" }); // navigate to Congratulation page
             }}
             style={styles.activityboxbottombtn}
@@ -336,7 +335,6 @@ export default function Cycling({ navigation }: CyclingPropsInterface) {
       {/*return button start*/}
       <TouchableOpacity
         onPress={() => {
-          console.log("click");
           navigation.goBack();
         }}
         style={styles.returnbutton}
