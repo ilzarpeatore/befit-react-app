@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface PostData {
   id: number;
@@ -37,6 +38,21 @@ export interface PostListResponse {
   };
 }
 
+export interface PostComment {
+  id: number;
+  comment: string;
+  user_id: number;
+  posting_id: number;
+  users: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    display_name: string;
+    profile_image: string;
+  };
+  created_at: string;
+}
+
 export const postsApi = {
   getList: (page: number = 1, userId?: number) =>
     apiClient.get<PostListResponse>(`userpost-list?page=${page}${userId ? `&user_id=${userId}` : ''}`),
@@ -45,22 +61,22 @@ export const postsApi = {
     apiClient.get<{ data: PostData }>(`userpost-detail?id=${postId}`),
 
   like: (postId: number) =>
-    apiClient.post('like-userpost', { posting_id: postId }),
+    apiClient.post<ApiMessageResponse>('like-userpost', { posting_id: postId }),
 
   bookmark: (postId: number) =>
-    apiClient.post('bookmark-userpost', { posting_id: postId }),
+    apiClient.post<ApiMessageResponse>('bookmark-userpost', { posting_id: postId }),
 
   saveComment: (postId: number, comment: string) =>
-    apiClient.post('save-comment', { posting_id: postId, comment }),
+    apiClient.post<ApiMessageResponse>('save-comment', { posting_id: postId, comment }),
 
   getComments: (postId: number, page: number = 1) =>
-    apiClient.get(`comment-list?posting_id=${postId}&page=${page}`),
+    apiClient.get<{ data: PostComment[] }>(`comment-list?posting_id=${postId}&page=${page}`),
 
   deletePost: (postId: number) =>
-    apiClient.post('delete-userpost', { id: postId }),
+    apiClient.post<ApiMessageResponse>('delete-userpost', { id: postId }),
 
   report: (postId: number, reason: string) =>
-    apiClient.post('report-on-posting', { posting_id: postId, reason }),
+    apiClient.post<ApiMessageResponse>('report-on-posting', { posting_id: postId, reason }),
 
   getBookmarks: (page: number = 1) =>
     apiClient.get<PostListResponse>(`my-bookmark-post-list?page=${page}`),

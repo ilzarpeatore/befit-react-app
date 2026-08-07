@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 // Pantalla de Detalle de Ejercicio (4 pestañas). Ver docs/pantalla ejercicio.md
 // Backend: app/Http/Controllers/API/ExerciseInfoController.php + ExerciseFeedbackController.php
@@ -54,5 +55,5 @@ export const exerciseInfoApi = {
     apiClient.get<{ data: ExerciseAnalysisData }>('v1/exercise-analysis', { params: { exercise_id: exerciseId } }),
 
   sendFeedback: (exerciseId: number, feedback: 'like' | 'dislike' | null) =>
-    apiClient.post('v1/exercise-feedback', { exercise_id: exerciseId, feedback }),
+    apiClient.post<ApiMessageResponse>('v1/exercise-feedback', { exercise_id: exerciseId, feedback }),
 };

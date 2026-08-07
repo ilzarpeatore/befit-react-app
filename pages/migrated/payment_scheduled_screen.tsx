@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
 
 interface PaymentGateway {
   type: string;
@@ -51,7 +52,7 @@ export default function PaymentScheduledScreen(props: any) {
       // const value = await getPaymentApi();
       // setPaymentList(value.data);
     } catch (e) {
-      console.log('Payment list error:', e);
+      logger.error('Payment list error:', e);
     } finally {
       setIsLoading(false);
     }

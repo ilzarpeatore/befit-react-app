@@ -1,5 +1,6 @@
 import apiClient from './client';
 import { DailyPlanDetailResponse } from './diet';
+import { ApiMessageResponse } from './types';
 
 export interface RecipeListItem {
   id: number;
@@ -111,16 +112,16 @@ export const recipesApi = {
     apiClient.get<RecipeDetailResponse>(`recipe-detail/${id}`),
 
   saveDailyPlanRecipe: (daily_plan_id: number, recipe_id: number, meal_type: string) =>
-    apiClient.post('save-daily-plan-recipe', { daily_plan_id, recipe_id, meal_type }),
+    apiClient.post<ApiMessageResponse>('save-daily-plan-recipe', { daily_plan_id, recipe_id, meal_type }),
 
   updateDailyPlanRecipe: (id: number, daily_plan_id: number, recipe_id: number, meal_type: string, is_complete: boolean) =>
     apiClient.post<DailyPlanDetailResponse>('save-daily-plan-recipe', { id, daily_plan_id, recipe_id, meal_type, is_complete }),
 
   deleteDailyPlanRecipe: (id: number) =>
-    apiClient.post('daily-plan-recipe-delete', { id }),
+    apiClient.post<ApiMessageResponse>('daily-plan-recipe-delete', { id }),
 
   deleteAllDailyPlanRecipes: (daily_plan_id: number) =>
-    apiClient.post('daily-plan-recipe-delete-all', { daily_plan_id }),
+    apiClient.post<ApiMessageResponse>('daily-plan-recipe-delete-all', { daily_plan_id }),
 
   getMacroNutrients: () =>
     apiClient.get<{ data: MacroNutrient[] }>('get-macro-nutrient'),
@@ -132,7 +133,7 @@ export const recipesApi = {
     apiClient.get<{ data: RecipeTag[]; pagination: Pagination }>('recipetag-list', { params: { page, per_page } }),
 
   setFavourite: (recipe_id: number) =>
-    apiClient.post('set-favourite-recipe', { recipe_id }),
+    apiClient.post<ApiMessageResponse>('set-favourite-recipe', { recipe_id }),
 
   getFavourite: (page: number = 1) =>
     apiClient.get<RecipeListResponse>(`get-favourite-recipe?page=${page}`),

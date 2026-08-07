@@ -492,7 +492,6 @@ export default function Home({ navigation }: HomePropsInterface) {
                 </View>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log("profile");
                     navigation.navigate("Profile"); //navigate to profile page
                   }}
                 >
