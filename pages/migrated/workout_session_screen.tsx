@@ -208,6 +208,26 @@ export default function WorkoutSessionScreen(props: Props) {
     [allExercises]
   );
 
+  // Sets planos {exercise_id, weight, reps} de todas las series completadas
+  // de la sesion - se envian tal cual a muscleVolumeApi.compute() en la
+  // pantalla de resumen, sin depender de que ya esten guardadas en BD.
+  const muscleVolumeSets = useMemo(() => {
+    const sets: { exercise_id: number; weight: number | null; reps: number | null }[] = [];
+    allExercises.forEach((ex) => {
+      ex.rows.forEach((row) => {
+        if (!row.completed) return;
+        const carga = parseFloat(row.values.carga);
+        const reps = parseFloat(row.values.reps);
+        sets.push({
+          exercise_id: ex.exerciseId,
+          weight: isNaN(carga) ? null : carga,
+          reps: isNaN(reps) ? null : reps,
+        });
+      });
+    });
+    return sets;
+  }, [allExercises]);
+
   const syncExerciseLog = useCallback(
     (ex: SessionExercise) => {
       const loggedSets = ex.rows
@@ -408,6 +428,12 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const navigateToFeedback = () => {
     const exerciseIds = Array.from(new Set(allExercises.map((ex) => ex.exerciseId)));
+    // Solo ejercicios con al menos una serie completada, en el orden en que
+    // aparecen en la sesion — para la lista de ejercicios del carrusel de
+    // resumen (pantallas 4 y 6 de Pantallas_Resumen_Entrenamiento.md).
+    const exercisesSummary = allExercises
+      .map((ex) => ({ title: ex.title, sets: ex.rows.filter((r) => r.completed).length }))
+      .filter((ex) => ex.sets > 0);
     navigation?.navigate('MigratedWorkoutFeedback', {
       programDayAssignmentId,
       workoutTemplateId,
@@ -418,6 +444,8 @@ export default function WorkoutSessionScreen(props: Props) {
       exerciseCount: allExercises.length,
       completedSets: allExercises.reduce((sum, ex) => sum + ex.rows.filter((r) => r.completed).length, 0),
       exerciseIds,
+      muscleVolumeSets,
+      exercisesSummary,
     });
   };
 

@@ -141,6 +141,14 @@ export default function ExerciseListScreen(props: ExerciseListScreenProps) {
             {(mTitle || '').replace(/^\w/, (c) => c.toUpperCase())}
           </Text>
         )}
+        {!isSearch && (
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate('MigratedViewBodyPart')}
+            style={localStyles.searchBtn}
+          >
+            <Ionicons name="body-outline" size={22} color={C.textPrimary} />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={toggleSearch} style={localStyles.searchBtn}>
           <Ionicons name={isSearch ? 'close' : 'search'} size={22} color={C.textPrimary} />
         </TouchableOpacity>

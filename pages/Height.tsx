@@ -276,7 +276,6 @@ export default function Height({ navigation }: HeightPropsInterface) {
             <TouchableOpacity
               style={styles.skipbtn}
               onPress={() => {
-                console.log("skip");
               }}
             >
               <Text style={styles.skipbtntext}>Skip</Text>

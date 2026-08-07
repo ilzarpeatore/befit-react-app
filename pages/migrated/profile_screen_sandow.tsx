@@ -70,7 +70,7 @@ export default function ProfileScreenSandow(props: any) {
         <View style={s.header}>
           <View style={s.headerRow}>
             <Text style={s.headerTitle}>Profile</Text>
-            <TouchableOpacity style={s.settingsBtn} onPress={() => props.navigation?.navigate('MigratedSetting')}>
+            <TouchableOpacity style={s.settingsBtn} onPress={() => props.navigation?.navigate('MigratedProfile')}>
               <Ionicons name="settings-outline" size={22} color={C.gray30} />
             </TouchableOpacity>
           </View>

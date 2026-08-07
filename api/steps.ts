@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface StepsGoalItem {
   id: number;
@@ -15,7 +16,7 @@ export interface StepsGraphItem {
 
 export const stepsApi = {
   saveGoal: (goal_steps: number) =>
-    apiClient.post('user-daily-steps-goal-save', { goal_steps }),
+    apiClient.post<ApiMessageResponse>('user-daily-steps-goal-save', { goal_steps }),
 
   getGoalList: () =>
     apiClient.get<{ data: StepsGoalItem[] }>('user-daily-steps-goal-list'),
