@@ -5,6 +5,7 @@ import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { dietApi } from '../../api/diet';
 import { recipesApi, RecipeStep, RecipeIngredient } from '../../api/recipes';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -76,7 +77,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             isFavourite: 0,
           });
         })
-        .catch((e) => console.log(e))
+        .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
   }, [fallbackId]);
@@ -110,7 +111,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             (res.data?.recipe_steps ?? []).slice().sort((a, b) => a.sequence - b.sequence)
           );
         })
-        .catch((e) => console.log(e))
+        .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
   }, [recipeId]);
@@ -129,7 +130,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         isFavourite: prev.isFavourite === 1 ? 0 : 1,
       }));
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -155,7 +156,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
     ) : isRecipeMode ? (
       <View style={localStyles.htmlContent}>
         {recipeIngredients.length === 0 ? (
-          <Text style={localStyles.htmlText}>No ingredients listed.</Text>
+          <Text style={localStyles.htmlText}>No hay ingredientes.</Text>
         ) : (
           recipeIngredients.map((ing) => (
             <View key={ing.id} style={localStyles.ingredientRow}>
@@ -184,7 +185,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
     ) : isRecipeMode ? (
       <View style={localStyles.htmlContent}>
         {recipeSteps.length === 0 ? (
-          <Text style={localStyles.htmlText}>No instructions listed.</Text>
+          <Text style={localStyles.htmlText}>No hay instrucciones.</Text>
         ) : (
           recipeSteps.map((step, index) => (
             <Text key={step.id} style={[localStyles.htmlText, { marginBottom: 10 }]}>
@@ -256,13 +257,13 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
           {/* Nutrients Row */}
           <View style={localStyles.nutrientsRow}>
-            {getVitamins('flame-outline', `${dietState.calories || '0'} Kcal`, 'Calories')}
+            {getVitamins('flame-outline', `${dietState.calories || '0'} Kcal`, 'Calorías')}
             <View style={localStyles.divider} />
-            {getVitamins('leaf-outline', `${dietState.carbs || '0'} g`, 'Carbs')}
+            {getVitamins('leaf-outline', `${dietState.carbs || '0'} g`, 'Carbohidratos')}
             <View style={localStyles.divider} />
-            {getVitamins('water-outline', `${dietState.fat || '0'} g`, 'Fat')}
+            {getVitamins('water-outline', `${dietState.fat || '0'} g`, 'Grasas')}
             <View style={localStyles.divider} />
-            {getVitamins('nutrition-outline', `${dietState.protein || '0'} g`, 'Protein')}
+            {getVitamins('nutrition-outline', `${dietState.protein || '0'} g`, 'Proteína')}
           </View>
 
           <View style={localStyles.separator} />
@@ -274,7 +275,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
               onPress={() => setSelect(true)}
             >
               <Text style={[localStyles.tabText, select && localStyles.activeTabText]}>
-                Ingredients
+                Ingredientes
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -282,7 +283,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
               onPress={() => setSelect(false)}
             >
               <Text style={[localStyles.tabText, !select && localStyles.activeTabText]}>
-                Instruction
+                Instrucciones
               </Text>
             </TouchableOpacity>
           </View>
@@ -434,7 +435,7 @@ const localStyles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: C.brand50,
+    borderBottomColor: C.orange,
   },
   tabText: {
     fontFamily: FONT.bold,
@@ -462,7 +463,7 @@ const localStyles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: C.brand50,
+    backgroundColor: C.orange,
     marginRight: 10,
   },
   ingredientQty: {

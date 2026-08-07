@@ -385,7 +385,7 @@ export default function WorkoutPreviewScreen(props: Props) {
                 return (
                   <View key={ex.id} style={styles.exerciseCard}>
                     <View style={styles.exerciseRow}>
-                      <ExerciseThumbMem image={ex.image} />
+                      <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} />
                       <View style={styles.exerciseInfo}>
                         <Text style={styles.exerciseTitle} numberOfLines={2}>
                           {ex.title}

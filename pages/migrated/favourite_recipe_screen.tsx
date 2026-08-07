@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { recipesApi } from '../../api/recipes';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -50,7 +51,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
       else setRecipeList((prev) => [...prev, ...items]);
       setIsLastPage(value.data.pagination?.currentPage === value.data.pagination?.totalPages);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { postsApi } from '../../api/posts';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -46,7 +47,7 @@ export default function CommunityScreen(props: any) {
       if (pageNum === 1) setMPostList(list);
       else setMPostList((prev) => [...prev, ...list]);
     } catch (e) {
-      console.log('Error fetching posts', e);
+      logger.error('Error fetching posts', e);
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,6 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
+import { UserData } from './profile';
 
 export interface LoginPayload {
   email: string;
@@ -70,7 +72,7 @@ export const authApi = {
     apiClient.post<LoginResponse>('login', payload),
 
   register: (payload: RegisterPayload) =>
-    apiClient.post('register', payload),
+    apiClient.post<{ data: LoginResponse['data'] }>('register', payload),
 
   // Valida un código de invitación de cliente de entrenamiento personal
   // antes de enviar el registro, para poder mostrar una confirmación.
@@ -78,20 +80,20 @@ export const authApi = {
     apiClient.post<{ data: { valid: boolean; reason?: string; first_name?: string | null; last_name?: string | null } }>('check-invite-code', { code }),
 
   socialLogin: (payload: SocialLoginPayload) =>
-    apiClient.post('social-mail-login', payload),
+    apiClient.post<ApiMessageResponse>('social-mail-login', payload),
 
   socialOtpLogin: (payload: SocialOtpLoginPayload) =>
     apiClient.post<SocialOtpLoginResponse>('social-otp-login', payload),
 
   updateProfile: (payload: Record<string, any>) =>
-    apiClient.post('update-profile', payload),
+    apiClient.post<{ data: UserData }>('update-profile', payload),
 
   getUserDetail: (id: number) =>
-    apiClient.get(`user-detail?id=${id}`),
+    apiClient.get<{ data: UserData }>(`user-detail?id=${id}`),
 
   changePassword: (payload: { old_password: string; new_password: string }) =>
-    apiClient.post('change-password', payload),
+    apiClient.post<ApiMessageResponse>('change-password', payload),
 
   forgotPassword: (payload: { email: string }) =>
-    apiClient.post('forget-password', payload),
+    apiClient.post<ApiMessageResponse>('forget-password', payload),
 };

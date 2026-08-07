@@ -140,7 +140,6 @@ export default function Stories({ navigation }: StoriesPropsInterface) {
     }).start(() => {
       // if reach end
       if (index == storyslider.length - 1) {
-        console.log("end");
         navigation.navigate("Home", {
           screen: "Club",
         }); // navigate to club page

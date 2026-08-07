@@ -33,7 +33,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
     /* save navigation tab x positions */
-    var { x } = event.nativeEvent.layout;
+    let { x } = event.nativeEvent.layout;
     let locations = navlocations;
     locations[index] = x;
     set_navlocations(locations);

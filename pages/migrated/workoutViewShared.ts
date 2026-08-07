@@ -11,6 +11,8 @@ export interface UnifiedExercise {
   exerciseId: number;
   title: string;
   image: string | null;
+  /** body_parts.id del musculo principal — heatmap aislado en ExerciseThumb. */
+  bodyPartId: number | null;
   videoUrl: string | null;
   prescribed: Record<string, any>;
   enabledMetrics: string[];
@@ -65,6 +67,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
         exerciseId: e.exercise_id,
         title: e.title || 'Ejercicio',
         image: e.exercise_image,
+        bodyPartId: e.body_part_id ?? null,
         videoUrl: e.video_url,
         prescribed: e.sets || {},
         enabledMetrics: e.enabled_metrics || [],
@@ -101,6 +104,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
         exerciseId: e.exercise_id,
         title: e.title || e.exercise?.title || 'Ejercicio',
         image: e.exercise_image,
+        bodyPartId: e.body_part_id ?? null,
         videoUrl: e.video_url,
         prescribed: e.prescribed || {},
         enabledMetrics: e.enabled_metrics || [],

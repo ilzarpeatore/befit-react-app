@@ -274,7 +274,6 @@ export default function Weight({ navigation }: WeightPropsInterface) {
             <TouchableOpacity
               style={styles.skipbtn}
               onPress={() => {
-                console.log("skip");
               }}
             >
               <Text style={styles.skipbtntext}>Skip</Text>

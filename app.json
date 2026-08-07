@@ -35,7 +35,7 @@
       "policy": "sdkVersion"
     },
     "extra": {
-      "apiBaseUrl": "http://192.168.1.145:8000/api"
+      "apiBaseUrl": "https://testapp.bestronger.es/api"
     },
     "experiments": {
       "tsconfigPaths": true
@@ -50,6 +50,27 @@
           "android": {
             "usesCleartextTraffic": true
           }
+        }
+      ],
+      "expo-image",
+      [
+        "expo-notifications",
+        {
+          "color": "#1A1735"
+        }
+      ],
+      [
+        "react-native-share",
+        {
+          "ios": ["instagram-stories", "instagram"],
+          "android": ["com.instagram.android"]
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Permite a BeFit guardar la imagen de tu resumen de entrenamiento en tu galería.",
+          "savePhotosPermission": "Permite a BeFit guardar la imagen de tu resumen de entrenamiento en tu galería."
         }
       ]
     ]

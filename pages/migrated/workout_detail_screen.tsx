@@ -162,13 +162,8 @@ export default function WorkoutDetailScreen(props: any) {
         style={styles.exerciseItem}
         activeOpacity={0.7}
         onPress={() => {
-          props.navigation?.navigate('MigratedExerciseDetail', {
+          props.navigation?.navigate('MigratedExerciseInfo', {
             mExerciseId: item.exercise?.id,
-            mExerciseName: item.exercise?.title,
-            workOutId: workoutId?.toString(),
-            workoutDayId: item.workout_day_id,
-            isCompleted: true,
-            isFrom: 'workoutDetail',
           });
         }}
       >
