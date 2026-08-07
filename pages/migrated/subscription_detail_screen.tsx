@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { subscriptionApi, SubscriptionPlanItem } from '../../api/subscription';
 import { useAuth } from '../../store/AuthContext';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -40,7 +41,7 @@ export default function SubscriptionDetailScreen(props: any) {
       const res = await subscriptionApi.getSubscriptionPlanList();
       setPlanList(res.data?.data || []);
     } catch (e) {
-      console.log('Failed to load subscriptions', e);
+      logger.error('Failed to load subscriptions', e);
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +67,7 @@ export default function SubscriptionDetailScreen(props: any) {
             await subscriptionApi.cancel(id);
             getSubscriptionList();
           } catch (e) {
-            console.log('Failed to cancel subscription', e);
+            logger.error('Failed to cancel subscription', e);
           } finally {
             setCancellingId(null);
           }

@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface WaterGoalItem {
   id: number;
@@ -15,7 +16,7 @@ export interface WaterGraphItem {
 
 export const waterApi = {
   saveGoal: (goal_ml: number) =>
-    apiClient.post('user-daily-water-goal-save', { goal_ml }),
+    apiClient.post<ApiMessageResponse>('user-daily-water-goal-save', { goal_ml }),
 
   getGoalList: () =>
     apiClient.get<{ data: WaterGoalItem[] }>('user-daily-water-goal-list'),

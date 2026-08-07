@@ -9,6 +9,13 @@ npm-debug.*
 *.orig.*
 web-build/
 
+# builds (expo export / eas)
+dist/
+dist_release/
+dist_release2/
+*.ipa
+*.hbc
+
 # macOS
 .DS_Store
 
