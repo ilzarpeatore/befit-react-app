@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Activ
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -34,7 +35,7 @@ export default function BookmarkScreen({ navigation }: any) {
       // const posts = value.data ?? [];
       // setPostList((prev) => [...prev, ...posts]);
     } catch (e) {
-      console.log('Error:', e);
+      logger.error('Error:', e);
     } finally {
       setLoading(false);
     }

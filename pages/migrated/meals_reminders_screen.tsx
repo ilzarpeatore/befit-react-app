@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { profileApi } from '@api/profile';
 import { useAuth } from '@store/AuthContext';
+import { scheduleMealReminders } from '@helper/reminderNotifications';
 import { C, FONT } from './theme';
 
 interface TimeObj {
@@ -130,6 +131,12 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
         },
       };
       await profileApi.setReminderSettings(request);
+      await scheduleMealReminders({
+        breakfast: { enabled: breakfastEnabled, time: breakfastTime },
+        lunch: { enabled: lunchEnabled, time: lunchTime },
+        snacks: { enabled: snacksEnabled, time: snacksTime },
+        dinner: { enabled: dinnerEnabled, time: dinnerTime },
+      });
       Alert.alert('Success', 'Settings saved');
       navigation?.goBack();
     } catch (e: any) {

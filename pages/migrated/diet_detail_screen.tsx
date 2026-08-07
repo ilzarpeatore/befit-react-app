@@ -5,6 +5,7 @@ import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { dietApi } from '../../api/diet';
 import { recipesApi, RecipeStep, RecipeIngredient } from '../../api/recipes';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -76,7 +77,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             isFavourite: 0,
           });
         })
-        .catch((e) => console.log(e))
+        .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
   }, [fallbackId]);
@@ -110,7 +111,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             (res.data?.recipe_steps ?? []).slice().sort((a, b) => a.sequence - b.sequence)
           );
         })
-        .catch((e) => console.log(e))
+        .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
   }, [recipeId]);
@@ -129,7 +130,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         isFavourite: prev.isFavourite === 1 ? 0 : 1,
       }));
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }

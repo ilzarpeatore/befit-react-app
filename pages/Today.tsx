@@ -320,6 +320,23 @@ export default function Today({ navigation }: any) {
             </LinearGradient>
           </TouchableOpacity>
           {/*nutrition link end*/}
+          {/*muscle map link start*/}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={styles.nutritionLinkCard}
+            onPress={() => navigation.navigate('Migrated', { screen: 'MigratedViewBodyPart' })}
+          >
+            <LinearGradient
+              start={{ x: 0.04, y: -0.1 }}
+              end={{ x: 1, y: 1 }}
+              colors={["#E5E5EA", "#EBEBF0"]}
+              style={styles.nutritionLinkGradient}
+            >
+              <Text style={styles.nutritionLinkTitle}>Buscar por músculo</Text>
+              <Text style={styles.nutritionLinkSubtitle}>Toca una zona del mapa para ver sus ejercicios</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          {/*muscle map link end*/}
           {/*chart row start*/}
           <View style={styles.chartboxrow}>
             {/*chart start*/}

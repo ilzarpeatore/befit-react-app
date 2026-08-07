@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Activit
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { blogApi, BlogListItem } from '../../api/blog';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -65,7 +66,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       setTotalPages(pagination.totalPages || 1);
       setIsLastPage(pageNum >= pagination.totalPages);
     } catch (e) {
-      console.log('Error loading posts:', e);
+      logger.error('Error loading posts:', e);
     } finally {
       setLoading(false);
       setLoadingMore(false);
