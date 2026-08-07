@@ -5,6 +5,7 @@ import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { exercisesApi } from '../../api/exercises';
 import { workoutHistoryApi } from '../../api/workoutHistory';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -96,7 +97,7 @@ export default function ExerciseDetailScreen(props: ExerciseDetailScreenProps) {
         }] : [],
       });
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +133,7 @@ export default function ExerciseDetailScreen(props: ExerciseDetailScreenProps) {
         setIsCompleted(false);
         handleBack();
       } catch (e) {
-        console.log(e);
+        logger.error(e);
       } finally {
         setIsLoading(false);
       }

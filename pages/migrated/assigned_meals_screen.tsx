@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIn
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { dietApi, AssignedMealsSummary, AssignedMealRecipe } from '../../api/diet';
+import logger from '@helper/logger';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
 
@@ -37,7 +38,7 @@ export default function AssignedMealsScreen(props: any) {
         setMeals(res.data.meals);
       }
     } catch (e) {
-      console.log('Failed to load meals', e);
+      logger.error('Failed to load meals', e);
     } finally {
       setIsLoading(false);
     }

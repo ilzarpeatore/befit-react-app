@@ -88,22 +88,38 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
   const save = async () => {
     setIsLoading(true);
     try {
+      // Dos bugs reales corregidos aquí:
+      // 1) UserRequest::rules() exige 'username' siempre en rutas api/* —
+      //    como este payload nunca lo mandaba, TODO guardado desde Edit
+      //    Profile fallaba con 422 "username field is required" (no solo
+      //    age/weight/height, ningún campo se llegaba a guardar nunca).
+      // 2) UserController::updateProfile solo escribe en user_profiles
+      //    cuando el payload trae la clave anidada "user_profile" —
+      //    age/weight/height sueltos en el nivel superior se descartan en
+      //    silencio porque no son fillable en el modelo User.
       const payload: Record<string, any> = {
         first_name: fName.trim(),
         last_name: lName.trim(),
         email: email.trim(),
+        username: state.user?.username,
         phone_number: phoneNumber.trim(),
         gender,
-        age: age.trim(),
-        weight: weight.trim(),
-        height: heightVal.trim(),
+        user_profile: {
+          age: age.trim(),
+          weight: weight.trim(),
+          height: heightVal.trim(),
+        },
       };
       if (imageUri) {
         payload.profile_image = imageUri;
       }
       const response = await authApi.updateProfile(payload);
       if (state.user) {
-        updateUser({ ...state.user, ...payload });
+        updateUser({
+          ...state.user,
+          ...payload,
+          user_profile: { ...state.user.user_profile, ...payload.user_profile },
+        });
       }
       props.navigation.goBack();
     } catch (e: any) {

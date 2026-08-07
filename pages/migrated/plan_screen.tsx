@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C, FONT } from './theme';
 import { dietApi } from '../../api/diet';
 import { recipesApi, RecipeListItem } from '../../api/recipes';
+import logger from '@helper/logger';
 
 function formatDateYMD(d: Date): string {
   const y = d.getFullYear();
@@ -178,7 +179,7 @@ export default function PlanScreen(props: any) {
       const res = await dietApi.getDailyPlan(formatDateYMD(selectedDay));
       applyDailyPlanResponse(res.data);
     } catch (e) {
-      console.log('Plan fetch error:', e);
+      logger.error('Plan fetch error:', e);
     } finally {
       setIsLoading(false);
     }
