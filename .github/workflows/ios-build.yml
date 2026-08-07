@@ -138,7 +138,7 @@ jobs:
         id: node-modules-cache
         with:
           path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock') }}
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json', 'yarn.lock', 'patches/**') }}
           restore-keys: |
             node-modules-${{ runner.os }}-
 
