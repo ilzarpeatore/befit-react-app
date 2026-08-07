@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { workoutHistoryApi } from '../../api/workoutHistory';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -121,7 +122,7 @@ export default function ScheduleScreen(props: any) {
       }));
       setMProgramDays(mapped);
     } catch (e) {
-      console.log('getProgramCalendarData error:', e);
+      logger.error('getProgramCalendarData error:', e);
     } finally {
       setIsLoading(false);
     }

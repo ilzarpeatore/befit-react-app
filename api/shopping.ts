@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface ShoppingListItem {
   id: number;
@@ -30,22 +31,22 @@ export const shoppingApi = {
     apiClient.get<ShoppingListResponse>('shopping-list'),
 
   save: (name: string, items: { name: string; quantity: string; unit: string }[]) =>
-    apiClient.post('shopping-list-save', { name, items }),
+    apiClient.post<ApiMessageResponse>('shopping-list-save', { name, items }),
 
   getDetail: (id: number) =>
     apiClient.get<{ data: ShoppingListItem }>('shopping-list-detail', { params: { id } }),
 
   delete: (id: number) =>
-    apiClient.post('shopping-list-delete', { id }),
+    apiClient.post<ApiMessageResponse>('shopping-list-delete', { id }),
 
   toggleItem: (item_id: number, list_id: number) =>
-    apiClient.post('shopping-list-item-toggle', { item_id, list_id }),
+    apiClient.post<ApiMessageResponse>('shopping-list-item-toggle', { item_id, list_id }),
 
   addItem: (list_id: number, name: string, quantity: string, unit: string) =>
-    apiClient.post('shopping-list-item-add', { list_id, name, quantity, unit }),
+    apiClient.post<ApiMessageResponse>('shopping-list-item-add', { list_id, name, quantity, unit }),
 
   generateFromPlan: (daily_plan_id: number) =>
-    apiClient.post('daily-plan-shopping-list-generate', { daily_plan_id }),
+    apiClient.post<ApiMessageResponse>('daily-plan-shopping-list-generate', { daily_plan_id }),
 
   getMeasurementUnits: () =>
     apiClient.get<{ data: MeasurementUnit[] }>('get-measurementunit'),

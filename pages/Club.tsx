@@ -274,7 +274,6 @@ export default function Club({ navigation }: ClubPropsInterface) {
         {/*event icon start*/}
         <TouchableOpacity
           onPress={() => {
-            console.log(item.id + "-icon");
             navigation.navigate("Clubnav", { screen: "Cycling" }); // navigate to cycling page
           }}
           style={styles.eventiconbox}
@@ -324,7 +323,6 @@ export default function Club({ navigation }: ClubPropsInterface) {
               <Text style={styles.eventtime}>{item.time}</Text>
               <TouchableOpacity
                 onPress={() => {
-                  console.log(item.id + "-notification");
                 }}
                 style={styles.eventnotification}
               >
@@ -458,7 +456,6 @@ export default function Club({ navigation }: ClubPropsInterface) {
                   {/*map members scan start*/}
                   <TouchableOpacity
                     onPress={() => {
-                      console.log("click");
                     }}
                   >
                     <LinearGradient
@@ -513,7 +510,6 @@ export default function Club({ navigation }: ClubPropsInterface) {
           {/*toolbar actions start*/}
           <TouchableOpacity
             onPress={() => {
-              console.log("click");
             }}
             style={styles.action}
           >
@@ -525,7 +521,6 @@ export default function Club({ navigation }: ClubPropsInterface) {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              console.log("click");
             }}
             style={styles.action}
           >

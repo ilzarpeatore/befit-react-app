@@ -5,6 +5,7 @@ import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { workoutsApi } from '../../api/workouts';
 import { dietApi } from '../../api/diet';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -85,7 +86,7 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
       const res = await workoutsApi.getFavourite();
       setWorkouts(res.data.data ?? []);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +140,7 @@ function DietFavContent({ navigation }: { navigation: any }) {
       const res = await dietApi.getFavourite();
       setDiets(res.data.data ?? []);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }

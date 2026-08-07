@@ -1,49 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { getCustomReminders, removeCustomReminder, CustomReminder } from '@helper/customRemindersStorage';
+import { cancelNotifications } from '@helper/reminderNotifications';
 import { C, FONT } from './theme';
 
-interface ReminderItem {
-  id: number;
-  title: string;
-  subTitle: string;
-  duration: string;
-  week: number;
-}
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function ReminderScreen(props: any) {
-  const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const [remindList, setRemindList] = useState<ReminderItem[]>([]);
+  const [remindList, setRemindList] = useState<CustomReminder[]>([]);
   const styles = useStyle();
 
-  useEffect(() => {
-    loadReminders();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadReminders();
+    }, [])
+  );
 
-  const loadReminders = () => {
-    // Load reminders from notification store
+  const loadReminders = async () => {
+    setRemindList(await getCustomReminders());
   };
 
-  const formatTime = (durationStr: string): string => {
-    try {
-      const date = new Date(durationStr);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
+  const formatTime = (item: CustomReminder): string => {
+    const d = new Date();
+    d.setHours(item.time.hour, item.time.minute, 0, 0);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleAddReminder = async () => {
-    const result = await props.navigation.navigate('MigratedSetReminder');
-    // Refresh list if reminder was added
-    loadReminders();
+  const formatDays = (item: CustomReminder): string => {
+    if (item.isDaily) return 'Every day';
+    return item.days
+      .slice()
+      .sort((a, b) => a - b)
+      .map((d) => DAY_LABELS[d])
+      .join(', ');
   };
 
-  const handleDeleteReminder = (item: ReminderItem) => {
-    // Cancel notification and remove from store
-    // notificationStore.removeToReminder(item);
-    setRemindList((prev) => prev.filter((r) => r.id !== item.id));
+  const handleAddReminder = () => {
+    props.navigation.navigate('MigratedSetReminder');
+  };
+
+  const handleDeleteReminder = (item: CustomReminder) => {
+    Alert.alert('Eliminar recordatorio', `¿Quitar "${item.title}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          await cancelNotifications(item.notificationIds);
+          await removeCustomReminder(item.id);
+          setRemindList((prev) => prev.filter((r) => r.id !== item.id));
+        },
+      },
+    ]);
   };
 
   const handleMealsWater = () => {
@@ -77,15 +88,13 @@ export default function ReminderScreen(props: any) {
         ) : (
           <ScrollView contentContainerStyle={s.listContent}>
             {remindList.map((item) => {
-              const formattedTime = formatTime(item.duration);
-              const weekdayName = weekdays[item.week - 1] ?? '';
               return (
                 <View key={item.id} style={s.reminderCard}>
                   <View style={s.reminderContent}>
                     <View style={s.reminderTextWrap}>
                       <Text style={[s.reminderTitle, styles.fontBold]}>{item.title}</Text>
                       <Text style={[s.reminderSubtitle, styles.fontRegular]}>
-                        {weekdayName} {formattedTime} | {item.subTitle}
+                        {formatDays(item)} {formatTime(item)} | {item.description}
                       </Text>
                     </View>
                     <TouchableOpacity

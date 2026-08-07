@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { scheduleCustomReminder } from '@helper/reminderNotifications';
+import { addCustomReminder } from '@helper/customRemindersStorage';
 import { C, FONT } from './theme';
 
 interface Props {
@@ -57,24 +59,33 @@ export default function SetReminderScreen(props: any) {
       return;
     }
 
-    if (isDaily) {
-      // Create notifications for all 7 days
-      for (let i = 1; i <= 7; i++) {
-        // await AwesomeNotifications().createNotification(...)
-      }
-      props.navigation.goBack();
-    } else {
-      if (selectedDays.size === 0) {
-        Alert.alert('Error', 'Please select at least one day');
-        return;
-      }
-      for (const dayIndex of selectedDays) {
-        const day = dayIndex + 1;
-        // Create reminder model and add to store
-        // await AwesomeNotifications().createNotification(...)
-      }
-      props.navigation.goBack(true);
+    if (!isDaily && selectedDays.size === 0) {
+      Alert.alert('Error', 'Please select at least one day');
+      return;
     }
+
+    const time = { hour: dateTime.getHours(), minute: dateTime.getMinutes() };
+    const days = Array.from(selectedDays);
+    const title = reminderName.trim();
+    const desc = description.trim();
+
+    const notificationIds = await scheduleCustomReminder({ title, description: desc, time, days, isDaily });
+    if (notificationIds.length === 0) {
+      Alert.alert('Permiso necesario', 'Activa las notificaciones para poder crear recordatorios.');
+      return;
+    }
+
+    await addCustomReminder({
+      id: Date.now().toString(),
+      title,
+      description: desc,
+      time,
+      days,
+      isDaily,
+      notificationIds,
+    });
+
+    props.navigation.goBack();
   };
 
   const formatHour = (h: number): string => {

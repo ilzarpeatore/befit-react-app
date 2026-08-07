@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { profileApi } from '@api/profile';
 import { useAuth } from '@store/AuthContext';
+import { scheduleWaterReminders } from '@helper/reminderNotifications';
 import { C, FONT } from './theme';
 
 export default function WaterRemindersScreen(props: any) {
@@ -122,7 +123,14 @@ export default function WaterRemindersScreen(props: any) {
 
     try {
       await profileApi.setReminderSettings(request);
-      // TODO: schedule local notifications via ReminderNotificationService once implemented
+      await scheduleWaterReminders({
+        enabled,
+        is24Hours,
+        intervalMinutes: everyHours * 60,
+        start: is24Hours ? undefined : { hour: fromHour, minute: fromMinute },
+        end: is24Hours ? undefined : { hour: untilHour, minute: untilMinute },
+        atTime: is24Hours ? { hour: atHour, minute: atMinute } : undefined,
+      });
       Alert.alert('Success', 'Data saved');
       props.navigation?.goBack();
     } catch (e: any) {

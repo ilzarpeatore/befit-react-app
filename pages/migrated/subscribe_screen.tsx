@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { C, FONT } from './theme';
 import { subscriptionApi, PackageItem } from '../../api/subscription';
 import { useAuth } from '../../store/AuthContext';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -31,7 +32,7 @@ export default function SubscribeScreen(props: any) {
       const res = await subscriptionApi.getPackageList();
       setSubscriptionList(res.data?.data || []);
     } catch (e) {
-      console.log('Failed to load packages', e);
+      logger.error('Failed to load packages', e);
     } finally {
       setIsLoading(false);
     }

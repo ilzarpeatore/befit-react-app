@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Switch
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
 
 export default function AddShoppingListScreen({ navigation, route }: any) {
   const shoppingList = route?.params?.shoppingList;
@@ -58,7 +59,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       // const value = await getDailyPlanDetailApi(date: getDateTimeString(date));
       // setDailyPlanId(value.data?.id);
     } catch (e) {
-      console.log('Error fetching daily plan:', e);
+      logger.error('Error fetching daily plan:', e);
     } finally {
       setIsFetchingPlan(false);
     }

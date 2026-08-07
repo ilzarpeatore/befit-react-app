@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface PackageItem {
   id: number;
@@ -53,7 +54,7 @@ export const subscriptionApi = {
     apiClient.get<PaginatedResponse<SubscriptionPlanItem>>('subscriptionplan-list?per_page=-1'),
 
   cancel: (subscription_id: number) =>
-    apiClient.post('cancel-subscription', { id: subscription_id }),
+    apiClient.post<ApiMessageResponse>('cancel-subscription', { id: subscription_id }),
 
   getPaymentGateways: () =>
     apiClient.get<{ data: PaymentGatewayItem[] }>('payment-gateway-list'),

@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface WorkoutListItem {
   id: number;
@@ -67,6 +68,11 @@ export interface WorkoutDetailResponse {
   };
 }
 
+export interface WorkoutType {
+  id: number;
+  title: string;
+}
+
 export const workoutsApi = {
   getList: (page: number = 1) =>
     apiClient.get<WorkoutListResponse>(`workout-list?page=${page}`),
@@ -87,7 +93,7 @@ export const workoutsApi = {
     apiClient.get<{ data: WorkoutDayExercise[] }>(`workoutday-exercise-list?workout_day_id=${workoutDayId}`),
 
   setFavourite: (workoutId: number) =>
-    apiClient.post('set-favourite-workout', { workout_id: workoutId }),
+    apiClient.post<ApiMessageResponse>('set-favourite-workout', { workout_id: workoutId }),
 
   getFavourite: (page: number = 1) =>
     apiClient.get<WorkoutListResponse>(`get-favourite-workout?page=${page}`),
@@ -96,7 +102,7 @@ export const workoutsApi = {
     apiClient.get<WorkoutListResponse>(`v1/assign-workout-list?page=${page}`),
 
   getTypes: (page: number = 1) =>
-    apiClient.get(`workouttype-list?page=${page}`),
+    apiClient.get<{ data: WorkoutType[] }>(`workouttype-list?page=${page}`),
 
   getLevels: (page: number = 1) =>
     apiClient.get<{ data: { id: number; title: string }[] }>(`level-list?page=${page}`),

@@ -1,261 +1,118 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  SafeAreaView,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
-import { workoutHistoryApi } from '../../api/workoutHistory';
+import { Image as ExpoImage } from 'expo-image';
+import { C, FONT, SHADOW } from './theme';
+import { workoutHistoryApi, CompletedSessionItem } from '../../api/workoutHistory';
+import logger from '@helper/logger';
 
-interface WorkoutHistoryItem {
-  exerciseId: number;
-  exerciseTitle: string;
-  exerciseImage: string;
-  exerciseIsPremium?: number;
-  workoutTitle: string;
-  workoutId: number;
-  workoutDayId: number;
-  sets: { reps: string; weight: string; time?: string }[];
-  date: string | null;
-  [key: string]: any;
+function formatDuration(totalSeconds: number | null): string {
+  if (!totalSeconds) return '--';
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  if (m === 0) return `${s}s`;
+  return `${m} min`;
 }
 
-function formatHistoryDate(date: string | null): string {
-  if (!date) return '';
-  const d = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr.replace(' ', 'T'));
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function WorkoutHistoryScreen(props: any) {
-  const [historyList, setHistoryList] = useState<WorkoutHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const [sessions, setSessions] = useState<CompletedSessionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    init();
+    load();
   }, []);
 
-  const init = async () => {
-    getUserWorkoutExercise();
-  };
-
-  const getUserWorkoutExercise = async () => {
+  const load = async () => {
     setIsLoading(true);
     try {
-      await workoutHistoryApi.getWorkoutExerciseHistory({}).then((res) => {
-        const value: any = res.data;
-        const items = (value.data ?? []).map((item: any) => ({
-          exerciseId: item.exercise_id,
-          exerciseTitle: item.exercise_title || '',
-          exerciseImage: item.exercise_image || '',
-          exerciseIsPremium: item.exercise_is_premium,
-          workoutTitle: item.workout_title || '',
-          workoutId: item.workout_id,
-          workoutDayId: item.workout_day_id,
-          sets: item.sets || [],
-          date: item.date || null,
-        }));
-        setHistoryList(items);
-      });
+      const res = await workoutHistoryApi.getMyCompletedSessions();
+      setSessions(res.data?.data ?? []);
     } catch (e) {
+      logger.error('WorkoutHistory load error:', e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleItemPress = async (item: WorkoutHistoryItem, index: number) => {
-    // Check subscription
-    // if (userStore.subscription === "1" && item.exerciseIsPremium === 1 && userStore.isSubscribe === 0) {
-    //   props.navigation?.navigate('SubscribeScreen');
-    //   return;
-    // }
-
-    const result = await props.navigation?.navigate('MigratedExerciseDetail', {
-      mExerciseName: item.exerciseTitle,
-      mExerciseId: item.exerciseId,
-      workOutId: item.workoutId?.toString(),
-      workoutDayId: item.workoutDayId,
-      isCompleted: true,
-      isFrom: 'workoutHistory',
+  const openDetail = (item: CompletedSessionItem) => {
+    props.navigation?.navigate('MigratedSessionHistoryDetail', {
+      programDayAssignmentId: item.program_day_assignment_id,
+      workoutTemplateId: item.workout_template_id,
+      date: item.date.slice(0, 10),
+      title: item.title,
     });
-
-    if (result === 'removeWorkout') {
-      setHistoryList((prev) => prev.filter((_, i) => i !== index));
-    }
   };
 
-  const renderHistoryItem = (item: WorkoutHistoryItem, index: number) => (
-    <TouchableOpacity
-      key={`${item.exerciseId}-${index}`}
-      style={styles.historyItem}
-      activeOpacity={0.7}
-      onPress={() => handleItemPress(item, index)}
-    >
-      <Image
-        source={{ uri: item.exerciseImage }}
-        style={styles.exerciseImage}
-        resizeMode="cover"
-      />
-      <View style={styles.exerciseContent}>
-        <Text style={styles.exerciseTitle} numberOfLines={1}>
-          {item.exerciseTitle}
-        </Text>
-        <View style={styles.workoutRow}>
-          <Text style={styles.workoutLabel}>Workout: </Text>
-          <Text style={styles.workoutTitle} numberOfLines={1}>
-            {item.workoutTitle}
-          </Text>
-          {item.exerciseIsPremium === 1 && (
-            <View style={styles.proBadge}>
-              <Text style={styles.proText}>PRO</Text>
-            </View>
-          )}
-        </View>
-        {(item.sets.length > 0 || item.date) && (
-          <Text style={styles.detailText} numberOfLines={1}>
-            {item.sets.length > 0 ? `${item.sets.length} series` : 'Completado'}
-            {item.date ? ` · ${formatHistoryDate(item.date)}` : ''}
-          </Text>
+  const renderItem = (item: CompletedSessionItem) => (
+    <TouchableOpacity key={item.id} style={s.card} activeOpacity={0.75} onPress={() => openDetail(item)}>
+      <View style={s.thumbWrap}>
+        {item.thumbnail ? (
+          <ExpoImage source={{ uri: item.thumbnail }} style={s.thumb} contentFit="cover" />
+        ) : (
+          <Ionicons name="barbell-outline" size={22} color={C.gray30} />
         )}
       </View>
+      <View style={{ flex: 1 }}>
+        <Text style={s.cardTitle} numberOfLines={1}>{item.title}</Text>
+        <Text style={s.cardDate}>{formatDate(item.date)}</Text>
+        <View style={s.metaRow}>
+          <Text style={s.metaText}>{formatDuration(item.duration_seconds)}</Text>
+          {item.volume_kg != null && <Text style={s.metaText}> · {Math.round(item.volume_kg).toLocaleString('es-ES')} kg</Text>}
+          {item.difficulty_label && <Text style={s.metaText}> · {item.difficulty_label}</Text>}
+        </View>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color={C.gray40} />
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
+    <SafeAreaView style={s.container} edges={['top']}>
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
+          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Workout History</Text>
-        <View style={{ width: 24 }} />
+        <Text style={s.headerTitle}>Historial de entrenamientos</Text>
+        <View style={{ width: 32 }} />
       </View>
 
-      <View style={styles.body}>
-        {historyList.length > 0 ? (
-          <ScrollView
-            ref={scrollRef}
-            contentContainerStyle={styles.scrollContent}
-          >
-            {historyList.map((item, index) => renderHistoryItem(item, index))}
-          </ScrollView>
-        ) : (
-          !isLoading && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No Workouts Found</Text>
-            </View>
-          )
-        )}
-
-        {isLoading && (
-          <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
-        )}
-      </View>
+      {isLoading ? (
+        <View style={s.loaderWrap}>
+          <ActivityIndicator size="large" color={C.textSecondary} />
+        </View>
+      ) : sessions.length === 0 ? (
+        <View style={s.loaderWrap}>
+          <Ionicons name="barbell-outline" size={40} color={C.gray30} />
+          <Text style={s.emptyText}>Todavía no has completado ningún entrenamiento</Text>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+          {sessions.map(renderItem)}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: C.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  headerTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 18,
-    color: C.white,
-  },
-  body: { flex: 1 },
-  scrollContent: { paddingVertical: 4, paddingHorizontal: 16 },
-  historyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginVertical: 8,
-    padding: 10,
-  },
-  exerciseImage: {
-    width: 55,
-    height: 55,
-    borderRadius: 10,
-  },
-  exerciseContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  exerciseTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 15,
-    color: C.white,
-    maxWidth: '100%',
-  },
-  workoutRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-    flex: 1,
-  },
-  workoutLabel: {
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.textSecondary,
-  },
-  workoutTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 13,
-    color: C.white,
-    flex: 1,
-  },
-  detailText: {
-    fontFamily: FONT.regular,
-    fontSize: 12,
-    color: C.textSecondary,
-    marginTop: 4,
-  },
-  proBadge: {
-    backgroundColor: C.orange,
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  proText: {
-    fontFamily: FONT.bold,
-    fontSize: 10,
-    color: '#FFFFFF',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: FONT.regular,
-    fontSize: 16,
-    color: C.textSecondary,
-  },
-  loaderOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
+  loaderWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 12 },
+  emptyText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, textAlign: 'center' },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, borderRadius: 16, padding: 14, marginBottom: 10, ...SHADOW.card },
+  thumbWrap: { width: 48, height: 48, borderRadius: 12, backgroundColor: C.gray5, alignItems: 'center', justifyContent: 'center', marginRight: 12, overflow: 'hidden' },
+  thumb: { width: 48, height: 48 },
+  cardTitle: { fontFamily: FONT.bold, fontSize: 14.5, color: C.textPrimary },
+  cardDate: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 2 },
+  metaRow: { flexDirection: 'row', marginTop: 4 },
+  metaText: { fontFamily: FONT.medium, fontSize: 11.5, color: C.gray40 },
 });

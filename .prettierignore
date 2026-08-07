@@ -1,0 +1,10 @@
+dist/
+dist_release/
+dist_release2/
+node_modules/
+android/
+.expo/
+web-build/
+*.orig.*
+*.ipa
+*.hbc
