@@ -3,6 +3,20 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimens
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { blogApi, BlogListItem, BlogCategory } from '../../api/blog';
+import SimpleBottomSheet from '../../components/SimpleBottomSheet';
+
+interface SortOption {
+  key: string;
+  label: string;
+  sortBy: 'datetime' | 'title';
+  orderDir: 'desc' | 'asc';
+}
+
+const SORT_OPTIONS: SortOption[] = [
+  { key: 'recent', label: 'Recientes', sortBy: 'datetime', orderDir: 'desc' },
+  { key: 'old', label: 'Antiguos', sortBy: 'datetime', orderDir: 'asc' },
+  { key: 'az', label: 'A-Z', sortBy: 'title', orderDir: 'asc' },
+];
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,6 +39,8 @@ export default function BlogScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'datetime' | 'title'>('datetime');
   const [orderDir, setOrderDir] = useState<'desc' | 'asc'>('desc');
+  const [sortSheetVisible, setSortSheetVisible] = useState(false);
+  const [categorySheetVisible, setCategorySheetVisible] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -198,56 +214,25 @@ export default function BlogScreen({ navigation }: any) {
         </View>
 
         {!isSearching && (
-          <View style={styles_local.sortRow}>
-            <TouchableOpacity
-              style={[styles_local.sortBtn, sortBy === 'datetime' && orderDir === 'desc' && styles_local.sortBtnActive]}
-              onPress={() => { setSortBy('datetime'); setOrderDir('desc'); }}
-            >
-              <Text style={[styles_local.sortText, sortBy === 'datetime' && orderDir === 'desc' && styles_local.sortTextActive]}>
-                Recientes
+          <View style={styles_local.filterRow}>
+            <TouchableOpacity style={styles_local.filterPill} onPress={() => setSortSheetVisible(true)} activeOpacity={0.75}>
+              <Ionicons name="swap-vertical-outline" size={15} color={C.white} />
+              <Text style={styles_local.filterPillText} numberOfLines={1}>
+                {SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.orderDir === orderDir)?.label ?? 'Ordenar'}
               </Text>
+              <Ionicons name="chevron-down" size={14} color={C.gray40} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles_local.sortBtn, sortBy === 'datetime' && orderDir === 'asc' && styles_local.sortBtnActive]}
-              onPress={() => { setSortBy('datetime'); setOrderDir('asc'); }}
-            >
-              <Text style={[styles_local.sortText, sortBy === 'datetime' && orderDir === 'asc' && styles_local.sortTextActive]}>
-                Antiguos
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles_local.sortBtn, sortBy === 'title' && styles_local.sortBtnActive]}
-              onPress={() => { setSortBy('title'); setOrderDir('asc'); }}
-            >
-              <Text style={[styles_local.sortText, sortBy === 'title' && styles_local.sortTextActive]}>
-                A-Z
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
-        {!isSearching && categories.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles_local.categoryScroll}>
-            <TouchableOpacity
-              style={[styles_local.categoryChip, !selectedCategory && styles_local.categoryChipActive]}
-              onPress={() => setSelectedCategory(null)}
-            >
-              <Text style={[styles_local.categoryChipText, !selectedCategory && styles_local.categoryChipTextActive]}>
-                Todos
-              </Text>
-            </TouchableOpacity>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={[styles_local.categoryChip, selectedCategory === cat.id && styles_local.categoryChipActive]}
-                onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-              >
-                <Text style={[styles_local.categoryChipText, selectedCategory === cat.id && styles_local.categoryChipTextActive]}>
-                  {cat.title}
+            {categories.length > 0 && (
+              <TouchableOpacity style={styles_local.filterPill} onPress={() => setCategorySheetVisible(true)} activeOpacity={0.75}>
+                <Ionicons name="pricetag-outline" size={15} color={C.white} />
+                <Text style={styles_local.filterPillText} numberOfLines={1}>
+                  {selectedCategory ? categories.find((c) => c.id === selectedCategory)?.title ?? 'Todos' : 'Todos'}
                 </Text>
+                <Ionicons name="chevron-down" size={14} color={C.gray40} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+          </View>
         )}
 
         {loading ? (
@@ -300,6 +285,63 @@ export default function BlogScreen({ navigation }: any) {
           </>
         )}
       </ScrollView>
+
+      <SimpleBottomSheet visible={sortSheetVisible} onClose={() => setSortSheetVisible(false)}>
+        <View style={styles_local.sheetContent}>
+          <Text style={styles_local.sheetTitle}>Ordenar por</Text>
+          {SORT_OPTIONS.map((opt) => {
+            const active = opt.sortBy === sortBy && opt.orderDir === orderDir;
+            return (
+              <TouchableOpacity
+                key={opt.key}
+                style={styles_local.sheetOptionRow}
+                onPress={() => {
+                  setSortBy(opt.sortBy);
+                  setOrderDir(opt.orderDir);
+                  setSortSheetVisible(false);
+                }}
+              >
+                <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{opt.label}</Text>
+                {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </SimpleBottomSheet>
+
+      <SimpleBottomSheet visible={categorySheetVisible} onClose={() => setCategorySheetVisible(false)}>
+        <View style={styles_local.sheetContent}>
+          <Text style={styles_local.sheetTitle}>Categoría</Text>
+          <ScrollView style={{ maxHeight: 340 }}>
+            <TouchableOpacity
+              style={styles_local.sheetOptionRow}
+              onPress={() => {
+                setSelectedCategory(null);
+                setCategorySheetVisible(false);
+              }}
+            >
+              <Text style={[styles_local.sheetOptionText, !selectedCategory && styles_local.sheetOptionTextActive]}>Todos</Text>
+              {!selectedCategory ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
+            </TouchableOpacity>
+            {categories.map((cat) => {
+              const active = selectedCategory === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles_local.sheetOptionRow}
+                  onPress={() => {
+                    setSelectedCategory(active ? null : cat.id);
+                    setCategorySheetVisible(false);
+                  }}
+                >
+                  <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{cat.title}</Text>
+                  {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </SimpleBottomSheet>
     </View>
   );
 }
@@ -332,34 +374,34 @@ const styles_local = StyleSheet.create({
     gap: 8,
   },
   searchInput: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white },
-  sortRow: {
+  filterRow: {
     flexDirection: 'row',
     marginHorizontal: 16,
     marginTop: 12,
     gap: 8,
   },
-  sortBtn: {
+  filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: C.surfaceLight,
-  },
-  sortBtnActive: { backgroundColor: C.brand5 },
-  sortText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray40 },
-  sortTextActive: { color: C.white },
-  categoryScroll: { paddingLeft: 16, marginTop: 12, marginBottom: 4 },
-  categoryChip: {
-    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: C.surfaceLight,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'transparent',
   },
-  categoryChipActive: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  categoryChipText: { fontSize: 13, fontFamily: FONT.medium, color: C.gray40 },
-  categoryChipTextActive: { color: C.white },
+  filterPillText: { fontSize: 13, fontFamily: FONT.medium, color: C.white, maxWidth: 120 },
+  sheetContent: { padding: 24 },
+  sheetTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginBottom: 8 },
+  sheetOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  sheetOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textSecondary },
+  sheetOptionTextActive: { fontFamily: FONT.bold, color: C.textPrimary },
   section: { marginTop: 16, marginBottom: 8 },
   sectionHeader: {
     flexDirection: 'row',

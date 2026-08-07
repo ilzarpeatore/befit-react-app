@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   SafeAreaView,
-  Image,
   Dimensions,
   ActivityIndicator,
   useWindowDimensions,
@@ -16,18 +17,20 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Image as ExpoImage } from 'expo-image';
 import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
 import { C, FONT } from './theme';
 import { dashboardApi } from '../../api/dashboard';
-import { workoutsApi } from '../../api/workouts';
 import { workoutHistoryApi } from '../../api/workoutHistory';
 import { dietApi } from '../../api/diet';
 import { blogApi } from '../../api/blog';
 import { workoutTemplateApi, WorkoutTemplateListItem } from '../../api/workoutTemplate';
 import { subscriptionApi, PackageItem } from '../../api/subscription';
 import { resourcesApi, ResourceListItem } from '../../api/resources';
+import { checkinsApi, checkinTypeLabel, CheckInAssignment } from '../../api/checkins';
+import { habitsApi, Habit } from '../../api/habits';
+import { habitIoniconFor } from '../../constants/habitIcons';
 import { useAuth } from '../../store/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -45,8 +48,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const user = state.user;
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const firstLoadDone = useRef(false);
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
   const r = (n: number) => Math.round(n * sc);
@@ -57,13 +62,14 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
   const [todayWorkouts, setTodayWorkouts] = useState<any[]>([]);
   const [weeklyWorkouts, setWeeklyWorkouts] = useState<boolean[]>([]);
-  const [workoutList, setWorkoutList] = useState<any[]>([]);
   const [dailyPlan, setDailyPlan] = useState<any>(null);
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [workoutTemplateList, setWorkoutTemplateList] = useState<WorkoutTemplateListItem[]>([]);
   const [resourcesList, setResourcesList] = useState<ResourceListItem[]>([]);
   const [packageList, setPackageList] = useState<PackageItem[]>([]);
+  const [pendingCheckins, setPendingCheckins] = useState<CheckInAssignment[]>([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
@@ -166,12 +172,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     menuItemTextDanger: { color: C.destructive },
   }), [sc]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (mode?: 'initial' | 'silent') => {
+    if (mode !== 'silent') {
+      setIsLoading(true);
+    }
     setErrorMessage(null);
     try {
       const now = new Date();
@@ -179,10 +183,9 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
 
-      const [dashRes, calendarRes, workoutsRes, dietRes, blogRes, workoutTemplatesRes, packagesRes, resourcesRes] = await Promise.allSettled([
+      const [dashRes, calendarRes, dietRes, blogRes, workoutTemplatesRes, packagesRes, resourcesRes, checkinsRes, habitsRes] = await Promise.allSettled([
         dashboardApi.getDashboard(),
         workoutHistoryApi.getMyCalendar(currentMonth, currentYear),
-        workoutsApi.getList(1),
         dietApi.getDailyPlan(todayStr),
         blogApi.getList(1, { per_page: 3, order_by: 'created_at', order_dir: 'desc' }),
         workoutTemplateApi.getList(1, 3),
@@ -191,6 +194,8 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         // simplemente no se renderiza para ellos.
         subscriptionApi.getPackageList(),
         resourcesApi.getList({ per_page: 3 }),
+        checkinsApi.getAssignedList(),
+        habitsApi.getMyList(7),
       ]);
 
       const errors: string[] = [];
@@ -225,12 +230,6 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         errors.push('calendario');
       }
 
-      if (workoutsRes.status === 'fulfilled') {
-        setWorkoutList((workoutsRes.value.data.data ?? []).slice(0, 3));
-      } else {
-        errors.push('rutinas');
-      }
-
       if (dietRes.status === 'fulfilled') {
         setDailyPlan(dietRes.value.data.data ?? null);
       }
@@ -251,6 +250,14 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         setPackageList((packagesRes.value.data.data ?? []).slice(0, 3));
       }
 
+      if (checkinsRes.status === 'fulfilled') {
+        setPendingCheckins((checkinsRes.value.data.data ?? []).filter((a) => a.is_due));
+      }
+
+      if (habitsRes.status === 'fulfilled') {
+        setHabits(habitsRes.value.data.data ?? []);
+      }
+
       if (errors.length > 0) {
         setErrorMessage(`No se pudo cargar: ${errors.join(', ')}. Desliza para reintentar.`);
       }
@@ -258,8 +265,16 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       setErrorMessage('Error al cargar los datos. Desliza para reintentar.');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData(firstLoadDone.current ? 'silent' : 'initial');
+      firstLoadDone.current = true;
+    }, [fetchData])
+  );
 
   if (isLoading) {
     return (
@@ -292,13 +307,23 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => {
+              setIsRefreshing(true);
+              fetchData('silent');
+            }}
+            tintColor={C.orange}
+          />
+        }
       >
         {/* Header */}
         <View style={styles.darkHeader}>
           <View style={styles.headerTop}>
             <TouchableOpacity onPress={() => setShowMenu(true)}>
               {user?.profile_image ? (
-                <Image source={{ uri: user.profile_image }} style={styles.avatar} />
+                <ExpoImage source={{ uri: user.profile_image }} style={styles.avatar} contentFit="cover" cachePolicy="memory-disk" transition={150} />
               ) : (
                 <View style={styles.avatar} />
               )}
@@ -336,6 +361,43 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
               <Ionicons name="refresh" size={16} color={C.destructive} />
             </TouchableOpacity>
           </View>
+        )}
+
+        {/* Check-ins y formularios pendientes — subido al principio: son
+            obligaciones con fecha, más urgentes que el resto del contenido de
+            Home. Solo se muestra si hay algo pendiente de verdad (evita ruido
+            permanente para clientes sin nada asignado); se calcula en
+            fetchData a partir de is_due, que el backend recomputa según la
+            recurrencia de cada form. */}
+        {pendingCheckins.length > 0 && (
+          <>
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionTitle}>Check-ins y formularios pendientes</Text>
+              {pendingCheckins.length > 3 && (
+                <TouchableOpacity onPress={() => navigation?.navigate('MigratedCheckIns')}>
+                  <Text style={styles.seeAll}>Ver todos ({pendingCheckins.length})</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.todayWorkoutCard}>
+              {pendingCheckins.slice(0, 3).map((a, i) => (
+                <TouchableOpacity
+                  key={a.id}
+                  style={i > 0 ? { marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border } : {}}
+                  onPress={() => navigation?.navigate('MigratedCheckInFill', { formAssignmentId: a.id, formId: a.form_id, title: a.form.title })}
+                >
+                  <View style={styles.todayWorkoutTopRow}>
+                    <AppIcon name="clipboard-outline" size={20} color={C.warning60} bg={C.warning10} containerSize={r(44)} borderRadius={r(12)} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.todayWorkoutTitle}>{a.form.title}</Text>
+                      <Text style={styles.todayWorkoutSub}>{checkinTypeLabel(a)}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
         )}
 
         {/* Actividad de hoy — para un cliente 1:1 esta ES su sección personalizada
@@ -406,45 +468,133 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
           </View>
         </View>
 
-        {/* Rutinas + Workouts — catálogos genéricos de exploración. Un cliente
-            1:1 ya tiene su entrenamiento real en "Mi Programa" arriba (asignado
-            por su coach) — mostrarle además estos 2 catálogos genéricos es lo
-            que generaba la confusión de "todo se ve igual"; se ocultan para
-            ellos en vez de dejarlos con el mismo peso visual. */}
+        {/* Hábitos — a diferencia de Check-ins (que se oculta si no hay nada
+            pendiente porque el cliente no puede crear uno por su cuenta),
+            esta sección SIEMPRE se muestra: con 0 hábitos, "Ver todos"/tocar
+            la tarjeta es el único camino real para llegar a Añadir hábito
+            (biblioteca o personal) — ocultarla dejaría al cliente sin forma
+            de empezar. Mismo patrón que Recursos (visible con estado vacío). */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Hábitos</Text>
+          <TouchableOpacity onPress={() => navigation?.navigate(habits.length > 0 ? 'MigratedHabits' : 'MigratedHabitAdd')}>
+            <Text style={styles.seeAll}>{habits.length > 0 ? `Ver todos (${habits.length})` : 'Añadir'}</Text>
+          </TouchableOpacity>
+        </View>
+        {habits.length > 0 ? (
+          <View style={styles.todayWorkoutCard}>
+            {habits.slice(0, 3).map((h, i) => (
+              <TouchableOpacity
+                key={h.id}
+                style={i > 0 ? { marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border } : {}}
+                onPress={() => navigation?.navigate('MigratedHabitDetail', { habitId: h.id })}
+              >
+                <View style={styles.todayWorkoutTopRow}>
+                  <AppIcon name={habitIoniconFor(h.icon)} size={20} color={C.textPrimary} bg={C.bg} containerSize={r(44)} borderRadius={r(12)} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.todayWorkoutTitle}>{h.title}</Text>
+                    <Text style={styles.todayWorkoutSub}>{h.current_streak ? `🔥 ${h.current_streak} días de racha` : 'Sin racha activa todavía'}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.todayWorkoutCard} activeOpacity={0.8} onPress={() => navigation?.navigate('MigratedHabitAdd')}>
+            <View style={styles.todayWorkoutTopRow}>
+              <AppIcon name="flame-outline" size={20} color={C.textPrimary} bg={C.bg} containerSize={r(44)} borderRadius={r(12)} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.todayWorkoutTitle}>Todavía no tienes hábitos</Text>
+                <Text style={styles.todayWorkoutSub}>Elige uno de la biblioteca o crea el tuyo propio</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* Nutrición — subida junto a las secciones de uso diario (antes vivía
+            enterrada después de los catálogos y Programas). */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Nutrición</Text>
+          <TouchableOpacity onPress={() => navigation?.navigate('DietDashboard')}>
+            <Text style={styles.seeAll}>Ver dieta</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.nutritionCard}>
+          {dailyPlan ? (
+            <>
+              <View style={styles.nutritionTopRow}>
+                <View style={styles.nutritionSide}>
+                  <Text style={styles.nutritionSideLabel}>Objetivo</Text>
+                  <Text style={styles.nutritionSideValue}>{dailyPlan.daily_kcal ?? 0}</Text>
+                </View>
+                <View style={styles.nutritionCalCenter}>
+                  <AnimatedRing
+                    size={r(84)}
+                    strokeWidth={r(7)}
+                    percent={Math.min(((dailyPlan.eaten ?? 0) / Math.max(dailyPlan.daily_kcal ?? 1, 1)) * 100, 100)}
+                    color={C.orange}
+                    trackColor={C.gray70}
+                    duration={900}
+                  >
+                    <Text style={styles.nutritionCalValue}>{dailyPlan.eaten ?? 0}</Text>
+                    <Text style={styles.nutritionCalLabel}>consumido</Text>
+                  </AnimatedRing>
+                </View>
+                <View style={styles.nutritionSide}>
+                  <Text style={styles.nutritionSideLabel}>Restante</Text>
+                  <Text style={styles.nutritionSideValue}>{dailyPlan.left_eat ?? 0}</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: r(12) }}>
+                <View style={styles.macroBar}>
+                  <View style={styles.macroTrack}>
+                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.protein ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.orange }]} />
+                  </View>
+                  <Text style={styles.macroLabel}>Proteína</Text>
+                  <Text style={styles.macroValue}>{dailyPlan.protein ?? 0}g</Text>
+                </View>
+                <View style={[styles.macroBar, { marginHorizontal: r(12) }]}>
+                  <View style={styles.macroTrack}>
+                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.fats ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 9, 1)) * 100, 100)}%`, backgroundColor: C.purple }]} />
+                  </View>
+                  <Text style={styles.macroLabel}>Grasas</Text>
+                  <Text style={styles.macroValue}>{dailyPlan.fats ?? 0}g</Text>
+                </View>
+                <View style={styles.macroBar}>
+                  <View style={styles.macroTrack}>
+                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.carbs ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.blue }]} />
+                  </View>
+                  <Text style={styles.macroLabel}>Carbos</Text>
+                  <Text style={styles.macroValue}>{dailyPlan.carbs ?? 0}g</Text>
+                </View>
+              </View>
+              <Text style={styles.nutritionMsg}>
+                {(dailyPlan.left_eat ?? 0) > 0
+                  ? `Te quedan ${dailyPlan.left_eat} kcal por consumir. ¡Sigue así!`
+                  : '¡Meta de calorías alcanzada hoy!'}
+              </Text>
+            </>
+          ) : (
+            <View style={{ alignItems: 'center', paddingVertical: r(12) }}>
+              <AppIcon name="nutrition-outline" size={26} color={C.success} bg={C.success10} containerSize={r(48)} />
+              <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
+            <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
+            <Ionicons name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Workouts — catálogo genérico de exploración (sistema v2). "Rutinas"
+            (v1 legacy) se quitó del Home: era un callejón sin salida, se podía
+            explorar y marcar favorito pero no había forma de empezar una
+            sesión real desde ahí — Workouts cubre lo mismo y sí es funcional
+            de punta a punta. Un cliente 1:1 ya tiene su entrenamiento real en
+            "Mi Programa" arriba, así que este catálogo se oculta para ellos. */}
         {!state.user?.is_personal_client && (
           <>
-            {/* Rutinas */}
-            <View style={styles.sectionRow}>
-              <Text style={styles.sectionTitle}>Rutinas</Text>
-              <TouchableOpacity onPress={() => navigation?.navigate('MigratedViewWorkouts')}>
-                <Text style={styles.seeAll}>Ver todas</Text>
-              </TouchableOpacity>
-            </View>
-            {workoutList.length > 0 ? (
-              <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
-                {workoutList.map((w: any) => (
-                  <TouchableOpacity key={w.id} style={styles.workoutCard} onPress={() => navigation?.navigate('MigratedWorkoutDetail', { id: w.id })}>
-                    {w.workout_image ? <Image source={{ uri: w.workout_image }} style={styles.workoutImage} resizeMode="cover" /> : <View style={styles.workoutImage} />}
-                    <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.workoutGradient} />
-                    <View style={styles.workoutLevelBadge}>
-                      <Text style={styles.workoutLevelText}>{w.level_title || 'General'}</Text>
-                    </View>
-                    <View style={styles.workoutBottomInfo}>
-                      <Text style={styles.workoutCardTitle}>{w.title}</Text>
-                      <Text style={styles.workoutCardMeta}>{w.workout_type_title || 'Rutina'}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : (
-              <View style={styles.emptySection}>
-                <Text style={styles.emptyText}>No hay rutinas disponibles</Text>
-              </View>
-            )}
-
-            {/* Workouts sueltos (sistema v2, separado de Rutinas legacy) — 3 tarjetas
-                reales + una 4ª tarjeta fija "Ver todos" (en vez de un link aparte
-                en el título de sección). */}
             <View style={styles.sectionRow}>
               <Text style={styles.sectionTitle}>Workouts</Text>
             </View>
@@ -458,7 +608,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                     onPress={() => navigation?.navigate('MigratedWorkoutPreview', { workoutTemplateId: w.id, mTitle: w.title })}
                   >
                     {w.thumbnail ? (
-                      <Image source={{ uri: w.thumbnail }} style={styles.blogImage} resizeMode="cover" />
+                      <ExpoImage source={{ uri: w.thumbnail }} style={styles.blogImage} contentFit="cover" cachePolicy="memory-disk" transition={200} />
                     ) : (
                       <View style={styles.blogImage} />
                     )}
@@ -490,7 +640,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         )}
 
         {/* Recursos — visible para todos (free y 1:1), a diferencia de
-            Rutinas/Workouts: un cliente 1:1 tambien puede tener guias o
+            Workouts: un cliente 1:1 tambien puede tener guias o
             documentos asignados individualmente por su coach. */}
         {resourcesList.length > 0 && (
           <>
@@ -593,112 +743,6 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
           </ScrollView>
         )}
 
-        {/* Nutrición */}
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Nutrición</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('DietDashboard')}>
-            <Text style={styles.seeAll}>Ver dieta</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.nutritionCard}>
-          {dailyPlan ? (
-            <>
-              <View style={styles.nutritionTopRow}>
-                <View style={styles.nutritionSide}>
-                  <Text style={styles.nutritionSideLabel}>Objetivo</Text>
-                  <Text style={styles.nutritionSideValue}>{dailyPlan.daily_kcal ?? 0}</Text>
-                </View>
-                <View style={styles.nutritionCalCenter}>
-                  <AnimatedRing
-                    size={r(84)}
-                    strokeWidth={r(7)}
-                    percent={Math.min(((dailyPlan.eaten ?? 0) / Math.max(dailyPlan.daily_kcal ?? 1, 1)) * 100, 100)}
-                    color={C.orange}
-                    trackColor={C.gray70}
-                    duration={900}
-                  >
-                    <Text style={styles.nutritionCalValue}>{dailyPlan.eaten ?? 0}</Text>
-                    <Text style={styles.nutritionCalLabel}>consumido</Text>
-                  </AnimatedRing>
-                </View>
-                <View style={styles.nutritionSide}>
-                  <Text style={styles.nutritionSideLabel}>Restante</Text>
-                  <Text style={styles.nutritionSideValue}>{dailyPlan.left_eat ?? 0}</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', marginTop: r(12) }}>
-                <View style={styles.macroBar}>
-                  <View style={styles.macroTrack}>
-                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.protein ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.orange }]} />
-                  </View>
-                  <Text style={styles.macroLabel}>Proteína</Text>
-                  <Text style={styles.macroValue}>{dailyPlan.protein ?? 0}g</Text>
-                </View>
-                <View style={[styles.macroBar, { marginHorizontal: r(12) }]}>
-                  <View style={styles.macroTrack}>
-                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.fats ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 9, 1)) * 100, 100)}%`, backgroundColor: C.purple }]} />
-                  </View>
-                  <Text style={styles.macroLabel}>Grasas</Text>
-                  <Text style={styles.macroValue}>{dailyPlan.fats ?? 0}g</Text>
-                </View>
-                <View style={styles.macroBar}>
-                  <View style={styles.macroTrack}>
-                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.carbs ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.blue }]} />
-                  </View>
-                  <Text style={styles.macroLabel}>Carbos</Text>
-                  <Text style={styles.macroValue}>{dailyPlan.carbs ?? 0}g</Text>
-                </View>
-              </View>
-              <Text style={styles.nutritionMsg}>
-                {(dailyPlan.left_eat ?? 0) > 0
-                  ? `Te quedan ${dailyPlan.left_eat} kcal por consumir. ¡Sigue así!`
-                  : '¡Meta de calorías alcanzada hoy!'}
-              </Text>
-            </>
-          ) : (
-            <View style={{ alignItems: 'center', paddingVertical: r(12) }}>
-              <AppIcon name="nutrition-outline" size={26} color={C.success} bg={C.success10} containerSize={r(48)} />
-              <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
-            </View>
-          )}
-          <TouchableOpacity style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
-            <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
-            <Ionicons name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Sueño */}
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Sueño</Text>
-        </View>
-        <View style={styles.sleepCard}>
-          <View style={[styles.sleepTopRow, { justifyContent: 'space-between' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={styles.sleepHours}>7</Text>
-              <Text style={styles.sleepUnit}> h </Text>
-              <Text style={styles.sleepHours}>30</Text>
-              <Text style={styles.sleepUnit}> m</Text>
-            </View>
-            <View style={styles.sleepBadge}>
-              <Ionicons name="checkmark-circle" size={12} color={C.success} />
-              <Text style={styles.sleepBadgeText}>Buen descanso</Text>
-            </View>
-          </View>
-          <Text style={styles.sleepSubtext}>Conecta tu dispositivo de salud para datos reales</Text>
-          <View style={[styles.sleepMetaRow, { justifyContent: 'space-between' }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="bed-outline" size={16} color={C.textSecondary} />
-              <Text style={styles.sleepMetaText}>23:30</Text>
-              <Text style={styles.sleepMetaLabel}>Acostarse</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="sunny-outline" size={16} color={C.textSecondary} />
-              <Text style={styles.sleepMetaText}>07:00</Text>
-              <Text style={styles.sleepMetaLabel}>Levantarse</Text>
-            </View>
-          </View>
-        </View>
-
         {/* Blog */}
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Blog</Text>
@@ -711,7 +755,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             {blogPosts.map((post: any) => (
               <TouchableOpacity key={post.id} style={styles.blogCard} onPress={() => navigation?.navigate('MigratedBlogDetail', { id: post.id })}>
                 {post.post_image ? (
-                  <Image source={{ uri: post.post_image }} style={styles.blogImage} resizeMode="cover" />
+                  <ExpoImage source={{ uri: post.post_image }} style={styles.blogImage} contentFit="cover" cachePolicy="memory-disk" transition={200} />
                 ) : (
                   <View style={styles.blogImage} />
                 )}
@@ -732,6 +776,20 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             <Text style={styles.emptyText}>No hay artículos disponibles</Text>
           </View>
         )}
+
+        {/* Sueño — sin integración con wearables todavía (diferido, ver
+            docs/TAREAS.md). Placeholder honesto en vez de horas inventadas:
+            no se muestra ningún número falso, solo la invitación a conectar
+            un dispositivo real. */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Sueño</Text>
+        </View>
+        <View style={[styles.sleepCard, { alignItems: 'center', paddingVertical: r(20) }]}>
+          <AppIcon name="moon-outline" size={26} color={C.textSecondary} bg={C.brand10} containerSize={r(48)} />
+          <Text style={[styles.noWorkoutText, { marginTop: r(10), textAlign: 'center' }]}>
+            Conecta tu reloj o app de salud para ver tus datos de sueño aquí
+          </Text>
+        </View>
 
         {/* Need Help → FitBot */}
         <View style={{ height: r(16) }} />
@@ -760,7 +818,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             <View style={styles.menuHandle} />
             <View style={styles.menuHeader}>
               {user?.profile_image ? (
-                <Image source={{ uri: user.profile_image }} style={styles.menuAvatar} />
+                <ExpoImage source={{ uri: user.profile_image }} style={styles.menuAvatar} contentFit="cover" cachePolicy="memory-disk" transition={150} />
               ) : (
                 <View style={styles.menuAvatar} />
               )}
@@ -774,23 +832,18 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             </View>
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Profile')}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('MigratedProfile')}>
               <AppIcon name="person-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Mi Perfil</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('FavouriteWorkouts')}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('MigratedFavourite')}>
               <AppIcon name="heart-outline" size={18} color={C.destructive} bg={C.destructive10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Mis Favoritos</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('Settings')}>
-              <AppIcon name="settings-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
-              <Text style={styles.menuItemText}>Configuración General</Text>
-              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
 
             <View style={styles.menuItem}>
               <AppIcon name="fitness-outline" size={18} color={C.success} bg={C.success10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
@@ -814,7 +867,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
               />
             </View>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('CommunityFeed')}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('MigratedCommunity')}>
               <AppIcon name="people-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Community</Text>
               <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />

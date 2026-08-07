@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, 
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
 
 interface ProductCategory {
   id?: number;
@@ -38,7 +39,7 @@ export default function ProductScreen(props: any) {
       // const prodRes = await getProductApi();
       // if (prodRes.data) setProductList(prodRes.data);
     } catch (e) {
-      console.log('Product fetch error:', e);
+      logger.error('Product fetch error:', e);
     } finally {
       setIsLoading(false);
     }

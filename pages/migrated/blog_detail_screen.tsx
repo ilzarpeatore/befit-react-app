@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { C, FONT } from './theme';
 import { blogApi, BlogDetailItem } from '../../api/blog';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -74,7 +75,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
       const res = await blogApi.getDetail(mBlogModel?.id ?? 0);
       setBlog(res.data.data);
     } catch (e) {
-      console.log('Error loading blog detail:', e);
+      logger.error('Error loading blog detail:', e);
       setBlog(mBlogModel);
     } finally {
       setLoading(false);
