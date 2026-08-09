@@ -8,6 +8,20 @@ import { resourcesApi, ResourceListItem } from '../../api/resources';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// Mismo patron probado en blog_detail_screen.tsx: contenido subido por el coach
+// (incluso documentos HTML completos, ver isFullDocument) renderizado tal cual en
+// un WebView — se sanea (quita <script>/<iframe> ajenos y atributos on*=) antes de
+// inyectar el propio <iframe> de YouTube e el resize script, ambos de confianza.
+const sanitizeHtml = (html: string): string => {
+  if (!html) return '';
+  return html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
+    .replace(/(href|src)\s*=\s*(["'])\s*javascript:[^"']*\2/gi, '$1=$2#$2');
+};
+
 // Mismo patron probado en blog_detail_screen.tsx: altura dinamica via
 // postMessage (el WebView no sabe su propia altura de contenido de otra
 // forma), mas transformacion de enlaces de YouTube a embed real.
@@ -77,17 +91,13 @@ export default function ResourceDetailScreen(props: Props) {
   const resourceId: number | undefined = route?.params?.resourceId;
   const fallbackTitle: string | undefined = route?.params?.title;
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(!!resourceId);
+  const [error, setError] = useState(!resourceId);
   const [resource, setResource] = useState<ResourceListItem | null>(null);
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
 
   useEffect(() => {
-    if (!resourceId) {
-      setError(true);
-      setIsLoading(false);
-      return;
-    }
+    if (!resourceId) return;
     resourcesApi
       .getDetail(resourceId)
       .then((res) => setResource(res.data.data))
@@ -102,6 +112,19 @@ export default function ResourceDetailScreen(props: Props) {
         setWebViewHeight(msg.height + 24);
       }
     } catch {}
+  };
+
+  // Solo el documento que generamos nosotros mismos (source.html, origin "about:blank")
+  // y el iframe de YouTube que pueda contener deben poder navegar en este WebView.
+  const onShouldStartLoadWithRequest = (request: any) => {
+    const url: string = request?.url ?? '';
+    if (url === 'about:blank' || url.startsWith('data:')) return true;
+    try {
+      const host = new URL(url).hostname;
+      return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
+    } catch {
+      return false;
+    }
   };
 
   const openExternal = () => {
@@ -165,13 +188,17 @@ export default function ResourceDetailScreen(props: Props) {
           {resource.content ? (
             <WebView
               source={{
-                html: isFullDocument(resource.content)
-                  ? injectResizeScript(renderYouTubeEmbeds(resource.content))
-                  : WRAPPER_HTML.replace('__CONTENT__', renderYouTubeEmbeds(resource.content)),
+                html: (() => {
+                  const sanitized = sanitizeHtml(resource.content);
+                  return isFullDocument(sanitized)
+                    ? injectResizeScript(renderYouTubeEmbeds(sanitized))
+                    : WRAPPER_HTML.replace('__CONTENT__', renderYouTubeEmbeds(sanitized));
+                })(),
               }}
               style={[styles.webView, { height: webViewHeight }]}
               scrollEnabled={false}
-              originWhitelist={['*']}
+              originWhitelist={['about:blank']}
+              onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
               onMessage={onWebViewMessage}
               javaScriptEnabled
             />

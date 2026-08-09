@@ -1,5 +1,8 @@
 node_modules/**/*
 .expo/*
+.env
+.env.*
+!.env.example
 npm-debug.*
 *.jks
 *.p8
@@ -8,6 +11,13 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+
+# builds (expo export / eas)
+dist/
+dist_release/
+dist_release2/
+*.ipa
+*.hbc
 
 # macOS
 .DS_Store
