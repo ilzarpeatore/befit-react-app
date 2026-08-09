@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { C, FONT } from './theme';
 import { blogApi, BlogDetailItem } from '../../api/blog';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -14,6 +15,20 @@ const formatDate = (dateStr: string): string => {
   } catch {
     return dateStr;
   }
+};
+
+// Blog content comes from the coach/admin rich-text editor and is rendered raw inside a
+// WebView — strip the constructs that would let a compromised/malicious editor session
+// execute script or redirect the WebView (stored-XSS defense-in-depth; the WebView's own
+// originWhitelist/onShouldStartLoadWithRequest below is the primary navigation guard).
+const sanitizeHtml = (html: string): string => {
+  if (!html) return '';
+  return html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
+    .replace(/(href|src)\s*=\s*(["'])\s*javascript:[^"']*\2/gi, '$1=$2#$2');
 };
 
 const renderYouTubeEmbeds = (html: string): string => {
@@ -60,26 +75,30 @@ const WRAPPER_HTML = `<!DOCTYPE html>
 
 export default function BlogDetailScreen({ navigation, route }: any) {
   const mBlogModel = route?.params?.mBlogModel;
+  // home_screen_modern.tsx navigates with { id } instead of { mBlogModel }; support both
+  // so the post fetched from the API always matches what the user tapped.
+  const blogId = mBlogModel?.id ?? route?.params?.id ?? 0;
 
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<BlogDetailItem | null>(null);
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
 
-  useEffect(() => {
-    loadDetail();
-  }, []);
-
   const loadDetail = async () => {
+    setLoading(true);
     try {
-      const res = await blogApi.getDetail(mBlogModel?.id ?? 0);
-      setBlog(res.data.data);
+      const res = await blogApi.getDetail(blogId);
+      setBlog(res.data?.data ?? mBlogModel ?? null);
     } catch (e) {
-      console.log('Error loading blog detail:', e);
-      setBlog(mBlogModel);
+      logger.error('Error loading blog detail:', e);
+      setBlog(mBlogModel ?? null);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadDetail();
+  }, [blogId]);
 
   const onWebViewMessage = (event: any) => {
     try {
@@ -92,8 +111,22 @@ export default function BlogDetailScreen({ navigation, route }: any) {
 
   const getRenderedHtml = () => {
     const content = blog?.content || blog?.description || '';
-    const withEmbeds = renderYouTubeEmbeds(content);
+    const withEmbeds = renderYouTubeEmbeds(sanitizeHtml(content));
     return WRAPPER_HTML.replace('__CONTENT__', withEmbeds);
+  };
+
+  // Only the WRAPPER_HTML we generate (loaded as source.html, origin "about:blank") and the
+  // YouTube embed iframe it may contain should ever load in this WebView — block navigation
+  // to any other origin (e.g. a malicious link/redirect inside sanitized blog content).
+  const onShouldStartLoadWithRequest = (request: any) => {
+    const url: string = request?.url ?? '';
+    if (url === 'about:blank' || url.startsWith('data:')) return true;
+    try {
+      const host = new URL(url).hostname;
+      return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
+    } catch {
+      return false;
+    }
   };
 
   if (loading) {
@@ -154,7 +187,8 @@ export default function BlogDetailScreen({ navigation, route }: any) {
                 source={{ html: getRenderedHtml() }}
                 style={[styles.webView, { height: webViewHeight }]}
                 scrollEnabled={false}
-                originWhitelist={['*']}
+                originWhitelist={['about:blank']}
+                onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
                 onMessage={onWebViewMessage}
                 javaScriptEnabled
               />
