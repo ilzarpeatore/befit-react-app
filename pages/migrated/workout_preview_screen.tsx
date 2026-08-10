@@ -327,9 +327,12 @@ export default function WorkoutPreviewScreen(props: Props) {
           </TouchableOpacity>
         </View>
 
-        {/* Title row */}
+        {/* Title row — sin numberOfLines: es el título de la propia pantalla
+            (dentro de un ScrollView con espacio de sobra), así que se deja
+            envolver en tantas líneas como haga falta en vez de cortarlo con
+            "..." cuando el nombre del workout es largo. */}
         <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={styles.title}>
             {workout.title}
           </Text>
           {workoutTemplateId ? (
@@ -385,7 +388,7 @@ export default function WorkoutPreviewScreen(props: Props) {
                 return (
                   <View key={ex.id} style={styles.exerciseCard}>
                     <View style={styles.exerciseRow}>
-                      <ExerciseThumbMem image={ex.image} />
+                      <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} />
                       <View style={styles.exerciseInfo}>
                         <Text style={styles.exerciseTitle} numberOfLines={2}>
                           {ex.title}

@@ -38,9 +38,18 @@ function ConfettiDot({ delay, color, left }: { delay: number; color: string; lef
   );
 }
 
-export default function OnboardingCompleteScreen({ navigation }: any) {
+export default function OnboardingCompleteScreen({ navigation, route }: any) {
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const { completeOnboarding } = useAuth();
+  const { completeOnboarding, state } = useAuth();
+  const isPersonalClient = !!state.user?.is_personal_client;
+  const profile = state.user?.user_profile;
+  const planSelected = !!route?.params?.planSelected;
+
+  const checks = [
+    { label: "Perfil completado", done: !!(profile?.weight && profile?.height) },
+    { label: "Plan seleccionado", done: planSelected || isPersonalClient },
+    { label: "Objetivos definidos", done: !!profile?.goal },
+  ];
 
   useEffect(() => {
     Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 40, useNativeDriver: true }).start();
@@ -59,16 +68,18 @@ export default function OnboardingCompleteScreen({ navigation }: any) {
           <Ionicons name="trophy" size={64} color={C.white} />
         </Animated.View>
 
-        <Text style={[localStyles.title, { color: C.textPrimary }]}>Â¡Todo listo!</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>¡Todo listo!</Text>
         <Text style={[localStyles.subtitle, { color: C.gray }]}>
-          Tu entrenador te contactarÃ¡ pronto para comenzar tu transformaciÃ³n.
+          {isPersonalClient
+            ? "Tu entrenador revisará tu perfil y te contactará pronto para comenzar tu transformación."
+            : "Explora la app y empieza tu transformación cuando quieras."}
         </Text>
 
         <View style={localStyles.checkList}>
-          {["Perfil completado", "Plan seleccionado", "Objetivos definidos"].map((item, idx) => (
+          {checks.map((item, idx) => (
             <View key={idx} style={localStyles.checkRow}>
-              <Ionicons name="checkmark-circle" size={22} color={C.textPrimary} />
-              <Text style={[localStyles.checkText, { color: C.white }]}>{item}</Text>
+              <Ionicons name={item.done ? "checkmark-circle" : "ellipse-outline"} size={22} color={item.done ? C.textPrimary : C.gray} />
+              <Text style={[localStyles.checkText, { color: item.done ? C.white : C.gray }]}>{item.label}</Text>
             </View>
           ))}
         </View>

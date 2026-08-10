@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,28 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
-import { workoutHistoryApi } from '../../api/workoutHistory';
+import { workoutHistoryApi, CompletedSessionItem } from '../../api/workoutHistory';
 
 interface CalendarWorkout {
   title?: string;
   assignmentId?: number;
+  workoutTemplateId?: number;
+}
+
+// Mismo fallback por palabra clave que usa MigratedSchedule (schedule_screen.tsx) —
+// el backend de getMyCalendar no expone thumbnail real del WorkoutTemplate, así que
+// se replica aquí el mismo criterio para que ambas pantallas se vean consistentes.
+function getWorkoutImage(title: string): string {
+  const t = (title || '').toLowerCase();
+  if (t.includes('cardio') || t.includes('hiit')) return 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400';
+  if (t.includes('strength') || t.includes('power') || t.includes('lift')) return 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400';
+  if (t.includes('rope') || t.includes('aero')) return 'https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=400';
+  return 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400';
 }
 
 interface CalendarDayModel {
@@ -96,6 +109,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mDays, setMDays] = useState<CalendarDayModel[]>([]);
   const [loadedYm, setLoadedYm] = useState<string | null>(null);
+  const [completedSessions, setCompletedSessions] = useState<CompletedSessionItem[]>([]);
 
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [periodMode, setPeriodMode] = useState<'week' | 'month'>('month');
@@ -119,6 +133,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         workouts: (d.workouts ?? []).map((w: any) => ({
           title: w.title,
           assignmentId: w.assignment_id,
+          workoutTemplateId: w.id,
         })),
       }));
       setMDays(mapped);
@@ -134,6 +149,37 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     if (ym === loadedYm) return;
     getData(dominantAnchor.getMonth() + 1, dominantAnchor.getFullYear(), ym);
   }, [ym, loadedYm, getData]);
+
+  // Mismo criterio que el panel admin (UserDetailView.tsx: completedAssignments /
+  // completedByTemplate / completedByDate) para que "realizado en verde" signifique
+  // exactamente lo mismo en la app y en el panel del coach.
+  useEffect(() => {
+    workoutHistoryApi
+      .getMyCompletedSessions()
+      .then((res) => setCompletedSessions(res.data?.data ?? []))
+      .catch(() => setCompletedSessions([]));
+  }, []);
+
+  const completedAssignmentIds = useMemo(
+    () => new Set(completedSessions.filter((s) => s.program_day_assignment_id != null).map((s) => s.program_day_assignment_id as number)),
+    [completedSessions]
+  );
+  const completedByTemplate = useMemo(
+    () => new Set(completedSessions.filter((s) => s.workout_template_id != null && s.date).map((s) => `${String(s.date).slice(0, 10)}|${s.workout_template_id}`)),
+    [completedSessions]
+  );
+  const completedByDate = useMemo(
+    () => new Set(completedSessions.filter((s) => s.date).map((s) => String(s.date).slice(0, 10))),
+    [completedSessions]
+  );
+
+  const isWorkoutCompleted = useCallback(
+    (w: CalendarWorkout, dateKey: string) =>
+      (w.assignmentId != null && completedAssignmentIds.has(w.assignmentId)) ||
+      (w.workoutTemplateId != null && completedByTemplate.has(`${dateKey}|${w.workoutTemplateId}`)) ||
+      completedByDate.has(dateKey),
+    [completedAssignmentIds, completedByTemplate, completedByDate]
+  );
 
   const goPrev = () => {
     setSelectedDayKey(null);
@@ -166,18 +212,60 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   const daysWithWorkouts = visibleDays.filter((d) => d.workouts.length > 0 && (periodMode === 'week' || d.inMonth));
 
-  const goToWorkout = (w: CalendarWorkout) => {
+  const goToWorkout = (w: CalendarWorkout, dateKey: string) => {
     if (w.assignmentId == null) return;
+    if (isWorkoutCompleted(w, dateKey)) {
+      // Día ya realizado: vista de solo lectura de lo que se hizo de verdad
+      // (mismo destino que Historial de entrenamientos), no el editor/preview
+      // de la plantilla. IMPORTANTE: no mandar también workoutTemplateId aquí
+      // — a diferencia de CompletedSessionItem (donde asignación y plantilla
+      // suelta son mutuamente excluyentes), en el calendario ambos IDs
+      // siempre vienen rellenos a la vez; si se manda workout_template_id el
+      // backend (SessionDetailController::getSessionDetail) lo trata como
+      // sesión "standalone" y busca el review por workout_template_id+fecha
+      // en vez de por program_day_assignment_id, perdiendo las series reales
+      // registradas (verificado con curl: total_sets pasa de 15 a 0).
+      navigation?.navigate('MigratedSessionHistoryDetail', {
+        programDayAssignmentId: w.assignmentId,
+        title: w.title,
+      });
+      return;
+    }
     navigation?.navigate('MigratedWorkoutPreview', {
       programDayAssignmentId: w.assignmentId,
       mTitle: w.title,
     });
   };
 
+  const renderWorkoutCard = (w: CalendarWorkout, dateKey: string, key: string | number) => {
+    const completed = isWorkoutCompleted(w, dateKey);
+    return (
+      <TouchableOpacity
+        key={key}
+        style={[styles.workoutCard, completed && styles.workoutCardCompleted]}
+        activeOpacity={0.7}
+        onPress={() => goToWorkout(w, dateKey)}
+      >
+        <Image source={{ uri: getWorkoutImage(w.title || '') }} style={styles.workoutImage} />
+        <View style={{ flex: 1, marginLeft: 14 }}>
+          <Text style={styles.workoutTitle} numberOfLines={1}>{w.title || ''}</Text>
+          {completed && (
+            <View style={styles.completedBadge}>
+              <Ionicons name="checkmark-circle" size={13} color={C.success} />
+              <Text style={styles.completedBadgeText}>Completado</Text>
+            </View>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
+      </TouchableOpacity>
+    );
+  };
+
   const renderDayCell = (day: CalendarDayModel, keyPrefix: string, big: boolean) => {
     const isToday = day.date === todayKey;
     const isSelected = day.date === selectedDayKey;
     const hasWorkout = day.workouts.length > 0;
+    const hasCompletedWorkout = day.workouts.some((w) => isWorkoutCompleted(w, day.date));
     const dateObj = new Date(`${day.date}T00:00:00`);
     return (
       <TouchableOpacity
@@ -185,22 +273,35 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         style={[
           styles.dayCell,
           big && styles.dayCellBig,
-          isSelected && styles.dayCellSelected,
+          isSelected && (big ? styles.dayCellBigSelected : styles.dayCellSelected),
           isToday && !isSelected && styles.dayCellToday,
         ]}
         activeOpacity={0.7}
         onPress={() => setSelectedDayKey(day.date)}
       >
+        {big && (
+          <Text style={styles.dayCellLetter}>
+            {WEEKDAY_LABELS[dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1]}
+          </Text>
+        )}
         <Text
           style={[
             styles.dayCellText,
             !day.inMonth && periodMode === 'month' && styles.dayCellTextMuted,
-            isSelected && styles.dayCellTextSelected,
+            isSelected && !big && styles.dayCellTextSelected,
           ]}
         >
           {dateObj.getDate()}
         </Text>
-        {hasWorkout && <View style={[styles.dayDot, isSelected && styles.dayDotSelected]} />}
+        {hasWorkout && (
+          <View
+            style={[
+              styles.dayDot,
+              hasCompletedWorkout && styles.dayDotCompleted,
+              isSelected && !big && styles.dayDotSelected,
+            ]}
+          />
+        )}
       </TouchableOpacity>
     );
   };
@@ -270,11 +371,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </View>
       ) : viewMode === 'calendar' ? (
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-          <View style={styles.weekdayHeaderRow}>
-            {WEEKDAY_LABELS.map((l, i) => (
-              <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
-            ))}
-          </View>
+          {periodMode === 'month' && (
+            <View style={styles.weekdayHeaderRow}>
+              {WEEKDAY_LABELS.map((l, i) => (
+                <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
+              ))}
+            </View>
+          )}
 
           {periodMode === 'month' ? (
             monthWeeks.map((week, wi) => (
@@ -293,17 +396,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
               {selectedDayKey ? formatDayLabel(selectedDayKey) : 'Selecciona un día'}
             </Text>
             {selectedDay && selectedDay.workouts.length > 0 ? (
-              selectedDay.workouts.map((w, wi) => (
-                <TouchableOpacity
-                  key={wi}
-                  style={styles.workoutCard}
-                  activeOpacity={0.7}
-                  onPress={() => goToWorkout(w)}
-                >
-                  <Text style={styles.workoutTitle}>{w.title || ''}</Text>
-                  <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-                </TouchableOpacity>
-              ))
+              selectedDay.workouts.map((w, wi) => renderWorkoutCard(w, selectedDay.date, wi))
             ) : selectedDayKey ? (
               <View style={styles.restDayCard}>
                 <Ionicons name="moon-outline" size={18} color={C.textSecondary} />
@@ -322,17 +415,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
             <View key={dayIdx} style={styles.daySection}>
               <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
               {day.workouts.length > 0 ? (
-                day.workouts.map((w, wIdx) => (
-                  <TouchableOpacity
-                    key={wIdx}
-                    style={styles.workoutCard}
-                    activeOpacity={0.7}
-                    onPress={() => goToWorkout(w)}
-                  >
-                    <Text style={styles.workoutTitle}>{w.title || ''}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-                  </TouchableOpacity>
-                ))
+                day.workouts.map((w, wIdx) => renderWorkoutCard(w, day.date, wIdx))
               ) : (
                 <View style={styles.restDayCard}>
                   <Ionicons name="moon-outline" size={16} color={C.textSecondary} />
@@ -424,6 +507,15 @@ const styles = StyleSheet.create({
   },
   dayCellBig: {
     aspectRatio: 0.85,
+    borderWidth: 1,
+    borderColor: C.gray70,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  dayCellBigSelected: {
+    backgroundColor: C.surface,
+    borderColor: C.orange,
+    borderWidth: 1.5,
   },
   dayCellSelected: {
     backgroundColor: '#1C1C1E',
@@ -431,6 +523,11 @@ const styles = StyleSheet.create({
   dayCellToday: {
     borderWidth: 1.5,
     borderColor: C.textPrimary,
+  },
+  dayCellLetter: {
+    fontFamily: FONT.medium,
+    fontSize: 13,
+    color: C.textSecondary,
   },
   dayCellText: {
     fontFamily: FONT.semiBold,
@@ -449,6 +546,9 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: C.orange,
   },
+  dayDotCompleted: {
+    backgroundColor: C.success,
+  },
   dayDotSelected: {
     backgroundColor: '#FFFFFF',
   },
@@ -465,14 +565,27 @@ const styles = StyleSheet.create({
   daySection: { marginBottom: 16 },
   dayDate: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, paddingHorizontal: 16 },
   workoutCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: C.surface,
+    borderRadius: 20,
+    padding: 12,
     marginTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    shadowColor: C.gray80,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  workoutImage: { width: 72, height: 72, borderRadius: 16 },
+  workoutCardCompleted: {
+    backgroundColor: C.success10,
+    borderWidth: 1,
+    borderColor: C.success50,
   },
   workoutTitle: { flex: 1, fontSize: 15, fontFamily: FONT.bold, color: C.textPrimary },
+  completedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  completedBadgeText: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.success },
   restDayCard: {
     flexDirection: 'row',
     alignItems: 'center',

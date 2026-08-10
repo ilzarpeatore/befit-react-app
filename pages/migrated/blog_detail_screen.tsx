@@ -82,6 +82,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<BlogDetailItem | null>(null);
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
+  const [bibliographyOpen, setBibliographyOpen] = useState(false);
 
   const loadDetail = async () => {
     setLoading(true);
@@ -195,29 +196,43 @@ export default function BlogDetailScreen({ navigation, route }: any) {
             </View>
           ) : null}
 
-          {/* Bibliography / Sources */}
+          {/* Fuente / Bibliografía — acordeón colapsable */}
           {blog?.bibliography && blog.bibliography.trim().length > 0 && (
             <View style={styles.bibliographySection}>
-              <View style={styles.bibliographyHeader}>
+              <TouchableOpacity
+                style={styles.bibliographyHeader}
+                activeOpacity={0.75}
+                onPress={() => setBibliographyOpen((open) => !open)}
+              >
                 <Ionicons name="book-outline" size={20} color={C.textPrimary} />
-                <Text style={styles.bibliographyTitle}>Sources & References</Text>
-              </View>
-              <View style={styles.bibliographyDivider} />
-              <View style={styles.bibliographyContent}>
-                {blog.bibliography.split('\n').filter((line: string) => line.trim().length > 0).map((line: string, index: number) => {
-                  const isUrl = line.trim().match(/^https?:\/\//);
-                  return (
-                    <View key={index} style={styles.bibliographyItem}>
-                      <View style={styles.bibliographyDot} />
-                      {isUrl ? (
-                        <Text style={styles.bibliographyLink} numberOfLines={3}>{line.trim()}</Text>
-                      ) : (
-                        <Text style={styles.bibliographyText}>{line.trim()}</Text>
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
+                <Text style={styles.bibliographyTitle}>Fuente / Bibliografía</Text>
+                <Ionicons
+                  name={bibliographyOpen ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color={C.textPrimary}
+                  style={styles.bibliographyChevron}
+                />
+              </TouchableOpacity>
+              {bibliographyOpen && (
+                <>
+                  <View style={styles.bibliographyDivider} />
+                  <View style={styles.bibliographyContent}>
+                    {blog.bibliography.split('\n').filter((line: string) => line.trim().length > 0).map((line: string, index: number) => {
+                      const isUrl = line.trim().match(/^https?:\/\//);
+                      return (
+                        <View key={index} style={styles.bibliographyItem}>
+                          <View style={styles.bibliographyDot} />
+                          {isUrl ? (
+                            <Text style={styles.bibliographyLink} numberOfLines={3}>{line.trim()}</Text>
+                          ) : (
+                            <Text style={styles.bibliographyText}>{line.trim()}</Text>
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                </>
+              )}
             </View>
           )}
         </View>
@@ -315,10 +330,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
   },
-  bibliographyTitle: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
-  bibliographyDivider: { height: 1, backgroundColor: C.gray60, marginBottom: 12 },
+  bibliographyTitle: { flex: 1, fontSize: 16, fontFamily: FONT.bold, color: C.white },
+  bibliographyChevron: { marginLeft: 8 },
+  bibliographyDivider: { height: 1, backgroundColor: C.gray60, marginTop: 12, marginBottom: 12 },
   bibliographyContent: { gap: 8 },
   bibliographyItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   bibliographyDot: {

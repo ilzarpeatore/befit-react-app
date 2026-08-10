@@ -5,8 +5,9 @@ import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C, FONT } from './theme';
-import { dietApi } from '../../api/diet';
+import { dietApi, AssignedMealsSummary, AssignedMealRecipe } from '../../api/diet';
 import { recipesApi, RecipeListItem } from '../../api/recipes';
+import logger from '@helper/logger';
 
 function formatDateYMD(d: Date): string {
   const y = d.getFullYear();
@@ -18,9 +19,9 @@ function formatDateYMD(d: Date): string {
 const GRAPH_CARD_HEIGHT = 260;
 
 const MEAL_TYPES: Record<string, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  dinner: 'Dinner',
+  breakfast: 'Desayuno',
+  lunch: 'Comida',
+  dinner: 'Cena',
   snacks: 'Snacks',
 };
 
@@ -70,7 +71,7 @@ function formatDay(d: Date): string {
 }
 
 function formatWeekday(d: Date): string {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   return days[(d.getDay() + 6) % 7];
 }
 
@@ -99,6 +100,8 @@ export default function PlanScreen(props: any) {
   const [weekOffset, setWeekOffset] = useState(0);
 
   const [addMealFor, setAddMealFor] = useState<{ key: string; label: string } | null>(null);
+  const [addMealTab, setAddMealTab] = useState<'assigned' | 'recipes'>('assigned');
+  const [assignedMeals, setAssignedMeals] = useState<AssignedMealsSummary['meals'] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<RecipeListItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -113,6 +116,15 @@ export default function PlanScreen(props: any) {
   useEffect(() => {
     fetchDailyPlan();
   }, [selectedDay]);
+
+  useEffect(() => {
+    // Comidas que el coach ha asignado al cliente (independiente del día),
+    // usadas para priorizarlas al elegir qué añadir a una franja del plan.
+    dietApi
+      .getAssignedMealsSummary()
+      .then((res) => setAssignedMeals(res.data.meals))
+      .catch((e) => logger.error('Assigned meals fetch error:', e));
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -178,7 +190,7 @@ export default function PlanScreen(props: any) {
       const res = await dietApi.getDailyPlan(formatDateYMD(selectedDay));
       applyDailyPlanResponse(res.data);
     } catch (e) {
-      console.log('Plan fetch error:', e);
+      logger.error('Plan fetch error:', e);
     } finally {
       setIsLoading(false);
     }
@@ -191,7 +203,7 @@ export default function PlanScreen(props: any) {
 
   const toggleRecipeCompletion = async (item: DailyPlanRecipeItem, mealType: string) => {
     if (!item.id || !item.dailyPlanId || !item.recipeId) {
-      Alert.alert('Error', 'Missing required information');
+      Alert.alert('Error', 'Falta información necesaria');
       return;
     }
     setIsLoading(true);
@@ -205,7 +217,7 @@ export default function PlanScreen(props: any) {
       );
       applyDailyPlanResponse(response.data);
     } catch (e: any) {
-      Alert.alert('Error', e?.message ?? 'Failed to update');
+      Alert.alert('Error', e?.message ?? 'No se pudo actualizar');
     } finally {
       setIsLoading(false);
     }
@@ -221,10 +233,10 @@ export default function PlanScreen(props: any) {
 
   const clearDailyPlan = () => {
     if (!dailyPlanId) return;
-    Alert.alert('Clear Plan', 'Are you sure you want to clear all recipes for this day?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Vaciar plan', '¿Seguro que quieres borrar todas las recetas de este día?', [
+      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Clear',
+        text: 'Vaciar',
         style: 'destructive',
         onPress: async () => {
           setIsLoading(true);
@@ -232,7 +244,7 @@ export default function PlanScreen(props: any) {
             await recipesApi.deleteAllDailyPlanRecipes(dailyPlanId);
             await fetchDailyPlan();
           } catch (e) {
-            Alert.alert('Error', 'Failed to clear plan');
+            Alert.alert('Error', 'No se pudo vaciar el plan');
           } finally {
             setIsLoading(false);
           }
@@ -269,13 +281,18 @@ export default function PlanScreen(props: any) {
   const openAddMeal = useCallback(
     (key: string, label: string) => {
       setAddMealFor({ key, label });
+      // Prioriza mostrar primero las comidas asignadas por el coach para esta
+      // franja concreta (desayuno/comida/cena/snack); si no hay ninguna,
+      // arranca directamente en el recetario general.
+      const hasAssigned = (assignedMeals?.[key as keyof AssignedMealsSummary['meals']]?.length ?? 0) > 0;
+      setAddMealTab(hasAssigned ? 'assigned' : 'recipes');
       setSearchQuery('');
       setSearchResults([]);
       setSearchPage(1);
       setSearchIsLastPage(false);
       searchRecipes(key, '', 1);
     },
-    [searchRecipes]
+    [searchRecipes, assignedMeals]
   );
 
   useEffect(() => {
@@ -301,7 +318,7 @@ export default function PlanScreen(props: any) {
     }
   };
 
-  const addRecipeToPlan = async (recipe: RecipeListItem) => {
+  const addRecipeToPlan = async (recipe: RecipeListItem | AssignedMealRecipe) => {
     if (!dailyPlanId || !addMealFor) return;
     setSavingRecipeId(recipe.id);
     try {
@@ -309,7 +326,7 @@ export default function PlanScreen(props: any) {
       setAddMealFor(null);
       await fetchDailyPlan();
     } catch {
-      Alert.alert('Error', 'Could not add this meal. Please try again.');
+      Alert.alert('Error', 'No se pudo añadir esta comida. Inténtalo de nuevo.');
     } finally {
       setSavingRecipeId(null);
     }
@@ -355,14 +372,14 @@ export default function PlanScreen(props: any) {
       </View>
       <View style={s.nutrientRow}>
         {[
-          { label: 'Protein', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
-          { label: 'Carbs', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
-          { label: 'Fat', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
+          { label: 'Proteína', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
+          { label: 'Carbos', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
+          { label: 'Grasas', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
         ].map((n, i) => (
           <View key={i} style={s.nutrientItem}>
             <Text style={s.nutrientLabel}>{n.label}</Text>
             <Text style={s.nutrientValue}>{n.current}g</Text>
-            <Text style={s.nutrientTarget}>of {n.target}g</Text>
+            <Text style={s.nutrientTarget}>de {n.target}g</Text>
             <View style={s.nutrientBar}>
               <View style={[s.nutrientBarFill, { width: `${n.progress * 100}%`, backgroundColor: n.color }]} />
             </View>
@@ -387,7 +404,7 @@ export default function PlanScreen(props: any) {
           </TouchableOpacity>
         </View>
         {recipes.length === 0 ? (
-          <Text style={s.emptyMealText}>No {displayName.toLowerCase()} logged yet.</Text>
+          <Text style={s.emptyMealText}>Todavía no has añadido {displayName.toLowerCase()}.</Text>
         ) : (
           recipes.map((recipe, i) => (
             <View key={i} style={s.recipeItem}>
@@ -402,7 +419,7 @@ export default function PlanScreen(props: any) {
                   <View style={s.recipeImage} />
                 )}
                 <View style={s.recipeInfo}>
-                  <Text style={s.recipeName} numberOfLines={1}>{recipe.recipeName ?? 'Recipe'}</Text>
+                  <Text style={s.recipeName} numberOfLines={1}>{recipe.recipeName ?? 'Receta'}</Text>
                   <View style={s.recipeMacrosRow}>
                     <Text style={s.recipeMacroCal}>{recipe.calories ?? 0} kcal</Text>
                     <Text style={s.recipeMacro}>P {recipe.protein ?? 0}g</Text>
@@ -413,7 +430,7 @@ export default function PlanScreen(props: any) {
                     <View style={s.coachBadge}>
                       <Ionicons name="ribbon-outline" size={11} color={C.orange} />
                       <Text style={s.coachBadgeText}>
-                        Assigned by {recipe.assignedByName ?? 'your coach'}
+                        Asignado por {recipe.assignedByName ?? 'tu coach'}
                       </Text>
                     </View>
                   )}
@@ -439,7 +456,7 @@ export default function PlanScreen(props: any) {
         <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
           <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
-        <Text style={s.appBarTitle}>Daily Plan</Text>
+        <Text style={s.appBarTitle}>Plan diario</Text>
         <TouchableOpacity onPress={clearDailyPlan} style={s.clearBtn}>
           <Ionicons name="trash-outline" size={20} color={C.destructive} />
         </TouchableOpacity>
@@ -456,9 +473,9 @@ export default function PlanScreen(props: any) {
       {showCompactSummary && (
         <View style={s.compactBar}>
           {renderCompactStat('Kcal', `${kcalCurrent}/${kcalTarget}`, kcalProgress)}
-          {renderCompactStat('Protein', `${proteinCurrent}/${proteinTarget}g`, proteinProgress)}
-          {renderCompactStat('Carbs', `${carbsCurrent}/${carbsTarget}g`, carbsProgress)}
-          {renderCompactStat('Fat', `${fatsCurrent}/${fatsTarget}g`, fatsProgress)}
+          {renderCompactStat('Proteína', `${proteinCurrent}/${proteinTarget}g`, proteinProgress)}
+          {renderCompactStat('Carbos', `${carbsCurrent}/${carbsTarget}g`, carbsProgress)}
+          {renderCompactStat('Grasas', `${fatsCurrent}/${fatsTarget}g`, fatsProgress)}
         </View>
       )}
       <ScrollView
@@ -485,57 +502,118 @@ export default function PlanScreen(props: any) {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={s.modalHeaderRow}>
-            <Text style={s.modalTitle}>Add to {addMealFor?.label ?? ''}</Text>
+            <Text style={s.modalTitle}>Añadir a {addMealFor?.label ?? ''}</Text>
             <TouchableOpacity onPress={() => setAddMealFor(null)} style={s.modalCloseBtn}>
               <Ionicons name="close" size={26} color={C.white} />
             </TouchableOpacity>
           </View>
-          <TextInput
-            style={s.searchInput}
-            placeholder="Search recipes..."
-            placeholderTextColor={C.gray40}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
-          {searchLoading ? (
-            <ActivityIndicator size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
-          ) : searchResults.length === 0 ? (
-            <Text style={s.noResultsText}>No recipes found.</Text>
-          ) : (
-            <ScrollView
-              style={s.searchResultsScroll}
-              onScroll={handleSearchScroll}
-              scrollEventThrottle={16}
-              keyboardShouldPersistTaps="handled"
+          <View style={s.addMealTabsRow}>
+            <TouchableOpacity
+              style={[s.addMealTab, addMealTab === 'assigned' && s.addMealTabActive]}
+              onPress={() => setAddMealTab('assigned')}
             >
-              {searchResults.map((recipe) => (
-                <TouchableOpacity
-                  key={recipe.id}
-                  style={s.searchResultRow}
-                  disabled={savingRecipeId === recipe.id}
-                  onPress={() => addRecipeToPlan(recipe)}
+              <Text style={[s.addMealTabText, addMealTab === 'assigned' && s.addMealTabTextActive]}>
+                Asignadas
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.addMealTab, addMealTab === 'recipes' && s.addMealTabActive]}
+              onPress={() => setAddMealTab('recipes')}
+            >
+              <Text style={[s.addMealTabText, addMealTab === 'recipes' && s.addMealTabTextActive]}>
+                Recetario
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {addMealTab === 'assigned' ? (
+            (() => {
+              const assignedForMeal: AssignedMealRecipe[] =
+                (addMealFor && assignedMeals?.[addMealFor.key as keyof AssignedMealsSummary['meals']]) ?? [];
+              if (assignedForMeal.length === 0) {
+                return (
+                  <Text style={s.noResultsText}>
+                    Tu coach todavía no te ha asignado {(addMealFor?.label ?? '').toLowerCase()}.
+                  </Text>
+                );
+              }
+              return (
+                <ScrollView style={s.searchResultsScroll} keyboardShouldPersistTaps="handled">
+                  {assignedForMeal.map((recipe) => (
+                    <TouchableOpacity
+                      key={recipe.id}
+                      style={s.searchResultRow}
+                      disabled={savingRecipeId === recipe.id}
+                      onPress={() => addRecipeToPlan(recipe)}
+                    >
+                      {recipe.recipe_image ? (
+                        <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                      ) : (
+                        <View style={s.searchResultImage} />
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+                        <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+                      </View>
+                      {savingRecipeId === recipe.id ? (
+                        <ActivityIndicator size="small" color={C.textPrimary} />
+                      ) : (
+                        <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              );
+            })()
+          ) : (
+            <>
+              <TextInput
+                style={s.searchInput}
+                placeholder="Buscar recetas..."
+                placeholderTextColor={C.gray40}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus
+              />
+              {searchLoading ? (
+                <ActivityIndicator size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
+              ) : searchResults.length === 0 ? (
+                <Text style={s.noResultsText}>No se encontraron recetas.</Text>
+              ) : (
+                <ScrollView
+                  style={s.searchResultsScroll}
+                  onScroll={handleSearchScroll}
+                  scrollEventThrottle={16}
+                  keyboardShouldPersistTaps="handled"
                 >
-                  {recipe.recipe_image ? (
-                    <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
-                  ) : (
-                    <View style={s.searchResultImage} />
+                  {searchResults.map((recipe) => (
+                    <TouchableOpacity
+                      key={recipe.id}
+                      style={s.searchResultRow}
+                      disabled={savingRecipeId === recipe.id}
+                      onPress={() => addRecipeToPlan(recipe)}
+                    >
+                      {recipe.recipe_image ? (
+                        <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                      ) : (
+                        <View style={s.searchResultImage} />
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+                        <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+                      </View>
+                      {savingRecipeId === recipe.id ? (
+                        <ActivityIndicator size="small" color={C.textPrimary} />
+                      ) : (
+                        <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                  {searchLoadingMore && (
+                    <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                   )}
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                    <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                  </View>
-                  {savingRecipeId === recipe.id ? (
-                    <ActivityIndicator size="small" color={C.textPrimary} />
-                  ) : (
-                    <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
-                  )}
-                </TouchableOpacity>
-              ))}
-              {searchLoadingMore && (
-                <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
+                </ScrollView>
               )}
-            </ScrollView>
+            </>
           )}
         </KeyboardAvoidingView>
       </Modal>
@@ -598,6 +676,11 @@ const s = StyleSheet.create({
   modalHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   modalCloseBtn: { padding: 4 },
   modalTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
+  addMealTabsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  addMealTab: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 20, backgroundColor: C.surfaceLight },
+  addMealTabActive: { backgroundColor: C.brand50 },
+  addMealTabText: { fontSize: 13, fontFamily: FONT.semiBold, color: C.gray50 },
+  addMealTabTextActive: { color: C.white },
   searchInput: { backgroundColor: C.surfaceLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, fontFamily: FONT.regular, color: C.white, marginBottom: 12 },
   noResultsText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: 'center', marginTop: 20 },
   searchResultsScroll: { flex: 1 },

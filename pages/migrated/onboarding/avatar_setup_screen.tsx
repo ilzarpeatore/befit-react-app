@@ -1,9 +1,12 @@
-﻿import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
+﻿import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { C, FONT } from "../theme";
+
+const AVATAR_STORAGE_KEY = "@befit_onboarding_avatar_icon";
 
 const PRESET_AVATARS = [
   { id: "1", icon: "person" as const },
@@ -16,11 +19,16 @@ const PRESET_AVATARS = [
 
 export default function AvatarSetupScreen({ navigation }: any) {
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
-  const [hasPhoto, setHasPhoto] = useState(false);
 
-  const handleUploadPhoto = () => {
-    Alert.alert("GalerÃ­a", "AquÃ­ se abrirÃ­a el selector de imÃ¡genes");
-    setHasPhoto(true);
+  useEffect(() => {
+    AsyncStorage.getItem(AVATAR_STORAGE_KEY).then((v) => {
+      if (v) setSelectedAvatar(v);
+    });
+  }, []);
+
+  const selectAvatar = (id: string) => {
+    setSelectedAvatar(id);
+    AsyncStorage.setItem(AVATAR_STORAGE_KEY, id).catch(() => {});
   };
 
   return (
@@ -30,15 +38,15 @@ export default function AvatarSetupScreen({ navigation }: any) {
 
         <View style={localStyles.profileSection}>
           <View style={[localStyles.profileCircle, { backgroundColor: C.primary + "20", borderColor: C.primary }]}>
-            <Ionicons name={hasPhoto ? "person" : "camera-outline"} size={48} color={C.textPrimary} />
+            <Ionicons
+              name={(PRESET_AVATARS.find((a) => a.id === selectedAvatar)?.icon ?? "person") as any}
+              size={48}
+              color={C.textPrimary}
+            />
           </View>
-          <TouchableOpacity style={[localStyles.uploadBtn, { backgroundColor: C.primary + "15" }]} onPress={handleUploadPhoto}>
-            <Ionicons name="image-outline" size={18} color={C.textPrimary} />
-            <Text style={[localStyles.uploadBtnText, { color: C.textPrimary }]}>Subir foto</Text>
-          </TouchableOpacity>
         </View>
 
-        <Text style={[localStyles.sectionLabel, { color: C.gray }]}>O selecciona un avatar predeterminado</Text>
+        <Text style={[localStyles.sectionLabel, { color: C.gray }]}>Selecciona un avatar</Text>
 
         <View style={localStyles.avatarGrid}>
           {PRESET_AVATARS.map((avatar) => (
@@ -49,7 +57,7 @@ export default function AvatarSetupScreen({ navigation }: any) {
                 { backgroundColor: C.surface, borderColor: selectedAvatar === avatar.id ? C.primary : C.border },
                 selectedAvatar === avatar.id && { borderColor: C.primary, backgroundColor: C.primary + "10" },
               ]}
-              onPress={() => setSelectedAvatar(avatar.id)}
+              onPress={() => selectAvatar(avatar.id)}
             >
               <Ionicons name={avatar.icon as any} size={32} color={selectedAvatar === avatar.id ? C.primary : C.gray} />
               {selectedAvatar === avatar.id && (

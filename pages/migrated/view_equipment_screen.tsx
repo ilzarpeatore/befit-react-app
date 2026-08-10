@@ -93,7 +93,7 @@ export default function ViewEquipmentScreen(props: any) {
       style={styles.gridItem}
       activeOpacity={0.7}
       onPress={() =>
-        props.navigation.navigate('MigratedExerciseList', {
+        props.navigation.navigate('MigratedSearch', {
           mTitle: item.title,
           isEquipment: true,
           id: item.id,

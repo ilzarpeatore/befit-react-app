@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIn
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { dietApi, AssignedMealsSummary, AssignedMealRecipe } from '../../api/diet';
+import logger from '@helper/logger';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
 
@@ -23,6 +24,7 @@ export default function AssignedMealsScreen(props: any) {
   const [title, setTitle] = useState<string>(dietTitle ?? 'Assigned to Me');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<MealType>('breakfast');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -37,7 +39,7 @@ export default function AssignedMealsScreen(props: any) {
         setMeals(res.data.meals);
       }
     } catch (e) {
-      console.log('Failed to load meals', e);
+      logger.error('Failed to load meals', e);
     } finally {
       setIsLoading(false);
     }
@@ -55,6 +57,40 @@ export default function AssignedMealsScreen(props: any) {
   };
 
   const activeRecipes = meals?.[activeTab] ?? [];
+
+  const toggleSelected = (recipeId: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(recipeId)) next.delete(recipeId);
+      else next.add(recipeId);
+      return next;
+    });
+  };
+
+  const allRecipes: AssignedMealRecipe[] = meals
+    ? (['breakfast', 'lunch', 'dinner', 'snacks'] as MealType[]).flatMap((key) => meals[key] ?? [])
+    : [];
+  const selectedRecipes = allRecipes.filter((r) => selectedIds.has(r.id));
+  const selectedKcal = selectedRecipes.reduce((sum, r) => sum + (Number(r.calories) || 0), 0);
+  const goalKcal = Number(goal?.kcal) || 0;
+  const kcalRatio = goalKcal > 0 ? selectedKcal / goalKcal : 0;
+  const kcalStatus: 'under' | 'onTarget' | 'over' | null =
+    !isDietMode && goalKcal > 0 && selectedIds.size > 0
+      ? kcalRatio > 1.1
+        ? 'over'
+        : kcalRatio >= 0.9
+        ? 'onTarget'
+        : 'under'
+      : null;
+  const kcalStatusColor = kcalStatus === 'over' ? C.red : kcalStatus === 'onTarget' ? C.success : C.orange;
+  const kcalStatusText =
+    kcalStatus === 'over'
+      ? `Te pasas ${Math.round(selectedKcal - goalKcal)} kcal de tu objetivo`
+      : kcalStatus === 'onTarget'
+      ? 'Esta combinación se ajusta a tu objetivo'
+      : kcalStatus === 'under'
+      ? `Aún te faltan ${Math.round(goalKcal - selectedKcal)} kcal para tu objetivo`
+      : '';
 
   return (
     <View style={s.container}>
@@ -96,6 +132,15 @@ export default function AssignedMealsScreen(props: any) {
             </View>
           )}
 
+          {!isDietMode && selectedIds.size > 0 && (
+            <View style={[s.selectionBar, { borderColor: kcalStatusColor }]}>
+              <Text style={s.selectionBarKcal}>
+                {selectedKcal} <Text style={s.selectionBarKcalGoal}>/ {goalKcal} kcal seleccionadas</Text>
+              </Text>
+              <Text style={[s.selectionBarStatus, { color: kcalStatusColor }]}>{kcalStatusText}</Text>
+            </View>
+          )}
+
           <View style={s.tabsRow}>
             {MEAL_TYPES.map(({ key, label }) => (
               <TouchableOpacity
@@ -118,28 +163,41 @@ export default function AssignedMealsScreen(props: any) {
               </View>
             ) : (
               activeRecipes.map(recipe => (
-                <TouchableOpacity
+                <View
                   key={recipe.id}
-                  style={s.recipeCard}
-                  activeOpacity={0.8}
-                  onPress={() => openRecipe(recipe)}
+                  style={[s.recipeCard, !isDietMode && selectedIds.has(recipe.id) && s.recipeCardSelected]}
                 >
-                  {recipe.recipe_image ? (
-                    <Image source={{ uri: recipe.recipe_image }} style={s.recipeImage} />
-                  ) : (
-                    <View style={s.recipeImage} />
+                  {!isDietMode && (
+                    <TouchableOpacity
+                      style={s.recipeCheckbox}
+                      activeOpacity={0.7}
+                      onPress={() => toggleSelected(recipe.id)}
+                    >
+                      <Ionicons
+                        name={selectedIds.has(recipe.id) ? 'checkmark-circle' : 'ellipse-outline'}
+                        size={22}
+                        color={selectedIds.has(recipe.id) ? C.brand50 : C.gray40}
+                      />
+                    </TouchableOpacity>
                   )}
-                  <View style={s.recipeInfo}>
-                    <Text style={s.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
-                    <View style={s.recipeMacrosRow}>
-                      <Text style={s.recipeMacroCal}>{recipe.calories} kcal</Text>
-                      <Text style={s.recipeMacro}>P {recipe.protein}g</Text>
-                      <Text style={s.recipeMacro}>C {recipe.carbs}g</Text>
-                      <Text style={s.recipeMacro}>F {recipe.fats}g</Text>
+                  <TouchableOpacity style={s.recipeCardBody} activeOpacity={0.8} onPress={() => openRecipe(recipe)}>
+                    {recipe.recipe_image ? (
+                      <Image source={{ uri: recipe.recipe_image }} style={s.recipeImage} />
+                    ) : (
+                      <View style={s.recipeImage} />
+                    )}
+                    <View style={s.recipeInfo}>
+                      <Text style={s.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
+                      <View style={s.recipeMacrosRow}>
+                        <Text style={s.recipeMacroCal}>{recipe.calories} kcal</Text>
+                        <Text style={s.recipeMacro}>P {recipe.protein}g</Text>
+                        <Text style={s.recipeMacro}>C {recipe.carbs}g</Text>
+                        <Text style={s.recipeMacro}>F {recipe.fats}g</Text>
+                      </View>
                     </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray30} />
-                </TouchableOpacity>
+                    <Ionicons name="chevron-forward" size={18} color={C.gray30} />
+                  </TouchableOpacity>
+                </View>
               ))
             )}
           </ScrollView>
@@ -195,14 +253,29 @@ const s = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 24 },
   emptyWrap: { alignItems: 'center', paddingVertical: 60 },
   emptyText: { fontFamily: FONT.regular, fontSize: 13, color: C.gray30, marginTop: 10 },
+  selectionBar: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    backgroundColor: C.surface,
+  },
+  selectionBarKcal: { fontFamily: FONT.extraBold, fontSize: 16, color: C.white },
+  selectionBarKcalGoal: { fontFamily: FONT.regular, fontSize: 12, color: C.gray50 },
+  selectionBarStatus: { fontFamily: FONT.semiBold, fontSize: 12, marginTop: 4 },
   recipeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: C.surface,
     borderRadius: 14,
-    padding: 12,
     marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
   },
+  recipeCardSelected: { borderColor: C.brand50 },
+  recipeCardBody: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: 12, paddingLeft: 0 },
+  recipeCheckbox: { paddingLeft: 12, paddingVertical: 12 },
   recipeImage: { width: 52, height: 52, borderRadius: 10, backgroundColor: C.gray40, marginRight: 12 },
   recipeInfo: { flex: 1 },
   recipeTitle: { fontFamily: FONT.bold, fontSize: 14, color: C.white, marginBottom: 4 },

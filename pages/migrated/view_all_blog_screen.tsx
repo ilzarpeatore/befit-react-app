@@ -1,10 +1,25 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, ActivityIndicator, Image } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
-import { blogApi, BlogListItem } from '../../api/blog';
+import { blogApi, BlogListItem, BlogCategory } from '../../api/blog';
+import SimpleBottomSheet from '../../components/SimpleBottomSheet';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+interface SortOption {
+  key: string;
+  label: string;
+  sortBy: string;
+  orderDir: string;
+}
+
+const SORT_OPTIONS: SortOption[] = [
+  { key: 'recent', label: 'Recientes', sortBy: 'datetime', orderDir: 'desc' },
+  { key: 'old', label: 'Antiguos', sortBy: 'datetime', orderDir: 'asc' },
+  { key: 'az', label: 'A-Z', sortBy: 'title', orderDir: 'asc' },
+];
 
 const truncateTitle = (text: string, maxWords: number = 15): string => {
   if (!text) return '';
@@ -17,7 +32,7 @@ const truncateTitle = (text: string, maxWords: number = 15): string => {
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '';
   try {
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' });
   } catch {
     return dateStr;
   }
@@ -26,17 +41,33 @@ const formatDate = (dateStr: string): string => {
 export default function ViewAllBlogScreen({ navigation, route }: any) {
   const { categoryTitle, categoryId } = route?.params || {};
 
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(categoryId ?? null);
+  const [sortBy, setSortBy] = useState<string>('datetime');
+  const [orderDir, setOrderDir] = useState<string>('desc');
+  const [sortSheetVisible, setSortSheetVisible] = useState(false);
+  const [categorySheetVisible, setCategorySheetVisible] = useState(false);
+
+  const [searchText, setSearchText] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<BlogListItem[]>([]);
+
   const [posts, setPosts] = useState<BlogListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    loadPosts(1);
+    blogApi.getCategories().then((res) => setCategories(res.data?.data ?? [])).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+    loadPosts(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, sortBy, orderDir]);
 
   const loadPosts = async (pageNum: number) => {
     if (pageNum === 1) setLoading(true);
@@ -46,26 +77,20 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       const params: any = {
         page: pageNum,
         per_page: 15,
-        order_by: 'datetime',
-        order_dir: 'desc',
+        order_by: sortBy,
+        order_dir: orderDir,
       };
-      if (categoryId) params.blog_category_id = categoryId;
+      if (selectedCategory) params.blog_category_id = selectedCategory;
 
       const res = await blogApi.getList(pageNum, params);
       const data = res.data.data ?? [];
       const filtered = data.filter((p: BlogListItem) => p.status === 'publish');
       const pagination = res.data.pagination;
 
-      if (pageNum === 1) {
-        setPosts(filtered);
-      } else {
-        setPosts((prev) => [...prev, ...filtered]);
-      }
-
-      setTotalPages(pagination.totalPages || 1);
-      setIsLastPage(pageNum >= pagination.totalPages);
+      setPosts((prev) => (pageNum === 1 ? filtered : [...prev, ...filtered]));
+      setIsLastPage(pageNum >= (pagination.totalPages || 1));
     } catch (e) {
-      console.log('Error loading posts:', e);
+      logger.error('Error loading posts:', e);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -73,12 +98,27 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   };
 
   const handleLoadMore = useCallback(() => {
-    if (!isLastPage && !loadingMore) {
+    if (!isLastPage && !loadingMore && !isSearching) {
       const nextPage = page + 1;
       setPage(nextPage);
       loadPosts(nextPage);
     }
-  }, [page, isLastPage, loadingMore]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, isLastPage, loadingMore, isSearching]);
+
+  const handleSearch = async (text: string) => {
+    setSearchText(text);
+    if (text.trim().length === 0) {
+      setIsSearching(false);
+      setSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const res = await blogApi.getList(1, { search: text, per_page: 50 });
+      setSearchResults((res.data?.data ?? []).filter((p: any) => p.status === 'publish'));
+    } catch {}
+  };
 
   const navigateToDetail = (item: BlogListItem) => {
     navigation.navigate('MigratedBlogDetail', { mBlogModel: item });
@@ -132,10 +172,12 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
     return (
       <View style={styles.emptyWrap}>
         <Ionicons name="document-text-outline" size={48} color={C.gray60} />
-        <Text style={styles.emptyText}>No articles found</Text>
+        <Text style={styles.emptyText}>{isSearching ? 'Sin resultados' : 'No hay artículos disponibles'}</Text>
       </View>
     );
   };
+
+  const listData = isSearching ? searchResults : posts;
 
   return (
     <View style={styles.container}>
@@ -144,13 +186,51 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
           <Ionicons name="chevron-back" size={24} color={C.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {categoryTitle || 'All Articles'}
+          {categoryTitle || 'Todos los artículos'}
         </Text>
       </View>
 
+      <View style={styles.searchWrap}>
+        <Ionicons name="search-outline" size={18} color={C.gray40} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar artículos..."
+          placeholderTextColor={C.gray50}
+          value={searchText}
+          onChangeText={handleSearch}
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => handleSearch('')}>
+            <Ionicons name="close-circle" size={18} color={C.gray40} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {!isSearching && (
+        <View style={styles.filterRow}>
+          <TouchableOpacity style={styles.filterPill} onPress={() => setSortSheetVisible(true)} activeOpacity={0.75}>
+            <Ionicons name="swap-vertical-outline" size={15} color={C.white} />
+            <Text style={styles.filterPillText} numberOfLines={1}>
+              {SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.orderDir === orderDir)?.label ?? 'Ordenar'}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={C.gray40} />
+          </TouchableOpacity>
+
+          {categories.length > 0 && (
+            <TouchableOpacity style={styles.filterPill} onPress={() => setCategorySheetVisible(true)} activeOpacity={0.75}>
+              <Ionicons name="pricetag-outline" size={15} color={C.white} />
+              <Text style={styles.filterPillText} numberOfLines={1}>
+                {selectedCategory ? categories.find((c) => c.id === selectedCategory)?.title ?? 'Todos' : 'Todos'}
+              </Text>
+              <Ionicons name="chevron-down" size={14} color={C.gray40} />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
       <FlatList
         ref={flatListRef}
-        data={posts}
+        data={listData}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderCard}
         contentContainerStyle={styles.listContent}
@@ -160,6 +240,63 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
       />
+
+      <SimpleBottomSheet visible={sortSheetVisible} onClose={() => setSortSheetVisible(false)}>
+        <View style={styles.sheetContent}>
+          <Text style={styles.sheetTitle}>Ordenar por</Text>
+          {SORT_OPTIONS.map((opt) => {
+            const active = opt.sortBy === sortBy && opt.orderDir === orderDir;
+            return (
+              <TouchableOpacity
+                key={opt.key}
+                style={styles.sheetOptionRow}
+                onPress={() => {
+                  setSortBy(opt.sortBy);
+                  setOrderDir(opt.orderDir);
+                  setSortSheetVisible(false);
+                }}
+              >
+                <Text style={[styles.sheetOptionText, active && styles.sheetOptionTextActive]}>{opt.label}</Text>
+                {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </SimpleBottomSheet>
+
+      <SimpleBottomSheet visible={categorySheetVisible} onClose={() => setCategorySheetVisible(false)}>
+        <View style={styles.sheetContent}>
+          <Text style={styles.sheetTitle}>Categoría</Text>
+          <View>
+            <TouchableOpacity
+              style={styles.sheetOptionRow}
+              onPress={() => {
+                setSelectedCategory(null);
+                setCategorySheetVisible(false);
+              }}
+            >
+              <Text style={[styles.sheetOptionText, !selectedCategory && styles.sheetOptionTextActive]}>Todos</Text>
+              {!selectedCategory ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
+            </TouchableOpacity>
+            {categories.map((cat) => {
+              const active = selectedCategory === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.sheetOptionRow}
+                  onPress={() => {
+                    setSelectedCategory(active ? null : cat.id);
+                    setCategorySheetVisible(false);
+                  }}
+                >
+                  <Text style={[styles.sheetOptionText, active && styles.sheetOptionTextActive]}>{cat.title}</Text>
+                  {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </SimpleBottomSheet>
     </View>
   );
 }
@@ -177,6 +314,46 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white, flex: 1 },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.surfaceLight,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    gap: 8,
+  },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white },
+  filterRow: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 12,
+    gap: 8,
+  },
+  filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: C.surfaceLight,
+  },
+  filterPillText: { fontSize: 13, fontFamily: FONT.medium, color: C.white, maxWidth: 120 },
+  sheetContent: { padding: 24 },
+  sheetTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginBottom: 8 },
+  sheetOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  sheetOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textSecondary },
+  sheetOptionTextActive: { fontFamily: FONT.bold, color: C.textPrimary },
   listContent: { paddingHorizontal: 16, paddingVertical: 16 },
   card: {
     backgroundColor: C.surfaceLight,

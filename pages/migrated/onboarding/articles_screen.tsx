@@ -1,52 +1,77 @@
-﻿import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+﻿import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Image, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+import { blogApi, BlogListItem } from "@api/blog";
 
 const { width } = Dimensions.get("window");
 
-const ARTICLES = [
-  { id: "1", title: "10 ejercicios para principiantes", category: "Fitness", author: "Coach Ana", image: "https://picsum.photos/400/250?r=1" },
-  { id: "2", title: "NutriciÃ³n deportiva bÃ¡sica", category: "NutriciÃ³n", author: "Dr. Carlos", image: "https://picsum.photos/400/250?r=2" },
-  { id: "3", title: "Mejora tu resistencia", category: "Cardio", author: "Coach Luis", image: "https://picsum.photos/400/250?r=3" },
-  { id: "4", title: "Yoga para relajaciÃ³n", category: "Bienestar", author: "MarÃ­a LÃ³pez", image: "https://picsum.photos/400/250?r=4" },
-  { id: "5", title: "Rutinas de fuerza", category: "Fuerza", author: "Coach Pedro", image: "https://picsum.photos/400/250?r=5" },
-  { id: "6", title: "Descanso y recuperaciÃ³n", category: "Salud", author: "Dr. Ana", image: "https://picsum.photos/400/250?r=6" },
-];
-
-const featured = ARTICLES[0];
-const gridArticles = ARTICLES.slice(1);
-
 export default function ArticlesScreen({ navigation }: any) {
+  const [articles, setArticles] = useState<BlogListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    blogApi.getList(1, { per_page: 6 })
+      .then((res) => setArticles((res.data?.data ?? []).filter((p: any) => p.status === 'publish')))
+      .catch(() => setArticles([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const featured = articles[0];
+  const gridArticles = articles.slice(1);
+  const openArticle = (post: BlogListItem) => navigation.navigate("MigratedBlogDetail", { mBlogModel: post });
+
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
         <Text style={[localStyles.title, { color: C.textPrimary }]}>
-          ArtÃ­culos recomendados
+          Artículos recomendados
         </Text>
 
-        <TouchableOpacity style={localStyles.featuredCard}>
-          <View style={localStyles.featuredImage}>
-            <Ionicons name="newspaper-outline" size={48} color={C.textPrimary} />
-          </View>
-          <View style={localStyles.featuredContent}>
-            <Text style={localStyles.featuredTitle}>{featured.title}</Text>
-            <Text style={[localStyles.featuredAuthor, { color: C.gray }]}>Por {featured.author}</Text>
-          </View>
-        </TouchableOpacity>
+        {loading && <ActivityIndicator color={C.primary} style={{ marginVertical: 30 }} />}
+
+        {!loading && articles.length === 0 && (
+          <Text style={[localStyles.featuredAuthor, { color: C.gray, textAlign: "center", marginVertical: 20 }]}>
+            Todavía no hay artículos publicados.
+          </Text>
+        )}
+
+        {featured && (
+          <TouchableOpacity style={localStyles.featuredCard} onPress={() => openArticle(featured)}>
+            <View style={localStyles.featuredImage}>
+              {featured.post_image ? (
+                <Image source={{ uri: featured.post_image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              ) : (
+                <Ionicons name="newspaper-outline" size={48} color={C.textPrimary} />
+              )}
+            </View>
+            <View style={localStyles.featuredContent}>
+              <Text style={localStyles.featuredTitle}>{featured.title}</Text>
+              {!!featured.blog_category?.title && (
+                <Text style={[localStyles.featuredAuthor, { color: C.gray }]}>{featured.blog_category.title}</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
 
         <View style={localStyles.grid}>
           {gridArticles.map((article) => (
-            <TouchableOpacity key={article.id} style={localStyles.gridCard}>
+            <TouchableOpacity key={article.id} style={localStyles.gridCard} onPress={() => openArticle(article)}>
               <View style={localStyles.gridImage}>
-                <Ionicons name="document-text-outline" size={32} color={C.textPrimary} />
+                {article.post_image ? (
+                  <Image source={{ uri: article.post_image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                ) : (
+                  <Ionicons name="document-text-outline" size={32} color={C.textPrimary} />
+                )}
               </View>
               <View style={localStyles.gridContent}>
-                <View style={[localStyles.categoryTag, { backgroundColor: C.primaryLight }]}>
-                  <Text style={[localStyles.categoryText, { color: C.textPrimary }]}>{article.category}</Text>
-                </View>
+                {!!article.blog_category?.title && (
+                  <View style={[localStyles.categoryTag, { backgroundColor: C.primaryLight }]}>
+                    <Text style={[localStyles.categoryText, { color: C.textPrimary }]}>{article.blog_category.title}</Text>
+                  </View>
+                )}
                 <Text style={[localStyles.gridTitle]} numberOfLines={2}>{article.title}</Text>
               </View>
             </TouchableOpacity>
