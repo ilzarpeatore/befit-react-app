@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Switch
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
+import { dietApi } from '@api/diet';
+import { shoppingApi, ShoppingMealType } from '@api/shopping';
 
 export default function AddShoppingListScreen({ navigation, route }: any) {
   const shoppingList = route?.params?.shoppingList;
@@ -15,17 +18,22 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
-  const [isCompleteOnly, setIsCompleteOnly] = useState(false);
-  const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>([]);
+  const [isCompleteOnly, setIsCompleteOnly] = useState(true);
+  const [selectedMealTypes, setSelectedMealTypes] = useState<ShoppingMealType[]>([]);
   const [servings, setServings] = useState(1);
   const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
   const [isFetchingPlan, setIsFetchingPlan] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const availableMealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  const availableMealTypes: { key: ShoppingMealType; label: string }[] = [
+    { key: 'breakfast', label: 'Desayuno' },
+    { key: 'lunch', label: 'Comida' },
+    { key: 'dinner', label: 'Cena' },
+    { key: 'snacks', label: 'Snacks' },
+  ];
 
   useEffect(() => {
-    setSelectedMealTypes([...availableMealTypes]);
+    setSelectedMealTypes(availableMealTypes.map((t) => t.key));
     prefillForEdit();
   }, []);
 
@@ -35,37 +43,40 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       return;
     }
     setTitle(shoppingList.title ?? '');
-    if (shoppingList.dailyPlanId) {
+    if (shoppingList.daily_plan_id) {
       setIsSpecificDate(true);
-      setDailyPlanId(shoppingList.dailyPlanId);
-      if (shoppingList.startDate) {
-        setSelectedDate(new Date(shoppingList.startDate));
+      setDailyPlanId(shoppingList.daily_plan_id);
+      if (shoppingList.start_date) {
+        setSelectedDate(new Date(shoppingList.start_date));
       }
     } else {
       setIsSpecificDate(false);
       setServings(shoppingList.servings ?? 1);
-      if (shoppingList.startDate && shoppingList.endDate) {
-        setDateRangeStart(new Date(shoppingList.startDate));
-        setDateRangeEnd(new Date(shoppingList.endDate));
+      if (shoppingList.start_date && shoppingList.end_date) {
+        setDateRangeStart(new Date(shoppingList.start_date));
+        setDateRangeEnd(new Date(shoppingList.end_date));
       }
     }
   };
 
   const fetchDailyPlanId = async (date: Date) => {
     setIsFetchingPlan(true);
+    setDailyPlanId(null);
     try {
-      // TODO: Replace with actual API call
-      // const value = await getDailyPlanDetailApi(date: getDateTimeString(date));
-      // setDailyPlanId(value.data?.id);
+      const res = await dietApi.getDailyPlan(formatDate(date));
+      setDailyPlanId(res.data?.data?.id ?? null);
     } catch (e) {
-      console.log('Error fetching daily plan:', e);
+      logger.error('Error fetching daily plan:', e);
     } finally {
       setIsFetchingPlan(false);
     }
   };
 
   const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   };
 
   const submit = async () => {
@@ -110,17 +121,17 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const value = await generateShoppingListApi(req);
+      await shoppingApi.generateFromDailyPlan(req);
       setLoading(false);
       navigation.goBack(true);
-    } catch (e) {
+    } catch (e: any) {
       setLoading(false);
-      Alert.alert('Error', 'Failed to save shopping list');
+      const msg = e?.response?.data?.message ?? 'Failed to save shopping list';
+      Alert.alert('Error', msg);
     }
   };
 
-  const toggleMealType = (key: string) => {
+  const toggleMealType = (key: ShoppingMealType) => {
     setSelectedMealTypes((prev) =>
       prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
     );
@@ -139,19 +150,18 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       <ScrollView style={styles_local.body} contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false}>
         {/* Date / Range Selection */}
         <View style={styles_local.card}>
-          <TouchableOpacity
-            style={styles_local.cardRow}
-            onPress={() => setIsSpecificDate(!isSpecificDate)}
-            activeOpacity={0.7}
-          >
+          <View style={styles_local.cardRow}>
             <Text style={styles_local.cardLabel}>Specific Date</Text>
             <Switch
               value={isSpecificDate}
-              onValueChange={setIsSpecificDate}
+              onValueChange={(value) => {
+                setIsSpecificDate(value);
+                if (value && !isEditMode) fetchDailyPlanId(selectedDate);
+              }}
               trackColor={{ false: C.gray60, true: C.brand5 }}
               thumbColor={C.white}
             />
-          </TouchableOpacity>
+          </View>
 
           {isSpecificDate ? (
             <View style={styles_local.cardRow}>
@@ -218,18 +228,18 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
         <View style={[styles_local.card, { marginTop: 16 }]}>
           <Text style={styles_local.cardLabel}>Meal Types</Text>
           {availableMealTypes.map((type) => {
-            const isSelected = selectedMealTypes.includes(type);
+            const isSelected = selectedMealTypes.includes(type.key);
             return (
               <TouchableOpacity
-                key={type}
+                key={type.key}
                 style={styles_local.checkboxRow}
-                onPress={() => toggleMealType(type)}
+                onPress={() => toggleMealType(type.key)}
                 activeOpacity={0.7}
               >
                 <View style={[styles_local.checkbox, isSelected && styles_local.checkboxActive]}>
                   {isSelected && <Ionicons name="checkmark" size={16} color={C.white} />}
                 </View>
-                <Text style={styles_local.checkboxLabel}>{type}</Text>
+                <Text style={styles_local.checkboxLabel}>{type.label}</Text>
               </TouchableOpacity>
             );
           })}

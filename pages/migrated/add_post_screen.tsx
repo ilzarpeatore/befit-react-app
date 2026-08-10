@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image,
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { postsApi } from '../../api/posts';
+import logger from '@helper/logger';
 
 export default function AddPostScreen({ navigation, route }: any) {
   const flow = route?.params?.flow;
@@ -16,18 +18,23 @@ export default function AddPostScreen({ navigation, route }: any) {
   useEffect(() => {
     if (flow === 'EditFlow' && postData) {
       setDescription(postData.description ?? '');
-      const mediaUrls = (postData.postingMediaArray ?? []).map((e: any) => e.url);
+      const mediaUrls = (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url);
       setExistingImages(mediaUrls);
     }
   }, []);
 
+  const [removedMediaIds, setRemovedMediaIds] = useState<number[]>([]);
+
   const removeExistingImage = (index: number) => {
+    const media = (postData?.postingMediaArray ?? [])[index];
+    if (media?.id) setRemovedMediaIds((prev) => [...prev, media.id]);
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const pickMedia = async () => {
-    // TODO: Implement image picker using expo-image-picker
-    Alert.alert('Image Picker', 'Implement expo-image-picker here');
+    // expo-image-picker no está instalado en el proyecto (dependencia nativa nueva,
+    // implicaría un rebuild) - de momento el post se publica solo con texto.
+    Alert.alert('Añadir foto/vídeo', 'Selector de imágenes pendiente de implementar. Por ahora puedes publicar solo texto.');
   };
 
   const submitPost = async () => {
@@ -37,11 +44,11 @@ export default function AddPostScreen({ navigation, route }: any) {
     }
     setLoading(true);
     try {
-      // TODO: Implement multipart upload
-      // await submitPostApi(description, selectedImages);
+      await postsApi.create(description.trim());
       setLoading(false);
       navigation.goBack();
     } catch (e) {
+      logger.error('Error submitting post', e);
       setLoading(false);
       Alert.alert('Error', 'Failed to submit post');
     }
@@ -54,11 +61,14 @@ export default function AddPostScreen({ navigation, route }: any) {
     }
     setLoading(true);
     try {
-      // TODO: Implement edit post API
-      // await editPostApi(postData?.id, description, selectedImages, existingImages);
+      if (removedMediaIds.length > 0 && postData?.id) {
+        await postsApi.removeMedia(postData.id, removedMediaIds);
+      }
+      await postsApi.update(postData?.id, description.trim());
       setLoading(false);
       navigation.goBack();
     } catch (e) {
+      logger.error('Error editing post', e);
       setLoading(false);
       Alert.alert('Error', 'Failed to edit post');
     }

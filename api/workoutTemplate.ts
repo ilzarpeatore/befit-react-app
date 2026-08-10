@@ -13,6 +13,7 @@ export interface WorkoutTemplateExerciseModel {
   title: string | null;
   exercise_image: string | null;
   video_url: string | null;
+  body_part_id: number | null;
   last_performance?: { sets: Record<string, any>[] } | null;
   exercise?: {
     id: number;
@@ -75,6 +76,11 @@ export const workoutTemplateApi = {
 
   getList: (page: number, perPage = 20) =>
     apiClient.get<WorkoutTemplateListResponse>('v1/workout-template-list', { params: { page, per_page: perPage } }),
+
+  getFavourite: (page: number, perPage = 20) =>
+    apiClient.get<WorkoutTemplateListResponse>('v1/workout-template-list', {
+      params: { page, per_page: perPage, only_favourites: 1 },
+    }),
 
   setFavourite: (workoutTemplateId: number) =>
     apiClient.post<{ data: { is_favourite: boolean } }>('v1/workout-template-set-favourite', {

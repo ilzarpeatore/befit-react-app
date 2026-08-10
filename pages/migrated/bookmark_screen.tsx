@@ -1,95 +1,150 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { postsApi } from '../../api/posts';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+interface BookmarkPost {
+  id: number;
+  content?: string;
+  postImage?: string;
+  users?: { id?: number; displayName?: string; profileImage?: string };
+  likesCount?: number;
+  commentsCount?: number;
+  isLiked?: boolean;
+  createdAt?: string;
+}
+
 export default function BookmarkScreen({ navigation }: any) {
 
-  const [postList, setPostList] = useState<any[]>([]);
+  const [postList, setPostList] = useState<BookmarkPost[]>([]);
   const [page, setPage] = useState(1);
   const [numPage, setNumPage] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    init();
+    getPostList(1);
   }, []);
 
-  const init = async () => {
-    getPostList();
-  };
-
-  const getPostList = async () => {
+  const getPostList = useCallback(async (pageNum: number = 1) => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const value = await getBookMarkPostsApi({ page });
-      // setNumPage(value.pagination?.totalPages);
-      // if (page === 1) setPostList([]);
-      // const posts = value.data ?? [];
-      // setPostList((prev) => [...prev, ...posts]);
+      const res = await postsApi.getBookmarks(pageNum);
+      setNumPage(res.data.pagination?.totalPages ?? 1);
+      const list: BookmarkPost[] = (res.data.data ?? []).map((p: any) => ({
+        id: p.id,
+        content: p.description,
+        postImage: p.posting_media_array?.[0]?.media_url ?? '',
+        users: p.users ? { id: p.users.id, displayName: p.users.display_name, profileImage: p.users.profile_image } : undefined,
+        likesCount: p.posting_like_count,
+        commentsCount: p.posting_comment_count,
+        isLiked: p.is_liked,
+        createdAt: p.created_at,
+      }));
+      setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
     } catch (e) {
-      console.log('Error:', e);
+      logger.error('Error fetching bookmarks:', e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const onRefresh = () => {
-    setPostList([]);
     setPage(1);
-    getPostList();
+    getPostList(1);
   };
 
-  const renderPostCard = (item: any, index: number) => {
-    const postData = item?.posts;
+  const toggleLike = (item: BookmarkPost) => {
+    const wasLiked = !!item.isLiked;
+    setPostList((prev) =>
+      prev.map((p) => (p.id === item.id ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) } : p))
+    );
+    postsApi.like(item.id).catch((e) => {
+      logger.error('Error toggling like', e);
+      setPostList((prev) => prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p)));
+    });
+  };
+
+  const unbookmark = (item: BookmarkPost) => {
+    setPostList((prev) => prev.filter((p) => p.id !== item.id));
+    postsApi.bookmark(item.id).catch((e) => {
+      logger.error('Error removing bookmark', e);
+      getPostList(1);
+    });
+  };
+
+  const openDetail = (item: BookmarkPost) => {
+    navigation.navigate('MigratedPostDetails', {
+      postData: {
+        id: item.id,
+        content: item.content,
+        images: item.postImage ? [item.postImage] : [],
+        users: {
+          id: item.users?.id,
+          firstName: item.users?.displayName || 'User',
+          lastName: '',
+          profileImage: item.users?.profileImage,
+        },
+        likesCount: item.likesCount,
+        commentsCount: item.commentsCount,
+        isLiked: item.isLiked,
+        isBookmarked: true,
+        createdAt: item.createdAt,
+      },
+    });
+  };
+
+  const renderPostCard = (item: BookmarkPost, index: number) => {
     return (
-      <View key={index} style={styles_local.postCard}>
+      <TouchableOpacity key={index} style={styles_local.postCard} activeOpacity={0.85} onPress={() => openDetail(item)}>
         {/* User header */}
         <View style={styles_local.postHeader}>
-          <View style={styles_local.avatar}>
-            <Ionicons name="person" size={20} color={C.gray40} />
-          </View>
+          {item.users?.profileImage ? (
+            <Image source={{ uri: item.users.profileImage }} style={styles_local.avatar} />
+          ) : (
+            <View style={styles_local.avatar}>
+              <Ionicons name="person" size={20} color={C.gray40} />
+            </View>
+          )}
           <View style={styles_local.postHeaderInfo}>
-            <Text style={styles_local.postUserName}>{postData?.userName ?? 'User'}</Text>
-            <Text style={styles_local.postTime}>{postData?.createdAt ?? ''}</Text>
+            <Text style={styles_local.postUserName}>{item.users?.displayName ?? 'User'}</Text>
+            <Text style={styles_local.postTime}>{item.createdAt ?? ''}</Text>
           </View>
         </View>
 
         {/* Description */}
-        {postData?.description ? (
-          <Text style={styles_local.postDescription}>{postData.description}</Text>
+        {item.content ? (
+          <Text style={styles_local.postDescription}>{item.content}</Text>
         ) : null}
 
-        {/* Image placeholder */}
-        {postData?.postingMediaArray?.length > 0 && (
+        {/* Image */}
+        {item.postImage ? (
           <View style={styles_local.postImageWrap}>
-            <View style={styles_local.postImagePlaceholder}>
-              <Ionicons name="image-outline" size={32} color={C.gray60} />
-            </View>
+            <Image source={{ uri: item.postImage }} style={styles_local.postImagePlaceholder} resizeMode="cover" />
           </View>
-        )}
+        ) : null}
 
         {/* Actions */}
         <View style={styles_local.postActions}>
-          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7}>
-            <Ionicons name="heart-outline" size={22} color={C.gray30} />
-            <Text style={styles_local.actionCount}>{postData?.likeCount ?? 0}</Text>
+          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7} onPress={() => toggleLike(item)}>
+            <Ionicons name={item.isLiked ? 'heart' : 'heart-outline'} size={22} color={item.isLiked ? C.destructive : C.gray30} />
+            <Text style={styles_local.actionCount}>{item.likesCount ?? 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7}>
+          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7} onPress={() => openDetail(item)}>
             <Ionicons name="chatbubble-outline" size={22} color={C.gray30} />
-            <Text style={styles_local.actionCount}>{postData?.commentCount ?? 0}</Text>
+            <Text style={styles_local.actionCount}>{item.commentsCount ?? 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7}>
+          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7} onPress={() => unbookmark(item)}>
             <Ionicons name="bookmark" size={22} color={C.textPrimary} />
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

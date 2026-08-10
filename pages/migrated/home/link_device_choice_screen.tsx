@@ -1,12 +1,49 @@
-﻿import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+﻿import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
+import { isHealthAvailable, requestHealthPermissions } from "@helper/health";
 import { C, FONT } from "../theme";
+
+const HEALTH_APP_NAME = Platform.OS === "ios" ? "Apple Salud" : "Health Connect";
+// HealthKit exige la capability 'com.apple.developer.healthkit', que Apple solo concede
+// a cuentas de pago de Apple Developer Program. Esta app se firma hoy con un Apple ID
+// personal/gratuito (vía iloader) -> el entitlement no se puede conceder y cualquier
+// llamada a HealthKit crashea la app al instante. Oculto en iOS hasta tener cuenta de pago;
+// Health Connect en Android no tiene esta restricción, se deja activo.
+const HEALTH_INTEGRATION_AVAILABLE = Platform.OS === "android";
 
 export default function LinkDeviceChoiceScreen({ navigation }: any) {
   const styles = useStyle();
+  const [connecting, setConnecting] = useState(false);
+
+  const handleConnectHealthApp = async () => {
+    setConnecting(true);
+    try {
+      const available = await isHealthAvailable();
+      if (!available) {
+        Alert.alert(
+          `${HEALTH_APP_NAME} no disponible`,
+          Platform.OS === "android"
+            ? "Instala la app Health Connect desde Play Store para poder sincronizar tus datos."
+            : "Este dispositivo no tiene Salud disponible."
+        );
+        return;
+      }
+      const result = await requestHealthPermissions();
+      if (result.granted) {
+        navigation.replace("MigratedDeviceConnected", { source: "health" });
+      } else {
+        Alert.alert(
+          "Permiso no concedido",
+          `Puedes activar el acceso más tarde desde los ajustes de ${HEALTH_APP_NAME}.`
+        );
+      }
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -18,6 +55,26 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
 
           <Text style={styles.title}>Connect your device</Text>
           <Text style={styles.subtitle}>Choose how you want to track your fitness data</Text>
+
+          {HEALTH_INTEGRATION_AVAILABLE && (
+            <TouchableOpacity
+              style={styles.optionTile}
+              activeOpacity={0.7}
+              onPress={handleConnectHealthApp}
+              disabled={connecting}
+            >
+              <View style={[styles.optionIcon, { backgroundColor: C.brand10 }]}>
+                {connecting ? (
+                  <ActivityIndicator color={C.textPrimary} />
+                ) : (
+                  <Ionicons name="heart" size={32} color={C.textPrimary} />
+                )}
+              </View>
+              <Text style={styles.optionTitle}>{HEALTH_APP_NAME}</Text>
+              <Text style={styles.optionDesc}>Sincroniza pasos, ritmo cardíaco y más</Text>
+              <Ionicons name="chevron-forward" size={20} color={C.gray50} />
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={styles.optionTile}

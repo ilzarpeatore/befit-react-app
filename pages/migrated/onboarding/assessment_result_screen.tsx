@@ -4,71 +4,68 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+import { useAuth } from "@store/AuthContext";
 
-const SCORE = 65;
-const BREAKDOWN = [
-  { label: "Resistencia", value: 72, color: "#4CAF50" },
-  { label: "Fuerza", value: 58, color: "#FF9800" },
-  { label: "RecuperaciÃ³n", value: 65, color: "#2196F3" },
-  { label: "Equilibrio", value: 68, color: "#9C27B0" },
-];
-
-const BODY_COMP = [
-  { label: "MÃºsculo", value: 42, color: C.textPrimary },
-  { label: "Grasa", value: 24, color: "#FF5722" },
-  { label: "Agua", value: 55, color: "#03A9F4" },
-  { label: "Ã“seo", value: 15, color: "#795548" },
-];
+function bmiCategory(bmi: number): string {
+  if (bmi < 18.5) return "Bajo peso";
+  if (bmi < 25) return "Peso saludable";
+  if (bmi < 30) return "Sobrepeso";
+  return "Obesidad";
+}
 
 export default function AssessmentResultScreen({ navigation }: any) {
+  const { state } = useAuth();
+  const profile = state.user?.user_profile;
+  const bmi = profile?.bmi ? parseFloat(profile.bmi) : null;
+  const bmr = profile?.bmr ? parseFloat(profile.bmr) : null;
+  const hasRealData = bmi !== null && !Number.isNaN(bmi);
+
   const size = 160;
   const strokeWidth = 12;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (SCORE / 100) * circumference;
 
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
-        <Text style={[localStyles.title, { color: C.textPrimary }]}>Resultado del assessment</Text>
+        <Text style={[localStyles.title, { color: C.textPrimary }]}>Tu punto de partida</Text>
 
-        <View style={localStyles.scoreContainer}>
-          <View style={[localStyles.circle, { width: size, height: size, borderRadius: size / 2 }]}>
-            <View style={[localStyles.scoreRing, { width: size, height: size, borderRadius: size / 2, borderWidth: strokeWidth, borderColor: C.primary + "30" }]}>
-              <View style={[localStyles.scoreOverlay, { width: size - strokeWidth * 2, height: size - strokeWidth * 2, borderRadius: (size - strokeWidth * 2) / 2, borderColor: C.primary, borderWidth: strokeWidth, borderTopColor: C.primary + "30", borderRightColor: C.primary + "30" }]} />
+        {hasRealData ? (
+          <>
+            <View style={localStyles.scoreContainer}>
+              <View style={[localStyles.circle, { width: size, height: size, borderRadius: size / 2 }]}>
+                <View style={[localStyles.scoreRing, { width: size, height: size, borderRadius: size / 2, borderWidth: strokeWidth, borderColor: C.primary + "30" }]}>
+                  <View style={[localStyles.scoreOverlay, { width: size - strokeWidth * 2, height: size - strokeWidth * 2, borderRadius: (size - strokeWidth * 2) / 2, borderColor: C.primary, borderWidth: strokeWidth, borderTopColor: C.primary + "30", borderRightColor: C.primary + "30" }]} />
+                </View>
+                <View style={localStyles.scoreTextContainer}>
+                  <Text style={[localStyles.scoreValue, { color: C.textPrimary }]}>{bmi!.toFixed(1)}</Text>
+                  <Text style={[localStyles.scoreUnit, { color: C.gray }]}>IMC</Text>
+                </View>
+              </View>
+              <Text style={[localStyles.scoreLabel, { color: C.gray }]}>{bmiCategory(bmi!)}</Text>
             </View>
-            <View style={localStyles.scoreTextContainer}>
-              <Text style={[localStyles.scoreValue, { color: C.textPrimary }]}>{SCORE}</Text>
-              <Text style={[localStyles.scoreUnit, { color: C.gray }]}>pts</Text>
-            </View>
+
+            {bmr !== null && !Number.isNaN(bmr) && (
+              <View style={localStyles.section}>
+                <Text style={localStyles.sectionTitle}>Tu metabolismo basal</Text>
+                <Text style={[localStyles.barLabel, { color: C.white, width: "auto" }]}>
+                  Quemas alrededor de {Math.round(bmr)} kcal en reposo cada día — esto se afinará con tu actividad real a medida que uses la app.
+                </Text>
+              </View>
+            )}
+          </>
+        ) : (
+          <View style={localStyles.section}>
+            <Text style={localStyles.sectionTitle}>Aún no tenemos datos suficientes</Text>
+            <Text style={[localStyles.barLabel, { color: C.white, width: "auto" }]}>
+              Completa tu peso y altura en tu perfil para ver tu IMC y metabolismo basal reales aquí.
+            </Text>
           </View>
-          <Text style={[localStyles.scoreLabel, { color: C.gray }]}>de 100</Text>
-        </View>
+        )}
 
         <View style={localStyles.section}>
-          <Text style={localStyles.sectionTitle}>Desglose de puntuaciÃ³n</Text>
-          {BREAKDOWN.map((item) => (
-            <View key={item.label} style={localStyles.barRow}>
-              <Text style={[localStyles.barLabel, { color: C.white }]}>{item.label}</Text>
-              <View style={localStyles.barTrack}>
-                <View style={[localStyles.barFill, { width: `${item.value}%`, backgroundColor: item.color }]} />
-              </View>
-              <Text style={[localStyles.barValue, { color: item.color }]}>{item.value}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={localStyles.section}>
-          <Text style={localStyles.sectionTitle}>ComposiciÃ³n corporal</Text>
-          {BODY_COMP.map((item) => (
-            <View key={item.label} style={localStyles.barRow}>
-              <Text style={[localStyles.barLabel, { color: C.white }]}>{item.label}</Text>
-              <View style={localStyles.barTrack}>
-                <View style={[localStyles.barFill, { width: `${item.value}%`, backgroundColor: item.color }]} />
-              </View>
-              <Text style={[localStyles.barValue, { color: item.color }]}>{item.value}%</Text>
-            </View>
-          ))}
+          <Text style={localStyles.sectionTitle}>Composición corporal</Text>
+          <Text style={[localStyles.barLabel, { color: C.white, width: "auto" }]}>
+            Registra tus medidas en Antropometría para ver tu composición corporal real y su evolución a lo largo del tiempo.
+          </Text>
         </View>
       </ScrollView>
 

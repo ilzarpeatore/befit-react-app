@@ -1,9 +1,14 @@
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import React, { useCallback, useEffect, useState } from "react";
+import { View } from 'react-native';
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from "expo-font";
-import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { DefaultTheme, NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
+// Herramienta temporal de desarrollo (ver components/ScreenReviewFab.tsx) —
+// borrar este import + el ref + el mount del FAB mas abajo cuando ya no haga falta.
+import ScreenReviewFab from "@components/ScreenReviewFab";
+const screenReviewNavigationRef = createNavigationContainerRef();
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { enableScreens } from "react-native-screens";
@@ -12,379 +17,188 @@ import {
   initialWindowMetrics,
 } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@store/AuthContext";
+import "@helper/reminderNotifications"; // registra el handler de notificaciones locales al arrancar, sin depender de visitar las pantallas de recordatorios
 
-import Home from "@pages/Home";
-import Club from "@pages/Club";
-import Stories from "@pages/Stories";
-import Clubmap from "@pages/Clubmap";
-import Cycling from "@pages/Cycling";
-import Congratulation from "@pages/Congratulation";
-import Result from "@pages/Result";
-import Unboarding from "@pages/Unboarding";
-import Weight from "@pages/Weight";
-import Height from "@pages/Height";
-import Name from "@pages/Name";
-import Challenges from "@pages/Challenges";
-import Today from "@pages/Today";
-import Profile from "@pages/Profile";
+const Home = React.lazy(() => import('@pages/Home'));
+const Profile = React.lazy(() => import('@pages/Profile'));
 import NavigationTab from "@components/NavigationTab";
+import { NavigationTabOptionsInterface } from "@components/_types/NavigationTab.i";
 
-import WelcomeAuthScreen from "@pages/auth/WelcomeAuthScreen";
-import LoginScreen from "@pages/auth/LoginScreen";
-import ForgotPasswordOptionsScreen from "@pages/auth/ForgotPasswordOptionsScreen";
-import ForgotPasswordEmailScreen from "@pages/auth/ForgotPasswordEmailScreen";
-import PasswordResetSentScreen from "@pages/auth/PasswordResetSentScreen";
-import RegisterScreen from "@pages/auth/RegisterScreen";
-import ProfileEditScreen from "@pages/auth/ProfileEditScreen";
-import ChangePasswordScreen from "@pages/auth/ChangePasswordScreen";
+const WelcomeAuthScreen = React.lazy(() => import('@pages/auth/WelcomeAuthScreen'));
+const LoginScreen = React.lazy(() => import('@pages/auth/LoginScreen'));
+const ForgotPasswordOptionsScreen = React.lazy(() => import('@pages/auth/ForgotPasswordOptionsScreen'));
+const ForgotPasswordEmailScreen = React.lazy(() => import('@pages/auth/ForgotPasswordEmailScreen'));
+const PasswordResetSentScreen = React.lazy(() => import('@pages/auth/PasswordResetSentScreen'));
+const RegisterScreen = React.lazy(() => import('@pages/auth/RegisterScreen'));
+const ProfileEditScreen = React.lazy(() => import('@pages/auth/ProfileEditScreen'));
+const ChangePasswordScreen = React.lazy(() => import('@pages/auth/ChangePasswordScreen'));
 
-import WorkoutList from "@pages/WorkoutList";
-import WorkoutDetail from "@pages/WorkoutDetail";
-import WorkoutDayExercises from "@pages/WorkoutDayExercises";
-import WorkoutSessionScreen from "@pages/WorkoutSessionScreen";
-import WorkoutSummary from "@pages/WorkoutSummary";
-import ExerciseList from "@pages/ExerciseList";
-import ExerciseDetail from "@pages/ExerciseDetail";
-import DietDashboard from "@pages/DietDashboard";
-import DietList from "@pages/DietList";
-import CommunityFeed from "@pages/CommunityFeed";
-import PostDetail from "@pages/PostDetail";
-import ProfileStats from "@pages/ProfileStats";
-import SettingsScreen from "@pages/SettingsScreen";
-import FavouriteWorkouts from "@pages/FavouriteWorkouts";
-import ScreenExplorer from "@pages/ScreenExplorer";
+const WorkoutList = React.lazy(() => import('@pages/WorkoutList'));
+const WorkoutDetail = React.lazy(() => import('@pages/WorkoutDetail'));
+const WorkoutDayExercises = React.lazy(() => import('@pages/WorkoutDayExercises'));
+const WorkoutSessionScreen = React.lazy(() => import('@pages/WorkoutSessionScreen'));
+const WorkoutSummary = React.lazy(() => import('@pages/WorkoutSummary'));
+const ExerciseList = React.lazy(() => import('@pages/ExerciseList'));
+const ExerciseDetail = React.lazy(() => import('@pages/ExerciseDetail'));
+const DietDashboard = React.lazy(() => import('@pages/DietDashboard'));
+const DietList = React.lazy(() => import('@pages/DietList'));
+const CommunityFeed = React.lazy(() => import('@pages/CommunityFeed'));
+const PostDetail = React.lazy(() => import('@pages/PostDetail'));
+const ProfileStats = React.lazy(() => import('@pages/ProfileStats'));
+const SettingsScreen = React.lazy(() => import('@pages/SettingsScreen'));
+const FavouriteWorkouts = React.lazy(() => import('@pages/FavouriteWorkouts'));
+const ScreenExplorer = React.lazy(() => import('@pages/ScreenExplorer'));
 
-// @ts-ignore
-import AboutAppScreen from "@pages/migrated/about_app_screen";
-// @ts-ignore
-import AboutUsScreen from "@pages/migrated/about_us_screen";
-// @ts-ignore
-import ActivityTrackerScreen from "@pages/migrated/activity_tracker_screen";
-// @ts-ignore
-import AddPostScreen from "@pages/migrated/add_post_screen";
-// @ts-ignore
-import AddShoppingListScreen from "@pages/migrated/add_shopping_list_screen";
-// @ts-ignore
-import AssignScreen from "@pages/migrated/assign_screen";
-// @ts-ignore
-import BlogDetailScreen from "@pages/migrated/blog_detail_screen";
-// @ts-ignore
-import BlogScreen from "@pages/migrated/blog_screen";
-// @ts-ignore
-import BookmarkScreen from "@pages/migrated/bookmark_screen";
-// @ts-ignore
-import ChangePwdScreen from "@pages/migrated/change_pwd_screen";
-// @ts-ignore
-import ChattingImageScreen from "@pages/migrated/chatting_image_screen";
-// @ts-ignore
-import ChattingScreen from "@pages/migrated/chatting_screen";
-// @ts-ignore
-import ChewieScreen from "@pages/migrated/chewie_screen";
-// @ts-ignore
-import CommunityScreen from "@pages/migrated/community_screen";
+const AboutAppScreen = React.lazy(() => import('@pages/migrated/about_app_screen'));
+const AboutUsScreen = React.lazy(() => import('@pages/migrated/about_us_screen'));
+const ActivityTrackerScreen = React.lazy(() => import('@pages/migrated/activity_tracker_screen'));
+const AddPostScreen = React.lazy(() => import('@pages/migrated/add_post_screen'));
+const AddShoppingListScreen = React.lazy(() => import('@pages/migrated/add_shopping_list_screen'));
+const AssignScreen = React.lazy(() => import('@pages/migrated/assign_screen'));
+const BlogDetailScreen = React.lazy(() => import('@pages/migrated/blog_detail_screen'));
+const BlogScreen = React.lazy(() => import('@pages/migrated/blog_screen'));
+const BodyMetricsScreen = React.lazy(() => import('@pages/migrated/body_metrics_screen'));
+const BookmarkScreen = React.lazy(() => import('@pages/migrated/bookmark_screen'));
+const ChangePwdScreen = React.lazy(() => import('@pages/migrated/change_pwd_screen'));
+const ChattingImageScreen = React.lazy(() => import('@pages/migrated/chatting_image_screen'));
+const ChattingScreen = React.lazy(() => import('@pages/migrated/chatting_screen'));
+const CheckInsListScreen = React.lazy(() => import('@pages/migrated/checkins_list_screen'));
+const CheckInFillScreen = React.lazy(() => import('@pages/migrated/checkin_fill_screen'));
+const ChewieScreen = React.lazy(() => import('@pages/migrated/chewie_screen'));
+const CommunityScreen = React.lazy(() => import('@pages/migrated/community_screen'));
 
-// @ts-ignore
-import DietDetailScreen from "@pages/migrated/diet_detail_screen";
-// @ts-ignore
-import AssignedMealsScreen from "@pages/migrated/assigned_meals_screen";
-// @ts-ignore
-import EditProfileScreen from "@pages/migrated/edit_profile_screen";
-// @ts-ignore
-import ExerciseDetailScreen from "@pages/migrated/exercise_detail_screen";
-// @ts-ignore
-import ExerciseInfoScreen from "@pages/migrated/exercise_info_screen";
-// @ts-ignore
-import ExerciseDurationScreen from "@pages/migrated/exercise_duration_screen";
-// @ts-ignore
-import ExerciseDurationScreencast from "@pages/migrated/exercise_duration_screencast";
-// @ts-ignore
-import ExerciseHistoryScreen from "@pages/migrated/exercise_history_screen";
-// @ts-ignore
-import ExerciseListScreen from "@pages/migrated/exercise_list_screen";
-// @ts-ignore
-import FavouriteRecipeScreen from "@pages/migrated/favourite_recipe_screen";
-// @ts-ignore
-import FavouriteScreen from "@pages/migrated/favourite_screen";
-// @ts-ignore
-import FilterWorkoutScreen from "@pages/migrated/filter_workout_screen";
-// @ts-ignore
-import ForgotPwdScreen from "@pages/migrated/forgot_pwd_screen";
-// @ts-ignore
-import GoalCaloriesMacrosScreen from "@pages/migrated/goal_calories_macros_screen";
-// @ts-ignore
-import GoalSelectionScreen from "@pages/migrated/goal_selection_screen";
+const DietDetailScreen = React.lazy(() => import('@pages/migrated/diet_detail_screen'));
+const AssignedMealsScreen = React.lazy(() => import('@pages/migrated/assigned_meals_screen'));
+const EditProfileScreen = React.lazy(() => import('@pages/migrated/edit_profile_screen'));
+const ExerciseInfoScreen = React.lazy(() => import('@pages/migrated/exercise_info_screen'));
+const ExerciseDurationScreen = React.lazy(() => import('@pages/migrated/exercise_duration_screen'));
+const ExerciseDurationScreencast = React.lazy(() => import('@pages/migrated/exercise_duration_screencast'));
+const ExerciseHistoryScreen = React.lazy(() => import('@pages/migrated/exercise_history_screen'));
+const FavouriteRecipeScreen = React.lazy(() => import('@pages/migrated/favourite_recipe_screen'));
+const FavouriteScreen = React.lazy(() => import('@pages/migrated/favourite_screen'));
+const FilterWorkoutScreen = React.lazy(() => import('@pages/migrated/filter_workout_screen'));
+const ForgotPwdScreen = React.lazy(() => import('@pages/migrated/forgot_pwd_screen'));
 
-import HomeScreenModern from "@pages/migrated/home_screen_modern";
-// @ts-ignore
-import LanguageScreen from "@pages/migrated/language_screen";
-// @ts-ignore
-import MainGoalScreen from "@pages/migrated/main_goal_screen";
-// @ts-ignore
-import MealsRemindersScreen from "@pages/migrated/meals_reminders_screen";
-// @ts-ignore
-import MealsWaterReminderScreen from "@pages/migrated/meals_water_reminder_screen";
-// @ts-ignore
-import MissingDetailsScreen from "@pages/migrated/missing_details_screen";
-// @ts-ignore
-import MyProgramCalendarScreen from "@pages/migrated/my_program_calendar_screen";
-// @ts-ignore
-import NoDataScreen from "@pages/migrated/no_data_screen";
-// @ts-ignore
-import NoInternetScreen from "@pages/migrated/no_internet_screen";
-// @ts-ignore
-import NotificationScreen from "@pages/migrated/notification_screen";
-// @ts-ignore
-import OnboardingScreen from "@pages/migrated/onboarding_screen";
-// @ts-ignore
-import OtherUserProfileScreen from "@pages/migrated/other_user_profile_screen";
-// @ts-ignore
-import OTPScreen from "@pages/migrated/otp_screen";
-// @ts-ignore
-import PaymentScheduledScreen from "@pages/migrated/payment_scheduled_screen";
-// @ts-ignore
-import PaymentScreen from "@pages/migrated/payment_screen";
-// @ts-ignore
-import PlanScreen from "@pages/migrated/plan_screen";
-// @ts-ignore
-import PostDetailsScreen from "@pages/migrated/post_details_screen";
-// @ts-ignore
-import PrivacyPolicyScreen from "@pages/migrated/privacy_policy_screen";
-// @ts-ignore
-import ProductDetailScreen from "@pages/migrated/product_detail_screen";
-// @ts-ignore
-import ProductScreen from "@pages/migrated/product_screen";
-// @ts-ignore
-import ProfileScreenMigrated from "@pages/migrated/profile_screen";
-// @ts-ignore
-import ProfileScreenSandow from "@pages/migrated/profile_screen_sandow";
-// @ts-ignore
-import ProgressDetailScreen from "@pages/migrated/progress_detail_screen";
-// @ts-ignore
-import ProgressScreen from "@pages/migrated/progress_screen";
-// @ts-ignore
-import ProgressSettingScreen from "@pages/migrated/progress_setting_screen";
-// @ts-ignore
-import RecipeCategoryListScreen from "@pages/migrated/recipe_category_list_screen";
-// @ts-ignore
-import RecipeListScreenV2 from "@pages/migrated/recipe_list_screen_v2";
-// @ts-ignore
-import RecipeMainScreen from "@pages/migrated/recipe_main_screen";
-// @ts-ignore
-import WorkoutTemplateListScreen from "@pages/migrated/workout_template_list_screen";
-// @ts-ignore
-import RecipeTagListScreen from "@pages/migrated/recipe_tag_list_screen";
-// @ts-ignore
-import ReminderScreen from "@pages/migrated/reminder_screen";
-import ResourceDetailScreen from "@pages/migrated/resource_detail_screen";
-import ResourcesListScreen from "@pages/migrated/resources_list_screen";
-// @ts-ignore
-import ScheduleScreen from "@pages/migrated/schedule_screen";
-// @ts-ignore
-import SearchScreen from "@pages/migrated/search_screen";
-// @ts-ignore
-import SetReminderScreen from "@pages/migrated/set_reminder_screen";
-// @ts-ignore
-import SettingScreen from "@pages/migrated/setting_screen";
-// @ts-ignore
-import ShoppingListDetailScreen from "@pages/migrated/shopping_list_detail_screen";
-// @ts-ignore
-import ShoppingListScreen from "@pages/migrated/shopping_list_screen";
-// @ts-ignore
-import SignInScreenSandow from "@pages/migrated/sign_in_screen_sandow";
-// @ts-ignore
-import SignUpScreenSandow from "@pages/migrated/sign_up_screen_sandow";
+const HomeScreenModern = React.lazy(() => import('@pages/migrated/home_screen_modern'));
+const HabitsListScreen = React.lazy(() => import('@pages/migrated/habits_list_screen'));
+const HabitDetailScreen = React.lazy(() => import('@pages/migrated/habit_detail_screen'));
+const HabitAddScreen = React.lazy(() => import('@pages/migrated/habit_add_screen'));
+const LanguageScreen = React.lazy(() => import('@pages/migrated/language_screen'));
+const MainGoalScreen = React.lazy(() => import('@pages/migrated/main_goal_screen'));
+const MealsRemindersScreen = React.lazy(() => import('@pages/migrated/meals_reminders_screen'));
+const MealsWaterReminderScreen = React.lazy(() => import('@pages/migrated/meals_water_reminder_screen'));
+const MuscleProgressScreen = React.lazy(() => import('@pages/migrated/muscle_progress_screen'));
+const MyProgramCalendarScreen = React.lazy(() => import('@pages/migrated/my_program_calendar_screen'));
+const NoDataScreen = React.lazy(() => import('@pages/migrated/no_data_screen'));
+const NoInternetScreen = React.lazy(() => import('@pages/migrated/no_internet_screen'));
+const NotificationScreen = React.lazy(() => import('@pages/migrated/notification_screen'));
+const OnboardingScreen = React.lazy(() => import('@pages/migrated/onboarding_screen'));
+const OtherUserProfileScreen = React.lazy(() => import('@pages/migrated/other_user_profile_screen'));
+const OTPScreen = React.lazy(() => import('@pages/migrated/otp_screen'));
+const PaymentScheduledScreen = React.lazy(() => import('@pages/migrated/payment_scheduled_screen'));
+const PaymentScreen = React.lazy(() => import('@pages/migrated/payment_screen'));
+const PlanScreen = React.lazy(() => import('@pages/migrated/plan_screen'));
+const PostDetailsScreen = React.lazy(() => import('@pages/migrated/post_details_screen'));
+const PrivacyPolicyScreen = React.lazy(() => import('@pages/migrated/privacy_policy_screen'));
+const ProfileScreenMigrated = React.lazy(() => import('@pages/migrated/profile_screen'));
+const ProgressDetailScreen = React.lazy(() => import('@pages/migrated/progress_detail_screen'));
+const ProgressScreen = React.lazy(() => import('@pages/migrated/progress_screen'));
+const StatisticsScreen = React.lazy(() => import('@pages/migrated/statistics_screen'));
+const StatisticsMuscleDistributionScreen = React.lazy(() => import('@pages/migrated/statistics_muscle_distribution_screen'));
+const StatisticsBodyDistributionScreen = React.lazy(() => import('@pages/migrated/statistics_body_distribution_screen'));
+const StatisticsSeriesCountScreen = React.lazy(() => import('@pages/migrated/statistics_series_count_screen'));
+const StatisticsTopExercisesScreen = React.lazy(() => import('@pages/migrated/statistics_top_exercises_screen'));
+const StatisticsPersonalRecordsScreen = React.lazy(() => import('@pages/migrated/statistics_personal_records_screen'));
+const StatisticsMonthlyReportScreen = React.lazy(() => import('@pages/migrated/statistics_monthly_report_screen'));
+const ComingSoonScreen = React.lazy(() => import('@pages/migrated/coming_soon_screen'));
+const RecipeCategoryListScreen = React.lazy(() => import('@pages/migrated/recipe_category_list_screen'));
+const RecipeListScreenV2 = React.lazy(() => import('@pages/migrated/recipe_list_screen_v2'));
+const RecipeMainScreen = React.lazy(() => import('@pages/migrated/recipe_main_screen'));
+const WorkoutTemplateListScreen = React.lazy(() => import('@pages/migrated/workout_template_list_screen'));
+const RecipeTagListScreen = React.lazy(() => import('@pages/migrated/recipe_tag_list_screen'));
+const ReminderScreen = React.lazy(() => import('@pages/migrated/reminder_screen'));
+const ResourceDetailScreen = React.lazy(() => import('@pages/migrated/resource_detail_screen'));
+const ResourcesListScreen = React.lazy(() => import('@pages/migrated/resources_list_screen'));
+const ScheduleScreen = React.lazy(() => import('@pages/migrated/schedule_screen'));
+const SearchScreen = React.lazy(() => import('@pages/migrated/search_screen'));
+const SessionHistoryDetailScreen = React.lazy(() => import('@pages/migrated/session_history_detail_screen'));
+const SetReminderScreen = React.lazy(() => import('@pages/migrated/set_reminder_screen'));
+const ShoppingListDetailScreen = React.lazy(() => import('@pages/migrated/shopping_list_detail_screen'));
+const ShoppingListScreen = React.lazy(() => import('@pages/migrated/shopping_list_screen'));
+const SignInScreenSandow = React.lazy(() => import('@pages/migrated/sign_in_screen_sandow'));
+const SignUpScreenSandow = React.lazy(() => import('@pages/migrated/sign_up_screen_sandow'));
 
-// @ts-ignore
-import SleepMonitoringScreen from "@pages/migrated/sleep_monitoring_screen";
-// @ts-ignore
-import SplashScreenMigrated from "@pages/migrated/splash_screen";
-// @ts-ignore
-import StepsCountScreen from "@pages/migrated/steps_count_screen";
-// @ts-ignore
-import SubscribeScreen from "@pages/migrated/subscribe_screen";
-// @ts-ignore
-import SubscriptionDetailScreen from "@pages/migrated/subscription_detail_screen";
-// @ts-ignore
-import TermsAndConditionsScreen from "@pages/migrated/terms_and_conditions_screen";
-// @ts-ignore
-import TipsScreen from "@pages/migrated/tips_screen";
-// @ts-ignore
-import VerifyOtpScreen from "@pages/migrated/verify_otp_screen";
-// @ts-ignore
-import VideoDetailScreen from "@pages/migrated/video_detail_screen";
-// @ts-ignore
-import VideoScreen from "@pages/migrated/video_screen";
-// @ts-ignore
-import ViewAllBlogScreen from "@pages/migrated/view_all_blog_screen";
-// @ts-ignore
-import ViewAllDiet from "@pages/migrated/view_all_diet";
-// @ts-ignore
-import ViewAllProductScreen from "@pages/migrated/view_all_product_screen";
-// @ts-ignore
-import ViewBodyPartScreen from "@pages/migrated/view_body_part_screen";
-// @ts-ignore
-import ViewDietCategoryScreen from "@pages/migrated/view_diet_category_screen";
-// @ts-ignore
-import ViewEquipmentScreen from "@pages/migrated/view_equipment_screen";
-// @ts-ignore
-import ViewLevelScreen from "@pages/migrated/view_level_screen";
-// @ts-ignore
-import ViewProductCategoryScreen from "@pages/migrated/view_product_category_screen";
-// @ts-ignore
-import ViewWorkoutsScreen from "@pages/migrated/view_workouts_screen";
-// @ts-ignore
-import WalkThroughScreen from "@pages/migrated/walk_through_screen";
-// @ts-ignore
-import WaterRemindersScreen from "@pages/migrated/water_reminders_screen";
-// @ts-ignore
-import WaterTrackerScreen from "@pages/migrated/water_tracker_screen";
-// @ts-ignore
-import WebViewScreen from "@pages/migrated/web_view_screen";
-// @ts-ignore
-import WorkoutDetailScreenMig from "@pages/migrated/workout_detail_screen";
-// @ts-ignore
-import WorkoutHistoryScreen from "@pages/migrated/workout_history_screen";
-// @ts-ignore
-import WorkoutPreviewScreen from "@pages/migrated/workout_preview_screen";
-// @ts-ignore
-import WorkoutSessionScreenMig from "@pages/migrated/workout_session_screen";
-// @ts-ignore
-import WorkoutFeedbackScreen from "@pages/migrated/workout_feedback_screen";
-// @ts-ignore
-import WorkoutSummaryScreenMig from "@pages/migrated/workout_summary_screen";
-// @ts-ignore
-import YoutubePlayerScreen from "@pages/migrated/youtube_player_screen";
+const SleepMonitoringScreen = React.lazy(() => import('@pages/migrated/sleep_monitoring_screen'));
+const SplashScreenMigrated = React.lazy(() => import('@pages/migrated/splash_screen'));
+const StepsCountScreen = React.lazy(() => import('@pages/migrated/steps_count_screen'));
+const SubscribeScreen = React.lazy(() => import('@pages/migrated/subscribe_screen'));
+const SubscriptionDetailScreen = React.lazy(() => import('@pages/migrated/subscription_detail_screen'));
+const TermsAndConditionsScreen = React.lazy(() => import('@pages/migrated/terms_and_conditions_screen'));
+const TipsScreen = React.lazy(() => import('@pages/migrated/tips_screen'));
+const VerifyOtpScreen = React.lazy(() => import('@pages/migrated/verify_otp_screen'));
+const VideoDetailScreen = React.lazy(() => import('@pages/migrated/video_detail_screen'));
+const VideoScreen = React.lazy(() => import('@pages/migrated/video_screen'));
+const ViewAllBlogScreen = React.lazy(() => import('@pages/migrated/view_all_blog_screen'));
+const ViewAllDiet = React.lazy(() => import('@pages/migrated/view_all_diet'));
+const ViewBodyPartScreen = React.lazy(() => import('@pages/migrated/view_body_part_screen'));
+const ViewDietCategoryScreen = React.lazy(() => import('@pages/migrated/view_diet_category_screen'));
+const ViewEquipmentScreen = React.lazy(() => import('@pages/migrated/view_equipment_screen'));
+const ViewLevelScreen = React.lazy(() => import('@pages/migrated/view_level_screen'));
+const ViewWorkoutsScreen = React.lazy(() => import('@pages/migrated/view_workouts_screen'));
+const WalkThroughScreen = React.lazy(() => import('@pages/migrated/walk_through_screen'));
+const WaterRemindersScreen = React.lazy(() => import('@pages/migrated/water_reminders_screen'));
+const WaterTrackerScreen = React.lazy(() => import('@pages/migrated/water_tracker_screen'));
+const WebViewScreen = React.lazy(() => import('@pages/migrated/web_view_screen'));
+const WorkoutDetailScreenMig = React.lazy(() => import('@pages/migrated/workout_detail_screen'));
+const WorkoutHistoryScreen = React.lazy(() => import('@pages/migrated/workout_history_screen'));
+const WorkoutPreviewScreen = React.lazy(() => import('@pages/migrated/workout_preview_screen'));
+const WorkoutSessionScreenMig = React.lazy(() => import('@pages/migrated/workout_session_screen'));
+const WorkoutFeedbackScreen = React.lazy(() => import('@pages/migrated/workout_feedback_screen'));
+const WorkoutSummaryScreenMig = React.lazy(() => import('@pages/migrated/workout_summary_screen'));
+const YoutubePlayerScreen = React.lazy(() => import('@pages/migrated/youtube_player_screen'));
 
 
 
-// @ts-ignore
-import DeviceConnectedScreen from "@pages/migrated/home/device_connected_screen";
-// @ts-ignore
-import EmparejandoScreen from "@pages/migrated/home/emparejando_screen";
-// @ts-ignore
-import FitnessMetricsScreen from "@pages/migrated/home/fitness_metrics_screen";
-// @ts-ignore
-import HealthMetricInsightScreen from "@pages/migrated/home/health_metric_insight_screen";
-// @ts-ignore
-import HeartRateDetailsScreen from "@pages/migrated/home/heart_rate_details_screen";
-// @ts-ignore
-import HeartRateHistoryScreen from "@pages/migrated/home/heart_rate_history_screen";
-// @ts-ignore
-import HeartRateInsightScreen from "@pages/migrated/home/heart_rate_insight_screen";
-// @ts-ignore
-import HeartRateScreen from "@pages/migrated/home/heart_rate_screen";
-// @ts-ignore
-import HeartRateZoneScreen from "@pages/migrated/home/heart_rate_zones_screen";
-// @ts-ignore
-import HomeEmptyScreen from "@pages/migrated/home/home_empty_screen";
-// @ts-ignore
-import LinkDeviceChoiceScreen from "@pages/migrated/home/link_device_choice_screen";
-// @ts-ignore
-import LinkDeviceListScreen from "@pages/migrated/home/link_device_list_screen";
-// @ts-ignore
-import LogStepsFormScreen from "@pages/migrated/home/log_steps_form_screen";
-// @ts-ignore
-import LogWeightFormScreen from "@pages/migrated/home/log_weight_form_screen";
-// @ts-ignore
-import LogWeightKeyboardScreen from "@pages/migrated/home/log_weight_keyboard_screen";
-// @ts-ignore
-import ManageHealthMetricsScreen from "@pages/migrated/home/manage_health_metrics_screen";
-// @ts-ignore
-import SandowScoreScreenHome from "@pages/migrated/home/sandow_score_screen";
-// @ts-ignore
-import ScoreBreakdownRadarScreenHome from "@pages/migrated/home/score_breakdown_radar_screen";
-// @ts-ignore
-import StepGoalCompletedScreen from "@pages/migrated/home/step_goal_completed_screen";
-// @ts-ignore
-import StepGoalScreen from "@pages/migrated/home/step_goal_screen";
-// @ts-ignore
-import StepsDetailsScreen from "@pages/migrated/home/steps_details_screen";
-// @ts-ignore
-import StepsHistoryScreen from "@pages/migrated/home/steps_history_screen";
-// @ts-ignore
-import StepsInsightScreenHome from "@pages/migrated/home/steps_insight_screen";
-// @ts-ignore
-import StepsLoggedScreen from "@pages/migrated/home/steps_logged_screen";
-// @ts-ignore
-import StepsScreen from "@pages/migrated/home/steps_screen";
-// @ts-ignore
-import WeightDeadlineScreen from "@pages/migrated/home/weight_deadline_screen";
-// @ts-ignore
-import WeightDetailsScreen from "@pages/migrated/home/weight_details_screen";
-// @ts-ignore
-import WeightGoalCompletedScreen from "@pages/migrated/home/weight_goal_completed_screen";
-// @ts-ignore
-import WeightGoalSetScreenHome from "@pages/migrated/home/weight_goal_set_screen";
-// @ts-ignore
-import WeightGoalSummaryScreen from "@pages/migrated/home/weight_goal_summary_screen";
-// @ts-ignore
-import WeightHistoryScreen from "@pages/migrated/home/weight_history_screen";
-// @ts-ignore
-import WeightInsightScreenHome from "@pages/migrated/home/weight_insight_screen";
-// @ts-ignore
-import WeightLoggedScreenHome from "@pages/migrated/home/weight_logged_screen";
-// @ts-ignore
-import WeightLoseGainChoiceScreen from "@pages/migrated/home/weight_lose_gain_choice_screen";
-// @ts-ignore
-import WeightReminderScreen from "@pages/migrated/home/weight_reminder_screen";
-// @ts-ignore
-import WeightScreenMigrated from "@pages/migrated/home/weight_screen";
-// @ts-ignore
-import WeightSetGoalScreen from "@pages/migrated/home/weight_set_goal_screen";
-
-// @ts-ignore
-import ArticlesScreen from "@pages/migrated/onboarding/articles_screen";
-// @ts-ignore
-import AssessmentResultScreen from "@pages/migrated/onboarding/assessment_result_screen";
-// @ts-ignore
-import AvatarSetupScreen from "@pages/migrated/onboarding/avatar_setup_screen";
-// @ts-ignore
-import ChoosePlanScreen from "@pages/migrated/onboarding/choose_plan_screen";
-// @ts-ignore
-import HealthScreen from "@pages/migrated/onboarding/health_screen";
-// @ts-ignore
-import NotificationsScreen from "@pages/migrated/onboarding/notifications_screen";
-// @ts-ignore
-import OnboardingCompleteScreen from "@pages/migrated/onboarding/onboarding_complete_screen";
-// @ts-ignore
-import PrivacyPolicyScreenOnboard from "@pages/migrated/onboarding/privacy_policy_screen";
-// @ts-ignore
-import ProfileSetupFormScreen from "@pages/migrated/onboarding/profile_setup_form_screen";
-// @ts-ignore
-import ProfileSetupIntroScreen from "@pages/migrated/onboarding/profile_setup_intro_screen";
-// @ts-ignore
-import RecommendationsScreen from "@pages/migrated/onboarding/recommendations_screen";
+const DeviceConnectedScreen = React.lazy(() => import('@pages/migrated/home/device_connected_screen'));
+const EmparejandoScreen = React.lazy(() => import('@pages/migrated/home/emparejando_screen'));
+const FitnessMetricsScreen = React.lazy(() => import('@pages/migrated/home/fitness_metrics_screen'));
+const HealthMetricInsightScreen = React.lazy(() => import('@pages/migrated/home/health_metric_insight_screen'));
+const HeartRateDetailsScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_details_screen'));
+const HeartRateHistoryScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_history_screen'));
+const HeartRateInsightScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_insight_screen'));
+const HeartRateScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_screen'));
+const HeartRateZoneScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_zones_screen'));
+const HomeEmptyScreen = React.lazy(() => import('@pages/migrated/home/home_empty_screen'));
+const LinkDeviceChoiceScreen = React.lazy(() => import('@pages/migrated/home/link_device_choice_screen'));
+const LinkDeviceListScreen = React.lazy(() => import('@pages/migrated/home/link_device_list_screen'));
+const LogStepsFormScreen = React.lazy(() => import('@pages/migrated/home/log_steps_form_screen'));
+const ManageHealthMetricsScreen = React.lazy(() => import('@pages/migrated/home/manage_health_metrics_screen'));
+const StepGoalCompletedScreen = React.lazy(() => import('@pages/migrated/home/step_goal_completed_screen'));
+const StepGoalScreen = React.lazy(() => import('@pages/migrated/home/step_goal_screen'));
+const StepsDetailsScreen = React.lazy(() => import('@pages/migrated/home/steps_details_screen'));
+const StepsHistoryScreen = React.lazy(() => import('@pages/migrated/home/steps_history_screen'));
+const StepsInsightScreenHome = React.lazy(() => import('@pages/migrated/home/steps_insight_screen'));
+const StepsLoggedScreen = React.lazy(() => import('@pages/migrated/home/steps_logged_screen'));
+const StepsScreen = React.lazy(() => import('@pages/migrated/home/steps_screen'));
+const ArticlesScreen = React.lazy(() => import('@pages/migrated/onboarding/articles_screen'));
+const AssessmentResultScreen = React.lazy(() => import('@pages/migrated/onboarding/assessment_result_screen'));
+const AvatarSetupScreen = React.lazy(() => import('@pages/migrated/onboarding/avatar_setup_screen'));
+const ChoosePlanScreen = React.lazy(() => import('@pages/migrated/onboarding/choose_plan_screen'));
+const HealthScreen = React.lazy(() => import('@pages/migrated/onboarding/health_screen'));
+const NotificationsScreen = React.lazy(() => import('@pages/migrated/onboarding/notifications_screen'));
+const OnboardingCompleteScreen = React.lazy(() => import('@pages/migrated/onboarding/onboarding_complete_screen'));
+const PrivacyPolicyScreenOnboard = React.lazy(() => import('@pages/migrated/onboarding/privacy_policy_screen'));
+const ProfileSetupFormScreen = React.lazy(() => import('@pages/migrated/onboarding/profile_setup_form_screen'));
+const ProfileSetupIntroScreen = React.lazy(() => import('@pages/migrated/onboarding/profile_setup_intro_screen'));
+const RecommendationsScreen = React.lazy(() => import('@pages/migrated/onboarding/recommendations_screen'));
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import '@/global.css';
 
 enableScreens();
 const Stack = createStackNavigator();
+const LazyFallback = () => <View style={{ flex: 1, backgroundColor: '#EBEBF0' }} />;
 
-function Unboardingnavigator() {
-  const UnboardingStack = createStackNavigator();
-  return (
-    <UnboardingStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Unboard">
-      <UnboardingStack.Screen name="Unboard" component={Unboarding} />
-      <UnboardingStack.Screen name="Name" component={Name} />
-      <UnboardingStack.Screen name="Weight" component={Weight} />
-      <UnboardingStack.Screen name="Height" component={Height} />
-    </UnboardingStack.Navigator>
-  );
-}
-
-function Clubnavigator() {
-  const ClubStack = createStackNavigator();
-  return (
-    <ClubStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Clubmap">
-      <ClubStack.Screen name="Stories" component={Stories} />
-      <ClubStack.Screen name="Clubmap" component={Clubmap} />
-      <ClubStack.Screen name="Cycling" component={Cycling} />
-      <ClubStack.Screen name="Congratulation" component={Congratulation} />
-      <ClubStack.Screen name="Result" component={Result} />
-    </ClubStack.Navigator>
-  );
-}
 
 const Tab = createBottomTabNavigator();
 
@@ -399,36 +213,13 @@ function Homenavigator() {
       <Tab.Screen
         name="HomePage"
         component={MigratedNavigator}
-        options={{
-          //@ts-ignore
-          icon: require("@assets/icons/nav1.png"),
-          tabBarVisible: false,
-          tabBarStyle: { display: 'none' }
-        }}
-      />
-      <Tab.Screen
-        name="Club"
-        component={Club}
-        options={{
-          //@ts-ignore
-          icon: require("@assets/icons/nav2.png")
-        }}
-      />
-      <Tab.Screen
-        name="Challenges"
-        component={Challenges}
-        options={{
-          //@ts-ignore
-          icon: require("@assets/icons/nav3.png")
-        }}
-      />
-      <Tab.Screen
-        name="Today"
-        component={Today}
-        options={{
-          //@ts-ignore
-          icon: require("@assets/icons/nav4.png")
-        }}
+        options={
+          {
+            icon: require("@assets/icons/nav1.png"),
+            tabBarVisible: false,
+            tabBarStyle: { display: 'none' }
+          } as NavigationTabOptionsInterface
+        }
       />
     </Tab.Navigator>
   );
@@ -446,33 +237,35 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedAssign" component={AssignScreen} />
       <MStack.Screen name="MigratedBlogDetail" component={BlogDetailScreen} />
       <MStack.Screen name="MigratedBlog" component={BlogScreen} />
+      <MStack.Screen name="MigratedBodyMetrics" component={BodyMetricsScreen} />
       <MStack.Screen name="MigratedBookmark" component={BookmarkScreen} />
       <MStack.Screen name="MigratedChangePwd" component={ChangePwdScreen} />
       <MStack.Screen name="MigratedChattingImage" component={ChattingImageScreen} />
       <MStack.Screen name="MigratedChatting" component={ChattingScreen} />
+      <MStack.Screen name="MigratedCheckIns" component={CheckInsListScreen} />
+      <MStack.Screen name="MigratedCheckInFill" component={CheckInFillScreen} />
+      <MStack.Screen name="MigratedHabits" component={HabitsListScreen} />
+      <MStack.Screen name="MigratedHabitDetail" component={HabitDetailScreen} />
+      <MStack.Screen name="MigratedHabitAdd" component={HabitAddScreen} />
       <MStack.Screen name="MigratedChewie" component={ChewieScreen} />
       <MStack.Screen name="MigratedCommunity" component={CommunityScreen} />
       <MStack.Screen name="MigratedDietDetail" component={DietDetailScreen as any} />
       <MStack.Screen name="MigratedAssignedMeals" component={AssignedMealsScreen} />
       <MStack.Screen name="MigratedEditProfile" component={EditProfileScreen} />
-      <MStack.Screen name="MigratedExerciseDetail" component={ExerciseDetailScreen as any} />
       <MStack.Screen name="MigratedExerciseInfo" component={ExerciseInfoScreen} />
       <MStack.Screen name="MigratedExerciseDuration" component={ExerciseDurationScreen as any} />
       <MStack.Screen name="MigratedExerciseDurationCast" component={ExerciseDurationScreencast as any} />
       <MStack.Screen name="MigratedExerciseHistory" component={ExerciseHistoryScreen} />
-      <MStack.Screen name="MigratedExerciseList" component={ExerciseListScreen as any} />
       <MStack.Screen name="MigratedFavouriteRecipe" component={FavouriteRecipeScreen} />
       <MStack.Screen name="MigratedFavourite" component={FavouriteScreen as any} />
       <MStack.Screen name="MigratedFilterWorkout" component={FilterWorkoutScreen} />
       <MStack.Screen name="MigratedForgotPwd" component={ForgotPwdScreen} />
-      <MStack.Screen name="MigratedGoalCaloriesMacros" component={GoalCaloriesMacrosScreen} />
-      <MStack.Screen name="MigratedGoalSelection" component={GoalSelectionScreen} />
       <MStack.Screen name="MigratedHomeModern" component={HomeScreenModern} />
       <MStack.Screen name="MigratedLanguage" component={LanguageScreen} />
       <MStack.Screen name="MigratedMainGoal" component={MainGoalScreen} />
       <MStack.Screen name="MigratedMealsReminders" component={MealsRemindersScreen} />
       <MStack.Screen name="MigratedMealsWaterReminder" component={MealsWaterReminderScreen} />
-      <MStack.Screen name="MigratedMissingDetails" component={MissingDetailsScreen} />
+      <MStack.Screen name="MigratedMuscleProgress" component={MuscleProgressScreen} />
       <MStack.Screen name="MigratedMyProgramCalendar" component={MyProgramCalendarScreen} />
       <MStack.Screen name="MigratedNoData" component={NoDataScreen} />
       <MStack.Screen name="MigratedNoInternet" component={NoInternetScreen} />
@@ -485,13 +278,17 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedPlan" component={PlanScreen} />
       <MStack.Screen name="MigratedPostDetails" component={PostDetailsScreen} />
       <MStack.Screen name="MigratedPrivacyPolicy" component={PrivacyPolicyScreen} />
-      <MStack.Screen name="MigratedProductDetail" component={ProductDetailScreen} />
-      <MStack.Screen name="MigratedProduct" component={ProductScreen} />
       <MStack.Screen name="MigratedProfile" component={ProfileScreenMigrated as any} />
-      <MStack.Screen name="MigratedProfileSandow" component={ProfileScreenSandow as any} />
       <MStack.Screen name="MigratedProgressDetail" component={ProgressDetailScreen} />
       <MStack.Screen name="MigratedProgress" component={ProgressScreen} />
-      <MStack.Screen name="MigratedProgressSetting" component={ProgressSettingScreen} />
+      <MStack.Screen name="MigratedStatistics" component={StatisticsScreen} />
+      <MStack.Screen name="MigratedStatisticsMuscles" component={StatisticsMuscleDistributionScreen} />
+      <MStack.Screen name="MigratedStatisticsBody" component={StatisticsBodyDistributionScreen} />
+      <MStack.Screen name="MigratedStatisticsSeriesCount" component={StatisticsSeriesCountScreen} />
+      <MStack.Screen name="MigratedStatisticsTopExercises" component={StatisticsTopExercisesScreen} />
+      <MStack.Screen name="MigratedStatisticsPersonalRecords" component={StatisticsPersonalRecordsScreen} />
+      <MStack.Screen name="MigratedStatisticsMonthlyReport" component={StatisticsMonthlyReportScreen} />
+      <MStack.Screen name="MigratedComingSoon" component={ComingSoonScreen} />
       <MStack.Screen name="MigratedRecipeCategoryList" component={RecipeCategoryListScreen} />
       <MStack.Screen name="MigratedRecipeListV2" component={RecipeListScreenV2} />
       <MStack.Screen name="MigratedRecipeMain" component={RecipeMainScreen} />
@@ -501,8 +298,8 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedResourcesList" component={ResourcesListScreen} />
       <MStack.Screen name="MigratedSchedule" component={ScheduleScreen} />
       <MStack.Screen name="MigratedSearch" component={SearchScreen} />
+      <MStack.Screen name="MigratedSessionHistoryDetail" component={SessionHistoryDetailScreen} />
       <MStack.Screen name="MigratedSetReminder" component={SetReminderScreen} />
-      <MStack.Screen name="MigratedSetting" component={SettingScreen} />
       <MStack.Screen name="MigratedShoppingListDetail" component={ShoppingListDetailScreen} />
       <MStack.Screen name="MigratedShoppingList" component={ShoppingListScreen} />
       <MStack.Screen name="MigratedSignInSandow" component={SignInScreenSandow} />
@@ -519,12 +316,10 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedVideo" component={VideoScreen} />
       <MStack.Screen name="MigratedViewAllBlog" component={ViewAllBlogScreen} />
       <MStack.Screen name="MigratedViewAllDiet" component={ViewAllDiet} />
-      <MStack.Screen name="MigratedViewAllProduct" component={ViewAllProductScreen} />
       <MStack.Screen name="MigratedViewBodyPart" component={ViewBodyPartScreen} />
       <MStack.Screen name="MigratedViewDietCategory" component={ViewDietCategoryScreen} />
       <MStack.Screen name="MigratedViewEquipment" component={ViewEquipmentScreen} />
       <MStack.Screen name="MigratedViewLevel" component={ViewLevelScreen} />
-      <MStack.Screen name="MigratedViewProductCategory" component={ViewProductCategoryScreen} />
       <MStack.Screen name="MigratedViewWorkouts" component={ViewWorkoutsScreen} />
       <MStack.Screen name="MigratedWalkThrough" component={WalkThroughScreen} />
       <MStack.Screen name="MigratedWaterReminders" component={WaterRemindersScreen} />
@@ -551,11 +346,7 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedLinkDeviceChoice" component={LinkDeviceChoiceScreen} />
       <MStack.Screen name="MigratedLinkDeviceList" component={LinkDeviceListScreen} />
       <MStack.Screen name="MigratedLogStepsForm" component={LogStepsFormScreen} />
-      <MStack.Screen name="MigratedLogWeightForm" component={LogWeightFormScreen} />
-      <MStack.Screen name="MigratedLogWeightKeyboard" component={LogWeightKeyboardScreen} />
       <MStack.Screen name="MigratedManageHealthMetrics" component={ManageHealthMetricsScreen} />
-      <MStack.Screen name="MigratedSandowScore" component={SandowScoreScreenHome} />
-      <MStack.Screen name="MigratedScoreBreakdown" component={ScoreBreakdownRadarScreenHome} />
       <MStack.Screen name="MigratedStepGoalCompleted" component={StepGoalCompletedScreen} />
       <MStack.Screen name="MigratedStepGoal" component={StepGoalScreen} />
       <MStack.Screen name="MigratedStepsDetails" component={StepsDetailsScreen} />
@@ -563,18 +354,6 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedStepsInsight" component={StepsInsightScreenHome} />
       <MStack.Screen name="MigratedStepsLogged" component={StepsLoggedScreen} />
       <MStack.Screen name="MigratedSteps" component={StepsScreen} />
-      <MStack.Screen name="MigratedWeightDeadline" component={WeightDeadlineScreen} />
-      <MStack.Screen name="MigratedWeightDetails" component={WeightDetailsScreen} />
-      <MStack.Screen name="MigratedWeightGoalCompleted" component={WeightGoalCompletedScreen} />
-      <MStack.Screen name="MigratedWeightGoalSet" component={WeightGoalSetScreenHome} />
-      <MStack.Screen name="MigratedWeightGoalSummary" component={WeightGoalSummaryScreen} />
-      <MStack.Screen name="MigratedWeightHistory" component={WeightHistoryScreen} />
-      <MStack.Screen name="MigratedWeightInsight" component={WeightInsightScreenHome} />
-      <MStack.Screen name="MigratedWeightLogged" component={WeightLoggedScreenHome} />
-      <MStack.Screen name="MigratedWeightLoseGainChoice" component={WeightLoseGainChoiceScreen} />
-      <MStack.Screen name="MigratedWeightReminder" component={WeightReminderScreen} />
-      <MStack.Screen name="MigratedWeight" component={WeightScreenMigrated} />
-      <MStack.Screen name="MigratedWeightSetGoal" component={WeightSetGoalScreen} />
       <MStack.Screen name="MigratedArticles" component={ArticlesScreen} />
       <MStack.Screen name="MigratedAssessmentResult" component={AssessmentResultScreen} />
       <MStack.Screen name="MigratedAvatarSetup" component={AvatarSetupScreen} />
@@ -596,12 +375,13 @@ function RootNavigator() {
   if (state.isLoading) return null;
 
   return (
-    <Stack.Navigator
-      key={state.isAuthenticated ? (state.onboardingCompleted ? 'main' : 'onboarding') : 'auth'}
-      initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboarding' : 'Home'}
-      screenOptions={{ headerShown: false }}
-    >
-      {!state.isAuthenticated ? (
+    <Suspense fallback={<LazyFallback />}>
+      <Stack.Navigator
+        key={state.isAuthenticated ? (state.onboardingCompleted ? 'main' : 'onboarding') : 'auth'}
+        initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboarding' : 'Home'}
+        screenOptions={{ headerShown: false }}
+      >
+        {!state.isAuthenticated ? (
         <>
           <Stack.Screen name="WelcomeAuth" component={WelcomeAuthScreen} />
           <Stack.Screen name="LoginAuth" component={LoginScreen} />
@@ -628,11 +408,7 @@ function RootNavigator() {
       ) : (
         <>
           <Stack.Screen name="Home" component={Homenavigator} />
-          <Stack.Screen name="Unboarding" component={Unboardingnavigator} />
-          <Stack.Screen name="Clubnav" component={Clubnavigator} />
           <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="Congratulation" component={Congratulation} />
-          <Stack.Screen name="Result" component={Result} />
 
           {/* Workout flow */}
           <Stack.Screen name="WorkoutList" component={WorkoutList} />
@@ -667,7 +443,8 @@ function RootNavigator() {
           <Stack.Screen name="ScreenExplorer" component={ScreenExplorer} />
         </>
       )}
-    </Stack.Navigator>
+      </Stack.Navigator>
+    </Suspense>
   );
 }
 
@@ -738,11 +515,13 @@ export default function App() {
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <AuthProvider>
             <NavigationContainer
+              ref={screenReviewNavigationRef}
               theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#EBEBF0" } }}
               onReady={onLayoutRootView}
             >
               <RootNavigator />
             </NavigationContainer>
+            <ScreenReviewFab navigationRef={screenReviewNavigationRef} />
           </AuthProvider>
         </SafeAreaProvider>
       </GluestackUIProvider>

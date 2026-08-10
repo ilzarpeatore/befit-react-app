@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { exercisesApi } from '../../api/exercises';
+import MuscleFilterSheet from '../../components/MuscleFilterSheet';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -39,6 +40,10 @@ interface ApiResponse<T> {
 }
 
 export default function SearchScreen(props: any) {
+  // Cuando se llega desde ViewBodyPart/ViewEquipment/ViewLevel (esta pantalla
+  // sustituye a exercise_list_screen.tsx en todos sus llamadores), viene con
+  // un filtro ya elegido — se aplica directo en vez del "Todos" por defecto.
+  const incoming = props.route?.params ?? {};
   const [searchValue, setSearchValue] = useState('');
   const [showClearButton, setShowClearButton] = useState(false);
   const [selectedFilterList, setSelectedFilterList] = useState(0);
@@ -54,13 +59,32 @@ export default function SearchScreen(props: any) {
   const [isLastPage, setIsLastPage] = useState(false);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [bottomSheetListId, setBottomSheetListId] = useState(0);
+  const [showMuscleSheet, setShowMuscleSheet] = useState(false);
+  const [muscleId, setMuscleId] = useState<number | null>(incoming.isBodyPart && incoming.id ? Number(incoming.id) : null);
+  const [muscleName, setMuscleName] = useState<string>(incoming.isBodyPart ? (incoming.mTitle ?? '') : '');
+  const [headerTitle, setHeaderTitle] = useState<string>(incoming.mTitle ?? '');
   const searchRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
   const styles = useStyle();
 
   useEffect(() => {
-    initList();
-    getExerciseData();
+    initList(incoming);
+    if (incoming.isBodyPart && incoming.id) {
+      setIsSearch(false);
+      setSelectedFilterList(3);
+      setSelectedId(String(incoming.id));
+      getExerciseData({ isFilter: true, isBodyPart: true, ids: String(incoming.id) });
+    } else if (incoming.isEquipment && incoming.id) {
+      setSelectedFilterList(1);
+      setSelectedId(String(incoming.id));
+      getExerciseData({ isFilter: true, isEquipment: true, ids: String(incoming.id) });
+    } else if (incoming.isLevel && incoming.id) {
+      setSelectedFilterList(2);
+      setSelectedId(String(incoming.id));
+      getExerciseData({ isFilter: true, isLevel: true, ids: String(incoming.id) });
+    } else {
+      getExerciseData();
+    }
   }, []);
 
   useEffect(() => {
@@ -71,11 +95,12 @@ export default function SearchScreen(props: any) {
     }
   }, [searchValue]);
 
-  const initList = () => {
+  const initList = (params: { isEquipment?: boolean; isLevel?: boolean; isBodyPart?: boolean } = {}) => {
     setList([
-      { id: 0, title: 'All', select: true },
-      { id: 1, title: 'Equipments', select: false },
-      { id: 2, title: 'Levels', select: false },
+      { id: 0, title: 'Todos', select: !params.isEquipment && !params.isLevel && !params.isBodyPart },
+      { id: 1, title: 'Equipamiento', select: !!params.isEquipment },
+      { id: 2, title: 'Niveles', select: !!params.isLevel },
+      { id: 3, title: 'Músculo', select: !!params.isBodyPart },
     ]);
   };
 
@@ -83,6 +108,7 @@ export default function SearchScreen(props: any) {
     isFilter?: boolean;
     isLevel?: boolean;
     isEquipment?: boolean;
+    isBodyPart?: boolean;
     ids?: string;
   } = {}): Promise<void> => {
     setIsLoading(true);
@@ -94,6 +120,8 @@ export default function SearchScreen(props: any) {
         res = await exercisesApi.getByEquipment(Number(params.ids), page);
       } else if (params.isFilter && params.isLevel && params.ids) {
         res = await exercisesApi.getByLevel(Number(params.ids), page);
+      } else if (params.isFilter && params.isBodyPart && params.ids) {
+        res = await exercisesApi.getByBodyPart(Number(params.ids), page);
       } else {
         res = await exercisesApi.getList(page);
       }
@@ -136,6 +164,7 @@ export default function SearchScreen(props: any) {
     isFilter?: boolean;
     isLevel?: boolean;
     isEquipment?: boolean;
+    isBodyPart?: boolean;
     ids?: string;
   } = {}) => {
     await getExercise(params).then(() => {
@@ -191,10 +220,16 @@ export default function SearchScreen(props: any) {
     searchRef.current?.blur();
     const updatedList = list.map((item, i) => ({ ...item, select: i === index }));
     setList(updatedList);
+    setHeaderTitle('');
 
     if (list[index].id === 0) {
+      setSelectedFilterList(0);
+      setMuscleId(null);
+      setMuscleName('');
       setIsSearch(false);
       getExerciseData({ isFilter: true });
+    } else if (list[index].id === 3) {
+      setShowMuscleSheet(true);
     } else {
       setSelectedFilterList(list[index].id);
       setBottomSheetListId(list[index].id);
@@ -205,6 +240,8 @@ export default function SearchScreen(props: any) {
   const handleBottomSheetApply = (mList: number[]) => {
     const idsStr = mList.toString().replace(/\s/g, '').replace('[', '').replace(']', '').trim();
     setSelectedId(idsStr);
+    setMuscleId(null);
+    setMuscleName('');
     setIsSearch(false);
     setExerciseList([]);
     setPage(1);
@@ -215,6 +252,31 @@ export default function SearchScreen(props: any) {
       isLevel: bottomSheetListId === 2,
     });
     setShowBottomSheet(false);
+  };
+
+  const handleMuscleSelect = (id: number, name: string) => {
+    setShowMuscleSheet(false);
+    if (id === 0) {
+      // "Quitar filtro" — vuelve a Todos.
+      setMuscleId(null);
+      setMuscleName('');
+      setSelectedFilterList(0);
+      setList((prev) => prev.map((item) => ({ ...item, select: item.id === 0 })));
+      setIsSearch(false);
+      setExerciseList([]);
+      setPage(1);
+      getExerciseData({ isFilter: true });
+      return;
+    }
+    setMuscleId(id);
+    setMuscleName(name);
+    setSelectedFilterList(3);
+    setSelectedId(String(id));
+    setList((prev) => prev.map((item) => ({ ...item, select: item.id === 3 })));
+    setIsSearch(false);
+    setExerciseList([]);
+    setPage(1);
+    getExerciseData({ isFilter: true, isBodyPart: true, ids: String(id) });
   };
 
   const handleClear = () => {
@@ -234,6 +296,7 @@ export default function SearchScreen(props: any) {
           isFilter: selectedFilterList !== 0,
           isEquipment: selectedFilterList === 1,
           isLevel: selectedFilterList === 2,
+          isBodyPart: selectedFilterList === 3,
           ids: selectedId,
         });
       }
@@ -253,7 +316,7 @@ export default function SearchScreen(props: any) {
               <TextInput
                 ref={searchRef}
                 style={[s.searchInput, styles.fontRegular]}
-                placeholder="Search Exercise"
+                placeholder="Buscar ejercicio"
                 placeholderTextColor={C.gray40}
                 value={searchValue}
                 onChangeText={(v) => {
@@ -269,7 +332,19 @@ export default function SearchScreen(props: any) {
                 <Ionicons name="search" size={20} color={C.gray40} style={s.searchIcon} />
               )}
             </View>
+            <TouchableOpacity
+              onPress={() => props.navigation.navigate('MigratedViewBodyPart')}
+              style={s.bodyBtn}
+            >
+              <Ionicons name="body-outline" size={24} color={C.textPrimary} />
+            </TouchableOpacity>
           </View>
+
+          {headerTitle ? (
+            <Text style={[s.headerTitle, styles.fontMedium]} numberOfLines={1}>
+              {headerTitle}
+            </Text>
+          ) : null}
 
           {/* Filter Chips */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterChips}>
@@ -280,7 +355,7 @@ export default function SearchScreen(props: any) {
                 onPress={() => handleFilterPress(index)}
               >
                 <Text style={[s.filterChipText, item.select && s.filterChipTextSelected, styles.fontRegular]}>
-                  {item.title}
+                  {item.id === 3 && muscleName ? muscleName : item.title}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -290,7 +365,17 @@ export default function SearchScreen(props: any) {
           <View style={s.exerciseListContainer}>
             {exerciseList.length > 0 ? (
               exerciseList.map((item) => (
-                <TouchableOpacity key={item.id} style={s.exerciseCard} activeOpacity={0.7}>
+                <TouchableOpacity
+                  key={item.id}
+                  style={s.exerciseCard}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    props.navigation.navigate('MigratedExerciseInfo', {
+                      mExerciseId: item.id,
+                      mExerciseName: item.title,
+                    })
+                  }
+                >
                   {item.exerciseImage ? (
                     <Image source={{ uri: item.exerciseImage }} style={s.exerciseImage} resizeMode="cover" />
                   ) : (
@@ -303,7 +388,7 @@ export default function SearchScreen(props: any) {
               !isLoading && (
                 <View style={s.emptyContainer}>
                   <Ionicons name="search-outline" size={64} color={C.gray50} />
-                  <Text style={[s.emptyText, styles.fontMedium]}>No exercises found</Text>
+                  <Text style={[s.emptyText, styles.fontMedium]}>No se encontraron ejercicios</Text>
                 </View>
               )
             )}
@@ -323,7 +408,7 @@ export default function SearchScreen(props: any) {
           <Pressable style={s.bottomSheet} onPress={(e) => e.stopPropagation()}>
             <View style={s.sheetHandle} />
             <Text style={[s.sheetTitle, styles.fontBold]}>
-              {bottomSheetListId === 1 ? 'Equipment' : 'Levels'}
+              {bottomSheetListId === 1 ? 'Equipamiento' : 'Niveles'}
             </Text>
             <ScrollView style={s.sheetScroll}>
               {(bottomSheetListId === 1 ? equipmentList : levelList).map((item) => (
@@ -339,6 +424,13 @@ export default function SearchScreen(props: any) {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <MuscleFilterSheet
+        visible={showMuscleSheet}
+        onClose={() => setShowMuscleSheet(false)}
+        selectedId={muscleId}
+        onSelect={handleMuscleSelect}
+      />
     </SafeAreaView>
   );
 }
@@ -348,6 +440,8 @@ const s = StyleSheet.create({
   body: { flex: 1 },
   searchRow: { flexDirection: 'row', alignItems: 'center', padding: 16, paddingTop: 30 },
   backBtn: { padding: 8 },
+  bodyBtn: { padding: 8, marginLeft: 4 },
+  headerTitle: { fontSize: 15, color: C.white, paddingHorizontal: 16, marginTop: -4, marginBottom: 8 },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',

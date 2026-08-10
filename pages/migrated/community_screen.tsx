@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, RefreshControl, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, RefreshControl, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { postsApi } from '../../api/posts';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -26,7 +28,7 @@ export default function CommunityScreen(props: any) {
     setIsLoading(true);
     try {
       const res = await postsApi.getList(pageNum);
-      setNumPage(res.data.pagination?.total_pages ?? 1);
+      setNumPage(res.data.pagination?.totalPages ?? 1);
       const list = (res.data.data ?? []).map((p: any) => ({
         id: p.id,
         users: p.users ? {
@@ -37,6 +39,7 @@ export default function CommunityScreen(props: any) {
         canEdit: p.can_edit,
         content: p.description,
         postImage: p.posting_media_array?.[0]?.media_url ?? '',
+        postingMediaArray: p.posting_media_array ?? [],
         createdAt: p.created_at,
         likesCount: p.posting_like_count,
         commentsCount: p.posting_comment_count,
@@ -46,15 +49,18 @@ export default function CommunityScreen(props: any) {
       if (pageNum === 1) setMPostList(list);
       else setMPostList((prev) => [...prev, ...list]);
     } catch (e) {
-      console.log('Error fetching posts', e);
+      logger.error('Error fetching posts', e);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    getPostList(1);
-  }, [getPostList]);
+  useFocusEffect(
+    useCallback(() => {
+      setPage(1);
+      getPostList(1);
+    }, [getPostList])
+  );
 
   const _onRefresh = async () => {
     setIsRefreshing(true);
@@ -64,13 +70,8 @@ export default function CommunityScreen(props: any) {
     setIsRefreshing(false);
   };
 
-  const handlePostPress = async () => {
-    const data = await props.navigation.navigate('MigratedAddPost');
-    if (data === 'refresh') {
-      setMPostList([]);
-      setPage(1);
-      getPostList(1);
-    }
+  const handlePostPress = () => {
+    props.navigation.navigate('MigratedAddPost');
   };
 
   const handleEndReached = () => {
@@ -81,20 +82,125 @@ export default function CommunityScreen(props: any) {
     }
   };
 
+  const openUserProfile = (item: PostData) => {
+    if (!item.users?.id) return;
+    props.navigation.navigate('MigratedOtherUserProfile', {
+      userDetails: {
+        id: item.users.id,
+        firstName: item.users.displayName || 'User',
+        lastName: '',
+        profileImage: item.users.profileImage,
+      },
+    });
+  };
+
+  const openPostDetail = (item: PostData) => {
+    props.navigation.navigate('MigratedPostDetails', {
+      postData: {
+        id: item.id,
+        content: item.content,
+        images: item.postImage ? [item.postImage] : [],
+        canEdit: item.canEdit,
+        users: {
+          id: item.users?.id,
+          firstName: item.users?.displayName || 'User',
+          lastName: '',
+          profileImage: item.users?.profileImage,
+        },
+        likesCount: item.likesCount,
+        commentsCount: item.commentsCount,
+        isLiked: item.isLiked,
+        isBookmarked: item.isBookmark,
+        createdAt: item.createdAt,
+      },
+    });
+  };
+
+  const toggleLike = (item: PostData) => {
+    const wasLiked = !!item.isLiked;
+    setMPostList((prev) =>
+      prev.map((p) =>
+        p.id === item.id
+          ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) }
+          : p
+      )
+    );
+    postsApi.like(item.id).catch((e) => {
+      logger.error('Error toggling like', e);
+      setMPostList((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p))
+      );
+    });
+  };
+
+  const toggleBookmark = (item: PostData) => {
+    const wasBookmarked = !!item.isBookmark;
+    setMPostList((prev) =>
+      prev.map((p) => (p.id === item.id ? { ...p, isBookmark: !wasBookmarked } : p))
+    );
+    postsApi.bookmark(item.id).catch((e) => {
+      logger.error('Error toggling bookmark', e);
+      setMPostList((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, isBookmark: wasBookmarked } : p))
+      );
+    });
+  };
+
+  const showPostOptions = (item: PostData) => {
+    Alert.alert('Publicación', undefined, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Editar',
+        onPress: () => {
+          props.navigation.navigate('MigratedAddPost', {
+            flow: 'EditFlow',
+            postData: {
+              id: item.id,
+              description: item.content,
+              postingMediaArray: item.postingMediaArray ?? [],
+            },
+          });
+        },
+      },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await postsApi.deletePost(item.id);
+            setMPostList((prev) => prev.filter((p) => p.id !== item.id));
+          } catch (e) {
+            logger.error('Error deleting post', e);
+            Alert.alert('Error', 'No se pudo eliminar la publicación');
+          }
+        },
+      },
+    ]);
+  };
+
   const renderPostItem = ({ item, index }: { item: PostData; index: number }) => {
     return (
-      <View style={[localStyles.postCard, { marginHorizontal: 10, marginVertical: 6 }]}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        style={[localStyles.postCard, { marginHorizontal: 10, marginVertical: 6 }]}
+        onPress={() => openPostDetail(item)}
+      >
         <View style={localStyles.postHeader}>
-          <Image
-            source={{ uri: item.users?.profileImage || '' }}
-            style={localStyles.avatar}
-          />
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={localStyles.userName}>{item.users?.displayName || 'User'}</Text>
-            <Text style={localStyles.postTime}>{item.createdAt || ''}</Text>
-          </View>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} activeOpacity={0.7} onPress={() => openUserProfile(item)}>
+            {item.users?.profileImage ? (
+              <Image source={{ uri: item.users.profileImage }} style={localStyles.avatar} />
+            ) : (
+              <View style={[localStyles.avatar, localStyles.avatarPlaceholder]}>
+                <Ionicons name="person" size={18} color={C.gray30} />
+              </View>
+            )}
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={localStyles.userName}>{item.users?.displayName || 'User'}</Text>
+              <Text style={localStyles.postTime}>{item.createdAt || ''}</Text>
+            </View>
+          </TouchableOpacity>
           {item.canEdit && (
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => showPostOptions(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="ellipsis-vertical" size={18} color={C.gray30} />
             </TouchableOpacity>
           )}
@@ -106,19 +212,19 @@ export default function CommunityScreen(props: any) {
           <Image source={{ uri: item.postImage }} style={localStyles.postImage} resizeMode="cover" />
         ) : null}
         <View style={localStyles.postActions}>
-          <TouchableOpacity style={localStyles.actionBtn}>
-            <Ionicons name="heart-outline" size={20} color={C.gray30} />
+          <TouchableOpacity style={localStyles.actionBtn} onPress={() => toggleLike(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name={item.isLiked ? 'heart' : 'heart-outline'} size={20} color={item.isLiked ? C.destructive : C.gray30} />
             <Text style={localStyles.actionText}>{item.likesCount || 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={localStyles.actionBtn}>
+          <TouchableOpacity style={localStyles.actionBtn} onPress={() => openPostDetail(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name="chatbubble-outline" size={20} color={C.gray30} />
             <Text style={localStyles.actionText}>{item.commentsCount || 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={localStyles.actionBtn}>
-            <Ionicons name="bookmark-outline" size={20} color={C.gray30} />
+          <TouchableOpacity style={localStyles.actionBtn} onPress={() => toggleBookmark(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name={item.isBookmark ? 'bookmark' : 'bookmark-outline'} size={20} color={item.isBookmark ? C.orange : C.gray30} />
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -136,13 +242,22 @@ export default function CommunityScreen(props: any) {
     <SafeAreaView style={localStyles.container}>
       <View style={localStyles.appBar}>
         <Text style={localStyles.appBarTitle}>Community</Text>
-        <TouchableOpacity
-          style={localStyles.postButton}
-          onPress={handlePostPress}
-        >
-          <Ionicons name="add-circle-outline" size={18} color={C.white} />
-          <Text style={localStyles.postButtonText}>Post</Text>
-        </TouchableOpacity>
+        <View style={localStyles.appBarActions}>
+          <TouchableOpacity
+            style={localStyles.bookmarkButton}
+            onPress={() => props.navigation.navigate('MigratedBookmark')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="bookmark-outline" size={22} color={C.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={localStyles.postButton}
+            onPress={handlePostPress}
+          >
+            <Ionicons name="add-circle-outline" size={18} color={C.white} />
+            <Text style={localStyles.postButtonText}>Post</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={localStyles.body}>
         {mPostList.length > 0 ? (
@@ -200,6 +315,17 @@ const localStyles = StyleSheet.create({
     fontFamily: FONT.bold,
     marginLeft: 4,
   },
+  appBarActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  bookmarkButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   body: { flex: 1, backgroundColor: 'rgba(128,128,128,0.1)' },
   postCard: {
     backgroundColor: C.surfaceLight,
@@ -215,6 +341,10 @@ const localStyles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: C.gray70,
+  },
+  avatarPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   userName: {
     fontFamily: FONT.semiBold,

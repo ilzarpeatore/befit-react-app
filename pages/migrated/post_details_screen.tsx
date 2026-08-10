@@ -87,7 +87,14 @@ export default function PostDetailsScreen(props: any) {
       <ScrollView contentContainerStyle={s.scrollContent}>
         <View style={s.postCard}>
           <View style={s.postHeader}>
-            <View style={s.avatarRow}>
+            <TouchableOpacity
+              style={s.avatarRow}
+              activeOpacity={0.7}
+              onPress={() => {
+                if (!user?.id) return;
+                props.navigation?.navigate('MigratedOtherUserProfile', { userDetails: user });
+              }}
+            >
               <View style={s.avatarPlaceholder}>
                 {user?.profileImage ? (
                   <Image source={{ uri: user.profileImage }} style={s.avatarSmall} />
@@ -99,7 +106,7 @@ export default function PostDetailsScreen(props: any) {
                 <Text style={s.userName}>{user?.firstName ?? ''} {user?.lastName ?? ''}</Text>
                 {postData.createdAt && <Text style={s.postTime}>{postData.createdAt}</Text>}
               </View>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity style={s.moreBtn}>
               <Ionicons name="ellipsis-horizontal" size={20} color={C.gray40} />
             </TouchableOpacity>

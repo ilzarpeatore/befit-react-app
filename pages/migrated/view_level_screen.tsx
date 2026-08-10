@@ -92,7 +92,7 @@ export default function ViewLevelScreen(props: any) {
       style={styles.levelItem}
       activeOpacity={0.7}
       onPress={() =>
-        props.navigation.navigate('MigratedExerciseList', {
+        props.navigation.navigate('MigratedSearch', {
           mTitle: item.title,
           isLevel: true,
           id: item.id,
