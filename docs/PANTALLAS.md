@@ -2,6 +2,8 @@
 
 Catálogo completo de las 173 pantallas registradas en `pages/ScreenExplorer.tsx`, con su archivo real, el nombre de ruta usado en `App.tsx`, el nombre visible en pantalla, las APIs/endpoints que consume hoy, y con qué parte del backend Laravel (`C:\Users\hamza\Desktop\PROYECTOS\APP\mightyfitness\fitness-backend`) está o debería estar conectada.
 
+> **Nota (2026-08-13)**: 4 filas de este catálogo ya no existen — `Payment`, `Payment Scheduled` y `Choose Plan` (además de `Subscribe`, no listada aquí) se **borraron por completo** al quitar la compra dentro de la app (Apple/Google exigen que la app no venda contenido digital dentro sin su propio IAP; la compra pasa a ser 100% externa). Ver `docs/TAREAS.md` para el detalle del cambio.
+
 ## Cómo se generó este documento
 
 Para cada pantalla se localizó su registro (`<Stack.Screen>` / `<Tab.Screen>` / `<MStack.Screen>`) en `App.tsx`, se resolvió el archivo real del componente, se leyó el código para determinar el texto visible en pantalla y las llamadas a API existentes, y se cruzó cada endpoint contra `routes/api.php` y los controladores en `app/Http/Controllers/API/` del backend para confirmar (o sugerir) el módulo correspondiente.

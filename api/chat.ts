@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface ChatMessage {
   id: number;
@@ -13,8 +14,8 @@ export const chatApi = {
     apiClient.get<{ data: ChatMessage[] }>('chatgpt-fit-bot-list'),
 
   save: (question: string, answer: string) =>
-    apiClient.post('chatgpt-fit-bot-save', { question, answer }),
+    apiClient.post<ApiMessageResponse>('chatgpt-fit-bot-save', { question, answer }),
 
   deleteAll: () =>
-    apiClient.post('chatgpt-fit-bot-delete'),
+    apiClient.post<ApiMessageResponse>('chatgpt-fit-bot-delete'),
 };

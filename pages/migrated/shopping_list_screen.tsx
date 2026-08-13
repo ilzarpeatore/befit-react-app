@@ -3,58 +3,42 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Mod
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { shoppingApi, ShoppingListItem } from '@api/shopping';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-interface ShoppingListData {
-  id?: number;
-  title?: string;
-  itemsCount?: number;
-  startDate?: string;
-  endDate?: string;
-}
-
 export default function ShoppingListScreen(props: any) {
-  const [shoppingLists, setShoppingLists] = useState<ShoppingListData[]>([]);
+  const [shoppingLists, setShoppingLists] = useState<ShoppingListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
   const [showGenerateSheet, setShowGenerateSheet] = useState(false);
   const [selectedOption, setSelectedOption] = useState(0); // 0=Date, 1=Date range
   const styles = useStyle();
 
   useEffect(() => {
     fetchShoppingLists();
+    const unsubscribe = props.navigation.addListener('focus', fetchShoppingLists);
+    return unsubscribe;
   }, []);
 
-  const fetchShoppingLists = useCallback(async (isRefresh = false) => {
-    if (isRefresh) {
-      setPage(1);
-      setShoppingLists([]);
-      setIsLastPage(false);
-    }
-    if (isLastPage && !isRefresh) return;
-    if (!isRefresh) setIsLoading(true);
+  const fetchShoppingLists = useCallback(async () => {
+    setIsLoading(true);
     try {
-      // const value = await getShoppingListApi({ page: isRefresh ? 1 : page });
-      // if (value.data) {
-      //   setShoppingLists((prev) => isRefresh ? value.data! : [...prev, ...value.data!]);
-      //   setIsLastPage(value.data!.length < 10);
-      //   setPage((p) => p + 1);
-      // }
+      const res = await shoppingApi.getList();
+      setShoppingLists(res.data?.data ?? []);
     } catch (e: any) {
-      // toast(e.toString());
+      logger.error('Error fetching shopping lists:', e);
     } finally {
       setIsLoading(false);
     }
-  }, [page, isLastPage]);
+  }, []);
 
   const openAddListScreen = (isSpecificDate: boolean) => {
     setShowGenerateSheet(false);
     props.navigation.navigate('MigratedAddShoppingList', { isDefaultSpecificDate: isSpecificDate });
   };
 
-  const openDetail = (list: ShoppingListData) => {
+  const openDetail = (list: ShoppingListItem) => {
     props.navigation.navigate('MigratedShoppingListDetail', { shoppingListId: list.id });
   };
 
@@ -92,7 +76,7 @@ export default function ShoppingListScreen(props: any) {
                 <View style={s.listCardContent}>
                   <View style={s.listTextWrap}>
                     <Text style={[s.listTitle, styles.fontBold]}>{list.title}</Text>
-                    <Text style={[s.listSubtitle, styles.fontRegular]}>{list.itemsCount ?? 0} items</Text>
+                    <Text style={[s.listSubtitle, styles.fontRegular]}>{list.items_count ?? 0} items</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={C.gray40} />
                 </View>

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { recipesApi } from '../../api/recipes';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -72,7 +73,7 @@ export default function RecipeMainScreen(props: any) {
       }
       setTags(allTags);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsTagsLoading(false);
     }
@@ -100,7 +101,7 @@ export default function RecipeMainScreen(props: any) {
       }
       setCategories(allCategories);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsCategoriesLoading(false);
     }
@@ -118,7 +119,7 @@ export default function RecipeMainScreen(props: any) {
       }));
       setRecipes(items);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsRecipesLoading(false);
     }

@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface ScheduleItem {
   id: number;
@@ -24,5 +25,5 @@ export const scheduleApi = {
     apiClient.post<ScheduleListResponse>('class-schedule-list', { page }),
 
   savePlan: (schedule_id: number, date: string, time: string) =>
-    apiClient.post('class-schedule-plan-save', { schedule_id, date, time }),
+    apiClient.post<ApiMessageResponse>('class-schedule-plan-save', { schedule_id, date, time }),
 };

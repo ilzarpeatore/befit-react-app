@@ -275,7 +275,7 @@ muestra siempre "1 module" en vez de recompilar todo): matá el proceso de
 Metro (buscar el PID con `netstat -ano | grep ":8081"` y `taskkill //F //PID
 <pid>`) y arrancalo de nuevo con `npx expo start --dev-client --clear`.
 
-**Credenciales de prueba**: cuenta demo `demo@bestronger.app` / `[contraseña retirada del historial]`
+**Credenciales de prueba**: cuenta demo `demo@bestronger.app` (contraseña retirada de este documento)
 (cliente 1:1, `is_personal_client=true`) ya logueada en el dispositivo en
 sesiones anteriores.
 

@@ -14,7 +14,7 @@ function resolveBaseUrl(): string {
   }
   return Constants.expoConfig?.extra?.apiBaseUrl
     || (Constants as any).manifest?.extra?.apiBaseUrl
-    || 'http://192.168.1.145:8000/api';
+    || 'https://testapp.bestronger.es/api';
 }
 
 const BASE_URL = resolveBaseUrl();

@@ -1,11 +1,24 @@
-﻿import React from "react";
+﻿import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+import { ensureNotificationPermissionsAsync } from "@helper/reminderNotifications";
 
 export default function NotificationsScreen({ navigation }: any) {
+  const [requesting, setRequesting] = useState(false);
+
+  const handleActivate = async () => {
+    setRequesting(true);
+    try {
+      await ensureNotificationPermissionsAsync();
+    } finally {
+      setRequesting(false);
+      navigation.navigate("MigratedAssessmentResult");
+    }
+  };
+
   return (
     <SafeAreaView style={localStyles.container}>
       <View style={localStyles.content}>
@@ -21,18 +34,19 @@ export default function NotificationsScreen({ navigation }: any) {
         <View style={localStyles.previewCard}>
           <View style={localStyles.previewHeader}>
             <Ionicons name="fitness" size={20} color={C.textPrimary} />
-            <Text style={[localStyles.previewAppName, { color: C.textPrimary }]}>MightyFitness</Text>
+            <Text style={[localStyles.previewAppName, { color: C.textPrimary }]}>BeFit</Text>
           </View>
-          <Text style={[localStyles.previewTitle, { color: C.white }]}>Â¡Hora de entrenar! ðŸ'ª</Text>
-          <Text style={[localStyles.previewBody, { color: C.gray }]}>Tu sesiÃ³n de cardio de 30 min te espera. Â¡Dale!</Text>
+          <Text style={[localStyles.previewTitle, { color: C.white }]}>¡Hora de entrenar! 💪</Text>
+          <Text style={[localStyles.previewBody, { color: C.gray }]}>Tu sesión de cardio de 30 min te espera. ¡Dale!</Text>
           <Text style={[localStyles.previewTime, { color: C.gray }]}>ahora</Text>
         </View>
       </View>
 
       <View style={localStyles.bottomBar}>
         <TouchableOpacity
-          style={[localStyles.activateBtn, { backgroundColor: C.primary }]}
-          onPress={() => navigation.navigate("MigratedAssessmentResult")}
+          style={[localStyles.activateBtn, { backgroundColor: C.primary, opacity: requesting ? 0.7 : 1 }]}
+          disabled={requesting}
+          onPress={handleActivate}
         >
           <Ionicons name="notifications-outline" size={18} color={C.white} />
           <Text style={localStyles.activateBtnText}>Activar todas</Text>

@@ -18,8 +18,19 @@ export interface ExerciseItem {
   instruction: string;
   tips: string;
   type: string;
+  exercise_type: string | null;
+  exercise_type_label: string | null;
   based: string;
 }
+
+/** Categoría de entrenamiento (filtro nuevo) — lista fija, no viene de un endpoint. */
+export const EXERCISE_TYPES: { id: string; title: string }[] = [
+  { id: 'fuerza', title: 'Fuerza' },
+  { id: 'movilidad', title: 'Movilidad' },
+  { id: 'pliometria', title: 'Pliometría' },
+  { id: 'metabolico', title: 'Metabólico' },
+  { id: 'cardio', title: 'Cardio' },
+];
 
 export interface Pagination {
   total_items: number;
@@ -63,6 +74,9 @@ export const exercisesApi = {
   getByLevel: (levelId: number, page: number = 1) =>
     apiClient.get<ExerciseListResponse>(`exercise-list?level_ids=${levelId}&page=${page}`),
 
+  getByExerciseType: (exerciseType: string, page: number = 1) =>
+    apiClient.get<ExerciseListResponse>(`exercise-list?exercise_type=${encodeURIComponent(exerciseType)}&page=${page}`),
+
   search: (title: string, page: number = 1) =>
     apiClient.get<ExerciseListResponse>(`exercise-list?title=${encodeURIComponent(title)}&page=${page}`),
 
@@ -70,7 +84,7 @@ export const exercisesApi = {
   // combinacion) para el buscador de "Anadir ejercicio" de la sesion, que
   // antes solo pedia la pagina 1 con per_page por defecto (10) sin scroll
   // infinito ni filtro de grupo muscular.
-  getFilteredList: (params: { title?: string; bodypart_id?: number; page?: number; per_page?: number }) =>
+  getFilteredList: (params: { title?: string; bodypart_id?: number; exercise_type?: string; page?: number; per_page?: number }) =>
     apiClient.get<ExerciseListResponse>('exercise-list', { params }),
 
   getDetail: (id: number) =>
