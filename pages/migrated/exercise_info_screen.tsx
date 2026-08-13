@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -17,19 +17,52 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { ExerciseMediaHeaderMem, ExerciseHeaderFloatingIcons, HEADER_HEIGHT_RATIO } from '../../components/ExerciseMediaHeader';
+import { MuscleIsolateIconMem } from '../../components/MuscleIsolateIcon';
 import { AnalysisHistoryCardMem } from '../../components/AnalysisHistoryCard';
 import { ErrorRetryMem } from '../../components/ErrorRetry';
+import MetricLineChart from '../../components/MetricLineChart';
 import {
   exerciseInfoApi,
   ExerciseDetailData,
   ExerciseAnalysisData,
+  ExerciseAnalysisSession,
 } from '../../api/exerciseInfo';
+
+// Claves de logged_sets que no son metricas numericas graficables, mas
+// "descanso" (excluida a peticion: no aporta como indicador de progreso).
+const EXCLUDED_METRIC_KEYS = ['set_number', 'tempo', 'descanso'];
+
+// "series" no es una clave dentro de cada set (cada elemento de logged_sets
+// YA es una serie) — es el numero de series de la sesion, sacado aparte con
+// session.sets.length en vez de bestValueForMetric().
+const SERIES_METRIC_KEY = 'series';
+
+const METRIC_META: Record<string, { label: string; unit: string; color: string }> = {
+  series: { label: 'Series', unit: '', color: C.gray50 },
+  carga: { label: 'Carga', unit: 'kg', color: C.orange },
+  reps: { label: 'Repeticiones', unit: '', color: C.blue60 },
+  rir: { label: 'RIR', unit: '', color: C.purple60 },
+  rpe: { label: 'RPE', unit: '', color: C.destructive60 },
+  tiempo: { label: 'Tiempo', unit: 's', color: C.success60 },
+};
+function metricMeta(key: string) {
+  return METRIC_META[key] ?? { label: key.charAt(0).toUpperCase() + key.slice(1), unit: '', color: C.textSecondary };
+}
+function bestValueForMetric(session: ExerciseAnalysisSession, key: string): number | null {
+  const nums = session.sets.map((s) => Number(s[key])).filter((n) => Number.isFinite(n));
+  return nums.length > 0 ? Math.max(...nums) : null;
+}
+function formatShortDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+}
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 const HEADER_HEIGHT = SCREEN_HEIGHT * HEADER_HEIGHT_RATIO;
 
 type TabKey = 'muscle' | 'instructions' | 'equipment' | 'analysis';
@@ -49,7 +82,7 @@ export default function ExerciseInfoScreen(props: Props) {
   const { navigation, route } = props;
   const exerciseId: number | undefined = route?.params?.id ?? route?.params?.mExerciseId;
 
-  const [activeTab, setActiveTab] = useState<TabKey>('muscle');
+  const [activeTab, setActiveTab] = useState<TabKey>(route?.params?.initialTab ?? 'muscle');
   const [detail, setDetail] = useState<ExerciseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -84,6 +117,12 @@ export default function ExerciseInfoScreen(props: Props) {
 
   useEffect(() => {
     loadDetail();
+    // El navegador de React Navigation puede reutilizar esta misma instancia
+    // de pantalla al saltar de un ejercicio a otro (misma ruta, params
+    // distintos) sin desmontarla — sin este reset, el análisis del
+    // ejercicio anterior se quedaba pegado en pantalla para el nuevo.
+    setAnalysis(null);
+    setAnalysisError(false);
   }, [loadDetail]);
 
   const loadAnalysis = useCallback(async () => {
@@ -105,11 +144,20 @@ export default function ExerciseInfoScreen(props: Props) {
     if (activeTab === 'analysis') loadAnalysis();
   }, [loadDetail, loadAnalysis, activeTab]);
 
-  const onSelectTab = (tab: TabKey) => {
-    setActiveTab(tab);
-    if (tab === 'analysis' && !analysis && !analysisLoading) {
+  // Cubre tanto el cambio manual de pestaña como llegar ya con
+  // initialTab: 'analysis' (ej. desde "Ejercicios principales") — en ese
+  // caso la pestaña nace activa y nunca pasa por onSelectTab, así que sin
+  // este efecto la petición no se disparaba nunca y se veía "Aún no hay
+  // datos." aunque sí hubiera sesiones registradas.
+  useEffect(() => {
+    if (activeTab === 'analysis' && !analysis && !analysisLoading) {
       loadAnalysis();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, exerciseId]);
+
+  const onSelectTab = (tab: TabKey) => {
+    setActiveTab(tab);
   };
 
   const onFeedback = async (value: 'like' | 'dislike') => {
@@ -177,7 +225,19 @@ export default function ExerciseInfoScreen(props: Props) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.textSecondary} />
         }
       >
-        <ExerciseMediaHeaderMem headerHeight={HEADER_HEIGHT} thumbnailUrl={detail.thumbnail_url} />
+        <ExerciseMediaHeaderMem
+          headerHeight={HEADER_HEIGHT}
+          thumbnailUrl={detail.thumbnail_url}
+          onPlayPress={
+            detail.media_type === 'video' && detail.media_url
+              ? () =>
+                  navigation?.navigate('MigratedYoutubePlayer', {
+                    url: detail.media_url,
+                    img: detail.thumbnail_url ?? undefined,
+                  })
+              : undefined
+          }
+        />
 
         <View style={styles.panel}>
           {/* Badges */}
@@ -281,7 +341,7 @@ function MuscleTab({
       {primary ? (
         <View style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>PRINCIPAL</Text>
-          <MuscleRow name={primary.name} iconUrl={primary.icon_url} />
+          <MuscleRow name={primary.name} />
         </View>
       ) : (
         <Text style={styles.emptyText}>No hay información muscular disponible.</Text>
@@ -292,7 +352,7 @@ function MuscleTab({
           <Text style={styles.muscleSectionTitle}>SECUNDARIA</Text>
           {secondary.map((m, idx) => (
             <View key={`${m.name}-${idx}`}>
-              <MuscleRow name={m.name} iconUrl={m.icon_url} />
+              <MuscleRow name={m.name} />
               {idx < secondary.length - 1 && <View style={styles.rowSeparator} />}
             </View>
           ))}
@@ -302,15 +362,11 @@ function MuscleTab({
   );
 }
 
-function MuscleRow({ name, iconUrl }: { name: string; iconUrl: string | null }) {
+function MuscleRow({ name }: { name: string }) {
   return (
     <View style={styles.muscleRow}>
       <View style={styles.muscleIconWrap}>
-        {iconUrl ? (
-          <Image source={{ uri: iconUrl }} style={styles.muscleIcon} resizeMode="cover" />
-        ) : (
-          <Ionicons name="body-outline" size={28} color={C.gray30} />
-        )}
+        <MuscleIsolateIconMem muscleName={name} size={56} />
       </View>
       <Text style={styles.muscleRowText}>{name}</Text>
     </View>
@@ -389,6 +445,131 @@ function EquipmentTab({ equipment }: { equipment: ExerciseDetailData['equipment'
   );
 }
 
+function ProgressChartSection({ sessions }: { sessions: ExerciseAnalysisSession[] }) {
+  // El backend devuelve las sesiones mas recientes primero (una fila por dia,
+  // "el log mas reciente de cada dia" = estado final de esa sesion) —
+  // invertimos para pintar la grafica en orden cronologico (izq = antiguo).
+  const chronoSessions = useMemo(() => [...sessions].reverse(), [sessions]);
+
+  const numericMetricKeys = useMemo(() => {
+    const keys = new Set<string>();
+    // "series" siempre disponible (se saca de sets.length, no de una clave
+    // dentro de cada set) mientras haya al menos una sesion con series.
+    if (chronoSessions.some((session) => session.sets.length > 0)) {
+      keys.add(SERIES_METRIC_KEY);
+    }
+    chronoSessions.forEach((session) => {
+      session.sets.forEach((set) => {
+        Object.keys(set).forEach((k) => {
+          if (EXCLUDED_METRIC_KEYS.includes(k)) return;
+          const n = Number(set[k]);
+          if (Number.isFinite(n)) keys.add(k);
+        });
+      });
+    });
+    // orden fijo y predecible: series, carga, reps, rir, rpe, tiempo, luego el resto
+    const priority = ['series', 'carga', 'reps', 'rir', 'rpe', 'tiempo'];
+    return Array.from(keys).sort((a, b) => {
+      const ai = priority.indexOf(a);
+      const bi = priority.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  }, [chronoSessions]);
+
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (numericMetricKeys.length > 0 && selectedMetrics.length === 0) {
+      setSelectedMetrics([numericMetricKeys[0]]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numericMetricKeys]);
+
+  const valuesByMetric = useMemo(() => {
+    const map: Record<string, (number | null)[]> = {};
+    numericMetricKeys.forEach((key) => {
+      map[key] =
+        key === SERIES_METRIC_KEY
+          ? chronoSessions.map((session) => (session.sets.length > 0 ? session.sets.length : null))
+          : chronoSessions.map((session) => bestValueForMetric(session, key));
+    });
+    return map;
+  }, [chronoSessions, numericMetricKeys]);
+
+  const toggleMetric = (key: string) => {
+    setSelectedMetrics((prev) => {
+      if (prev.includes(key)) {
+        const next = prev.filter((k) => k !== key);
+        return next.length > 0 ? next : prev; // siempre al menos una seleccionada
+      }
+      return [...prev, key];
+    });
+  };
+
+  if (numericMetricKeys.length === 0) {
+    return null;
+  }
+
+  const chartSeries = selectedMetrics.map((key) => ({
+    key,
+    color: metricMeta(key).color,
+    values: valuesByMetric[key],
+  }));
+
+  return (
+    <View style={styles.chartSection}>
+      <Text style={styles.chartSectionTitle}>Evolución</Text>
+
+      <View style={styles.metricChipRow}>
+        {numericMetricKeys.map((key) => {
+          const meta = metricMeta(key);
+          const active = selectedMetrics.includes(key);
+          return (
+            <TouchableOpacity
+              key={key}
+              style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
+              onPress={() => toggleMetric(key)}
+              activeOpacity={0.75}
+            >
+              <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {chronoSessions.length < 2 ? (
+        <Text style={styles.emptyText}>Necesitas al menos 2 sesiones registradas para ver la evolución.</Text>
+      ) : (
+        <>
+          <MetricLineChart series={chartSeries} pointCount={chronoSessions.length} width={SCREEN_WIDTH - 72} height={170} />
+          <View style={styles.chartDateRow}>
+            <Text style={styles.chartDateText}>{formatShortDate(chronoSessions[0].date)}</Text>
+            <Text style={styles.chartDateText}>{formatShortDate(chronoSessions[chronoSessions.length - 1].date)}</Text>
+          </View>
+          <View style={styles.legendWrap}>
+            {selectedMetrics.map((key) => {
+              const meta = metricMeta(key);
+              const values = valuesByMetric[key].filter((v): v is number => v !== null);
+              const latest = values.length > 0 ? values[values.length - 1] : null;
+              return (
+                <View key={key} style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: meta.color }]} />
+                  <Text style={styles.legendText}>
+                    {meta.label}: {latest !== null ? `${latest}${meta.unit ? ` ${meta.unit}` : ''}` : '—'}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </>
+      )}
+    </View>
+  );
+}
+
 function AnalysisTab({
   loading,
   error,
@@ -415,6 +596,7 @@ function AnalysisTab({
   }
   return (
     <View>
+      <ProgressChartSection sessions={data.sessions} />
       {data.sessions.map((session, idx) => (
         <AnalysisHistoryCardMem key={`${session.date}-${idx}`} session={session} />
       ))}
@@ -644,5 +826,70 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: C.white,
     flex: 1,
+  },
+  chartSection: {
+    backgroundColor: C.surfaceLight,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  chartSectionTitle: {
+    fontFamily: FONT.bold,
+    fontSize: 13,
+    color: C.white,
+    letterSpacing: 0.3,
+    marginBottom: 12,
+  },
+  metricChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 14,
+  },
+  metricChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: C.border,
+  },
+  metricChipText: {
+    fontFamily: FONT.semiBold,
+    fontSize: 11.5,
+    color: C.textSecondary,
+  },
+  metricChipTextActive: {
+    color: '#FFFFFF',
+  },
+  chartDateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  chartDateText: {
+    fontFamily: FONT.regular,
+    fontSize: 11,
+    color: C.textSecondary,
+  },
+  legendWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 14,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    fontFamily: FONT.medium,
+    fontSize: 12,
+    color: C.white,
   },
 });

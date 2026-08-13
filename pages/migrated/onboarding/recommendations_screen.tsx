@@ -4,17 +4,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+import { useAuth } from "@store/AuthContext";
 
 const ACTIVITIES = [
   { id: "1", icon: "walk-outline" as const, name: "Jogging", duration: "30 min", calories: "250 kcal" },
   { id: "2", icon: "water-outline" as const, name: "Swimming", duration: "45 min", calories: "400 kcal" },
   { id: "3", icon: "bicycle-outline" as const, name: "Cycling", duration: "40 min", calories: "350 kcal" },
-];
-
-const MACROS = [
-  { label: "Proteína", value: 65, color: "#E91E63" },
-  { label: "Carbohidratos", value: 45, color: "#FF9800" },
-  { label: "Grasas", value: 30, color: "#4CAF50" },
 ];
 
 const MUSCLE_ZONES = [
@@ -25,12 +20,15 @@ const MUSCLE_ZONES = [
 ] as const;
 
 export default function RecommendationsScreen({ navigation }: any) {
+  const { state } = useAuth();
+  const isPersonalClient = !!state.user?.is_personal_client;
+
   return (
     <SafeAreaView style={localStyles.container}>
       <ScrollView contentContainerStyle={localStyles.scrollContent}>
         <Text style={[localStyles.title, { color: C.textPrimary }]}>Tus recomendaciones</Text>
 
-        <Text style={[localStyles.sectionTitle, { color: C.white }]}>Actividades recomendadas</Text>
+        <Text style={[localStyles.sectionTitle, { color: C.white }]}>Ideas para empezar (generales)</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={localStyles.activitiesScroll}>
           {ACTIVITIES.map((act) => (
             <View key={act.id} style={localStyles.activityCard}>
@@ -46,47 +44,44 @@ export default function RecommendationsScreen({ navigation }: any) {
 
         <Text style={[localStyles.sectionTitle, { color: C.white, marginTop: 20 }]}>Macronutrientes</Text>
         <View style={localStyles.card}>
-          {MACROS.map((macro) => (
-            <View key={macro.label} style={localStyles.macroRow}>
-              <Text style={[localStyles.macroLabel, { color: C.white }]}>{macro.label}</Text>
-              <View style={localStyles.macroTrack}>
-                <View style={[localStyles.macroFill, { width: `${macro.value}%`, backgroundColor: macro.color }]} />
+          <Text style={[localStyles.planText, { color: C.gray }]}>
+            Calcularemos tus macros exactos (proteína, carbohidratos y grasas) en cuanto tengamos tu peso, altura y objetivo — los verás en tu Plan de Nutrición.
+          </Text>
+        </View>
+
+        {isPersonalClient && (
+          <>
+            <Text style={[localStyles.sectionTitle, { color: C.white }]}>Tu entrenamiento</Text>
+            <View style={[localStyles.card]}>
+              <Text style={[localStyles.planText, { color: C.white }]}>
+                Como cliente de entrenamiento personal, tu coach revisará tu perfil y te asignará tu plan real desde el panel — lo verás en "Mi Programa" en cuanto esté listo.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isPersonalClient && (
+          <>
+            <Text style={[localStyles.sectionTitle, { color: C.white }]}>Plan de entrenamiento</Text>
+            <View style={localStyles.card}>
+              <View style={localStyles.planRow}>
+                <Ionicons name="calendar-outline" size={20} color={C.textPrimary} />
+                <Text style={[localStyles.planText, { color: C.white }]}>4 sesiones por semana</Text>
               </View>
-              <Text style={[localStyles.macroValue, { color: macro.color }]}>{macro.value}g</Text>
+              <View style={localStyles.planRow}>
+                <Ionicons name="time-outline" size={20} color={C.textPrimary} />
+                <Text style={[localStyles.planText, { color: C.white }]}>60 min por sesión</Text>
+              </View>
+              <View style={localStyles.planRow}>
+                <Ionicons name="trending-up-outline" size={20} color={C.textPrimary} />
+                <Text style={[localStyles.planText, { color: C.white }]}>Progresión semanal</Text>
+              </View>
+              <Text style={[localStyles.activityDetail, { color: C.gray, marginTop: 8 }]}>
+                Sugerencia general de referencia — explora Workouts y Programas para elegir el tuyo.
+              </Text>
             </View>
-          ))}
-        </View>
-
-        <Text style={[localStyles.sectionTitle, { color: C.white }]}>Entrenador recomendado</Text>
-        <View style={[localStyles.card, localStyles.coachCard]}>
-          <View style={[localStyles.coachAvatar, { backgroundColor: C.primary + "20" }]}>
-            <Ionicons name="person" size={32} color={C.textPrimary} />
-          </View>
-          <View style={localStyles.coachInfo}>
-            <Text style={[localStyles.coachName, { color: C.white }]}>Coach Ana Martínez</Text>
-            <Text style={[localStyles.coachSpec, { color: C.gray }]}>Especialista en fuerza y resistencia</Text>
-            <View style={localStyles.coachRating}>
-              <Ionicons name="star" size={14} color="#FFD700" />
-              <Text style={[localStyles.coachRatingText, { color: C.white }]}>4.9</Text>
-            </View>
-          </View>
-        </View>
-
-        <Text style={[localStyles.sectionTitle, { color: C.white }]}>Plan de entrenamiento</Text>
-        <View style={localStyles.card}>
-          <View style={localStyles.planRow}>
-            <Ionicons name="calendar-outline" size={20} color={C.textPrimary} />
-            <Text style={[localStyles.planText, { color: C.white }]}>4 sesiones por semana</Text>
-          </View>
-          <View style={localStyles.planRow}>
-            <Ionicons name="time-outline" size={20} color={C.textPrimary} />
-            <Text style={[localStyles.planText, { color: C.white }]}>60 min por sesión</Text>
-          </View>
-          <View style={localStyles.planRow}>
-            <Ionicons name="trending-up-outline" size={20} color={C.textPrimary} />
-            <Text style={[localStyles.planText, { color: C.white }]}>Progresión semanal</Text>
-          </View>
-        </View>
+          </>
+        )}
 
         <Text style={[localStyles.sectionTitle, { color: C.white }]}>Zonas musculares objetivo</Text>
         <View style={localStyles.bodyDiagram}>

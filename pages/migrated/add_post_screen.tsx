@@ -1,33 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { postsApi, PickedPostMedia } from '../../api/posts';
+import logger from '@helper/logger';
+
+function assetToPickedMedia(asset: ImagePicker.ImagePickerAsset): PickedPostMedia {
+  const isVideo = asset.type === 'video';
+  const extFromUri = asset.uri.split('.').pop()?.split('?')[0]?.toLowerCase();
+  const ext = extFromUri && extFromUri.length <= 4 ? extFromUri : isVideo ? 'mp4' : 'jpg';
+  return {
+    uri: asset.uri,
+    name: asset.fileName || `post-media-${Date.now()}.${ext}`,
+    type: asset.mimeType || (isVideo ? `video/${ext}` : `image/${ext}`),
+  };
+}
 
 export default function AddPostScreen({ navigation, route }: any) {
   const flow = route?.params?.flow;
   const postData = route?.params?.postData;
 
   const [description, setDescription] = useState('');
-  const [selectedImages, setSelectedImages] = useState<any[]>([]);
+  const [selectedImages, setSelectedImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (flow === 'EditFlow' && postData) {
       setDescription(postData.description ?? '');
-      const mediaUrls = (postData.postingMediaArray ?? []).map((e: any) => e.url);
+      const mediaUrls = (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url);
       setExistingImages(mediaUrls);
     }
   }, []);
 
+  const [removedMediaIds, setRemovedMediaIds] = useState<number[]>([]);
+
   const removeExistingImage = (index: number) => {
+    const media = (postData?.postingMediaArray ?? [])[index];
+    if (media?.id) setRemovedMediaIds((prev) => [...prev, media.id]);
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const pickMedia = async () => {
-    // TODO: Implement image picker using expo-image-picker
-    Alert.alert('Image Picker', 'Implement expo-image-picker here');
+  const pickFromLibrary = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para añadir fotos/vídeos al post.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images', 'videos'],
+      allowsMultipleSelection: true,
+      selectionLimit: 4 - selectedImages.length - existingImages.length,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets?.length) {
+      setSelectedImages((prev) => [...prev, ...result.assets].slice(0, 4));
+    }
+  };
+
+  const pickFromCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a tu cámara para hacer una foto.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets?.length) {
+      setSelectedImages((prev) => [...prev, ...result.assets].slice(0, 4));
+    }
+  };
+
+  const pickMedia = () => {
+    if (selectedImages.length + existingImages.length >= 4) {
+      Alert.alert('Límite alcanzado', 'Puedes añadir un máximo de 4 fotos/vídeos por publicación.');
+      return;
+    }
+    Alert.alert('Añadir foto/vídeo', undefined, [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Elegir de la galería', onPress: pickFromLibrary },
+      { text: 'Hacer una foto', onPress: pickFromCamera },
+    ]);
   };
 
   const submitPost = async () => {
@@ -37,28 +94,33 @@ export default function AddPostScreen({ navigation, route }: any) {
     }
     setLoading(true);
     try {
-      // TODO: Implement multipart upload
-      // await submitPostApi(description, selectedImages);
+      const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
+      await postsApi.create(description.trim(), media);
       setLoading(false);
       navigation.goBack();
     } catch (e) {
+      logger.error('Error submitting post', e);
       setLoading(false);
       Alert.alert('Error', 'Failed to submit post');
     }
   };
 
   const editPost = async () => {
-    if (!description.trim() && selectedImages.length === 0 && existingImages.length > 0) {
+    if (!description.trim() && selectedImages.length === 0 && existingImages.length === 0) {
       Alert.alert('Error', 'Please enter some text or select images');
       return;
     }
     setLoading(true);
     try {
-      // TODO: Implement edit post API
-      // await editPostApi(postData?.id, description, selectedImages, existingImages);
+      if (removedMediaIds.length > 0 && postData?.id) {
+        await postsApi.removeMedia(postData.id, removedMediaIds);
+      }
+      const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
+      await postsApi.update(postData?.id, description.trim(), media);
       setLoading(false);
       navigation.goBack();
     } catch (e) {
+      logger.error('Error editing post', e);
       setLoading(false);
       Alert.alert('Error', 'Failed to edit post');
     }

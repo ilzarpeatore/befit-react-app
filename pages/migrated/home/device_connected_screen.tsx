@@ -5,8 +5,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { C, FONT } from "../theme";
 
-export default function DeviceConnectedScreen({ navigation }: any) {
+export default function DeviceConnectedScreen({ navigation, route }: any) {
   const styles = useStyle();
+  const isHealthSource = route?.params?.source === 'health';
 
   return (
     <View style={styles.root}>
@@ -16,9 +17,11 @@ export default function DeviceConnectedScreen({ navigation }: any) {
             <Ionicons name="checkmark" size={56} color={C.success50} />
           </View>
 
-          <Text style={styles.title}>{"\u00A1Dispositivo conectado!"}</Text>
+          <Text style={styles.title}>{"\u00A1Conectado!"}</Text>
           <Text style={styles.subtitle}>
-            Tu wearable est\u00E1 sincronizado correctamente.
+            {isHealthSource
+              ? "Tus datos de salud ya se est\u00E1n sincronizando."
+              : "Tu wearable est\u00E1 sincronizado correctamente."}
           </Text>
 
           <TouchableOpacity

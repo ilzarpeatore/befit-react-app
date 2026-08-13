@@ -308,7 +308,6 @@ export default function Profile({ navigation }: ProfilePropsInterface) {
                   {/* profile header actions follow button (blue)*/}
                   <TouchableOpacity
                     onPress={() => {
-                      console.log("follow");
                     }}
                   >
                     <LinearGradient

@@ -1,8 +1,11 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { postsApi } from '../../api/posts';
+import { profileApi, UserSocialStats } from '../../api/profile';
+import logger from '@helper/logger';
 
 interface UserDetails {
   id?: number;
@@ -17,6 +20,11 @@ interface PostData {
   images?: string[];
   canEdit?: boolean;
   users?: { id?: number; firstName?: string; lastName?: string; profileImage?: string };
+  likesCount?: number;
+  commentsCount?: number;
+  isLiked?: boolean;
+  isBookmarked?: boolean;
+  createdAt?: string;
 }
 
 export default function OtherUserProfileScreen(props: any) {
@@ -29,36 +37,101 @@ export default function OtherUserProfileScreen(props: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [numPage, setNumPage] = useState(1);
+  const [stats, setStats] = useState<UserSocialStats | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     setFirstName(userDetails.firstName ?? '');
     setLastName(userDetails.lastName ?? '');
     setProfileImg(userDetails.profileImage ?? '');
-    getPostList();
-  }, []);
+    getPostList(1);
+    getStats();
+  }, [userDetails.id]);
 
-  const getPostList = useCallback(async () => {
+  const getStats = useCallback(async () => {
+    if (!userDetails.id) return;
+    try {
+      const res = await profileApi.getSocialStats(userDetails.id);
+      setStats(res.data.data);
+    } catch (e) {
+      logger.error('Error fetching user social stats', e);
+    }
+  }, [userDetails.id]);
+
+  const getPostList = useCallback(async (pageNum: number = 1) => {
+    if (!userDetails.id) return;
     setIsLoading(true);
     try {
-      // API call placeholder: getPostsApi(page, userId)
-      // const value = await getPostsApi({ page, userId: userDetails.id });
-      // setNumPage(value.pagination?.totalPages ?? 1);
-      // if (page === 1) setPostList([]);
-      // setPostList(prev => [...prev, ...(value.data ?? [])]);
+      const res = await postsApi.getList(pageNum, userDetails.id);
+      setNumPage(res.data.pagination?.totalPages ?? 1);
+      const list: PostData[] = (res.data.data ?? []).map((p: any) => ({
+        id: p.id,
+        content: p.description,
+        images: p.posting_media_array?.map((m: any) => m.media_url) ?? [],
+        canEdit: p.can_edit,
+        likesCount: p.posting_like_count,
+        commentsCount: p.posting_comment_count,
+        isLiked: p.is_liked,
+        isBookmarked: p.is_bookmark,
+      }));
+      setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
+      setPage(pageNum);
     } catch (e) {
-      // handle error
+      logger.error('Error fetching user posts', e);
     } finally {
       setIsLoading(false);
     }
-  }, [page, userDetails.id]);
+  }, [userDetails.id]);
+
+  const toggleLike = (item: PostData) => {
+    if (!item.id) return;
+    const wasLiked = !!item.isLiked;
+    setPostList((prev) =>
+      prev.map((p) =>
+        p.id === item.id
+          ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) }
+          : p
+      )
+    );
+    postsApi.like(item.id).catch((e) => {
+      logger.error('Error toggling like', e);
+      setPostList((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p))
+      );
+    });
+  };
+
+  const openPostDetail = (item: PostData) => {
+    props.navigation?.navigate('MigratedPostDetails', {
+      postData: {
+        id: item.id,
+        content: item.content,
+        images: item.images ?? [],
+        canEdit: item.canEdit,
+        users: {
+          id: userDetails.id,
+          firstName,
+          lastName,
+          profileImage: profileImg,
+        },
+        likesCount: item.likesCount,
+        commentsCount: item.commentsCount,
+        isLiked: item.isLiked,
+        isBookmarked: item.isBookmarked,
+      },
+    });
+  };
 
   const renderPostItem = (item: PostData, index: number) => (
-    <View key={index} style={s.postCard}>
+    <TouchableOpacity key={index} style={s.postCard} activeOpacity={0.85} onPress={() => openPostDetail(item)}>
       <View style={s.postHeader}>
-        <View style={s.avatarPlaceholder}>
-          <Ionicons name="person" size={20} color={C.gray30} />
-        </View>
+        {profileImg ? (
+          <Image source={{ uri: profileImg }} style={s.avatarPlaceholder} />
+        ) : (
+          <View style={s.avatarPlaceholder}>
+            <Ionicons name="person" size={20} color={C.gray30} />
+          </View>
+        )}
         <View style={s.postHeaderInfo}>
           <Text style={s.postUserName}>{firstName} {lastName}</Text>
           <Text style={s.postTime}>Post</Text>
@@ -73,16 +146,16 @@ export default function OtherUserProfileScreen(props: any) {
         </View>
       ) : null}
       <View style={s.postActions}>
-        <TouchableOpacity style={s.postActionBtn}>
-          <Ionicons name="heart-outline" size={20} color={C.gray30} />
-          <Text style={s.postActionText}>Like</Text>
+        <TouchableOpacity style={s.postActionBtn} onPress={() => toggleLike(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name={item.isLiked ? 'heart' : 'heart-outline'} size={20} color={item.isLiked ? C.destructive : C.gray30} />
+          <Text style={s.postActionText}>{item.likesCount ?? 0}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={s.postActionBtn}>
+        <TouchableOpacity style={s.postActionBtn} onPress={() => openPostDetail(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Ionicons name="chatbubble-outline" size={20} color={C.gray30} />
-          <Text style={s.postActionText}>Comment</Text>
+          <Text style={s.postActionText}>{item.commentsCount ?? 0}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -107,6 +180,17 @@ export default function OtherUserProfileScreen(props: any) {
             </View>
           </View>
           <Text style={s.profileName}>{firstName} {lastName}</Text>
+          <View style={s.statsRow}>
+            <View style={s.statItem}>
+              <Text style={s.statValue}>{stats ? stats.workout_count : '-'}</Text>
+              <Text style={s.statLabel}>Workouts</Text>
+            </View>
+            <View style={s.statDivider} />
+            <View style={s.statItem}>
+              <Text style={s.statValue}>{stats ? stats.posting_count : '-'}</Text>
+              <Text style={s.statLabel}>Posts</Text>
+            </View>
+          </View>
         </View>
         <View style={s.postsSection}>
           {postList.length > 0 ? (
@@ -133,6 +217,11 @@ const s = StyleSheet.create({
   profileCard: { backgroundColor: C.surface, borderRadius: 16, marginTop: Dimensions.get('window').height * 0.15, paddingTop: 60, paddingBottom: 24, alignItems: 'center' },
   avatarContainer: { position: 'absolute', top: -48, alignSelf: 'center' },
   profileName: { fontSize: 20, fontFamily: FONT.bold, color: C.white, marginTop: 8 },
+  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
+  statItem: { alignItems: 'center', paddingHorizontal: 24 },
+  statValue: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
+  statLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray40, marginTop: 2 },
+  statDivider: { width: 1, height: 28, backgroundColor: C.border },
   postsSection: { paddingHorizontal: 6, paddingTop: 16, paddingBottom: 24 },
   postCard: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
   postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },

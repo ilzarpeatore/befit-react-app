@@ -8,6 +8,8 @@ export const HEADER_HEIGHT_RATIO = 0.45;
 interface Props {
   headerHeight: number;
   thumbnailUrl: string | null;
+  /** Si hay vídeo real reproducible, se pinta un botón de play encima de la miniatura. */
+  onPlayPress?: () => void;
 }
 
 /**
@@ -23,16 +25,30 @@ interface Props {
  * respecto a toda la pantalla, no a la media) para que sigan visibles
  * incluso cuando la media ya se desplazó fuera de la vista.
  */
-function ExerciseMediaHeader({ headerHeight, thumbnailUrl }: Props) {
+function ExerciseMediaHeader({ headerHeight, thumbnailUrl, onPlayPress }: Props) {
+  const media = thumbnailUrl ? (
+    <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
+  ) : (
+    <View style={[styles.image, styles.imageFallback]}>
+      <Ionicons name="barbell-outline" size={72} color={C.gray30} />
+    </View>
+  );
+
   return (
     <View style={[styles.wrap, { height: headerHeight }]}>
-      {thumbnailUrl ? (
-        <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
-      ) : (
-        <View style={[styles.image, styles.imageFallback]}>
-          <Ionicons name="barbell-outline" size={72} color={C.gray30} />
-        </View>
-      )}
+      {media}
+      {onPlayPress ? (
+        <TouchableOpacity
+          style={styles.playOverlay}
+          activeOpacity={0.8}
+          onPress={onPlayPress}
+          accessibilityLabel="Reproducir vídeo del ejercicio"
+        >
+          <View style={styles.playButton}>
+            <Ionicons name="play" size={30} color={C.white} style={styles.playIcon} />
+          </View>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
@@ -71,6 +87,25 @@ const styles = StyleSheet.create({
   imageFallback: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  playOverlay: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+  },
+  playButton: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playIcon: {
+    marginLeft: 4,
   },
   floatingBtn: {
     position: 'absolute',

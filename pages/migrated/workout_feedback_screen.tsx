@@ -38,6 +38,8 @@ export default function WorkoutFeedbackScreen(props: Props) {
     exerciseCount = 0,
     completedSets = 0,
     exerciseIds = [],
+    muscleVolumeSets = [],
+    exercisesSummary = [],
   } = route?.params ?? {};
 
   const [difficulty, setDifficulty] = useState<number | null>(null);
@@ -54,6 +56,8 @@ export default function WorkoutFeedbackScreen(props: Props) {
       completedSets,
       difficultyRating: difficulty,
       achievements,
+      muscleVolumeSets,
+      exercisesSummary,
     });
   };
 

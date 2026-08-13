@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensi
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
 
 type SampleMenu = 'all' | 'month' | 'year';
 
@@ -69,7 +70,7 @@ export default function ProgressDetailScreen(props: any) {
       // setGraphData(value.data ?? []);
       // setNumPage(value.pagination?.totalPages ?? 1);
     } catch (e) {
-      console.log('Progress fetch error:', e);
+      logger.error('Progress fetch error:', e);
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +83,7 @@ export default function ProgressDetailScreen(props: any) {
       // const value = await getProgressApi(mType, { isFilter, isFilterType });
       // setGraphData(convertWeightsToLbs(value.data));
     } catch (e) {
-      console.log('Progress LBS fetch error:', e);
+      logger.error('Progress LBS fetch error:', e);
     } finally {
       setIsLoading(false);
     }

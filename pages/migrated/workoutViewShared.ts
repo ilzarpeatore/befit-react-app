@@ -11,6 +11,8 @@ export interface UnifiedExercise {
   exerciseId: number;
   title: string;
   image: string | null;
+  /** body_parts.id del musculo principal — heatmap aislado en ExerciseThumb. */
+  bodyPartId: number | null;
   videoUrl: string | null;
   prescribed: Record<string, any>;
   enabledMetrics: string[];
@@ -31,6 +33,10 @@ export interface UnifiedWorkout {
   description: string | null;
   thumbnail: string | null;
   isRest: boolean;
+  // Semana adaptativa aplicada (2026-08-12): true si el día tenía
+  // entrenamiento real pero se ocultó entero para ESTE cliente por una
+  // semana adaptativa aprobada — distinto de isRest.
+  isAdjusted: boolean;
   blocks: UnifiedBlock[];
   exerciseCount: number;
   programDayAssignmentId: number | null;
@@ -65,6 +71,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
         exerciseId: e.exercise_id,
         title: e.title || 'Ejercicio',
         image: e.exercise_image,
+        bodyPartId: e.body_part_id ?? null,
         videoUrl: e.video_url,
         prescribed: e.sets || {},
         enabledMetrics: e.enabled_metrics || [],
@@ -79,6 +86,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
       description: null,
       thumbnail: null,
       isRest: data.is_rest === 1,
+      isAdjusted: !!data.is_adjusted,
       blocks,
       exerciseCount: blocks.reduce((sum, b) => sum + b.exercises.length, 0),
       programDayAssignmentId: params.programDayAssignmentId,
@@ -101,6 +109,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
         exerciseId: e.exercise_id,
         title: e.title || e.exercise?.title || 'Ejercicio',
         image: e.exercise_image,
+        bodyPartId: e.body_part_id ?? null,
         videoUrl: e.video_url,
         prescribed: e.prescribed || {},
         enabledMetrics: e.enabled_metrics || [],
@@ -115,6 +124,7 @@ export async function fetchUnifiedWorkout(params: WorkoutViewParams): Promise<Un
       description: data.description,
       thumbnail: data.thumbnail,
       isRest: false,
+      isAdjusted: false,
       blocks,
       exerciseCount: blocks.reduce((sum, b) => sum + b.exercises.length, 0),
       programDayAssignmentId: null,

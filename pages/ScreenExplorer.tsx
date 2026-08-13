@@ -15,6 +15,10 @@ interface ScreenItem {
   route: string | null;
   category: string;
   file?: string;
+  /** Pantalla superada por otra implementación real — candidata a borrar (no se borra sola, solo se marca aquí para decidir). */
+  deletionCandidate?: string;
+  /** Checklist de la migración StyleSheet → Gluestack UI/NativeWind (ver plan de migración). Default false: aún no migrada. */
+  gluestackMigrated?: boolean;
 }
 
 const ALL_SCREENS: ScreenItem[] = [
@@ -27,17 +31,8 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Password Reset Sent', route: 'ResetSent', category: 'Original - Auth', file: 'PasswordResetSentScreen.tsx' },
   { name: 'Profile Edit', route: 'ProfileEdit', category: 'Original - Auth', file: 'ProfileEditScreen.tsx' },
   { name: 'Change Password', route: 'ChangePassword', category: 'Original - Auth', file: 'ChangePasswordScreen.tsx' },
-  { name: 'Home', route: 'HomePage', category: 'Original - Tabs' },
-  { name: 'Club', route: 'Club', category: 'Original - Tabs', file: 'Club.tsx' },
-  { name: 'Challenges', route: 'Challenges', category: 'Original - Tabs', file: 'Challenges.tsx' },
-  { name: 'Today', route: 'Today', category: 'Original - Tabs', file: 'Today.tsx' },
+  { name: 'Home', route: 'Home', category: 'Original - Tabs' },
   { name: 'Profile', route: 'Profile', category: 'Original - Main', file: 'Profile.tsx' },
-  { name: 'Unboarding', route: 'Unboard', category: 'Original - Onboarding', file: 'Unboarding.tsx' },
-  { name: 'Name', route: 'Name', category: 'Original - Onboarding', file: 'Name.tsx' },
-  { name: 'Weight', route: 'Weight', category: 'Original - Onboarding', file: 'Weight.tsx' },
-  { name: 'Height', route: 'Height', category: 'Original - Onboarding', file: 'Height.tsx' },
-  { name: 'Congratulation', route: 'Congratulation', category: 'Original - Main', file: 'Congratulation.tsx' },
-  { name: 'Result', route: 'Result', category: 'Original - Main', file: 'Result.tsx' },
   { name: 'Workout List', route: 'WorkoutList', category: 'Original - Workout', file: 'WorkoutList.tsx' },
   { name: 'Workout Detail', route: 'WorkoutDetail', category: 'Original - Workout', file: 'WorkoutDetail.tsx' },
   { name: 'Workout Day Exercises', route: 'WorkoutDayExercises', category: 'Original - Workout', file: 'WorkoutDayExercises.tsx' },
@@ -45,6 +40,7 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Workout Summary', route: 'WorkoutSummary', category: 'Original - Workout', file: 'WorkoutSummary.tsx' },
   { name: 'Exercise List', route: 'ExerciseList', category: 'Original - Exercise', file: 'ExerciseList.tsx' },
   { name: 'Exercise Detail', route: 'ExerciseDetail', category: 'Original - Exercise', file: 'ExerciseDetail.tsx' },
+  { name: 'Exercise Info (root alias)', route: 'ExerciseInfo', category: 'Original - Exercise', file: 'exercise_info_screen.tsx' },
   { name: 'Diet Dashboard', route: 'DietDashboard', category: 'Original - Diet', file: 'DietDashboard.tsx' },
   { name: 'Diet List', route: 'DietList', category: 'Original - Diet', file: 'DietList.tsx' },
   { name: 'Community Feed', route: 'CommunityFeed', category: 'Original - Social', file: 'CommunityFeed.tsx' },
@@ -69,23 +65,19 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Reminder', route: 'MigratedReminder', category: 'Migrated - Health', file: 'reminder_screen.tsx' },
   { name: 'Home Modern', route: 'MigratedHomeModern', category: 'Migrated - Dashboard', file: 'home_screen_modern.tsx' },
   { name: 'Main Goal', route: 'MigratedMainGoal', category: 'Migrated - Onboarding', file: 'main_goal_screen.tsx' },
-  { name: 'Goal Selection', route: 'MigratedGoalSelection', category: 'Migrated - Onboarding', file: 'goal_selection_screen.tsx' },
-  { name: 'Goal Calories Macros', route: 'MigratedGoalCaloriesMacros', category: 'Migrated - Onboarding', file: 'goal_calories_macros_screen.tsx' },
   { name: 'Exercise Duration', route: 'MigratedExerciseDuration', category: 'Migrated - Onboarding', file: 'exercise_duration_screen.tsx' },
   { name: 'Exercise Duration Cast', route: 'MigratedExerciseDurationCast', category: 'Migrated - Onboarding', file: 'exercise_duration_screencast.tsx' },
   { name: 'Splash', route: 'MigratedSplash', category: 'Migrated - Onboarding', file: 'splash_screen.tsx' },
   { name: 'Walk Through', route: 'MigratedWalkThrough', category: 'Migrated - Onboarding', file: 'walk_through_screen.tsx' },
-  { name: 'Missing Details', route: 'MigratedMissingDetails', category: 'Migrated - Onboarding', file: 'missing_details_screen.tsx' },
   { name: 'Workout List (migrated)', route: 'MigratedViewWorkouts', category: 'Migrated - Workout', file: 'view_workouts_screen.tsx' },
   { name: 'Workout Detail (migrated)', route: 'MigratedWorkoutDetail', category: 'Migrated - Workout', file: 'workout_detail_screen.tsx' },
   { name: 'Filter Workout', route: 'MigratedFilterWorkout', category: 'Migrated - Workout', file: 'filter_workout_screen.tsx' },
   { name: 'Workout History', route: 'MigratedWorkoutHistory', category: 'Migrated - Workout', file: 'workout_history_screen.tsx' },
+  { name: 'Session History Detail', route: 'MigratedSessionHistoryDetail', category: 'Migrated - Workout', file: 'session_history_detail_screen.tsx' },
   { name: 'Workout Preview', route: 'MigratedWorkoutPreview', category: 'Migrated - Workout', file: 'workout_preview_screen.tsx' },
   { name: 'Workout Session (migrated)', route: 'MigratedWorkoutSession', category: 'Migrated - Workout', file: 'workout_session_screen.tsx' },
   { name: 'Workout Feedback', route: 'MigratedWorkoutFeedback', category: 'Migrated - Workout', file: 'workout_feedback_screen.tsx' },
   { name: 'Workout Summary (migrated)', route: 'MigratedWorkoutSummary', category: 'Migrated - Workout', file: 'workout_summary_screen.tsx' },
-  { name: 'Exercise List (migrated)', route: 'MigratedExerciseList', category: 'Migrated - Exercise', file: 'exercise_list_screen.tsx' },
-  { name: 'Exercise Detail (migrated)', route: 'MigratedExerciseDetail', category: 'Migrated - Exercise', file: 'exercise_detail_screen.tsx' },
   { name: 'Exercise History', route: 'MigratedExerciseHistory', category: 'Migrated - Exercise', file: 'exercise_history_screen.tsx' },
   { name: 'View Body Parts', route: 'MigratedViewBodyPart', category: 'Migrated - Exercise', file: 'view_body_part_screen.tsx' },
   { name: 'View Equipment', route: 'MigratedViewEquipment', category: 'Migrated - Exercise', file: 'view_equipment_screen.tsx' },
@@ -100,10 +92,6 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Recipe List V2', route: 'MigratedRecipeListV2', category: 'Migrated - Recipes', file: 'recipe_list_screen_v2.tsx' },
   { name: 'Recipe Category List', route: 'MigratedRecipeCategoryList', category: 'Migrated - Recipes', file: 'recipe_category_list_screen.tsx' },
   { name: 'Recipe Tag List', route: 'MigratedRecipeTagList', category: 'Migrated - Recipes', file: 'recipe_tag_list_screen.tsx' },
-  { name: 'Product Screen', route: 'MigratedProduct', category: 'Migrated - Products', file: 'product_screen.tsx' },
-  { name: 'Product Detail', route: 'MigratedProductDetail', category: 'Migrated - Products', file: 'product_detail_screen.tsx' },
-  { name: 'View All Product', route: 'MigratedViewAllProduct', category: 'Migrated - Products', file: 'view_all_product_screen.tsx' },
-  { name: 'View Product Category', route: 'MigratedViewProductCategory', category: 'Migrated - Products', file: 'view_product_category_screen.tsx' },
   { name: 'Shopping List', route: 'MigratedShoppingList', category: 'Migrated - Shopping', file: 'shopping_list_screen.tsx' },
   { name: 'Shopping List Detail', route: 'MigratedShoppingListDetail', category: 'Migrated - Shopping', file: 'shopping_list_detail_screen.tsx' },
   { name: 'Add Shopping List', route: 'MigratedAddShoppingList', category: 'Migrated - Shopping', file: 'add_shopping_list_screen.tsx' },
@@ -125,19 +113,20 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Favourite Screen', route: 'MigratedFavourite', category: 'Migrated - Misc', file: 'favourite_screen.tsx' },
   { name: 'Progress', route: 'MigratedProgress', category: 'Migrated - Progress', file: 'progress_screen.tsx' },
   { name: 'Progress Detail', route: 'MigratedProgressDetail', category: 'Migrated - Progress', file: 'progress_detail_screen.tsx' },
-  { name: 'Progress Setting', route: 'MigratedProgressSetting', category: 'Migrated - Progress', file: 'progress_setting_screen.tsx' },
   { name: 'Profile (migrated)', route: 'MigratedProfile', category: 'Migrated - Profile', file: 'profile_screen.tsx' },
-  { name: 'Profile Sandow', route: 'MigratedProfileSandow', category: 'Migrated - Profile', file: 'profile_screen_sandow.tsx' },
   { name: 'Edit Profile', route: 'MigratedEditProfile', category: 'Migrated - Profile', file: 'edit_profile_screen.tsx' },
-  { name: 'Setting (migrated)', route: 'MigratedSetting', category: 'Migrated - Profile', file: 'setting_screen.tsx' },
   { name: 'Language', route: 'MigratedLanguage', category: 'Migrated - Profile', file: 'language_screen.tsx' },
   { name: 'Notification', route: 'MigratedNotification', category: 'Migrated - Profile', file: 'notification_screen.tsx' },
-  { name: 'Schedule', route: 'MigratedSchedule', category: 'Migrated - Schedule', file: 'schedule_screen.tsx' },
+  {
+    name: 'Schedule',
+    route: 'MigratedSchedule',
+    category: 'Migrated - Schedule',
+    file: 'schedule_screen.tsx',
+    deletionCandidate:
+      'my_program_calendar_screen.tsx es el calendario de programa real (ProgramDayAssignment/ProgramClientAssignment). Esta pantalla usa workoutHistoryApi, una implementación de calendario distinta y más antigua, sin llamador real en la app hoy (2026-08-13).',
+  },
   { name: 'My Program Calendar', route: 'MigratedMyProgramCalendar', category: 'Migrated - Schedule', file: 'my_program_calendar_screen.tsx' },
-  { name: 'Subscribe', route: 'MigratedSubscribe', category: 'Migrated - Payment', file: 'subscribe_screen.tsx' },
-  { name: 'Subscription Detail', route: 'MigratedSubscriptionDetail', category: 'Migrated - Payment', file: 'subscription_detail_screen.tsx' },
-  { name: 'Payment', route: 'MigratedPayment', category: 'Migrated - Payment', file: 'payment_screen.tsx' },
-  { name: 'Payment Scheduled', route: 'MigratedPaymentScheduled', category: 'Migrated - Payment', file: 'payment_scheduled_screen.tsx' },
+  { name: 'Subscription Detail (Mi plan)', route: 'MigratedSubscriptionDetail', category: 'Migrated - Payment', file: 'subscription_detail_screen.tsx' },
   { name: 'No Data', route: 'MigratedNoData', category: 'Migrated - Misc', file: 'no_data_screen.tsx' },
   { name: 'No Internet', route: 'MigratedNoInternet', category: 'Migrated - Misc', file: 'no_internet_screen.tsx' },
 
@@ -163,8 +152,6 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Heart Rate History', route: 'MigratedHeartRateHistory', category: 'Migrated - Heart Rate', file: 'heart_rate_history_screen.tsx' },
   { name: 'Heart Rate Insight', route: 'MigratedHeartRateInsight', category: 'Migrated - Heart Rate', file: 'heart_rate_insight_screen.tsx' },
   { name: 'Heart Rate Zones', route: 'MigratedHeartRateZones', category: 'Migrated - Heart Rate', file: 'heart_rate_zones_screen.tsx' },
-  { name: 'Sandow Score', route: 'MigratedSandowScore', category: 'Migrated - Sandow', file: 'sandow_score_screen.tsx' },
-  { name: 'Score Breakdown', route: 'MigratedScoreBreakdown', category: 'Migrated - Sandow', file: 'score_breakdown_radar_screen.tsx' },
   { name: 'Steps', route: 'MigratedSteps', category: 'Migrated - Steps', file: 'steps_screen.tsx' },
   { name: 'Steps Details', route: 'MigratedStepsDetails', category: 'Migrated - Steps', file: 'steps_details_screen.tsx' },
   { name: 'Steps History', route: 'MigratedStepsHistory', category: 'Migrated - Steps', file: 'steps_history_screen.tsx' },
@@ -173,25 +160,12 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Step Goal', route: 'MigratedStepGoal', category: 'Migrated - Steps', file: 'step_goal_screen.tsx' },
   { name: 'Step Goal Completed', route: 'MigratedStepGoalCompleted', category: 'Migrated - Steps', file: 'step_goal_completed_screen.tsx' },
   { name: 'Log Steps Form', route: 'MigratedLogStepsForm', category: 'Migrated - Steps', file: 'log_steps_form_screen.tsx' },
-  { name: 'Weight (migrated)', route: 'MigratedWeight', category: 'Migrated - Weight', file: 'weight_screen.tsx' },
-  { name: 'Weight Details', route: 'MigratedWeightDetails', category: 'Migrated - Weight', file: 'weight_details_screen.tsx' },
-  { name: 'Weight History', route: 'MigratedWeightHistory', category: 'Migrated - Weight', file: 'weight_history_screen.tsx' },
-  { name: 'Weight Insight', route: 'MigratedWeightInsight', category: 'Migrated - Weight', file: 'weight_insight_screen.tsx' },
-  { name: 'Weight Deadline', route: 'MigratedWeightDeadline', category: 'Migrated - Weight', file: 'weight_deadline_screen.tsx' },
-  { name: 'Weight Goal Set', route: 'MigratedWeightSetGoal', category: 'Migrated - Weight', file: 'weight_set_goal_screen.tsx' },
-  { name: 'Weight Goal Summary', route: 'MigratedWeightGoalSummary', category: 'Migrated - Weight', file: 'weight_goal_summary_screen.tsx' },
-  { name: 'Weight Goal Completed', route: 'MigratedWeightGoalCompleted', category: 'Migrated - Weight', file: 'weight_goal_completed_screen.tsx' },
-  { name: 'Weight Lose Gain Choice', route: 'MigratedWeightLoseGainChoice', category: 'Migrated - Weight', file: 'weight_lose_gain_choice_screen.tsx' },
-  { name: 'Weight Reminder', route: 'MigratedWeightReminder', category: 'Migrated - Weight', file: 'weight_reminder_screen.tsx' },
-  { name: 'Log Weight Form', route: 'MigratedLogWeightForm', category: 'Migrated - Weight', file: 'log_weight_form_screen.tsx' },
-  { name: 'Log Weight Keyboard', route: 'MigratedLogWeightKeyboard', category: 'Migrated - Weight', file: 'log_weight_keyboard_screen.tsx' },
 
   // === MIGRATED - ONBOARDING ===
   { name: 'Onboarding (migrated)', route: 'MigratedOnboarding', category: 'Migrated - Onboard Flow', file: 'onboarding_screen.tsx' },
   { name: 'Profile Setup Intro', route: 'MigratedProfileSetupIntro', category: 'Migrated - Onboard Flow', file: 'profile_setup_intro_screen.tsx' },
   { name: 'Profile Setup Form', route: 'MigratedProfileSetupForm', category: 'Migrated - Onboard Flow', file: 'profile_setup_form_screen.tsx' },
   { name: 'Avatar Setup', route: 'MigratedAvatarSetup', category: 'Migrated - Onboard Flow', file: 'avatar_setup_screen.tsx' },
-  { name: 'Choose Plan', route: 'MigratedChoosePlan', category: 'Migrated - Onboard Flow', file: 'choose_plan_screen.tsx' },
   { name: 'Privacy Policy (onboard)', route: 'MigratedPrivacyPolicyOnboard', category: 'Migrated - Onboard Flow', file: 'privacy_policy_screen.tsx' },
   { name: 'Notifications (onboard)', route: 'MigratedNotificationsOnboard', category: 'Migrated - Onboard Flow', file: 'notifications_screen.tsx' },
   { name: 'Assessment Result', route: 'MigratedAssessmentResult', category: 'Migrated - Onboard Flow', file: 'assessment_result_screen.tsx' },
@@ -199,6 +173,30 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Health (onboard)', route: 'MigratedHealth', category: 'Migrated - Onboard Flow', file: 'health_screen.tsx' },
   { name: 'Articles', route: 'MigratedArticles', category: 'Migrated - Onboard Flow', file: 'articles_screen.tsx' },
   { name: 'Onboarding Complete', route: 'MigratedOnboardingComplete', category: 'Migrated - Onboard Flow', file: 'onboarding_complete_screen.tsx' },
+
+  // === MIGRATED - AÑADIDAS (estaban registradas en App.tsx pero faltaban aquí) ===
+  { name: 'Estadísticas', route: 'MigratedStatistics', category: 'Migrated - Estadísticas', file: 'statistics_screen.tsx' },
+  { name: 'Distribución de los músculos', route: 'MigratedStatisticsMuscles', category: 'Migrated - Estadísticas', file: 'statistics_muscle_distribution_screen.tsx' },
+  { name: 'Distribución del cuerpo', route: 'MigratedStatisticsBody', category: 'Migrated - Estadísticas', file: 'statistics_body_distribution_screen.tsx' },
+  { name: 'Recuento de series', route: 'MigratedStatisticsSeriesCount', category: 'Migrated - Estadísticas', file: 'statistics_series_count_screen.tsx' },
+  { name: 'Ejercicios principales', route: 'MigratedStatisticsTopExercises', category: 'Migrated - Estadísticas', file: 'statistics_top_exercises_screen.tsx' },
+  { name: 'Marcas personales', route: 'MigratedStatisticsPersonalRecords', category: 'Migrated - Estadísticas', file: 'statistics_personal_records_screen.tsx' },
+  { name: 'Informe mensual', route: 'MigratedStatisticsMonthlyReport', category: 'Migrated - Estadísticas', file: 'statistics_monthly_report_screen.tsx' },
+  { name: 'Coming Soon (placeholder)', route: 'MigratedComingSoon', category: 'Migrated - Estadísticas', file: 'coming_soon_screen.tsx' },
+  { name: 'Antropometría', route: 'MigratedBodyMetrics', category: 'Migrated - Estadísticas', file: 'body_metrics_screen.tsx' },
+  { name: 'Progreso muscular', route: 'MigratedMuscleProgress', category: 'Migrated - Exercise', file: 'muscle_progress_screen.tsx' },
+  { name: 'Exercise Info', route: 'MigratedExerciseInfo', category: 'Migrated - Exercise', file: 'exercise_info_screen.tsx' },
+  { name: 'Workout Template List', route: 'MigratedWorkoutTemplateList', category: 'Migrated - Workout', file: 'workout_template_list_screen.tsx' },
+  { name: 'Chatting', route: 'MigratedChatting', category: 'Migrated - Social', file: 'chatting_screen.tsx' },
+  { name: 'Chatting Image', route: 'MigratedChattingImage', category: 'Migrated - Social', file: 'chatting_image_screen.tsx' },
+  { name: 'Habits List', route: 'MigratedHabits', category: 'Migrated - Habits', file: 'habits_list_screen.tsx' },
+  { name: 'Habit Detail', route: 'MigratedHabitDetail', category: 'Migrated - Habits', file: 'habit_detail_screen.tsx' },
+  { name: 'Habit Add', route: 'MigratedHabitAdd', category: 'Migrated - Habits', file: 'habit_add_screen.tsx' },
+  { name: 'Check-ins List', route: 'MigratedCheckIns', category: 'Migrated - Check-ins', file: 'checkins_list_screen.tsx' },
+  { name: 'Check-in Fill', route: 'MigratedCheckInFill', category: 'Migrated - Check-ins', file: 'checkin_fill_screen.tsx' },
+  { name: 'Resources List', route: 'MigratedResourcesList', category: 'Migrated - Resources', file: 'resources_list_screen.tsx' },
+  { name: 'Resource Detail', route: 'MigratedResourceDetail', category: 'Migrated - Resources', file: 'resource_detail_screen.tsx' },
+  { name: 'Assigned Meals', route: 'MigratedAssignedMeals', category: 'Migrated - Diet', file: 'assigned_meals_screen.tsx' },
 ];
 
 export default function ScreenExplorer({ navigation }: any) {
@@ -220,17 +218,32 @@ export default function ScreenExplorer({ navigation }: any) {
       grouped[screen.category].push(screen);
     });
 
-    return Object.keys(grouped)
+    const categorySections = Object.keys(grouped)
       .sort()
       .map((category) => ({
         title: category,
         data: grouped[category],
         count: grouped[category].length,
       }));
+
+    // Se muestran también dentro de su categoría normal (esto solo las
+    // marca para decidir, no las mueve ni las oculta) — igual que
+    // docs/DEAD_SCREENS.md, no se borra nada automáticamente aquí.
+    const candidates = filtered.filter((s) => s.deletionCandidate);
+    if (candidates.length > 0) {
+      categorySections.unshift({
+        title: '⚠️ Candidatas a eliminar',
+        data: candidates,
+        count: candidates.length,
+      });
+    }
+
+    return categorySections;
   }, [search]);
 
   const totalCount = ALL_SCREENS.length;
   const navigableCount = ALL_SCREENS.filter((s) => s.route).length;
+  const gluestackMigratedCount = ALL_SCREENS.filter((s) => s.gluestackMigrated).length;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -241,7 +254,7 @@ export default function ScreenExplorer({ navigation }: any) {
         <View style={styles.headerTitle}>
           <Text style={styles.title}>Screen Explorer</Text>
           <Text style={styles.subtitle}>
-            {navigableCount}/{totalCount} screens
+            {navigableCount}/{totalCount} screens · {gluestackMigratedCount} en Gluestack
           </Text>
         </View>
       </View>
@@ -288,10 +301,18 @@ export default function ScreenExplorer({ navigation }: any) {
           >
             <View style={styles.screenInfo}>
               <View style={[styles.statusDot, item.route ? styles.statusDotGreen : styles.statusDotGray]} />
-              <Text style={styles.screenName} numberOfLines={1}>
-                {item.name}
-                {item.file ? <Text style={styles.screenFile}> ({item.file})</Text> : null}
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.screenName} numberOfLines={1}>
+                  {item.gluestackMigrated ? '🟢 ' : ''}
+                  {item.name}
+                  {item.file ? <Text style={styles.screenFile}> ({item.file})</Text> : null}
+                </Text>
+                {item.deletionCandidate ? (
+                  <Text style={styles.deletionReason} numberOfLines={3}>
+                    {item.deletionCandidate}
+                  </Text>
+                ) : null}
+              </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#8A8CB2" />
           </TouchableOpacity>
@@ -334,4 +355,5 @@ const styles = StyleSheet.create({
   statusDotGray: { backgroundColor: '#4A4868' },
   screenName: { fontSize: 14, color: '#fff', fontFamily: 'Gilroy-Regular', flex: 1 },
   screenFile: { fontSize: 12, color: '#8A8CB2', fontFamily: 'Gilroy-Regular' },
+  deletionReason: { fontSize: 11, color: '#E17568', fontFamily: 'Gilroy-Regular', marginTop: 3 },
 });

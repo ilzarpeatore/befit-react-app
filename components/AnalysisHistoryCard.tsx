@@ -1,11 +1,16 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from '../pages/migrated/theme';
 import { ExerciseAnalysisSession } from '../api/exerciseInfo';
 
 interface Props {
   session: ExerciseAnalysisSession;
 }
+
+// Clave con la que el backend marca el PR de carga dentro de
+// prs_this_session (ver docs/pantalla ejercicio.md, seccion 8.1).
+const LOAD_PR_KEY = 'carga_maxima';
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -26,6 +31,16 @@ function AnalysisHistoryCard({ session }: Props) {
 
   const hasPr = session.prs_this_session && session.prs_this_session.length > 0;
 
+  // prs_this_session solo indica que hubo PR de carga en ALGUN punto de la
+  // sesion, no en que serie concreta — se aproxima marcando la(s) serie(s)
+  // con el valor de carga mas alto de esa sesion, igual que hace
+  // bestValueForMetric() en exercise_info_screen.tsx para la grafica.
+  const loadPrValue = useMemo(() => {
+    if (!session.prs_this_session?.includes(LOAD_PR_KEY)) return null;
+    const nums = session.sets.map((s) => Number(s.carga)).filter((n) => Number.isFinite(n));
+    return nums.length > 0 ? Math.max(...nums) : null;
+  }, [session]);
+
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
@@ -37,6 +52,7 @@ function AnalysisHistoryCard({ session }: Props) {
         ) : null}
         {hasPr ? (
           <View style={styles.prBadge}>
+            <Ionicons name="trophy" size={11} color="#FFFFFF" />
             <Text style={styles.prBadgeText}>PR</Text>
           </View>
         ) : null}
@@ -45,23 +61,31 @@ function AnalysisHistoryCard({ session }: Props) {
       {columns.length > 0 ? (
         <View style={styles.table}>
           <View style={styles.tableRow}>
-            <Text style={[styles.headCell, styles.serieCol]}>#</Text>
+            <Text style={[styles.headCell, styles.serieCol, styles.serieText]}>#</Text>
             {columns.map((col) => (
               <Text key={col} style={[styles.headCell, styles.metricCol]}>
                 {col}
               </Text>
             ))}
           </View>
-          {session.sets.map((set, idx) => (
-            <View key={idx} style={styles.tableRow}>
-              <Text style={[styles.cell, styles.serieCol]}>{set.set_number ?? idx + 1}</Text>
-              {columns.map((col) => (
-                <Text key={col} style={[styles.cell, styles.metricCol]}>
-                  {set[col] ?? '-'}
-                </Text>
-              ))}
-            </View>
-          ))}
+          {session.sets.map((set, idx) => {
+            const isLoadPrRow = loadPrValue !== null && Number(set.carga) === loadPrValue;
+            return (
+              <View key={idx} style={styles.tableRow}>
+                <View style={[styles.serieCol, styles.serieCellWrap]}>
+                  <Text style={[styles.cell, styles.serieText]}>{set.set_number ?? idx + 1}</Text>
+                  {isLoadPrRow ? (
+                    <Ionicons name="trophy" size={12} color={C.warning40} style={styles.trophyIcon} />
+                  ) : null}
+                </View>
+                {columns.map((col) => (
+                  <Text key={col} style={[styles.cell, styles.metricCol, col === 'carga' && isLoadPrRow && styles.cellPr]}>
+                    {set[col] ?? '-'}
+                  </Text>
+                ))}
+              </View>
+            );
+          })}
         </View>
       ) : null}
     </View>
@@ -96,6 +120,9 @@ const styles = StyleSheet.create({
     color: C.textSecondary,
   },
   prBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginLeft: 8,
     backgroundColor: C.brand50,
     borderRadius: 10,
@@ -125,6 +152,10 @@ const styles = StyleSheet.create({
     color: C.white,
     textAlign: 'center',
   },
-  serieCol: { width: 28, textAlign: 'left' },
+  serieCol: { width: 28 },
+  serieText: { textAlign: 'left' },
+  serieCellWrap: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  trophyIcon: { marginTop: -1 },
   metricCol: { flex: 1 },
+  cellPr: { fontFamily: FONT.bold, color: C.warning40 },
 });

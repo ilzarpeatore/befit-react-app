@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
-import { postsApi } from '../../api/posts';
+import { postsApi, PostComment } from '../../api/posts';
+import logger from '@helper/logger';
 
 interface PostUser {
   id?: number;
@@ -35,6 +36,30 @@ export default function PostDetailsScreen(props: any) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(postData?.isLiked ?? false);
   const [isBookmarked, setIsBookmarked] = useState(postData?.isBookmarked ?? false);
+
+  const [comments, setComments] = useState<PostComment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [postingComment, setPostingComment] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(postData?.commentsCount ?? 0);
+  const commentInputRef = useRef<TextInput>(null);
+
+  const loadComments = useCallback(async () => {
+    if (!postData?.id) return;
+    setCommentsLoading(true);
+    try {
+      const res = await postsApi.getComments(postData.id, 1);
+      setComments(res.data.data ?? []);
+    } catch (e) {
+      logger.error('Error fetching comments', e);
+    } finally {
+      setCommentsLoading(false);
+    }
+  }, [postData?.id]);
+
+  useEffect(() => {
+    loadComments();
+  }, [loadComments]);
 
   if (!postData) {
     return (
@@ -76,8 +101,28 @@ export default function PostDetailsScreen(props: any) {
     }
   };
 
+  const focusCommentInput = () => {
+    commentInputRef.current?.focus();
+  };
+
+  const submitComment = async () => {
+    const text = commentText.trim();
+    if (!text || !postData.id || postingComment) return;
+    setPostingComment(true);
+    try {
+      await postsApi.saveComment(postData.id, text);
+      setCommentText('');
+      setCommentsCount((prev) => prev + 1);
+      await loadComments();
+    } catch (e) {
+      logger.error('Error posting comment', e);
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
   return (
-    <View style={s.container}>
+    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
       <View style={s.appBar}>
         <TouchableOpacity onPress={() => props.navigation?.goBack()}>
           <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
@@ -87,7 +132,14 @@ export default function PostDetailsScreen(props: any) {
       <ScrollView contentContainerStyle={s.scrollContent}>
         <View style={s.postCard}>
           <View style={s.postHeader}>
-            <View style={s.avatarRow}>
+            <TouchableOpacity
+              style={s.avatarRow}
+              activeOpacity={0.7}
+              onPress={() => {
+                if (!user?.id) return;
+                props.navigation?.navigate('MigratedOtherUserProfile', { userDetails: user });
+              }}
+            >
               <View style={s.avatarPlaceholder}>
                 {user?.profileImage ? (
                   <Image source={{ uri: user.profileImage }} style={s.avatarSmall} />
@@ -99,7 +151,7 @@ export default function PostDetailsScreen(props: any) {
                 <Text style={s.userName}>{user?.firstName ?? ''} {user?.lastName ?? ''}</Text>
                 {postData.createdAt && <Text style={s.postTime}>{postData.createdAt}</Text>}
               </View>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity style={s.moreBtn}>
               <Ionicons name="ellipsis-horizontal" size={20} color={C.gray40} />
             </TouchableOpacity>
@@ -117,9 +169,9 @@ export default function PostDetailsScreen(props: any) {
               <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={22} color={isLiked ? C.destructive : C.gray30} />
               <Text style={[s.actionText, isLiked && s.actionTextActive]}>{(postData.likesCount ?? 0) + (isLiked ? 1 : 0)}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.actionBtn}>
+            <TouchableOpacity style={s.actionBtn} onPress={focusCommentInput}>
               <Ionicons name="chatbubble-outline" size={22} color={C.gray30} />
-              <Text style={s.actionText}>{postData.commentsCount ?? 0}</Text>
+              <Text style={s.actionText}>{commentsCount}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.actionBtn} onPress={toggleBookmark}>
               <Ionicons name={isBookmarked ? 'bookmark' : 'bookmark-outline'} size={22} color={isBookmarked ? C.orange : C.gray30} />
@@ -129,8 +181,59 @@ export default function PostDetailsScreen(props: any) {
             </TouchableOpacity>
           </View>
         </View>
+
+        <View style={s.commentsSection}>
+          <Text style={s.commentsTitle}>Comments</Text>
+          {commentsLoading ? (
+            <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
+          ) : comments.length > 0 ? (
+            comments.map((c) => (
+              <View key={c.id} style={s.commentRow}>
+                <View style={s.avatarPlaceholder}>
+                  {c.users?.profile_image ? (
+                    <Image source={{ uri: c.users.profile_image }} style={s.avatarSmall} />
+                  ) : (
+                    <Ionicons name="person" size={16} color={C.gray30} />
+                  )}
+                </View>
+                <View style={s.commentBody}>
+                  <Text style={s.commentUserName}>
+                    {c.users?.first_name ?? ''} {c.users?.last_name ?? ''}
+                  </Text>
+                  <Text style={s.commentText}>{c.comment}</Text>
+                  {c.created_at ? <Text style={s.commentTime}>{c.created_at}</Text> : null}
+                </View>
+              </View>
+            ))
+          ) : (
+            <Text style={s.noCommentsText}>Be the first to comment</Text>
+          )}
+        </View>
       </ScrollView>
-    </View>
+
+      <View style={s.commentInputBar}>
+        <TextInput
+          ref={commentInputRef}
+          style={s.commentInput}
+          placeholder="Write a comment..."
+          placeholderTextColor={C.gray50}
+          value={commentText}
+          onChangeText={setCommentText}
+          multiline
+        />
+        <TouchableOpacity
+          style={[s.sendBtn, (!commentText.trim() || postingComment) && s.sendBtnDisabled]}
+          onPress={submitComment}
+          disabled={!commentText.trim() || postingComment}
+        >
+          {postingComment ? (
+            <ActivityIndicator size="small" color={C.white} />
+          ) : (
+            <Ionicons name="send" size={18} color={C.white} />
+          )}
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -157,4 +260,44 @@ const s = StyleSheet.create({
   actionTextActive: { color: C.destructive },
   avatarPlaceholder: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.surfaceLight, justifyContent: 'center', alignItems: 'center' },
   avatarSmall: { width: 36, height: 36, borderRadius: 18 },
+  commentsSection: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
+  commentsTitle: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white, marginBottom: 12 },
+  commentRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14 },
+  commentBody: { marginLeft: 10, flex: 1 },
+  commentUserName: { fontSize: 13, fontFamily: FONT.semiBold, color: C.white },
+  commentText: { fontSize: 13, color: C.gray50, marginTop: 2, lineHeight: 18 },
+  commentTime: { fontSize: 11, color: C.gray50, marginTop: 4 },
+  noCommentsText: { fontSize: 13, color: C.gray50, textAlign: 'center', paddingVertical: 12 },
+  commentInputBar: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: C.surface,
+    borderTopWidth: 0.5,
+    borderTopColor: C.border,
+    gap: 8,
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: C.surfaceLight,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    color: C.white,
+    fontFamily: FONT.regular,
+    fontSize: 14,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  sendBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: C.brand5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendBtnDisabled: { opacity: 0.5 },
 });

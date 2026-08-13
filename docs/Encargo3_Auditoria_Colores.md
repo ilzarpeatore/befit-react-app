@@ -11,8 +11,8 @@ preguntar**:
 - Fondo principal claro (`#F2F2F7`), superficies blancas (`#FFFFFF`).
 - Texto principal casi negro (`#1C1C1E`), no blanco.
 - El acento de marca (antes morado `#7773FA`/`#5652E5`) es ahora **beige
-  `#E3DCD9`** en todos sus usos como *relleno* (fondos, badges, botón "+",
-  logo). Como *color de texto o de ícono* se corrigió a `#1C1C1E` en todos
+  `#E3DCD9`** en todos sus usos como _relleno_ (fondos, badges, botón "+",
+  logo). Como _color de texto o de ícono_ se corrigió a `#1C1C1E` en todos
   los casos ya auditados (ver más abajo) — un beige tan claro no se lee
   como texto ni como ícono pequeño sobre fondo claro.
 - Esto **no fue una migración parcial** — se revisaron ~62 archivos reales
@@ -59,6 +59,7 @@ Hay **dos sistemas de color independientes** en este proyecto — no los
 confundas ni intentes unificarlos, es una decisión ya tomada:
 
 ### 1.1 — El sistema real, usado por las 173+ pantallas de la app
+
 `pages/migrated/theme.ts` exporta un objeto `C` (colores), `FONT`
 (tipografías), `GRADIENT`, `RADIUS`, `SPACING`, `SHADOW`, `TYPE`. Las
 pantallas hacen `import { C, FONT } from './theme'` (o rutas relativas
@@ -71,6 +72,7 @@ corregidas (`CARD_START`/`CARD_END`/`BORDER_START`/`BORDER_END`, ver más
 abajo).
 
 ### 1.2 — El sistema de Gluestack-UI / NativeWind (paralelo, casi sin uso real)
+
 `global.css` define tokens CSS (`--primary`, `--background`, etc.) que usan
 los componentes de Gluestack-UI (`components/ui/button`, futuros
 componentes). Hoy solo lo usan un par de componentes de prueba ya
@@ -80,6 +82,7 @@ Si el usuario te pide trabajar específicamente con componentes de
 Gluestack-UI, ahí sí es relevante.
 
 ### 1.3 — Tokens clave de `C` (los que vas a usar)
+
 ```
 Fondo/superficie:  C.bg (#F2F2F7) · C.surface (#FFFFFF) · C.surfaceLight (#F7F7F9) · C.card (=surface)
 Texto:             C.textPrimary (#1C1C1E) · C.textSecondary (#6B6B70) · C.textTertiary (#8A8A90)
@@ -89,6 +92,7 @@ Marca/acento:      C.primary/brand50/gray70 (=#E3DCD9, beige) · C.brand60/gray8
                    C.accentBlack (#000000, para CTAs estilo Bevel)
 Grises neutros:    C.gray10...C.gray60 (escala independiente, no tocada)
 ```
+
 **Nota importante**: `brand50` y `brand60` (y sus alias `gray70`/`gray80`)
 son actualmente **el mismo valor** (`#E3DCD9`) — se unificaron en una ronda
 reciente a pedido del usuario porque ambos eran variantes de morado y el
@@ -102,6 +106,7 @@ profundidad/variantes), **preguntale al usuario antes de inventar un valor**
 ## 2. Reglas aprendidas (evitar repetir bugs ya encontrados)
 
 ### 2.1 — `C.white` es una trampa de nombres
+
 Originalmente `white` significaba "texto blanco sobre fondo oscuro". Ahora
 `C.white === C.textPrimary === "#1C1C1E"` (casi negro). La gran mayoría de
 usos de `C.white` en el código son de texto/ícono y migraron correctamente
@@ -113,13 +118,16 @@ oscuro" en una pantalla, **lo primero que hay que mirar es si usa
 `backgroundColor: C.white`** en vez de `C.surface`.
 
 ### 2.2 — Antes de tocar cualquier archivo, confirmá que está vivo
+
 Este proyecto tiene **muchos archivos huérfanos** — pantallas duplicadas
 que ya no se usan, algunas incluso dentro de `pages/migrated/` (no asumas
 que "está en la carpeta migrated" = "está vivo"). Antes de editar CUALQUIER
 archivo:
+
 ```bash
 grep -n "NombreDelArchivo" App.tsx
 ```
+
 Si no aparece registrado como `import` + `<Stack.Screen>` /
 `<MStack.Screen>` en `App.tsx`, es casi seguro un huérfano — no lo toques,
 no importa. Ejemplos ya confirmados huérfanos (no tocar):
@@ -141,8 +149,10 @@ producto ya tomada de no unificarlo. La única forma confiable de saber si
 un archivo importa es el grep de arriba, no su ubicación en carpetas.
 
 ### 2.3 — Antes de cambiar un color de texto/ícono, mirá su fondo
+
 No existe un "color de texto seguro universal" — depende del fondo del
 contenedor. El patrón de trabajo que hay que seguir:
+
 1. Encontrar el `color:` o `color={...}` sospechoso.
 2. Subir al contenedor padre (o al `style` combinado, ej.
    `[s.weekDayNumber, isSelected && s.weekDayNumberSelected]`) y encontrar su
@@ -154,14 +164,16 @@ contenedor. El patrón de trabajo que hay que seguir:
    fondo `C.gray80`/beige oscuro intencional, o superposiciones sobre foto)
    → el texto/ícono debe quedar claro.
 5. **Cuidado con los estados condicionales** (`isSelected &&
-   styleSelected`) — a veces la MISMA variable de color se usa para dos
+styleSelected`) — a veces la MISMA variable de color se usa para dos
    estados con fondos distintos (uno claro, uno oscuro) porque originalmente
    ambos fondos tenían tonos similares. Revisá cada estado por separado, no
    solo el estilo "base".
 
 ### 2.4 — Texto vs. ícono vs. fondo son 3 búsquedas distintas
+
 Los patrones de código a buscar (con grep/ripgrep) son sintácticamente
 diferentes y hay que buscar los tres por separado:
+
 ```bash
 # Texto (StyleSheet, objeto de estilo)
 grep -rnE "color:\s*C\.NOMBRE_DEL_TOKEN\b" --include="*.tsx" .
@@ -172,11 +184,14 @@ grep -rnE "color=\{C\.NOMBRE_DEL_TOKEN\}" --include="*.tsx" .
 # Fondo
 grep -rnE "backgroundColor:\s*C\.NOMBRE_DEL_TOKEN\b" --include="*.tsx" .
 ```
+
 Siempre excluí `backgroundColor` del primer patrón (con `grep -v
 backgroundColor`) para no confundir fondos con textos.
 
 ### 2.5 — Colores hardcodeados fuera de `C`
+
 No todo pasa por `C`. Ya se encontraron y corrigieron:
+
 - `constants/colors.ts` tenía `CARD_START`/`CARD_END`/`BORDER_START`/
   `BORDER_END` como hex sueltos (no referencian `C`) — quedaron
   desactualizados en la primera pasada de migración porque el grep de
@@ -248,6 +263,7 @@ Antes de cualquier interacción con el dispositivo, leé el recurso
 
 **Arranque del entorno** (ver `docs/ARRANQUE_DESARROLLO.md` para el detalle
 completo con troubleshooting):
+
 ```bash
 # 1. Confirmar que el backend Laravel responde
 curl -s -m 5 -o /dev/null -w "HTTP %{http_code}\n" http://127.0.0.1:8000/api/get-appsetting
@@ -264,9 +280,11 @@ adb reverse tcp:8000 tcp:8000
 **Para ver un cambio de color reflejado**, un `force-stop` + relanzamiento
 limpio es más confiable que el reload in-app (a veces el bundle queda
 pegado en una versión vieja con solo "R,R"):
+
 ```bash
 adb shell am force-stop com.pfndesign.befit
 ```
+
 y luego `open_app` con `fresh: true` vía MobAI.
 
 **Si aparece "Unable to load script"**: reconectá los túneles (arriba) y
@@ -275,7 +293,7 @@ muestra siempre "1 module" en vez de recompilar todo): matá el proceso de
 Metro (buscar el PID con `netstat -ano | grep ":8081"` y `taskkill //F //PID
 <pid>`) y arrancalo de nuevo con `npx expo start --dev-client --clear`.
 
-**Credenciales de prueba**: cuenta demo `demo@bestronger.app` / `[contraseña retirada del historial]`
+**Credenciales de prueba**: cuenta demo `demo@bestronger.app` (contraseña retirada de este documento)
 (cliente 1:1, `is_personal_client=true`) ya logueada en el dispositivo en
 sesiones anteriores.
 

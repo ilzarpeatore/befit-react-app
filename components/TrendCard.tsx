@@ -1,3 +1,8 @@
+// Sin consumidores hoy (huérfano). Se conserva como referencia de la lógica
+// de sparkline SVG (Polyline/Circle a mano) para el Tier D de la migración a
+// Gluestack — recrear un sparkline desde cero sería trabajo repetido. El
+// layout de card sí debe reconstruirse con el nuevo componente Card de
+// Fase 1 cuando se retome.
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";

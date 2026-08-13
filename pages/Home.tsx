@@ -177,7 +177,7 @@ export default function Home({ navigation }: HomePropsInterface) {
   }
   const slider_viewable_items_changed = ({ viewableItems }: { viewableItems: any[] }) => {
     if (!viewableItems || viewableItems.length === 0) return;
-    var item = viewableItems[0].item;
+    let item = viewableItems[0].item;
     let spacing = item.key * styles.tab.marginRight, // find spacing of the items before active menu item
       width = 0;
     slider_tab_items.slice(0, item.key).map((item: SliderTabItemInterface, index: number) => {
@@ -193,7 +193,7 @@ export default function Home({ navigation }: HomePropsInterface) {
   };
   const set_slider_tabs_width = (event: LayoutChangeEvent, item: SliderTabItemInterface) => {
     //find slider tab item width and save it for later animation
-    var { width } = event.nativeEvent.layout;
+    let { width } = event.nativeEvent.layout;
     setSliderTabItems((prev) => {
       const copy = [...prev];
       if (item.key >= 0 && item.key < copy.length) {
@@ -492,7 +492,6 @@ export default function Home({ navigation }: HomePropsInterface) {
                 </View>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log("profile");
                     navigation.navigate("Profile"); //navigate to profile page
                   }}
                 >

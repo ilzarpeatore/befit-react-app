@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface UserProfile {
   id: number;
@@ -15,6 +16,12 @@ export interface UserProfile {
   carbs_pct: number;
   protein_pct: number;
   fat_pct: number;
+  // Ya calculados en el backend (UserProfile::getBmiAttribute/getBmrAttribute/
+  // getIdealWeightAttribute, Mifflin-St Jeor + fórmula Devine) — null si falta
+  // algún dato base (altura/peso/género) para calcularlos.
+  bmi: string | null;
+  bmr: string | null;
+  ideal_weight: string | null;
   water_reminder_settings?: Record<string, any> | null;
   meal_reminder_settings?: Record<string, any> | null;
 }
@@ -37,6 +44,7 @@ export interface UserData {
   user_profile: UserProfile;
   is_subscribe: number;
   is_personal_client: boolean;
+  access_tier: 'free' | 'subscriber' | 'personal';
 }
 
 export interface UserResponse {
@@ -72,18 +80,26 @@ export interface ReminderSettingsResponse {
   data: UserProfile;
 }
 
+export interface UserSocialStats {
+  posting_count: number;
+  workout_count: number;
+}
+
 export const profileApi = {
   getUserDetail: (id: number) =>
     apiClient.get<UserResponse>(`user-detail?id=${id}`),
 
+  getSocialStats: (userId: number) =>
+    apiClient.get<{ data: UserSocialStats }>(`user-social-stats?user_id=${userId}`),
+
   updateProfile: (payload: Record<string, any>) =>
-    apiClient.post('update-profile', payload),
+    apiClient.post<ApiMessageResponse>('update-profile', payload),
 
   saveGraph: (payload: { type: string; value: string; date: string }) =>
-    apiClient.post('usergraph-save', payload),
+    apiClient.post<ApiMessageResponse>('usergraph-save', payload),
 
   deleteGraph: (id: number) =>
-    apiClient.post('usergraph-delete', { id }),
+    apiClient.post<ApiMessageResponse>('usergraph-delete', { id }),
 
   getGraphList: (type: string, page: number = 1, duration?: string) =>
     apiClient.get<GraphListResponse>(`usergraph-list?type=${type}&page=${page}${duration ? `&duration=${duration}` : ''}`),

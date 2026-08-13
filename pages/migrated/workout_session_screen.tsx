@@ -16,14 +16,17 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { ConfirmDialogMem } from '../../components/ConfirmDialog';
+import PainReportSheet from '../../components/PainReportSheet';
 import { useAuth } from '../../store/AuthContext';
 import { workoutHistoryApi } from '../../api/workoutHistory';
 import { MetricCatalogItem } from '../../api/workoutTemplate';
 import { exercisesApi, ExerciseItem, BodyPartItem } from '../../api/exercises';
+import { loadSuggestionApi, pickPendingSuggestion, LoadSuggestion } from '../../api/loadSuggestion';
 import {
   fetchUnifiedWorkout,
   formatPrescribedSubtitle,
@@ -35,6 +38,17 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ADHOC_DEFAULT_METRICS = ['carga', 'reps'];
 const RESISTANCE_TRAINING_MET = 5.0;
 const FALLBACK_WEIGHT_KG = 70;
+// Sesion activa sin guardar (punto 3/4/5 del encargo): se persiste el
+// timestamp real de inicio + el estado de las series/notas en curso, para
+// que 1) la duracion mostrada nunca se "pause" por bloqueo de pantalla o
+// segundo plano (siempre se calcula como Date.now() - startedAt, nunca
+// acumulando en JS) y 2) si la app se cierra sin finalizar el
+// entrenamiento, al reabrir esta misma pantalla (mismo
+// programDayAssignmentId/workoutTemplateId) se retome tal cual se dejo, sin
+// limite de dias. Solo se trackea UNA sesion activa a la vez (slot unico) -
+// si el cliente abre un workout distinto mientras otro quedo sin cerrar, el
+// nuevo pisa al viejo (simplificacion deliberada, ver resumen de la tarea).
+const ACTIVE_SESSION_STORAGE_KEY = '@befit/active_workout_session';
 
 interface Props {
   navigation?: any;
@@ -59,6 +73,47 @@ interface SessionBlock {
   id: number;
   title: string;
   exercises: SessionExercise[];
+}
+
+interface PersistedSession {
+  identityKey: string;
+  startedAt: number;
+  blocks: SessionBlock[];
+  activeIndexByBlock: Record<number, number>;
+}
+
+/**
+ * Superpone sobre los bloques recien cargados del servidor (fuente de
+ * verdad para prescribed/coachNotes/lastPerformance, que pueden haber
+ * cambiado) las filas/nota en curso que el cliente ya habia rellenado en la
+ * sesion persistida — y reinyecta los ejercicios "Anadir ejercicio +"
+ * (isAdhoc) de la sesion persistida, que nunca van a volver del servidor
+ * porque no son parte de la plantilla del coach.
+ */
+function mergePersistedBlocks(freshBlocks: SessionBlock[], persistedBlocks: SessionBlock[]): SessionBlock[] {
+  const persistedById = new Map<number, SessionExercise>();
+  const persistedAdhocByBlock = new Map<number, SessionExercise[]>();
+  persistedBlocks.forEach((b, bIdx) => {
+    b.exercises.forEach((ex) => {
+      persistedById.set(ex.id, ex);
+      if (ex.isAdhoc) {
+        const list = persistedAdhocByBlock.get(bIdx) ?? [];
+        list.push(ex);
+        persistedAdhocByBlock.set(bIdx, list);
+      }
+    });
+  });
+
+  return freshBlocks.map((block, bIdx) => {
+    const exercises = block.exercises.map((ex) => {
+      const prev = persistedById.get(ex.id);
+      if (!prev) return ex;
+      return { ...ex, rows: prev.rows, note: prev.note };
+    });
+    const seenIds = new Set(exercises.map((e) => e.id));
+    const extraAdhoc = (persistedAdhocByBlock.get(bIdx) ?? []).filter((ex) => !seenIds.has(ex.id));
+    return { ...block, exercises: [...exercises, ...extraAdhoc] };
+  });
 }
 
 // Cada fila se rellena con lo que el cliente hizo REALMENTE la ultima vez
@@ -98,13 +153,19 @@ export default function WorkoutSessionScreen(props: Props) {
   const workoutTemplateId: number | undefined = route?.params?.workoutTemplateId;
   const mTitle: string | undefined = route?.params?.mTitle;
 
+  // Misma fuente de verdad que ya usan logSets()/finishSession() en el
+  // backend para identificar esta sesion: program_day_assignment_id por
+  // defecto, o workout_template_id (workout suelto sin programa) cuando no
+  // hay asignacion de programa - usado para POST /sessions/{id}/pain-report.
+  const painReportSessionId = programDayAssignmentId ?? workoutTemplateId;
+  const painReportIsWorkoutTemplate = programDayAssignmentId == null && workoutTemplateId != null;
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [blocks, setBlocks] = useState<SessionBlock[]>([]);
   const [activeIndexByBlock, setActiveIndexByBlock] = useState<Record<number, number>>({});
   const [pageIndex, setPageIndex] = useState(0);
   const [metricsCatalog, setMetricsCatalog] = useState<MetricCatalogItem[]>([]);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isPickerVisible, setIsPickerVisible] = useState(false);
   const [pickerQuery, setPickerQuery] = useState('');
   const [pickerResults, setPickerResults] = useState<ExerciseItem[]>([]);
@@ -116,9 +177,42 @@ export default function WorkoutSessionScreen(props: Props) {
   const [selectedBodyPartId, setSelectedBodyPartId] = useState<number | null>(null);
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [emptyFinishConfirmVisible, setEmptyFinishConfirmVisible] = useState(false);
+  const [painReportTarget, setPainReportTarget] = useState<SessionExercise | null>(null);
+  // Motor de Auto-Regulacion: sugerencia de carga PENDIENTE (aun no
+  // aprobada por el coach) por exerciseId, cargada bajo demanda solo para
+  // el ejercicio activo/expandido (ver fetchLoadSuggestion). Las ya
+  // aplicadas/aprobadas NO necesitan esto -- llegan directas en
+  // ex.prescribed porque el backend ya las fusiona (ClientExerciseOverride).
+  const [pendingLoadSuggestions, setPendingLoadSuggestions] = useState<Record<number, LoadSuggestion>>({});
+  const requestedSuggestionsRef = useRef<Set<number>>(new Set());
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Timestamp real de inicio de sesion (Date.now()), NUNCA un contador
+  // incremental en JS -- ver comentario del punto 3 mas abajo. Se
+  // sobreescribe con el valor persistido (si lo hay) en cuanto se resuelve
+  // la carga inicial desde AsyncStorage.
+  const [sessionStartedAt, setSessionStartedAt] = useState<number>(() => Date.now());
+  const [nowTick, setNowTick] = useState<number>(() => Date.now());
   const pagerRef = useRef<FlatList>(null);
+
+  const identityKey = useMemo(() => {
+    if (programDayAssignmentId != null) return `pda:${programDayAssignmentId}`;
+    if (workoutTemplateId != null) return `wt:${workoutTemplateId}`;
+    return null;
+  }, [programDayAssignmentId, workoutTemplateId]);
+
+  // Punto 3: "el tiempo no debe pausarse cuando se bloquea la pantalla o la
+  // app pasa a segundo plano". Un setInterval que hace +1 se para/desfasa
+  // cuando el hilo JS se suspende. En vez de acumular, esto solo fuerza un
+  // re-render cada segundo (nowTick) y el tiempo real se recalcula siempre
+  // como Date.now() - sessionStartedAt -- en cuanto la app vuelve a primer
+  // plano y el intervalo retoma, el siguiente tick ya muestra la duracion
+  // correcta sin importar cuanto tiempo estuvo suspendida.
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const elapsedSeconds = Math.max(0, Math.floor((nowTick - sessionStartedAt) / 1000));
 
   // Peso real del perfil (si existe) para el estimado de calorias en vivo -
   // el valor final/autoritativo se calcula en el backend con el mismo MET
@@ -132,44 +226,91 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const liveCalories = Math.round(RESISTANCE_TRAINING_MET * weightKg * (elapsedSeconds / 3600));
 
-  useEffect(() => {
-    timerRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+  const clearPersistedSession = useCallback(() => {
+    AsyncStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY).catch(() => {});
   }, []);
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    setError(false);
-    try {
-      const [data, catalog] = await Promise.all([
-        fetchUnifiedWorkout({ programDayAssignmentId, workoutTemplateId, fallbackTitle: mTitle }),
-        getMetricsCatalog(),
-      ]);
-      setMetricsCatalog(catalog);
-      const mappedBlocks: SessionBlock[] = data.blocks.map((b) => ({
-        id: b.id,
-        title: b.title,
-        exercises: b.exercises.map((ex) => ({
-          ...ex,
-          rows: buildInitialRows(ex),
-          note: '',
-        })),
-      }));
-      setBlocks(mappedBlocks);
-      setActiveIndexByBlock({});
-      setPageIndex(0);
-    } catch (e) {
-      setError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [programDayAssignmentId, workoutTemplateId, mTitle]);
+  const load = useCallback(
+    async (persisted?: PersistedSession | null) => {
+      setIsLoading(true);
+      setError(false);
+      try {
+        const [data, catalog] = await Promise.all([
+          fetchUnifiedWorkout({ programDayAssignmentId, workoutTemplateId, fallbackTitle: mTitle }),
+          getMetricsCatalog(),
+        ]);
+        setMetricsCatalog(catalog);
+        let mappedBlocks: SessionBlock[] = data.blocks.map((b) => ({
+          id: b.id,
+          title: b.title,
+          exercises: b.exercises.map((ex) => ({
+            ...ex,
+            rows: buildInitialRows(ex),
+            note: '',
+          })),
+        }));
+        let initialActiveIndex: Record<number, number> = {};
+        if (persisted?.blocks?.length) {
+          mappedBlocks = mergePersistedBlocks(mappedBlocks, persisted.blocks);
+          initialActiveIndex = persisted.activeIndexByBlock || {};
+        }
+        setBlocks(mappedBlocks);
+        setActiveIndexByBlock(initialActiveIndex);
+        setPageIndex(0);
+      } catch (e) {
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [programDayAssignmentId, workoutTemplateId, mTitle]
+  );
 
+  // Punto 4: al entrar en esta pantalla, mira si ya habia una sesion sin
+  // guardar pendiente para este MISMO workout (mismo identityKey) guardada
+  // en AsyncStorage -- si la hay, retoma su timestamp real de inicio (asi
+  // la duracion sigue contando desde ahi, sin limite de dias) y fusiona las
+  // series/notas que ya se habian rellenado. Si no hay nada o es de otro
+  // workout distinto, arranca en limpio con startedAt = ahora.
   useEffect(() => {
-    load();
-  }, [load]);
+    let cancelled = false;
+    (async () => {
+      let persisted: PersistedSession | null = null;
+      if (identityKey) {
+        try {
+          const raw = await AsyncStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+          if (raw) {
+            const parsed: PersistedSession = JSON.parse(raw);
+            if (parsed.identityKey === identityKey) persisted = parsed;
+          }
+        } catch {}
+      }
+      if (cancelled) return;
+      const startedAt = persisted?.startedAt ?? Date.now();
+      setSessionStartedAt(startedAt);
+      setNowTick(Date.now());
+      load(persisted);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Solo al montar esta instancia de pantalla -- identityKey/load no
+    // cambian durante la vida de esta pantalla (vienen de route.params).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persiste la sesion en curso (debounced) cada vez que cambia algo
+  // relevante -- asi si la app se mata sin previo aviso (no hay evento
+  // fiable "voy a cerrar" en RN), lo ultimo escrito en AsyncStorage sigue
+  // siendo una version reciente de la sesion real.
+  useEffect(() => {
+    if (isLoading || !identityKey || blocks.length === 0) return;
+    const payload: PersistedSession = { identityKey, startedAt: sessionStartedAt, blocks, activeIndexByBlock };
+    const t = setTimeout(() => {
+      AsyncStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify(payload)).catch(() => {});
+    }, 400);
+    return () => clearTimeout(t);
+  }, [isLoading, identityKey, blocks, activeIndexByBlock, sessionStartedAt]);
 
   const metricLabel = useCallback(
     (key: string) => {
@@ -207,6 +348,26 @@ export default function WorkoutSessionScreen(props: Props) {
     () => allExercises.some((ex) => ex.rows.some((r) => r.completed)),
     [allExercises]
   );
+
+  // Sets planos {exercise_id, weight, reps} de todas las series completadas
+  // de la sesion - se envian tal cual a muscleVolumeApi.compute() en la
+  // pantalla de resumen, sin depender de que ya esten guardadas en BD.
+  const muscleVolumeSets = useMemo(() => {
+    const sets: { exercise_id: number; weight: number | null; reps: number | null }[] = [];
+    allExercises.forEach((ex) => {
+      ex.rows.forEach((row) => {
+        if (!row.completed) return;
+        const carga = parseFloat(row.values.carga);
+        const reps = parseFloat(row.values.reps);
+        sets.push({
+          exercise_id: ex.exerciseId,
+          weight: isNaN(carga) ? null : carga,
+          reps: isNaN(reps) ? null : reps,
+        });
+      });
+    });
+    return sets;
+  }, [allExercises]);
 
   const syncExerciseLog = useCallback(
     (ex: SessionExercise) => {
@@ -305,8 +466,45 @@ export default function WorkoutSessionScreen(props: Props) {
     navigation?.navigate('MigratedExerciseInfo', {
       mExerciseId: ex.exerciseId,
       mExerciseName: ex.title,
+      initialTab: 'analysis',
     });
   };
+
+  // Punto 1: carga bajo demanda (solo para el ejercicio activo/expandido,
+  // una vez por exerciseId) la sugerencia PENDIENTE del Motor de
+  // Auto-Regulacion para ese ejercicio, si existe. Silenciosa ante
+  // cualquier error -- es un dato "extra" sobre el objetivo normal, nunca
+  // debe bloquear ni romper la sesion si falla.
+  const fetchLoadSuggestion = useCallback(
+    (ex: SessionExercise) => {
+      const clientId = state.user?.id;
+      if (!clientId || requestedSuggestionsRef.current.has(ex.exerciseId)) return;
+      requestedSuggestionsRef.current.add(ex.exerciseId);
+      loadSuggestionApi
+        .getProgressionHistory(ex.exerciseId, clientId)
+        .then((res) => {
+          const suggestion = pickPendingSuggestion(res.data?.data?.targets);
+          if (suggestion) {
+            setPendingLoadSuggestions((prev) => ({ ...prev, [ex.exerciseId]: suggestion }));
+          }
+        })
+        .catch(() => {});
+    },
+    [state.user?.id]
+  );
+
+  // Al cargar la sesion (fresca o retomada), pide de una vez la sugerencia
+  // del ejercicio que arranca activo/expandido en cada bloque (indice 0 por
+  // defecto, o el que se retomo de la sesion persistida).
+  useEffect(() => {
+    if (isLoading) return;
+    blocks.forEach((block, blockIdx) => {
+      const activeIdx = activeIndexByBlock[blockIdx] ?? 0;
+      const ex = block.exercises[activeIdx];
+      if (ex) fetchLoadSuggestion(ex);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, blocks.length]);
 
   // ─────────────────────── Picker "Añadir ejercicio" ───────────────────────
   const runPickerSearch = useCallback(async (query: string, bodyPartId: number | null, page: number) => {
@@ -371,6 +569,7 @@ export default function WorkoutSessionScreen(props: Props) {
       exerciseId: item.id,
       title: item.title,
       image: item.exercise_image,
+      bodyPartId: item.bodypart_name?.[0]?.id ?? null,
       videoUrl: item.video_url,
       prescribed: {},
       enabledMetrics: ADHOC_DEFAULT_METRICS,
@@ -393,6 +592,7 @@ export default function WorkoutSessionScreen(props: Props) {
       setActiveIndexByBlock((prevActive) => ({ ...prevActive, [targetBlockIdx]: newIdx }));
       return next;
     });
+    fetchLoadSuggestion(newExercise);
     setIsPickerVisible(false);
   };
 
@@ -407,7 +607,17 @@ export default function WorkoutSessionScreen(props: Props) {
   };
 
   const navigateToFeedback = () => {
+    // El cliente ya pulso "Finalizar" -> a partir de aqui la sesion pasa a
+    // la pantalla de Feedback (que hara el POST real de finishSession), asi
+    // que deja de ser una "sesion sin guardar" que haya que retomar.
+    clearPersistedSession();
     const exerciseIds = Array.from(new Set(allExercises.map((ex) => ex.exerciseId)));
+    // Solo ejercicios con al menos una serie completada, en el orden en que
+    // aparecen en la sesion — para la lista de ejercicios del carrusel de
+    // resumen (pantallas 4 y 6 de Pantallas_Resumen_Entrenamiento.md).
+    const exercisesSummary = allExercises
+      .map((ex) => ({ title: ex.title, sets: ex.rows.filter((r) => r.completed).length }))
+      .filter((ex) => ex.sets > 0);
     navigation?.navigate('MigratedWorkoutFeedback', {
       programDayAssignmentId,
       workoutTemplateId,
@@ -418,6 +628,8 @@ export default function WorkoutSessionScreen(props: Props) {
       exerciseCount: allExercises.length,
       completedSets: allExercises.reduce((sum, ex) => sum + ex.rows.filter((r) => r.completed).length, 0),
       exerciseIds,
+      muscleVolumeSets,
+      exercisesSummary,
     });
   };
 
@@ -432,10 +644,22 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const onClose = () => {
     if (!hasAnyProgress) {
+      // Sin ninguna serie marcada -- no hay nada que retomar, se descarta.
+      clearPersistedSession();
       navigation?.goBack();
       return;
     }
     setCloseConfirmVisible(true);
+  };
+
+  // Punto 5: "minimizar" -- sale de la pantalla SIN preguntar y SIN borrar
+  // la sesion persistida (a diferencia de onClose), porque el entrenamiento
+  // sigue activo y retomable: basta con volver a entrar a este mismo
+  // workout (mismo programDayAssignmentId/workoutTemplateId) para
+  // continuarlo con el tiempo real ya transcurrido y las series ya
+  // rellenadas intactas (ver efecto de persistencia/retomado mas arriba).
+  const onMinimize = () => {
+    navigation?.goBack();
   };
 
   if (isLoading) {
@@ -480,7 +704,7 @@ export default function WorkoutSessionScreen(props: Props) {
                   activeOpacity={0.7}
                   onPress={() => openExerciseInfo(ex)}
                 >
-                  <ExerciseThumbMem image={ex.image} size={56} />
+                  <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={56} />
                   <View style={styles.activeInfo}>
                     <Text style={styles.activeTitle} numberOfLines={2}>
                       {ex.title}
@@ -489,6 +713,13 @@ export default function WorkoutSessionScreen(props: Props) {
                       {formatPrescribedSubtitle(ex.prescribed)}
                     </Text>
                   </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.painReportBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setPainReportTarget(ex)}
+                >
+                  <Ionicons name="medkit-outline" size={20} color={C.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.collapseBtn}
@@ -515,53 +746,73 @@ export default function WorkoutSessionScreen(props: Props) {
                 onBlur={() => syncExerciseLog(ex)}
               />
 
-              <View style={styles.table}>
-                <View style={styles.tableHeaderRow}>
-                  <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
-                  {ex.enabledMetrics.map((key) => (
-                    <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]}>
-                      {metricLabel(key)}
-                    </Text>
-                  ))}
-                  <View style={styles.checkCol} />
-                </View>
-
-                {ex.rows.map((row, rowIdx) => (
-                  <View key={rowIdx} style={styles.tableRow}>
-                    <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
-                    {ex.enabledMetrics.map((key) => {
-                      const target = ex.prescribed?.[key];
-                      return (
-                        <View key={key} style={styles.metricCol}>
-                          <TextInput
-                            style={styles.tableInput}
-                            value={row.values[key] ?? ''}
-                            onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
-                            keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
-                            placeholder="-"
-                            placeholderTextColor={C.textSecondary}
-                          />
-                          {target != null && target !== '' ? (
-                            <Text style={styles.targetHint} numberOfLines={1}>
-                              Obj: {target}
-                            </Text>
-                          ) : null}
-                        </View>
-                      );
-                    })}
-                    <TouchableOpacity
-                      style={styles.checkCol}
-                      onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
-                    >
-                      <Ionicons
-                        name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
-                        size={26}
-                        color={row.completed ? C.success : C.textSecondary}
-                      />
-                    </TouchableOpacity>
+              {/* Con muchas métricas (reps, carga, rir, rpe, tempo, descanso...) las
+                  columnas a flex:1 se apretaban tanto que las etiquetas de
+                  cabecera envolvían a 2 líneas y se solapaban con la fila de
+                  inputs de abajo. Ancho fijo por columna + toda la tabla
+                  como una única fila horizontalmente scrolleable (en vez de
+                  comprimir texto) mantiene # / métricas / ✓ siempre alineados. */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.table}>
+                  <View style={styles.tableHeaderRow}>
+                    <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
+                    {ex.enabledMetrics.map((key) => (
+                      <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]} numberOfLines={1}>
+                        {metricLabel(key)}
+                      </Text>
+                    ))}
+                    <View style={styles.checkCol} />
                   </View>
-                ))}
-              </View>
+
+                  {ex.rows.map((row, rowIdx) => (
+                    <View key={rowIdx} style={styles.tableRow}>
+                      <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
+                      {ex.enabledMetrics.map((key) => {
+                        // Punto 1 (Motor de Auto-Regulacion de Carga): si hay una
+                        // sugerencia PENDIENTE del motor para este ejercicio, esa
+                        // es la carga/reps real que hay que usar -- se muestra en
+                        // vez del objetivo generico del coach (que sigue siendo el
+                        // fallback si no hay sugerencia, comportamiento de siempre).
+                        const suggestion = pendingLoadSuggestions[ex.exerciseId];
+                        const suggestedValue =
+                          key === 'carga' ? suggestion?.weight : key === 'reps' ? suggestion?.reps : null;
+                        const hasSuggestion = suggestedValue != null;
+                        const target = hasSuggestion ? suggestedValue : ex.prescribed?.[key];
+                        return (
+                          <View key={key} style={styles.metricCol}>
+                            <TextInput
+                              style={styles.tableInput}
+                              value={row.values[key] ?? ''}
+                              onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
+                              keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
+                              placeholder="-"
+                              placeholderTextColor={C.textSecondary}
+                            />
+                            {target != null && target !== '' ? (
+                              <Text
+                                style={[styles.targetHint, hasSuggestion && styles.targetHintSuggested]}
+                                numberOfLines={1}
+                              >
+                                {hasSuggestion ? `Sugerido: ${target}` : `Obj: ${target}`}
+                              </Text>
+                            ) : null}
+                          </View>
+                        );
+                      })}
+                      <TouchableOpacity
+                        style={styles.checkCol}
+                        onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
+                      >
+                        <Ionicons
+                          name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
+                          size={26}
+                          color={row.completed ? C.success : C.textSecondary}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
 
               <View style={styles.rowActions}>
                 <TouchableOpacity onPress={() => addRow(blockIdx, exIdx)}>
@@ -581,10 +832,13 @@ export default function WorkoutSessionScreen(props: Props) {
               key={ex.id}
               style={styles.collapsedRow}
               activeOpacity={0.7}
-              onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }))}
+              onPress={() => {
+                setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }));
+                fetchLoadSuggestion(ex);
+              }}
             >
               <TouchableOpacity activeOpacity={0.7} onPress={() => openExerciseInfo(ex)}>
-                <ExerciseThumbMem image={ex.image} size={48} />
+                <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={48} />
               </TouchableOpacity>
               <View style={styles.collapsedInfo}>
                 <Text style={styles.collapsedTitle} numberOfLines={2}>
@@ -594,6 +848,9 @@ export default function WorkoutSessionScreen(props: Props) {
                   {formatPrescribedSubtitle(ex.prescribed)}
                 </Text>
               </View>
+              {/* Punto 2: el boton de reportar dolor solo se ve con el
+                  acordeon del ejercicio abierto (tarjeta activa, arriba) --
+                  aqui, en fila colapsada, se quita. */}
               <Ionicons name="chevron-down" size={18} color={C.textSecondary} />
             </TouchableOpacity>
           )
@@ -612,7 +869,13 @@ export default function WorkoutSessionScreen(props: Props) {
         <Text style={styles.headerTitle} numberOfLines={1}>
           {mTitle || 'Entrenamiento'}
         </Text>
-        <View style={{ width: 26 }} />
+        <TouchableOpacity
+          onPress={onMinimize}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Minimizar entrenamiento"
+        >
+          <Ionicons name="chevron-down-circle-outline" size={24} color={C.textSecondary} />
+        </TouchableOpacity>
       </View>
 
       {/* Live stats */}
@@ -776,6 +1039,7 @@ export default function WorkoutSessionScreen(props: Props) {
         onCancel={() => setCloseConfirmVisible(false)}
         onConfirm={() => {
           setCloseConfirmVisible(false);
+          clearPersistedSession();
           navigation?.goBack();
         }}
       />
@@ -793,6 +1057,15 @@ export default function WorkoutSessionScreen(props: Props) {
           setEmptyFinishConfirmVisible(false);
           navigateToFeedback();
         }}
+      />
+
+      <PainReportSheet
+        visible={!!painReportTarget}
+        onClose={() => setPainReportTarget(null)}
+        sessionId={painReportSessionId}
+        isWorkoutTemplate={painReportIsWorkoutTemplate}
+        exerciseId={painReportTarget?.exerciseId ?? 0}
+        exerciseTitle={painReportTarget?.title}
       />
     </SafeAreaView>
   );
@@ -920,6 +1193,7 @@ const styles = StyleSheet.create({
   activeHeaderRow: { flexDirection: 'row', alignItems: 'center' },
   activeHeaderTapArea: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   collapseBtn: { padding: 4, marginLeft: 8 },
+  painReportBtn: { padding: 4, marginLeft: 8 },
   activeInfo: { flex: 1, marginLeft: 12 },
   activeTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary },
   activeSubtitle: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
@@ -981,8 +1255,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
+  // Punto 1: carga sugerida por el Motor de Auto-Regulacion (aun pendiente
+  // de aprobacion del coach) -- distinguible en color/peso del objetivo
+  // generico normal, misma posicion y tamano.
+  targetHintSuggested: {
+    fontFamily: FONT.semiBold,
+    color: C.warning60,
+  },
   serieCol: { width: 26 },
-  metricCol: { flex: 1 },
+  metricCol: { width: 72, marginHorizontal: 2 },
   checkCol: { width: 34, alignItems: 'center' },
   stickyFooter: {
     paddingHorizontal: 20,

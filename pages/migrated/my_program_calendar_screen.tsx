@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,31 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
+  Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
-import { workoutHistoryApi } from '../../api/workoutHistory';
+import { workoutHistoryApi, CompletedSessionItem } from '../../api/workoutHistory';
+import { adaptiveWeekPlansApi } from '../../api/adaptiveWeekPlans';
+import { checkinsApi, checkinTypeLabel, CheckInAssignment } from '../../api/checkins';
 
 interface CalendarWorkout {
   title?: string;
   assignmentId?: number;
+  workoutTemplateId?: number;
+}
+
+// Mismo fallback por palabra clave que usa MigratedSchedule (schedule_screen.tsx) —
+// el backend de getMyCalendar no expone thumbnail real del WorkoutTemplate, así que
+// se replica aquí el mismo criterio para que ambas pantallas se vean consistentes.
+function getWorkoutImage(title: string): string {
+  const t = (title || '').toLowerCase();
+  if (t.includes('cardio') || t.includes('hiit')) return 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400';
+  if (t.includes('strength') || t.includes('power') || t.includes('lift')) return 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400';
+  if (t.includes('rope') || t.includes('aero')) return 'https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=400';
+  return 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400';
 }
 
 interface CalendarDayModel {
@@ -96,12 +112,22 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mDays, setMDays] = useState<CalendarDayModel[]>([]);
   const [loadedYm, setLoadedYm] = useState<string | null>(null);
+  const [completedSessions, setCompletedSessions] = useState<CompletedSessionItem[]>([]);
+  const [pendingCheckins, setPendingCheckins] = useState<CheckInAssignment[]>([]);
 
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [periodMode, setPeriodMode] = useState<'week' | 'month'>('month');
   const [selectedMonth, setSelectedMonth] = useState(startOfMonth(today));
   const [weekAnchor, setWeekAnchor] = useState(startOfWeekMonday(today));
   const [selectedDayKey, setSelectedDayKey] = useState<string | null>(todayKey);
+
+  // Modo vida real (2026-08-12): el cliente marca desde su calendario qué
+  // días no podrá entrenar. Sigue pasando por aprobación del coach — esto
+  // solo crea la propuesta (POST request-unavailable), nunca aplica nada
+  // directamente.
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  const [submittingSelection, setSubmittingSelection] = useState(false);
 
   const dominantAnchor = periodMode === 'week' ? addDays(weekAnchor, 3) : selectedMonth;
   const ym = `${dominantAnchor.getFullYear()}-${dominantAnchor.getMonth() + 1}`;
@@ -119,6 +145,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         workouts: (d.workouts ?? []).map((w: any) => ({
           title: w.title,
           assignmentId: w.assignment_id,
+          workoutTemplateId: w.id,
         })),
       }));
       setMDays(mapped);
@@ -134,6 +161,57 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     if (ym === loadedYm) return;
     getData(dominantAnchor.getMonth() + 1, dominantAnchor.getFullYear(), ym);
   }, [ym, loadedYm, getData]);
+
+  // BUG REAL (2026-08-13, reportado por cliente): antes había un tercer
+  // criterio `completedByDate.has(dateKey)` que marcaba TODOS los workouts
+  // de un día como "hechos" en cuanto había CUALQUIER sesión completada esa
+  // fecha, sin comprobar a qué assignment/template pertenecía realmente esa
+  // sesión. Con datos reales (cliente 8, 2026-08-07) ese día tenía 6
+  // workouts programados (varios programas activos coincidiendo en la misma
+  // fecha) y solo 3 estaban realmente completados — el fallback por fecha
+  // pintaba los 6 en verde. Se elimina: solo cuentan como "hecho" los dos
+  // matches específicos (por program_day_assignment_id o por
+  // fecha+workout_template_id), igual que hace el backend para decidir el
+  // detalle de sesión (SessionDetailController).
+  useEffect(() => {
+    workoutHistoryApi
+      .getMyCompletedSessions()
+      .then((res) => setCompletedSessions(res.data?.data ?? []))
+      .catch(() => setCompletedSessions([]));
+  }, []);
+
+  // Sincroniza con "Mi plan de hoy" de Home (home_screen_modern.tsx): las
+  // mismas tareas no-workout del coach (check-ins/formularios pendientes)
+  // deben verse también aquí. A diferencia de los workouts (que sí tienen
+  // fecha exacta vía ProgramDayAssignment), un CheckInAssignment solo tiene
+  // recurrencia (daily/weekly/monthly) y un `is_due` que el backend calcula
+  // para "ahora" — no hay una fecha de vencimiento concreta que se le pueda
+  // asignar a un día pasado o futuro del calendario. Por eso solo se
+  // muestran en el panel del día seleccionado cuando ese día es HOY (ver
+  // uso más abajo), en vez de intentar proyectarlos sobre una celda
+  // concreta del grid con datos que no existen.
+  useEffect(() => {
+    checkinsApi
+      .getAssignedList()
+      .then((res) => setPendingCheckins((res.data?.data ?? []).filter((a) => a.is_due)))
+      .catch(() => setPendingCheckins([]));
+  }, []);
+
+  const completedAssignmentIds = useMemo(
+    () => new Set(completedSessions.filter((s) => s.program_day_assignment_id != null).map((s) => s.program_day_assignment_id as number)),
+    [completedSessions]
+  );
+  const completedByTemplate = useMemo(
+    () => new Set(completedSessions.filter((s) => s.workout_template_id != null && s.date).map((s) => `${String(s.date).slice(0, 10)}|${s.workout_template_id}`)),
+    [completedSessions]
+  );
+
+  const isWorkoutCompleted = useCallback(
+    (w: CalendarWorkout, dateKey: string) =>
+      (w.assignmentId != null && completedAssignmentIds.has(w.assignmentId)) ||
+      (w.workoutTemplateId != null && completedByTemplate.has(`${dateKey}|${w.workoutTemplateId}`)),
+    [completedAssignmentIds, completedByTemplate]
+  );
 
   const goPrev = () => {
     setSelectedDayKey(null);
@@ -164,20 +242,149 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const monthWeeks = periodMode === 'month' ? chunkIntoWeeks(mDays) : [];
   const selectedDay = visibleDays.find((d) => d.date === selectedDayKey) || null;
 
-  const daysWithWorkouts = visibleDays.filter((d) => d.workouts.length > 0 && (periodMode === 'week' || d.inMonth));
+  // Hoy puede tener tareas de coach (check-ins) sin tener ningún workout
+  // programado — no debe tratarse como "día de descanso" ni desaparecer del
+  // listado en ese caso.
+  const todayHasPendingCheckins = pendingCheckins.length > 0;
+  const daysWithWorkouts = visibleDays.filter(
+    (d) => (d.workouts.length > 0 || (d.date === todayKey && todayHasPendingCheckins)) && (periodMode === 'week' || d.inMonth)
+  );
 
-  const goToWorkout = (w: CalendarWorkout) => {
+  const goToWorkout = (w: CalendarWorkout, dateKey: string) => {
     if (w.assignmentId == null) return;
+    if (isWorkoutCompleted(w, dateKey)) {
+      // Día ya realizado: vista de solo lectura de lo que se hizo de verdad
+      // (mismo destino que Historial de entrenamientos), no el editor/preview
+      // de la plantilla. IMPORTANTE: no mandar también workoutTemplateId aquí
+      // — a diferencia de CompletedSessionItem (donde asignación y plantilla
+      // suelta son mutuamente excluyentes), en el calendario ambos IDs
+      // siempre vienen rellenos a la vez; si se manda workout_template_id el
+      // backend (SessionDetailController::getSessionDetail) lo trata como
+      // sesión "standalone" y busca el review por workout_template_id+fecha
+      // en vez de por program_day_assignment_id, perdiendo las series reales
+      // registradas (verificado con curl: total_sets pasa de 15 a 0).
+      navigation?.navigate('MigratedSessionHistoryDetail', {
+        programDayAssignmentId: w.assignmentId,
+        title: w.title,
+      });
+      return;
+    }
     navigation?.navigate('MigratedWorkoutPreview', {
       programDayAssignmentId: w.assignmentId,
       mTitle: w.title,
     });
   };
 
+  const renderWorkoutCard = (w: CalendarWorkout, dateKey: string, key: string | number) => {
+    const completed = isWorkoutCompleted(w, dateKey);
+    return (
+      <TouchableOpacity
+        key={key}
+        style={[styles.workoutCard, completed && styles.workoutCardCompleted]}
+        activeOpacity={0.7}
+        onPress={() => goToWorkout(w, dateKey)}
+      >
+        <Image source={{ uri: getWorkoutImage(w.title || '') }} style={styles.workoutImage} />
+        <View style={{ flex: 1, marginLeft: 14 }}>
+          <Text style={styles.workoutTitle} numberOfLines={1}>{w.title || ''}</Text>
+          {completed && (
+            <View style={styles.completedBadge}>
+              <Ionicons name="checkmark-circle" size={13} color={C.success} />
+              <Text style={styles.completedBadgeText}>Completado</Text>
+            </View>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCheckinCard = (a: CheckInAssignment) => (
+    <TouchableOpacity
+      key={`checkin-${a.id}`}
+      style={styles.workoutCard}
+      activeOpacity={0.7}
+      onPress={() => navigation?.navigate('MigratedCheckInFill', { formAssignmentId: a.id, formId: a.form_id, title: a.form.title })}
+    >
+      <View style={styles.checkinIconWrap}>
+        <Ionicons name="clipboard-outline" size={26} color={C.warning60} />
+      </View>
+      <View style={{ flex: 1, marginLeft: 14 }}>
+        <Text style={styles.workoutTitle} numberOfLines={1}>{a.form.title}</Text>
+        <Text style={styles.checkinSubtitle}>{checkinTypeLabel(a)}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
+    </TouchableOpacity>
+  );
+
+  const toggleDaySelection = (day: CalendarDayModel) => {
+    if (day.workouts.length === 0) return; // nada que marcar en un día de descanso real
+    setSelectedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(day.date)) next.delete(day.date);
+      else next.add(day.date);
+      return next;
+    });
+  };
+
+  const cancelSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedDates(new Set());
+  };
+
+  const submitUnavailableSelection = async () => {
+    if (selectedDates.size === 0) return;
+
+    // Agrupar por semana (lunes) -- una solicitud = una semana calendario,
+    // igual que el flujo del coach (AdaptiveWeekPlanner::persist()).
+    const byWeek = new Map<string, number[]>();
+    for (const dateKey of selectedDates) {
+      const dateObj = new Date(`${dateKey}T00:00:00`);
+      const weekStartKey = toDateKey(startOfWeekMonday(dateObj));
+      const day = mDays.find((d) => d.date === dateKey);
+      const ids = (day?.workouts ?? []).map((w) => w.assignmentId).filter((id): id is number => id != null);
+      if (!ids.length) continue;
+      byWeek.set(weekStartKey, [...(byWeek.get(weekStartKey) ?? []), ...ids]);
+    }
+
+    if (byWeek.size === 0) return;
+
+    setSubmittingSelection(true);
+    let okCount = 0;
+    let errCount = 0;
+    for (const [weekStart, ids] of byWeek) {
+      try {
+        await adaptiveWeekPlansApi.requestUnavailable(weekStart, ids);
+        okCount++;
+      } catch {
+        errCount++;
+      }
+    }
+    setSubmittingSelection(false);
+    cancelSelectionMode();
+
+    if (errCount === 0) {
+      Alert.alert(
+        'Solicitud enviada',
+        okCount > 1
+          ? `Se enviaron ${okCount} solicitudes (una por semana). Tu entrenador las revisará antes de que se apliquen.`
+          : 'Tu entrenador la revisará antes de que se aplique a tu calendario.'
+      );
+    } else {
+      Alert.alert('Solicitud parcial', `${okCount} semana(s) enviada(s) correctamente, ${errCount} fallaron. Inténtalo de nuevo.`);
+    }
+  };
+
   const renderDayCell = (day: CalendarDayModel, keyPrefix: string, big: boolean) => {
     const isToday = day.date === todayKey;
     const isSelected = day.date === selectedDayKey;
     const hasWorkout = day.workouts.length > 0;
+    const hasCompletedWorkout = day.workouts.some((w) => isWorkoutCompleted(w, day.date));
+    // Hoy puede tener check-ins/formularios pendientes sin ningún workout —
+    // igual que en el panel del día seleccionado, se refleja con un punto
+    // propio (color warning) para que la celda no se vea como día libre.
+    const hasTodayCheckin = day.date === todayKey && todayHasPendingCheckins;
+    const isMarkedUnavailable = selectionMode && selectedDates.has(day.date);
     const dateObj = new Date(`${day.date}T00:00:00`);
     return (
       <TouchableOpacity
@@ -185,22 +392,42 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         style={[
           styles.dayCell,
           big && styles.dayCellBig,
-          isSelected && styles.dayCellSelected,
+          isSelected && !selectionMode && (big ? styles.dayCellBigSelected : styles.dayCellSelected),
           isToday && !isSelected && styles.dayCellToday,
+          isMarkedUnavailable && styles.dayCellUnavailable,
         ]}
         activeOpacity={0.7}
-        onPress={() => setSelectedDayKey(day.date)}
+        disabled={selectionMode && !hasWorkout}
+        onPress={() => (selectionMode ? toggleDaySelection(day) : setSelectedDayKey(day.date))}
       >
+        {big && (
+          <Text style={styles.dayCellLetter}>
+            {WEEKDAY_LABELS[dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1]}
+          </Text>
+        )}
         <Text
           style={[
             styles.dayCellText,
             !day.inMonth && periodMode === 'month' && styles.dayCellTextMuted,
-            isSelected && styles.dayCellTextSelected,
+            isSelected && !big && !selectionMode && styles.dayCellTextSelected,
           ]}
         >
           {dateObj.getDate()}
         </Text>
-        {hasWorkout && <View style={[styles.dayDot, isSelected && styles.dayDotSelected]} />}
+        {isMarkedUnavailable ? (
+          <Ionicons name="close-circle" size={12} color={C.destructive} />
+        ) : (
+          (hasWorkout || hasTodayCheckin) && (
+            <View
+              style={[
+                styles.dayDot,
+                hasCompletedWorkout && styles.dayDotCompleted,
+                !hasWorkout && hasTodayCheckin && styles.dayDotCheckin,
+                isSelected && !big && styles.dayDotSelected,
+              ]}
+            />
+          )
+        )}
       </TouchableOpacity>
     );
   };
@@ -208,22 +435,39 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.header}>Mi programa</Text>
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[styles.viewToggleBtn, viewMode === 'calendar' && styles.viewToggleBtnActive]}
-            onPress={() => setViewMode('calendar')}
-          >
-            <Ionicons name="calendar-outline" size={18} color={viewMode === 'calendar' ? '#FFFFFF' : C.textSecondary} />
+        <Text style={styles.header}>{selectionMode ? 'Marca los días' : 'Mi programa'}</Text>
+        {selectionMode ? (
+          <TouchableOpacity onPress={cancelSelectionMode}>
+            <Text style={styles.unavailableCancelText}>Cancelar</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]}
-            onPress={() => setViewMode('list')}
-          >
-            <Ionicons name="list-outline" size={18} color={viewMode === 'list' ? '#FFFFFF' : C.textSecondary} />
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.viewToggle}>
+            <TouchableOpacity
+              style={styles.viewToggleBtn}
+              onPress={() => setSelectionMode(true)}
+            >
+              <Ionicons name="close-circle-outline" size={18} color={C.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewToggleBtn, viewMode === 'calendar' && styles.viewToggleBtnActive]}
+              onPress={() => setViewMode('calendar')}
+            >
+              <Ionicons name="calendar-outline" size={18} color={viewMode === 'calendar' ? '#FFFFFF' : C.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]}
+              onPress={() => setViewMode('list')}
+            >
+              <Ionicons name="list-outline" size={18} color={viewMode === 'list' ? '#FFFFFF' : C.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
+      {selectionMode && (
+        <Text style={styles.unavailableHint}>
+          Toca los días con entrenamiento que no vas a poder hacer. Tu entrenador revisará la solicitud antes de aplicarla.
+        </Text>
+      )}
 
       <View style={styles.periodToggleRow}>
         <TouchableOpacity
@@ -270,11 +514,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </View>
       ) : viewMode === 'calendar' ? (
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-          <View style={styles.weekdayHeaderRow}>
-            {WEEKDAY_LABELS.map((l, i) => (
-              <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
-            ))}
-          </View>
+          {periodMode === 'month' && (
+            <View style={styles.weekdayHeaderRow}>
+              {WEEKDAY_LABELS.map((l, i) => (
+                <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
+              ))}
+            </View>
+          )}
 
           {periodMode === 'month' ? (
             monthWeeks.map((week, wi) => (
@@ -292,19 +538,10 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
             <Text style={styles.selectedDayTitle}>
               {selectedDayKey ? formatDayLabel(selectedDayKey) : 'Selecciona un día'}
             </Text>
+            {selectedDayKey === todayKey && pendingCheckins.map(renderCheckinCard)}
             {selectedDay && selectedDay.workouts.length > 0 ? (
-              selectedDay.workouts.map((w, wi) => (
-                <TouchableOpacity
-                  key={wi}
-                  style={styles.workoutCard}
-                  activeOpacity={0.7}
-                  onPress={() => goToWorkout(w)}
-                >
-                  <Text style={styles.workoutTitle}>{w.title || ''}</Text>
-                  <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-                </TouchableOpacity>
-              ))
-            ) : selectedDayKey ? (
+              selectedDay.workouts.map((w, wi) => renderWorkoutCard(w, selectedDay.date, wi))
+            ) : selectedDayKey && !(selectedDayKey === todayKey && todayHasPendingCheckins) ? (
               <View style={styles.restDayCard}>
                 <Ionicons name="moon-outline" size={18} color={C.textSecondary} />
                 <Text style={styles.restDayText}>Día de descanso</Text>
@@ -321,27 +558,37 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day, dayIdx) => (
             <View key={dayIdx} style={styles.daySection}>
               <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
+              {day.date === todayKey && pendingCheckins.map(renderCheckinCard)}
               {day.workouts.length > 0 ? (
-                day.workouts.map((w, wIdx) => (
-                  <TouchableOpacity
-                    key={wIdx}
-                    style={styles.workoutCard}
-                    activeOpacity={0.7}
-                    onPress={() => goToWorkout(w)}
-                  >
-                    <Text style={styles.workoutTitle}>{w.title || ''}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-                  </TouchableOpacity>
-                ))
-              ) : (
+                day.workouts.map((w, wIdx) => renderWorkoutCard(w, day.date, wIdx))
+              ) : !(day.date === todayKey && todayHasPendingCheckins) ? (
                 <View style={styles.restDayCard}>
                   <Ionicons name="moon-outline" size={16} color={C.textSecondary} />
                   <Text style={styles.restDayText}>Día de descanso</Text>
                 </View>
-              )}
+              ) : null}
             </View>
           ))}
         </ScrollView>
+      )}
+
+      {selectionMode && selectedDates.size > 0 && (
+        <View style={styles.unavailableBar}>
+          <Text style={styles.unavailableBarText}>
+            {selectedDates.size} día{selectedDates.size !== 1 ? 's' : ''} seleccionado{selectedDates.size !== 1 ? 's' : ''}
+          </Text>
+          <TouchableOpacity
+            style={[styles.unavailableSubmitBtn, submittingSelection && { opacity: 0.6 }]}
+            onPress={submitUnavailableSelection}
+            disabled={submittingSelection}
+          >
+            {submittingSelection ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.unavailableSubmitText}>Enviar solicitud</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -424,6 +671,15 @@ const styles = StyleSheet.create({
   },
   dayCellBig: {
     aspectRatio: 0.85,
+    borderWidth: 1,
+    borderColor: C.gray70,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  dayCellBigSelected: {
+    backgroundColor: C.surface,
+    borderColor: C.orange,
+    borderWidth: 1.5,
   },
   dayCellSelected: {
     backgroundColor: '#1C1C1E',
@@ -431,6 +687,16 @@ const styles = StyleSheet.create({
   dayCellToday: {
     borderWidth: 1.5,
     borderColor: C.textPrimary,
+  },
+  dayCellUnavailable: {
+    backgroundColor: C.destructive5,
+    borderWidth: 1.5,
+    borderColor: C.destructive,
+  },
+  dayCellLetter: {
+    fontFamily: FONT.medium,
+    fontSize: 13,
+    color: C.textSecondary,
   },
   dayCellText: {
     fontFamily: FONT.semiBold,
@@ -449,6 +715,12 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: C.orange,
   },
+  dayDotCompleted: {
+    backgroundColor: C.success,
+  },
+  dayDotCheckin: {
+    backgroundColor: C.warning60,
+  },
   dayDotSelected: {
     backgroundColor: '#FFFFFF',
   },
@@ -465,14 +737,36 @@ const styles = StyleSheet.create({
   daySection: { marginBottom: 16 },
   dayDate: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, paddingHorizontal: 16 },
   workoutCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: C.surface,
+    borderRadius: 20,
+    padding: 12,
     marginTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    shadowColor: C.gray80,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  workoutImage: { width: 72, height: 72, borderRadius: 16 },
+  checkinIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: C.warning10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkinSubtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 2 },
+  workoutCardCompleted: {
+    backgroundColor: C.success10,
+    borderWidth: 1,
+    borderColor: C.success50,
   },
   workoutTitle: { flex: 1, fontSize: 15, fontFamily: FONT.bold, color: C.textPrimary },
+  completedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  completedBadgeText: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.success },
   restDayCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -486,4 +780,31 @@ const styles = StyleSheet.create({
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 32 },
   emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.textSecondary, textAlign: 'center' },
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  unavailableCancelText: { fontFamily: FONT.medium, fontSize: 14, color: C.destructive },
+  unavailableHint: {
+    fontFamily: FONT.regular,
+    fontSize: 12,
+    color: C.textSecondary,
+    paddingHorizontal: 20,
+    marginTop: -8,
+    marginBottom: 8,
+  },
+  unavailableBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: C.gray70,
+    backgroundColor: C.bg,
+  },
+  unavailableBarText: { fontFamily: FONT.medium, fontSize: 14, color: C.textPrimary },
+  unavailableSubmitBtn: {
+    backgroundColor: C.orange,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  unavailableSubmitText: { fontFamily: FONT.semiBold, fontSize: 14, color: '#FFFFFF' },
 });
