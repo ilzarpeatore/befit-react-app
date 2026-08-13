@@ -1,6 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react-native';
 
+import HomeScreenModern from '../home_screen_modern';
+
 jest.mock('@react-navigation/native', () => {
   const actual = jest.requireActual('@react-navigation/native');
   const React = require('react');
@@ -105,8 +107,6 @@ jest.mock('expo-image', () => {
   const { View } = require('react-native');
   return { Image: (props: any) => <View testID="expo-image" /> };
 });
-
-import HomeScreenModern from '../home_screen_modern';
 
 describe('HomeScreenModern', () => {
   it('renderiza las secciones principales tras cargar los datos', async () => {

@@ -3,43 +3,18 @@
   "compilerOptions": {
     "ignoreDeprecations": "6.0",
     "baseUrl": "./",
-    "types": [
-      "node",
-      "jest"
-    ],
+    "types": ["node", "jest"],
     "paths": {
-      "@components/*": [
-        "./components/*"
-      ],
-      "@pages/*": [
-        "./pages/*"
-      ],
-      "@assets/*": [
-        "./assets/*"
-      ],
-      "@constants/*": [
-        "./constants/*"
-      ],
-      "@helper/*": [
-        "./helper/*"
-      ],
-      "@store/*": [
-        "./store/*"
-      ],
-      "@api/*": [
-        "./api/*"
-      ],
-      "@hooks/*": [
-        "./hooks/*"
-      ],
-      "@/*": [
-        "./*"
-      ]
+      "@components/*": ["./components/*"],
+      "@pages/*": ["./pages/*"],
+      "@assets/*": ["./assets/*"],
+      "@constants/*": ["./constants/*"],
+      "@helper/*": ["./helper/*"],
+      "@store/*": ["./store/*"],
+      "@api/*": ["./api/*"],
+      "@hooks/*": ["./hooks/*"],
+      "@/*": ["./*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "nativewind-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"]
 }
