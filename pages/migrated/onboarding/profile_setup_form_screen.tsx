@@ -1,15 +1,22 @@
 ﻿import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@store/AuthContext";
+import { authApi } from "@api/auth";
 
 import { C, FONT } from "../theme";
 
 export default function ProfileSetupFormScreen({ navigation }: any) {
+  const { state, updateUser } = useAuth();
   const [nombre, setNombre] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [genero, setGenero] = useState("");
   const [showGenero, setShowGenero] = useState(false);
+  // fechaNac/nacionalidad/alergias/medicacion/suplementos/notas: sin columna real
+  // en `users`/`user_profiles` (verificado en el schema del VPS) — se piden en la
+  // UI pero hoy no hay dónde persistirlos sin añadir migraciones nuevas, decisión
+  // de producto/legal (son datos de salud sensibles) que no corresponde tomar aquí.
   const [fechaNac, setFechaNac] = useState("");
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -21,6 +28,7 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
   const [altura, setAltura] = useState("");
   const [peso, setPeso] = useState("");
   const [notas, setNotas] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const addAlergia = () => {
     if (alergiaInput.trim()) {
@@ -34,6 +42,47 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
   };
 
   const generos = ["Masculino", "Femenino", "Otro", "Prefiero no decir"];
+
+  const genderKeyMap: Record<string, string> = {
+    Masculino: "male",
+    Femenino: "female",
+    Otro: "other",
+    "Prefiero no decir": "not_specified",
+  };
+
+  const handleContinue = async () => {
+    setSaving(true);
+    try {
+      const payload: Record<string, any> = {
+        // update-profile exige username Y email siempre (UserRequest::rules()),
+        // aunque esta pantalla no los pida — sin ambos, el guardado falla 422
+        // aunque el resto del payload sea válido (mismo patrón de bug ya
+        // documentado en edit_profile_screen.tsx, pero con un campo obligatorio
+        // más que no estaba cubierto ahí).
+        username: state.user?.username,
+        email: state.user?.email,
+      };
+      if (nombre.trim()) payload.first_name = nombre.trim();
+      if (apellidos.trim()) payload.last_name = apellidos.trim();
+      if (telefono.trim()) payload.phone_number = telefono.trim();
+      if (genero) payload.gender = genderKeyMap[genero] ?? genero;
+      const userProfile: Record<string, any> = {};
+      if (direccion.trim()) userProfile.address = direccion.trim();
+      if (altura.trim()) userProfile.height = altura.trim();
+      if (peso.trim()) userProfile.weight = peso.trim();
+      if (Object.keys(userProfile).length > 0) payload.user_profile = userProfile;
+
+      const response = await authApi.updateProfile(payload);
+      if (state.user && response.data?.data) {
+        updateUser({ ...state.user, ...response.data.data });
+      }
+      navigation.navigate("MigratedAvatarSetup");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message || "No se pudo guardar tu información. Inténtalo de nuevo.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={localStyles.container}>
@@ -134,10 +183,15 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
 
       <View style={localStyles.bottomBar}>
         <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: C.primary }]}
-          onPress={() => navigation.navigate("MigratedAvatarSetup")}
+          style={[localStyles.continueBtn, { backgroundColor: C.primary, opacity: saving ? 0.7 : 1 }]}
+          onPress={handleContinue}
+          disabled={saving}
         >
-          <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
+          {saving ? (
+            <ActivityIndicator color={C.white} />
+          ) : (
+            <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

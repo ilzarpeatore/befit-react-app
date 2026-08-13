@@ -3,50 +3,15 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAr
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { shoppingApi, ShoppingListDetail, ShoppingListItemDetail, MeasurementUnit } from '@api/shopping';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-interface ShoppingListItem {
-  id?: number;
-  ingredientTitle?: string;
-  customItemName?: string;
-  manuallyAdded?: boolean;
-  isChecked?: boolean;
-  displayQuantity?: number;
-  displayUnitSymbol?: string;
-}
-
-interface ShoppingListItemByCategory {
-  ingredientCategoryTitle?: string;
-  items?: ShoppingListItem[];
-}
-
-interface ShoppingListDetailData {
-  id?: number;
-  userId?: number;
-  dailyPlanId?: number;
-  title?: string;
-  startDate?: string;
-  endDate?: string;
-  servings?: number;
-  status?: number;
-  itemsCount?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  items?: ShoppingListItem[];
-  itemsByCategory?: ShoppingListItemByCategory[];
-}
-
-interface MeasurementUnit {
-  id: number;
-  title?: string;
-  symbol?: string;
-}
 
 export default function ShoppingListDetailScreen(props: any) {
   const shoppingListId = props.route?.params?.shoppingListId ?? 0;
   const [isLoading, setIsLoading] = useState(true);
-  const [detailData, setDetailData] = useState<ShoppingListDetailData | null>(null);
+  const [detailData, setDetailData] = useState<ShoppingListDetail | null>(null);
   const [showByCategory, setShowByCategory] = useState(false);
   const [checkedMap, setCheckedMap] = useState<Map<number, boolean>>(new Map());
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -59,33 +24,34 @@ export default function ShoppingListDetailScreen(props: any) {
   const fetchDetail = useCallback(async () => {
     setIsLoading(true);
     try {
-      // const value = await getShoppingListDetailApi({ id: shoppingListId });
-      // setDetailData(value.data);
-      // Initialize checked map
+      const res = await shoppingApi.getDetail(shoppingListId);
+      const data = res.data?.data ?? null;
+      setDetailData(data);
       const newMap = new Map<number, boolean>();
-      // for (const item of value.data?.items ?? []) {
-      //   if (item.id != null) newMap.set(item.id, item.isChecked ?? false);
-      // }
+      for (const item of data?.items ?? []) {
+        newMap.set(item.id, item.is_checked ?? false);
+      }
       setCheckedMap(newMap);
     } catch (e: any) {
-      // toast(e.toString());
+      logger.error('Error fetching shopping list detail:', e);
     } finally {
       setIsLoading(false);
     }
   }, [shoppingListId]);
 
-  const toggleItem = async (item: ShoppingListItem) => {
+  const toggleItem = async (item: ShoppingListItemDetail) => {
     if (item.id == null) return;
-    const newStatus = !(checkedMap.get(item.id!) ?? false);
+    const newStatus = !(checkedMap.get(item.id) ?? false);
     const prevMap = new Map(checkedMap);
     setCheckedMap((prev) => {
       const newMap = new Map(prev);
-      newMap.set(item.id!, newStatus);
+      newMap.set(item.id, newStatus);
       return newMap;
     });
     try {
-      // await shoppingListItemToggleApi({ item_id: item.id, is_checked: newStatus ? 1 : 0 });
+      await shoppingApi.toggleItem(item.id, newStatus);
     } catch (e) {
+      logger.error('Error toggling shopping list item:', e);
       setCheckedMap(prevMap);
     }
   };
@@ -109,11 +75,13 @@ export default function ShoppingListDetailScreen(props: any) {
             text: 'Delete',
             style: 'destructive',
             onPress: async () => {
+              if (detailData?.id == null) return;
               try {
-                // await deleteShoppingListApi({ id: detailData?.id });
+                await shoppingApi.deleteShoppingList(detailData.id);
                 props.navigation.goBack(true);
               } catch (e: any) {
-                // toast(e.toString());
+                logger.error('Error deleting shopping list:', e);
+                Alert.alert('Error', 'No se pudo borrar la lista');
               }
             },
           },
@@ -122,10 +90,10 @@ export default function ShoppingListDetailScreen(props: any) {
     }
   };
 
-  const buildItem = (item: ShoppingListItem) => {
-    const checked = checkedMap.get(item.id!) ?? (item.isChecked === true);
-    const itemName = item.manuallyAdded === true ? (item.customItemName ?? '') : (item.ingredientTitle ?? '');
-    const quantityText = `${item.displayQuantity ?? ''} ${item.displayUnitSymbol ?? ''}`.trim();
+  const buildItem = (item: ShoppingListItemDetail) => {
+    const checked = checkedMap.get(item.id) ?? item.is_checked === true;
+    const itemName = item.manually_added === true ? (item.custom_item_name ?? '') : (item.ingredient_title ?? '');
+    const quantityText = `${item.display_quantity ?? ''} ${item.display_unit_symbol ?? ''}`.trim();
 
     return (
       <TouchableOpacity
@@ -177,7 +145,7 @@ export default function ShoppingListDetailScreen(props: any) {
   };
 
   const buildItemsByCategory = () => {
-    const categories = detailData?.itemsByCategory;
+    const categories = detailData?.items_by_category;
     if (!categories || categories.length === 0) {
       return (
         <View style={s.emptyContainer}>
@@ -191,7 +159,7 @@ export default function ShoppingListDetailScreen(props: any) {
         {categories.map((category, index) => (
           <View key={index}>
             <Text style={[s.categoryTitle, styles.fontBold]}>
-              {category.ingredientCategoryTitle || 'Custom'}
+              {category.ingredient_category_title || 'Otros'}
             </Text>
             {(category.items ?? []).map((item) => buildItem(item))}
             <View style={{ height: 16 }} />
@@ -293,11 +261,12 @@ function AddItemSheet({
   const loadUnits = async () => {
     setLoadingUnits(true);
     try {
-      // const res = await getMeasurementUnitsApi();
-      // setUnits(res.data ?? []);
-      // setSelectedUnit(res.data?.[0] ?? null);
+      const res = await shoppingApi.getMeasurementUnits();
+      const list = res.data?.data ?? [];
+      setUnits(list);
+      setSelectedUnit(list[0] ?? null);
     } catch (e) {
-      // toast(e.toString());
+      logger.error('Error loading measurement units:', e);
     } finally {
       setLoadingUnits(false);
     }
@@ -310,16 +279,17 @@ function AddItemSheet({
     }
     setSubmitting(true);
     try {
-      const req: any = {
+      const req: { shopping_list_id: number; custom_item_name: string; display_quantity?: number; measurement_unit_id?: number } = {
         shopping_list_id: shoppingListId,
         custom_item_name: name.trim(),
       };
       if (quantity.trim()) req.display_quantity = parseFloat(quantity.trim());
       if (selectedUnit) req.measurement_unit_id = selectedUnit.id;
-      // await addShoppingListItemApi(req);
+      await shoppingApi.addCustomItem(req);
       onAdded();
     } catch (e: any) {
-      // toast(e.toString());
+      logger.error('Error adding shopping list item:', e);
+      Alert.alert('Error', 'No se pudo añadir el item');
     } finally {
       setSubmitting(false);
     }

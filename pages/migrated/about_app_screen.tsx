@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import logger from '@helper/logger';
 
 export default function AboutAppScreen({ navigation }: any) {
   const [aboutPages, setAboutPages] = useState<any[]>([]);
@@ -21,7 +22,7 @@ export default function AboutAppScreen({ navigation }: any) {
       // setAboutPages(pages);
       setLoading(false);
     } catch (e) {
-      console.log('Error loading settings:', e);
+      logger.error('Error loading settings:', e);
       setLoading(false);
     }
   }

@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface ReadinessValues {
   sleep_quality: number; // 1-5
@@ -18,5 +19,5 @@ export interface ReadinessTodayResponse {
 export const readinessApi = {
   getToday: () => apiClient.get<ReadinessTodayResponse>('v1/readiness-today'),
 
-  submit: (values: ReadinessValues) => apiClient.post('v1/readiness-store', values),
+  submit: (values: ReadinessValues) => apiClient.post<ApiMessageResponse>('v1/readiness-store', values),
 };

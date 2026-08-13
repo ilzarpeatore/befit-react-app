@@ -70,5 +70,9 @@
     <string>Light</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
+    <key>NSHealthShareUsageDescription</key>
+    <string>BeFit usa tus datos de Salud (pasos, ritmo cardíaco, sueño) para mostrarte tu progreso real.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>BeFit puede registrar entrenamientos y métricas en tu app de Salud.</string>
   </dict>
 </plist>

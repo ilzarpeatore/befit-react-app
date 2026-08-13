@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.surfaceLight,
     alignItems: 'center',
   },
-  tabActive: { backgroundColor: C.brand50 },
+  tabActive: { backgroundColor: C.orange },
   tabText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.gray50 },
   tabTextActive: { color: C.white },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 24 },

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIn
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
+import { postsApi } from '../../api/posts';
+import logger from '@helper/logger';
 
 interface UserDetails {
   id?: number;
@@ -35,23 +37,29 @@ export default function OtherUserProfileScreen(props: any) {
     setFirstName(userDetails.firstName ?? '');
     setLastName(userDetails.lastName ?? '');
     setProfileImg(userDetails.profileImage ?? '');
-    getPostList();
-  }, []);
+    getPostList(1);
+  }, [userDetails.id]);
 
-  const getPostList = useCallback(async () => {
+  const getPostList = useCallback(async (pageNum: number = 1) => {
+    if (!userDetails.id) return;
     setIsLoading(true);
     try {
-      // API call placeholder: getPostsApi(page, userId)
-      // const value = await getPostsApi({ page, userId: userDetails.id });
-      // setNumPage(value.pagination?.totalPages ?? 1);
-      // if (page === 1) setPostList([]);
-      // setPostList(prev => [...prev, ...(value.data ?? [])]);
+      const res = await postsApi.getList(pageNum, userDetails.id);
+      setNumPage(res.data.pagination?.totalPages ?? 1);
+      const list: PostData[] = (res.data.data ?? []).map((p: any) => ({
+        id: p.id,
+        content: p.description,
+        images: p.posting_media_array?.map((m: any) => m.media_url) ?? [],
+        canEdit: p.can_edit,
+      }));
+      setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
+      setPage(pageNum);
     } catch (e) {
-      // handle error
+      logger.error('Error fetching user posts', e);
     } finally {
       setIsLoading(false);
     }
-  }, [page, userDetails.id]);
+  }, [userDetails.id]);
 
   const renderPostItem = (item: PostData, index: number) => (
     <View key={index} style={s.postCard}>

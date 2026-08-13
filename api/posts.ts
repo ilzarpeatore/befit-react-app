@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface PostData {
   id: number;
@@ -32,9 +33,26 @@ export interface PostListResponse {
   pagination: {
     total_items: number;
     per_page: number;
-    current_page: number;
-    total_pages: number;
+    // El backend (json_pagination_response en app/Helpers/helper.php) devuelve
+    // estas dos claves en camelCase, no snake_case como el resto del payload.
+    currentPage: number;
+    totalPages: number;
   };
+}
+
+export interface PostComment {
+  id: number;
+  comment: string;
+  user_id: number;
+  posting_id: number;
+  users: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    display_name: string;
+    profile_image: string;
+  };
+  created_at: string;
 }
 
 export const postsApi = {
@@ -45,23 +63,32 @@ export const postsApi = {
     apiClient.get<{ data: PostData }>(`userpost-detail?id=${postId}`),
 
   like: (postId: number) =>
-    apiClient.post('like-userpost', { posting_id: postId }),
+    apiClient.post<ApiMessageResponse>('like-userpost', { posting_id: postId }),
 
   bookmark: (postId: number) =>
-    apiClient.post('bookmark-userpost', { posting_id: postId }),
+    apiClient.post<ApiMessageResponse>('bookmark-userpost', { posting_id: postId }),
 
   saveComment: (postId: number, comment: string) =>
-    apiClient.post('save-comment', { posting_id: postId, comment }),
+    apiClient.post<ApiMessageResponse>('save-comment', { posting_id: postId, comment }),
 
   getComments: (postId: number, page: number = 1) =>
-    apiClient.get(`comment-list?posting_id=${postId}&page=${page}`),
+    apiClient.get<{ data: PostComment[] }>(`comment-list?posting_id=${postId}&page=${page}`),
 
   deletePost: (postId: number) =>
-    apiClient.post('delete-userpost', { id: postId }),
+    apiClient.post<ApiMessageResponse>('delete-userpost', { id: postId }),
 
   report: (postId: number, reason: string) =>
-    apiClient.post('report-on-posting', { posting_id: postId, reason }),
+    apiClient.post<ApiMessageResponse>('report-on-posting', { posting_id: postId, reason }),
 
   getBookmarks: (page: number = 1) =>
     apiClient.get<PostListResponse>(`my-bookmark-post-list?page=${page}`),
+
+  create: (description: string) =>
+    apiClient.post<ApiMessageResponse>('save-userpost', { description }),
+
+  update: (postId: number, description: string) =>
+    apiClient.post<ApiMessageResponse>('update-userpost', { id: postId, description }),
+
+  removeMedia: (postId: number, mediaIds: number[]) =>
+    apiClient.post<ApiMessageResponse>('remove-userpost-media', { posting_id: postId, ids: mediaIds }),
 };

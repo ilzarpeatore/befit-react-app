@@ -1,16 +1,46 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+import { stepsApi } from "@api/steps";
 
 export default function StepGoalScreen({ navigation }: any) {
 
   const [showEditSheet, setShowEditSheet] = useState(false);
   const [goal, setGoal] = useState(10000);
+  const [savedGoal, setSavedGoal] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
   const current = 3000;
   const percentage = Math.round((current / goal) * 100);
+
+  useEffect(() => {
+    stepsApi
+      .getGoalList()
+      .then((res) => {
+        const latest = res.data?.data?.[0];
+        if (latest?.value) {
+          setGoal(latest.value);
+          setSavedGoal(latest.value);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const confirmGoal = async () => {
+    setSaving(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await stepsApi.saveGoal(goal, today);
+      setSavedGoal(goal);
+    } catch {
+      // deja el valor local visible aunque el guardado falle; el usuario puede reintentar
+    } finally {
+      setSaving(false);
+      setShowEditSheet(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -68,9 +98,10 @@ export default function StepGoalScreen({ navigation }: any) {
           </View>
           <TouchableOpacity
             style={styles.sheetConfirmBtn}
-            onPress={() => setShowEditSheet(false)}
+            onPress={confirmGoal}
+            disabled={saving}
           >
-            <Text style={styles.sheetConfirmText}>Confirmar</Text>
+            <Text style={styles.sheetConfirmText}>{saving ? "Guardando..." : "Confirmar"}</Text>
           </TouchableOpacity>
         </View>
       )}

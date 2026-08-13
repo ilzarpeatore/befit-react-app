@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Image, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
-import { workoutsApi } from '../../api/workouts';
-import { dietApi } from '../../api/diet';
+import { workoutTemplateApi } from '../../api/workoutTemplate';
+import { recipesApi } from '../../api/recipes';
+import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -53,7 +54,7 @@ export default function FavouriteScreen(props: FavouriteScreenProps) {
             onPress={() => setSelect(false)}
           >
             <Text style={[localStyles.tabText, !select && localStyles.activeTabText]}>
-              Diet
+              Recipes
             </Text>
           </TouchableOpacity>
         </View>
@@ -64,7 +65,7 @@ export default function FavouriteScreen(props: FavouriteScreenProps) {
         {select ? (
           <WorkoutsFavContent navigation={props.navigation} />
         ) : (
-          <DietFavContent navigation={props.navigation} />
+          <RecipesFavContent navigation={props.navigation} />
         )}
       </View>
     </SafeAreaView>
@@ -72,6 +73,10 @@ export default function FavouriteScreen(props: FavouriteScreenProps) {
 }
 
 function WorkoutsFavContent({ navigation }: { navigation: any }) {
+  // Antes leia workoutsApi.getFavourite() (Workout v1 legacy, "Rutinas" - ya
+  // retirado de Home). El cliente hoy favorita WorkoutTemplate (v2) desde el
+  // boton bookmark de workout_preview_screen.tsx (workoutTemplateApi.setFavourite) -
+  // por eso nunca se veia nada aqui aunque el usuario si marcara favoritos.
   const [workouts, setWorkouts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,10 +87,10 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
   const loadWorkouts = async () => {
     setIsLoading(true);
     try {
-      const res = await workoutsApi.getFavourite();
+      const res = await workoutTemplateApi.getFavourite(1, 50);
       setWorkouts(res.data.data ?? []);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -115,9 +120,17 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
       renderItem={({ item }) => (
         <TouchableOpacity
           style={localStyles.listItem}
-          onPress={() => navigation.navigate('MigratedWorkoutDetail', { id: item.id })}
+          onPress={() =>
+            navigation.navigate('MigratedWorkoutPreview', {
+              workoutTemplateId: item.id,
+              mTitle: item.title,
+            })
+          }
           activeOpacity={0.7}
         >
+          {item.thumbnail ? (
+            <Image source={{ uri: item.thumbnail }} style={localStyles.itemThumb} />
+          ) : null}
           <Text style={localStyles.listItemTitle}>{item.title || ''}</Text>
         </TouchableOpacity>
       )}
@@ -125,21 +138,25 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
   );
 }
 
-function DietFavContent({ navigation }: { navigation: any }) {
-  const [diets, setDiets] = useState<any[]>([]);
+function RecipesFavContent({ navigation }: { navigation: any }) {
+  // Antes leia dietApi.getFavourite() (Diet legacy - catalogo de dietas
+  // completas, no lo que el usuario marca favorito de verdad). Las recetas
+  // reales se favoritan desde diet_detail_screen.tsx (recipesApi.setFavourite),
+  // mismo endpoint que ya usa favourite_recipe_screen.tsx.
+  const [recipes, setRecipes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadDiets();
+    loadRecipes();
   }, []);
 
-  const loadDiets = async () => {
+  const loadRecipes = async () => {
     setIsLoading(true);
     try {
-      const res = await dietApi.getFavourite();
-      setDiets(res.data.data ?? []);
+      const res = await recipesApi.getFavourite(1);
+      setRecipes(res.data.data ?? []);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -153,25 +170,33 @@ function DietFavContent({ navigation }: { navigation: any }) {
     );
   }
 
-  if (diets.length === 0) {
+  if (recipes.length === 0) {
     return (
       <View style={localStyles.centerContent}>
-        <Text style={localStyles.emptyText}>No favourite diets</Text>
+        <Text style={localStyles.emptyText}>No favourite recipes</Text>
       </View>
     );
   }
 
   return (
     <FlatList
-      data={diets}
+      data={recipes}
       keyExtractor={(item, i) => `${item.id}-${i}`}
       contentContainerStyle={{ padding: 16 }}
       renderItem={({ item }) => (
         <TouchableOpacity
           style={localStyles.listItem}
-          onPress={() => navigation.navigate('MigratedDietDetail', { dietModel: item })}
+          onPress={() =>
+            navigation.navigate('MigratedDietDetail', {
+              recipeId: item.id,
+              recipeImage: item.recipe_image || '',
+            })
+          }
           activeOpacity={0.7}
         >
+          {item.recipe_image ? (
+            <Image source={{ uri: item.recipe_image }} style={localStyles.itemThumb} />
+          ) : null}
           <Text style={localStyles.listItemTitle}>{item.title || ''}</Text>
         </TouchableOpacity>
       )}
@@ -238,8 +263,17 @@ const localStyles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  itemThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
   },
   listItemTitle: {
+    flex: 1,
     fontFamily: FONT.semiBold,
     fontSize: 14,
     color: C.white,

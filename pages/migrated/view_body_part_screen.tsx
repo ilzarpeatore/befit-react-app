@@ -1,140 +1,95 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Image } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { exercisesApi } from '../../api/exercises';
+import MuscleBodyMap from '../../components/MuscleBodyMap';
+import { bodyPartIdForMuscle, BODY_PART_ID_TO_NAME } from '../../constants/bodyMusclesMap';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
-
-function BodyPartComponent({ item, onPress }: { item: any; onPress: () => void }) {
-  return (
-    <TouchableOpacity style={styles.bodyPartCard} activeOpacity={0.8} onPress={onPress}>
-      <Image
-        source={{ uri: item.image || '' }}
-        style={styles.bodyPartImage}
-        resizeMode="cover"
-      />
-      <View style={styles.bodyPartOverlay}>
-        <Text style={styles.bodyPartName}>{item.name || 'Body Part'}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
+const MUSCLE_OPTIONS = Object.entries(BODY_PART_ID_TO_NAME)
+  .map(([id, name]) => ({ id: Number(id), name }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
 export default function ViewBodyPartScreen(props: any) {
-  const [bodyPartList, setBodyPartList] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const [searchText, setSearchText] = useState('');
+  const [listExpanded, setListExpanded] = useState(false);
 
-  useEffect(() => {
-    init();
-  }, []);
-
-  const init = () => {
-    getBodyPartData();
+  const goToExercises = (bodyPartId: number) => {
+    props.navigation.navigate('MigratedSearch', {
+      mTitle: BODY_PART_ID_TO_NAME[bodyPartId] ?? 'Ejercicios',
+      isBodyPart: true,
+      id: bodyPartId,
+    });
   };
 
-  const getBodyPartData = async () => {
-    setIsLoading(true);
-    try {
-      const value = await exercisesApi.getBodyParts(page);
-      const items = (value.data.data ?? []).map((bp) => ({
-        id: bp.id,
-        name: bp.title,
-        image: bp.bodypart_image,
-      }));
-      setNumPage(value.data.pagination?.totalPages ?? 1);
-      if (page === 1) setBodyPartList(items);
-      else setBodyPartList((prev) => [...prev, ...items]);
-      setIsLoading(false);
-    } catch (e) {
-      setIsLastPage(true);
-      setIsLoading(false);
+  const handleMusclePress = (muscleId: string) => {
+    const bodyPartId = bodyPartIdForMuscle(muscleId);
+    if (!bodyPartId) {
+      Alert.alert('Sin ejercicios', 'Todavía no hay ejercicios clasificados para esta zona.');
+      return;
     }
+    goToExercises(bodyPartId);
   };
 
-  const handleScroll = ({ nativeEvent }: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-    const isAtEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-    if (isAtEnd && !isLastPage && !isLoading && page < numPage) {
-      setPage(page + 1);
-      getBodyPartData();
-    }
-  };
-
-  if (bodyPartList.length > 0) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => props.navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={C.white} />
-          </TouchableOpacity>
-          <Text style={styles.appBarTitle}>Body Part Exercises</Text>
-        </View>
-
-        <ScrollView
-          ref={scrollRef}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          <View style={styles.grid}>
-            {bodyPartList.map((item, index) => (
-              <BodyPartComponent
-                key={item.id || index}
-                item={item}
-                onPress={() =>
-                  props.navigation.navigate('MigratedExerciseList', {
-                    mTitle: item.name,
-                    isBodyPart: true,
-                    id: item.id,
-                  })
-                }
-              />
-            ))}
-          </View>
-        </ScrollView>
-
-        {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
-        )}
-      </View>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => props.navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={C.white} />
-          </TouchableOpacity>
-          <Text style={styles.appBarTitle}>Body Part Exercises</Text>
-        </View>
-        <ActivityIndicator size="large" color={C.orange} style={{ flex: 1 }} />
-      </View>
-    );
-  }
+  const filteredOptions = useMemo(() => {
+    if (!searchText.trim()) return MUSCLE_OPTIONS;
+    const q = searchText.trim().toLowerCase();
+    return MUSCLE_OPTIONS.filter((opt) => opt.name.toLowerCase().includes(q));
+  }, [searchText]);
 
   return (
     <View style={styles.container}>
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.white} />
+          <Ionicons name="arrow-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Body Part Exercises</Text>
+        <Text style={styles.appBarTitle}>Buscar por músculo</Text>
+        <View style={{ width: 24 }} />
       </View>
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No data found</Text>
+
+      <View style={styles.searchRow}>
+        <Ionicons name="search" size={16} color={C.textSecondary} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar grupo muscular..."
+          placeholderTextColor={C.textSecondary}
+          value={searchText}
+          onChangeText={(v) => {
+            setSearchText(v);
+            if (v.length > 0) setListExpanded(true);
+          }}
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchText('')}>
+            <Ionicons name="close-circle" size={18} color={C.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
+
+      <TouchableOpacity style={styles.toggleRow} onPress={() => setListExpanded((prev) => !prev)}>
+        <Text style={styles.toggleText}>Ver lista de grupos musculares</Text>
+        <Ionicons name={listExpanded ? 'chevron-up' : 'chevron-down'} size={18} color={C.textPrimary} />
+      </TouchableOpacity>
+
+      {listExpanded ? (
+        <ScrollView style={styles.listWrap}>
+          {filteredOptions.map((opt) => (
+            <TouchableOpacity key={opt.id} style={styles.listRow} onPress={() => goToExercises(opt.id)}>
+              <Text style={styles.listRowText}>{opt.name}</Text>
+              <Ionicons name="chevron-forward" size={16} color={C.textSecondary} />
+            </TouchableOpacity>
+          ))}
+          {filteredOptions.length === 0 && (
+            <Text style={styles.emptyText}>Ningún grupo muscular coincide con la búsqueda.</Text>
+          )}
+        </ScrollView>
+      ) : (
+        <>
+          <Text style={styles.hint}>Toca una zona del cuerpo para ver sus ejercicios</Text>
+          <View style={styles.mapWrap}>
+            <MuscleBodyMap onMusclePress={handleMusclePress} height={420} />
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -144,41 +99,30 @@ const styles = StyleSheet.create({
   appBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 12,
-    gap: 12,
   },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 20 },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 15,
+  appBarTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
+  searchRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: C.surfaceLight, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
+    marginHorizontal: 20, marginBottom: 10,
   },
-  bodyPartCard: {
-    width: CARD_WIDTH,
-    height: CARD_WIDTH,
-    borderRadius: 12,
-    overflow: 'hidden',
+  searchInput: { flex: 1, fontFamily: FONT.regular, fontSize: 14, color: C.textPrimary },
+  toggleRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 8, marginHorizontal: 20, marginBottom: 8,
   },
-  bodyPartImage: { width: '100%', height: '100%' },
-  bodyPartOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  toggleText: { fontSize: 13, fontFamily: FONT.medium, color: C.textPrimary },
+  listWrap: { flex: 1, paddingHorizontal: 20 },
+  listRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: C.border,
   },
-  bodyPartName: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, fontFamily: FONT.bold, color: C.gray30 },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  listRowText: { fontSize: 15, fontFamily: FONT.regular, color: C.textPrimary },
+  emptyText: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, textAlign: 'center', paddingVertical: 40 },
+  hint: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, textAlign: 'center', marginBottom: 12 },
+  mapWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 40 },
 });

@@ -49,7 +49,7 @@ export default function CommunityFeed({ navigation }: Props) {
         } else {
           setPosts((prev) => [...prev, ...newData]);
         }
-        setHasMore(pagination ? pageNum < pagination.total_pages : false);
+        setHasMore(pagination ? pageNum < pagination.totalPages : false);
         setPage(pageNum);
       } catch (e) {
         if (pageNum === 1) setError("Failed to load posts. Please try again.");

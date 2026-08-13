@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+import { stepsApi } from "@api/steps";
 
 const { width } = Dimensions.get("window");
 
@@ -77,10 +78,35 @@ function Confetti() {
   );
 }
 
-export default function StepGoalCompletedScreen({ navigation }: any) {
+export default function StepGoalCompletedScreen({ navigation, route }: any) {
 
   const [showEditSheet, setShowEditSheet] = useState(false);
-  const [goal, setGoal] = useState(10000);
+  const [goal, setGoal] = useState<number>(route?.params?.goal ?? 10000);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (route?.params?.goal) return;
+    stepsApi
+      .getGoalList()
+      .then((res) => {
+        const latest = res.data?.data?.[0];
+        if (latest?.value) setGoal(latest.value);
+      })
+      .catch(() => {});
+  }, []);
+
+  const confirmGoal = async () => {
+    setSaving(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await stepsApi.saveGoal(goal, today);
+    } catch {
+      // deja el valor local visible aunque el guardado falle; el usuario puede reintentar
+    } finally {
+      setSaving(false);
+      setShowEditSheet(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,7 +119,7 @@ export default function StepGoalCompletedScreen({ navigation }: any) {
         </View>
 
         <Text style={styles.congratsText}>¡Meta alcanzada!</Text>
-        <Text style={styles.stepsText}>10,000 pasos completados</Text>
+        <Text style={styles.stepsText}>{goal.toLocaleString()} pasos completados</Text>
 
         <View style={styles.streakCard}>
           <Ionicons name="flame-outline" size={24} color="#FF6B6B" />
@@ -138,9 +164,10 @@ export default function StepGoalCompletedScreen({ navigation }: any) {
           </View>
           <TouchableOpacity
             style={styles.sheetConfirmBtn}
-            onPress={() => setShowEditSheet(false)}
+            onPress={confirmGoal}
+            disabled={saving}
           >
-            <Text style={styles.sheetConfirmText}>Confirmar</Text>
+            <Text style={styles.sheetConfirmText}>{saving ? "Guardando..." : "Confirmar"}</Text>
           </TouchableOpacity>
         </View>
       )}

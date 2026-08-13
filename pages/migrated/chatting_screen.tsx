@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { chatApi, ChatMessage } from '../../api/chat';
@@ -126,49 +126,61 @@ export default function ChattingScreen({ navigation }: any) {
         )}
       </View>
 
-      <View style={styles_local.body}>
-        {isLoadingHistory ? (
-          <View style={styles_local.emptyWrap}>
-            <ActivityIndicator size="large" color={C.orange} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={styles_local.body}>
+            {isLoadingHistory ? (
+              <View style={styles_local.emptyWrap}>
+                <ActivityIndicator size="large" color={C.orange} />
+              </View>
+            ) : messages.length > 0 ? (
+              <FlatList
+                ref={flatListRef}
+                data={messages}
+                renderItem={renderMessage}
+                keyExtractor={(item) => item.id}
+                inverted
+                contentContainerStyle={{ paddingVertical: 16 }}
+                ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="interactive"
+              />
+            ) : (
+              <View style={styles_local.emptyWrap}>
+                <Ionicons name="chatbubbles-outline" size={48} color={C.gray60} />
+                <Text style={styles_local.emptyTitle}>FitBot</Text>
+                <Text style={styles_local.emptySubtext}>Pregúntame sobre fitness y nutrición</Text>
+              </View>
+            )}
           </View>
-        ) : messages.length > 0 ? (
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            inverted
-            contentContainerStyle={{ paddingVertical: 16 }}
-            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          />
-        ) : (
-          <View style={styles_local.emptyWrap}>
-            <Ionicons name="chatbubbles-outline" size={48} color={C.gray60} />
-            <Text style={styles_local.emptyTitle}>FitBot</Text>
-            <Text style={styles_local.emptySubtext}>Pregúntame sobre fitness y nutrición</Text>
-          </View>
-        )}
-      </View>
+        </TouchableWithoutFeedback>
 
-      <View style={styles_local.inputBar}>
-        <TextInput
-          style={styles_local.textInput}
-          placeholder="Escribe un mensaje..."
-          placeholderTextColor={C.gray50}
-          value={msgController}
-          onChangeText={setMsgController}
-          onSubmitEditing={sendMessage}
-          multiline
-        />
-        <TouchableOpacity
-          style={[styles_local.sendBtn, !msgController.trim() && { opacity: 0.5 }]}
-          onPress={sendMessage}
-          disabled={!msgController.trim()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="send" size={16} color={C.white} />
-        </TouchableOpacity>
-      </View>
+        <View style={styles_local.inputBar}>
+          <TextInput
+            style={styles_local.textInput}
+            placeholder="Escribe un mensaje..."
+            placeholderTextColor={C.gray50}
+            value={msgController}
+            onChangeText={setMsgController}
+            onSubmitEditing={sendMessage}
+            blurOnSubmit={false}
+            returnKeyType="send"
+            multiline
+          />
+          <TouchableOpacity
+            style={[styles_local.sendBtn, !msgController.trim() && { opacity: 0.5 }]}
+            onPress={sendMessage}
+            disabled={!msgController.trim()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="send" size={16} color={C.white} />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
