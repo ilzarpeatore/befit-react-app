@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ActivityIndicator,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,7 +27,6 @@ export default function WebViewScreen(props: WebViewScreenProps) {
   const { mInitialUrl, isAdsLoad = false, onClick } = props.route?.params || {};
   const [isLoading, setIsLoading] = useState(true);
   const webViewRef = useRef<WebView>(null);
-  const successUrl = 'status=successful';
 
   const url = mInitialUrl || 'https://www.google.com';
 
@@ -39,22 +37,6 @@ export default function WebViewScreen(props: WebViewScreenProps) {
   const onNavigationStateChange = useCallback(
     (navState: any) => {
       const currentUrl = navState.url || '';
-
-      if (currentUrl.includes('https://www.google.com') || currentUrl.includes(successUrl)) {
-        onClick?.('Success');
-        props.navigation?.goBack();
-        Alert.alert('Success', 'Payment successful');
-        return;
-      }
-
-      if (
-        currentUrl.includes('https://login.yahoo.com') ||
-        currentUrl.includes('status=cancelled')
-      ) {
-        props.navigation?.goBack();
-        Alert.alert('Info', 'Payment cancelled');
-        return;
-      }
 
       // Handle social/app URLs - in RN webview these would open externally
       const externalDomains = [

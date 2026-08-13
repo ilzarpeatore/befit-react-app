@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
 
 export interface DietListItem {
   id: number;
@@ -200,7 +201,7 @@ export const dietApi = {
     apiClient.get<{ data: DietCategory[] }>(`categorydiet-list?page=${page}`),
 
   setFavourite: (dietId: number) =>
-    apiClient.post('set-favourite-diet', { diet_id: dietId }),
+        apiClient.post<ApiMessageResponse>('set-favourite-diet', { diet_id: dietId }),
 
   getFavourite: (page: number = 1) =>
     apiClient.get<DietListResponse>(`get-favourite-diet?page=${page}`),

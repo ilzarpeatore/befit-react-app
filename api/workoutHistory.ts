@@ -1,4 +1,6 @@
 import apiClient from './client';
+import { ApiMessageResponse } from './types';
+import { WorkoutDayExercise } from './workouts';
 
 export interface WorkoutSet {
   reps: string;
@@ -52,6 +54,7 @@ export interface CalendarDayExercise {
   title: string | null;
   video_url: string | null;
   exercise_image: string | null;
+  body_part_id: number | null;
   sets: Record<string, any>; // prescribed values merged with overrides/progression, e.g. { series: 3, reps: 10, carga: 50 }
   coach_notes: string | null;
   enabled_metrics: string[];
@@ -70,6 +73,11 @@ export interface CalendarDayDetail {
   workout_day_id: number; // = program_day_assignment_id
   sequence: number;
   is_rest: number;
+  // Semana adaptativa aplicada (2026-08-12): true si el día tenía
+  // entrenamiento real pero el motor lo ocultó entero para este cliente —
+  // distinto de is_rest (que es a nivel de plantilla compartida por todos
+  // los clientes del programa).
+  is_adjusted?: boolean;
   blocks: CalendarDayBlock[];
 }
 
@@ -82,9 +90,76 @@ export interface CalendarDayItem {
   workout_image: string;
 }
 
+export interface CompletedSessionItem {
+  id: number;
+  program_day_assignment_id: number | null;
+  workout_template_id: number | null;
+  title: string;
+  thumbnail: string | null;
+  date: string;
+  duration_seconds: number | null;
+  volume_kg: number | null;
+  calories_burned: number | null;
+  difficulty_rating: number | null;
+  difficulty_label: string | null;
+}
+
+export interface SessionDetailSet {
+  set: number;
+  weight: number;
+  reps: number;
+  rpe_rir: string | number | null;
+  one_rm: number;
+  volume: number;
+}
+
+export interface SessionDetailExercise {
+  exercise_id: number;
+  workout_template_exercise_id: number;
+  prescribed: Record<string, any>;
+  notes: string | null;
+  client_note: string | null;
+  title: string | null;
+  exercise_image: string | null;
+  video_url: string | null;
+  enabled_metrics: string[];
+  logged: boolean;
+  sets: SessionDetailSet[];
+  prs_this_session?: number;
+  exercise_volume?: number;
+}
+
+export interface SessionDetailBlock {
+  block_id: number;
+  title: string;
+  exercises: SessionDetailExercise[];
+}
+
+export interface SessionDetail {
+  title: string;
+  date: string;
+  difficulty_label: string | null;
+  comment: string | null;
+  total_sets: number;
+  total_volume: number;
+  total_reps: number;
+  total_prs: number;
+  blocks: SessionDetailBlock[];
+}
+
 export const workoutHistoryApi = {
+  // Historial real de entrenamientos completados (WorkoutSessionReview,
+  // mismo dato que ya ve el coach en "Entrenamientos completados" del panel
+  // admin) — reemplaza al histórico get-user-workout-exercise (sistema V1,
+  // sin datos reales desde que ese flujo dejó de usarse).
+  getMyCompletedSessions: () =>
+    apiClient.get<{ data: CompletedSessionItem[] }>('my-completed-sessions'),
+
+  getMySessionDetail: (params: { program_day_assignment_id?: number; workout_template_id?: number; date?: string }) =>
+    apiClient.get<{ data: SessionDetail }>('my-session-detail', { params }),
+
   storeWorkoutExercise: (payload: StoreWorkoutExercisePayload) =>
-    apiClient.post('v1/store-user-workout-exercise', payload),
+    apiClient.post<ApiMessageResponse>('v1/store-user-workout-exercise', payload),
 
   getWorkoutExerciseHistory: (params: {
     workout_id?: number;
@@ -94,7 +169,7 @@ export const workoutHistoryApi = {
     apiClient.get<WorkoutExerciseHistoryResponse>('v1/get-user-workout-exercise', { params }),
 
   getWorkoutDayExercise: (params: { workout_day_id: number; exercise_id: number }) =>
-    apiClient.get('v1/workoutday-exercise-list', { params }),
+    apiClient.get<{ data: WorkoutDayExercise[] }>('v1/workoutday-exercise-list', { params }),
 
   getMyCalendar: (month: number, year: number) =>
     apiClient.get<{ data: { days: CalendarMonthDay[] } }>('v1/my-calendar', { params: { month, year } }),
@@ -111,7 +186,7 @@ export const workoutHistoryApi = {
     logged_sets: Record<string, any>[];
     program_day_assignment_id?: number | null;
     notes?: string;
-  }) => apiClient.post('v1/my-calendar-log-sets', payload),
+  }) => apiClient.post<ApiMessageResponse>('v1/my-calendar-log-sets', payload),
 
   finishCalendarSession: (payload: {
     // Uno de los dos es obligatorio: program_day_assignment_id (dia de

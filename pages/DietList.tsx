@@ -35,6 +35,7 @@ export default function DietList({ navigation }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [categoryFilterOpen, setCategoryFilterOpen] = useState(false);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = useCallback(
@@ -136,40 +137,67 @@ export default function DietList({ navigation }: Props) {
         )}
       </View>
 
-      <FlatList
-        data={[{ id: 0, title: "All", categorydiet_image: "" } as DietCategory, ...categories]}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.chipList}
-        renderItem={({ item }) => {
-          const isActive =
-            item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
-          return (
-            <TouchableOpacity
-              onPress={() =>
-                onCategoryPress(item.id === 0 ? null : item.id)
-              }
-              activeOpacity={0.85}
-            >
-              {isActive ? (
-                <LinearGradient
-                  start={{ x: 0.24, y: -0.09 }}
-                  end={{ x: 0.78, y: 0.93 }}
-                  colors={[Colors.ACCENT_START, Colors.ACCENT_END]}
-                  style={styles.chip}
-                >
-                  <Text style={styles.chipTextActive}>{item.title}</Text>
-                </LinearGradient>
-              ) : (
-                <View style={styles.chipInactive}>
-                  <Text style={styles.chipText}>{item.title}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        }}
-      />
+      <TouchableOpacity
+        style={styles.filterToggle}
+        activeOpacity={0.85}
+        onPress={() => setCategoryFilterOpen((v) => !v)}
+      >
+        <Ionicons name="filter-outline" size={16} color={Colors.TEXT_PRIMARY} />
+        <Text style={styles.filterToggleText}>
+          {selectedCategory === null
+            ? "Categoría"
+            : categories.find((c) => c.id === selectedCategory)?.title ?? "Categoría"}
+        </Text>
+        <Ionicons
+          name={categoryFilterOpen ? "chevron-up" : "chevron-down"}
+          size={16}
+          color={Colors.TEXT_MUTED}
+        />
+      </TouchableOpacity>
+      {/* Nota: no hay filtro por país/etiqueta aquí a propósito — `diets` (modelo
+          legacy que alimenta esta pantalla) no tiene ningún campo de tag/país en
+          el backend (columnas reales: id/title/slug/categorydiet_id/calories/
+          carbs/protein/fat/servings/total_time/is_featured/status/ingredients/
+          description/is_premium/visibility). Las etiquetas de país (🇦🇷 Argentina,
+          etc.) sí existen pero en `Recipe.recipe_tag`, un modelo distinto — no se
+          inventó un filtro sin datos reales detrás de él. */}
+      {categoryFilterOpen && (
+        <FlatList
+          data={[{ id: 0, title: "All", categorydiet_image: "" } as DietCategory, ...categories]}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.chipList}
+          renderItem={({ item }) => {
+            const isActive =
+              item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
+            return (
+              <TouchableOpacity
+                onPress={() => {
+                  onCategoryPress(item.id === 0 ? null : item.id);
+                  setCategoryFilterOpen(false);
+                }}
+                activeOpacity={0.85}
+              >
+                {isActive ? (
+                  <LinearGradient
+                    start={{ x: 0.24, y: -0.09 }}
+                    end={{ x: 0.78, y: 0.93 }}
+                    colors={[Colors.ACCENT_START, Colors.ACCENT_END]}
+                    style={styles.chip}
+                  >
+                    <Text style={styles.chipTextActive}>{item.title}</Text>
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.chipInactive}>
+                    <Text style={styles.chipText}>{item.title}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
     </View>
   );
 
@@ -242,7 +270,10 @@ export default function DietList({ navigation }: Props) {
                 calories={Number(item.calories)}
                 image={item.diet_image}
                 onPress={() =>
-                  navigation.navigate("Migrated", { screen: "MigratedDietDetail", params: { id: item.id } })
+                  navigation.navigate("Migrated", {
+                    screen: "MigratedAssignedMeals",
+                    params: { dietId: item.id, dietTitle: item.title },
+                  })
                 }
               />
             </View>
@@ -302,6 +333,22 @@ function useStyle() {
       fontSize: "14@ratio",
       color: Colors.TEXT_PRIMARY,
       marginLeft: "8@ratio",
+    },
+    filterToggle: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      gap: "6@ratio",
+      backgroundColor: Colors.BG_CARD,
+      borderRadius: "20@ratio",
+      paddingHorizontal: "14@ratio",
+      paddingVertical: "8@ratio",
+      marginBottom: "10@ratio",
+    },
+    filterToggleText: {
+      fontFamily: "Gilroy-SemiBold",
+      fontSize: "13@ratio",
+      color: Colors.TEXT_PRIMARY,
     },
     chipList: {
       paddingBottom: "8@ratio",

@@ -28,7 +28,7 @@ export default function TermsAndConditionsScreen(props: any) {
               `4. Privacy\n` +
               `Your use of this application is also governed by our Privacy Policy.\n\n` +
               `5. Subscriptions\n` +
-              `Paid subscriptions are billed in advance on a recurring basis. You may cancel at any time.`}
+              `Paid plans are arranged and billed outside the app, directly with your coach. This application does not process any payment.`}
           </Text>
         </View>
       </ScrollView>

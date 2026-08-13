@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { ConfirmDialogMem } from '../../components/ConfirmDialog';
+import PainReportSheet from '../../components/PainReportSheet';
 import { useAuth } from '../../store/AuthContext';
 import { workoutHistoryApi } from '../../api/workoutHistory';
 import { MetricCatalogItem } from '../../api/workoutTemplate';
@@ -98,6 +99,13 @@ export default function WorkoutSessionScreen(props: Props) {
   const workoutTemplateId: number | undefined = route?.params?.workoutTemplateId;
   const mTitle: string | undefined = route?.params?.mTitle;
 
+  // Misma fuente de verdad que ya usan logSets()/finishSession() en el
+  // backend para identificar esta sesion: program_day_assignment_id por
+  // defecto, o workout_template_id (workout suelto sin programa) cuando no
+  // hay asignacion de programa - usado para POST /sessions/{id}/pain-report.
+  const painReportSessionId = programDayAssignmentId ?? workoutTemplateId;
+  const painReportIsWorkoutTemplate = programDayAssignmentId == null && workoutTemplateId != null;
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [blocks, setBlocks] = useState<SessionBlock[]>([]);
@@ -116,6 +124,7 @@ export default function WorkoutSessionScreen(props: Props) {
   const [selectedBodyPartId, setSelectedBodyPartId] = useState<number | null>(null);
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [emptyFinishConfirmVisible, setEmptyFinishConfirmVisible] = useState(false);
+  const [painReportTarget, setPainReportTarget] = useState<SessionExercise | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pagerRef = useRef<FlatList>(null);
@@ -207,6 +216,26 @@ export default function WorkoutSessionScreen(props: Props) {
     () => allExercises.some((ex) => ex.rows.some((r) => r.completed)),
     [allExercises]
   );
+
+  // Sets planos {exercise_id, weight, reps} de todas las series completadas
+  // de la sesion - se envian tal cual a muscleVolumeApi.compute() en la
+  // pantalla de resumen, sin depender de que ya esten guardadas en BD.
+  const muscleVolumeSets = useMemo(() => {
+    const sets: { exercise_id: number; weight: number | null; reps: number | null }[] = [];
+    allExercises.forEach((ex) => {
+      ex.rows.forEach((row) => {
+        if (!row.completed) return;
+        const carga = parseFloat(row.values.carga);
+        const reps = parseFloat(row.values.reps);
+        sets.push({
+          exercise_id: ex.exerciseId,
+          weight: isNaN(carga) ? null : carga,
+          reps: isNaN(reps) ? null : reps,
+        });
+      });
+    });
+    return sets;
+  }, [allExercises]);
 
   const syncExerciseLog = useCallback(
     (ex: SessionExercise) => {
@@ -305,6 +334,7 @@ export default function WorkoutSessionScreen(props: Props) {
     navigation?.navigate('MigratedExerciseInfo', {
       mExerciseId: ex.exerciseId,
       mExerciseName: ex.title,
+      initialTab: 'analysis',
     });
   };
 
@@ -371,6 +401,7 @@ export default function WorkoutSessionScreen(props: Props) {
       exerciseId: item.id,
       title: item.title,
       image: item.exercise_image,
+      bodyPartId: item.bodypart_name?.[0]?.id ?? null,
       videoUrl: item.video_url,
       prescribed: {},
       enabledMetrics: ADHOC_DEFAULT_METRICS,
@@ -408,6 +439,12 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const navigateToFeedback = () => {
     const exerciseIds = Array.from(new Set(allExercises.map((ex) => ex.exerciseId)));
+    // Solo ejercicios con al menos una serie completada, en el orden en que
+    // aparecen en la sesion — para la lista de ejercicios del carrusel de
+    // resumen (pantallas 4 y 6 de Pantallas_Resumen_Entrenamiento.md).
+    const exercisesSummary = allExercises
+      .map((ex) => ({ title: ex.title, sets: ex.rows.filter((r) => r.completed).length }))
+      .filter((ex) => ex.sets > 0);
     navigation?.navigate('MigratedWorkoutFeedback', {
       programDayAssignmentId,
       workoutTemplateId,
@@ -418,6 +455,8 @@ export default function WorkoutSessionScreen(props: Props) {
       exerciseCount: allExercises.length,
       completedSets: allExercises.reduce((sum, ex) => sum + ex.rows.filter((r) => r.completed).length, 0),
       exerciseIds,
+      muscleVolumeSets,
+      exercisesSummary,
     });
   };
 
@@ -480,7 +519,7 @@ export default function WorkoutSessionScreen(props: Props) {
                   activeOpacity={0.7}
                   onPress={() => openExerciseInfo(ex)}
                 >
-                  <ExerciseThumbMem image={ex.image} size={56} />
+                  <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={56} />
                   <View style={styles.activeInfo}>
                     <Text style={styles.activeTitle} numberOfLines={2}>
                       {ex.title}
@@ -489,6 +528,13 @@ export default function WorkoutSessionScreen(props: Props) {
                       {formatPrescribedSubtitle(ex.prescribed)}
                     </Text>
                   </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.painReportBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setPainReportTarget(ex)}
+                >
+                  <Ionicons name="medkit-outline" size={20} color={C.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.collapseBtn}
@@ -515,53 +561,61 @@ export default function WorkoutSessionScreen(props: Props) {
                 onBlur={() => syncExerciseLog(ex)}
               />
 
-              <View style={styles.table}>
-                <View style={styles.tableHeaderRow}>
-                  <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
-                  {ex.enabledMetrics.map((key) => (
-                    <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]}>
-                      {metricLabel(key)}
-                    </Text>
-                  ))}
-                  <View style={styles.checkCol} />
-                </View>
-
-                {ex.rows.map((row, rowIdx) => (
-                  <View key={rowIdx} style={styles.tableRow}>
-                    <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
-                    {ex.enabledMetrics.map((key) => {
-                      const target = ex.prescribed?.[key];
-                      return (
-                        <View key={key} style={styles.metricCol}>
-                          <TextInput
-                            style={styles.tableInput}
-                            value={row.values[key] ?? ''}
-                            onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
-                            keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
-                            placeholder="-"
-                            placeholderTextColor={C.textSecondary}
-                          />
-                          {target != null && target !== '' ? (
-                            <Text style={styles.targetHint} numberOfLines={1}>
-                              Obj: {target}
-                            </Text>
-                          ) : null}
-                        </View>
-                      );
-                    })}
-                    <TouchableOpacity
-                      style={styles.checkCol}
-                      onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
-                    >
-                      <Ionicons
-                        name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
-                        size={26}
-                        color={row.completed ? C.success : C.textSecondary}
-                      />
-                    </TouchableOpacity>
+              {/* Con muchas métricas (reps, carga, rir, rpe, tempo, descanso...) las
+                  columnas a flex:1 se apretaban tanto que las etiquetas de
+                  cabecera envolvían a 2 líneas y se solapaban con la fila de
+                  inputs de abajo. Ancho fijo por columna + toda la tabla
+                  como una única fila horizontalmente scrolleable (en vez de
+                  comprimir texto) mantiene # / métricas / ✓ siempre alineados. */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.table}>
+                  <View style={styles.tableHeaderRow}>
+                    <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
+                    {ex.enabledMetrics.map((key) => (
+                      <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]} numberOfLines={1}>
+                        {metricLabel(key)}
+                      </Text>
+                    ))}
+                    <View style={styles.checkCol} />
                   </View>
-                ))}
-              </View>
+
+                  {ex.rows.map((row, rowIdx) => (
+                    <View key={rowIdx} style={styles.tableRow}>
+                      <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
+                      {ex.enabledMetrics.map((key) => {
+                        const target = ex.prescribed?.[key];
+                        return (
+                          <View key={key} style={styles.metricCol}>
+                            <TextInput
+                              style={styles.tableInput}
+                              value={row.values[key] ?? ''}
+                              onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
+                              keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
+                              placeholder="-"
+                              placeholderTextColor={C.textSecondary}
+                            />
+                            {target != null && target !== '' ? (
+                              <Text style={styles.targetHint} numberOfLines={1}>
+                                Obj: {target}
+                              </Text>
+                            ) : null}
+                          </View>
+                        );
+                      })}
+                      <TouchableOpacity
+                        style={styles.checkCol}
+                        onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
+                      >
+                        <Ionicons
+                          name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
+                          size={26}
+                          color={row.completed ? C.success : C.textSecondary}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
 
               <View style={styles.rowActions}>
                 <TouchableOpacity onPress={() => addRow(blockIdx, exIdx)}>
@@ -584,7 +638,7 @@ export default function WorkoutSessionScreen(props: Props) {
               onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }))}
             >
               <TouchableOpacity activeOpacity={0.7} onPress={() => openExerciseInfo(ex)}>
-                <ExerciseThumbMem image={ex.image} size={48} />
+                <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={48} />
               </TouchableOpacity>
               <View style={styles.collapsedInfo}>
                 <Text style={styles.collapsedTitle} numberOfLines={2}>
@@ -594,6 +648,13 @@ export default function WorkoutSessionScreen(props: Props) {
                   {formatPrescribedSubtitle(ex.prescribed)}
                 </Text>
               </View>
+              <TouchableOpacity
+                style={styles.painReportBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => setPainReportTarget(ex)}
+              >
+                <Ionicons name="medkit-outline" size={18} color={C.textSecondary} />
+              </TouchableOpacity>
               <Ionicons name="chevron-down" size={18} color={C.textSecondary} />
             </TouchableOpacity>
           )
@@ -794,6 +855,15 @@ export default function WorkoutSessionScreen(props: Props) {
           navigateToFeedback();
         }}
       />
+
+      <PainReportSheet
+        visible={!!painReportTarget}
+        onClose={() => setPainReportTarget(null)}
+        sessionId={painReportSessionId}
+        isWorkoutTemplate={painReportIsWorkoutTemplate}
+        exerciseId={painReportTarget?.exerciseId ?? 0}
+        exerciseTitle={painReportTarget?.title}
+      />
     </SafeAreaView>
   );
 }
@@ -920,6 +990,7 @@ const styles = StyleSheet.create({
   activeHeaderRow: { flexDirection: 'row', alignItems: 'center' },
   activeHeaderTapArea: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   collapseBtn: { padding: 4, marginLeft: 8 },
+  painReportBtn: { padding: 4, marginLeft: 8 },
   activeInfo: { flex: 1, marginLeft: 12 },
   activeTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary },
   activeSubtitle: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
@@ -982,7 +1053,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   serieCol: { width: 26 },
-  metricCol: { flex: 1 },
+  metricCol: { width: 72, marginHorizontal: 2 },
   checkCol: { width: 34, alignItems: 'center' },
   stickyFooter: {
     paddingHorizontal: 20,

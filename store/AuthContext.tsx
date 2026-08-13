@@ -75,6 +75,8 @@ interface AuthContextType {
   updateUser: (user: UserData) => void;
   restoreToken: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  /** Derivado de state.user?.access_tier !== 'free' — evita repetir la comparación en cada pantalla nueva. */
+  isPaidTier: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -141,8 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLogoutHandler(logout);
   }, [logout]);
 
+  const isPaidTier = state.user?.access_tier !== undefined && state.user.access_tier !== 'free';
+
   return (
-    <AuthContext.Provider value={{ state, login, register, logout, updateUser, restoreToken, completeOnboarding }}>
+    <AuthContext.Provider value={{ state, login, register, logout, updateUser, restoreToken, completeOnboarding, isPaidTier }}>
       {children}
     </AuthContext.Provider>
   );
