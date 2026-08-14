@@ -1,8 +1,10 @@
-﻿import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import React from "react";
+import { View, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { Icon } from "@components/ui/icon";
 import { C, FONT } from "../theme";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -158,42 +160,45 @@ const cpStyles = StyleSheet.create({
 });
 
 export default function HealthMetricInsightScreen({ route }: any) {
-  const styles = useStyle();
   const metricType = route?.params?.metricType || "heart_rate";
   const data = METRIC_DATA[metricType] || METRIC_DATA.heart_rate;
 
   const maxTrend = Math.max(...data.trend);
 
   return (
-    <View style={styles.root}>
+    <Box className="flex-1 bg-background">
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.darkHeader}>
-          <Ionicons name={data.icon} size={28} color={data.iconColor} />
-          <Text style={styles.headerTitle}>{data.label} Insight</Text>
-        </View>
+        <Box className="flex-row items-center gap-3 px-5 py-4 bg-card border-b border-border">
+          <Icon name={data.icon} size={28} color={data.iconColor} />
+          <Heading size="md">{data.label} Insight</Heading>
+        </Box>
 
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.overviewRow}>
+          <Box className="flex-row flex-wrap gap-2.5" style={{ marginBottom: 24 }}>
             {[
               { label: "Peak", value: data.peak },
               { label: "Average", value: data.average },
               { label: "Min", value: data.min },
               { label: "Max", value: data.max },
             ].map((item) => (
-              <View key={item.label} style={styles.overviewCard}>
-                <Text style={styles.overviewLabel}>{item.label}</Text>
-                <Text style={styles.overviewValue}>{item.value}</Text>
-              </View>
+              <Box
+                key={item.label}
+                className="flex-1 bg-card rounded-md border border-border p-3.5"
+                style={{ minWidth: "45%" }}
+              >
+                <Text size="xs" muted style={{ marginBottom: 4 }}>{item.label}</Text>
+                <Text size="md" weight="bold">{item.value}</Text>
+              </Box>
             ))}
-          </View>
+          </Box>
 
-          <View style={styles.scoreSection}>
-            <Text style={styles.sectionTitle}>Current Status</Text>
+          <Box className="items-center" style={{ marginBottom: 28 }}>
+            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Current Status</Text>
             <CircularProgress score={data.score} />
-          </View>
+          </Box>
 
-          <View style={styles.chartSection}>
-            <Text style={styles.sectionTitle}>Daily Trend</Text>
+          <Box style={{ marginBottom: 28 }}>
+            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Daily Trend</Text>
             <View style={styles.chartRow}>
               {DAYS.map((day, i) => (
                 <View key={day} style={styles.chartCol}>
@@ -208,64 +213,31 @@ export default function HealthMetricInsightScreen({ route }: any) {
                       ]}
                     />
                   </View>
-                  <Text style={styles.chartDay}>{day}</Text>
+                  <Text size="xs" muted style={{ marginTop: 6 }}>{day}</Text>
                 </View>
               ))}
             </View>
-          </View>
+          </Box>
 
-          <View style={styles.recSection}>
-            <Text style={styles.sectionTitle}>Recommendations</Text>
+          <Box style={{ marginBottom: 32 }}>
+            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Recommendations</Text>
             {data.recommendations.map((rec: string, i: number) => (
-              <View key={i} style={styles.recItem}>
-                <Ionicons name="checkmark-circle" size={20} color={C.success50} />
-                <Text style={styles.recText}>{rec}</Text>
-              </View>
+              <Box key={i} className="flex-row items-center gap-2.5" style={{ marginBottom: 12 }}>
+                <Icon name="checkmark-circle" size={20} color={C.success50} />
+                <Text size="sm" muted style={{ flex: 1 }}>{rec}</Text>
+              </Box>
             ))}
-          </View>
+          </Box>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </Box>
   );
 }
 
-function useStyle() {
-  return useResponsiveStyleSheet({
-    root: { flex: 1, backgroundColor: C.bg },
-    darkHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      backgroundColor: C.surface,
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: C.border,
-    },
-    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
-    content: { padding: 20, paddingBottom: 40 },
-    overviewRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
-    overviewCard: {
-      flex: 1,
-      minWidth: "45%",
-      backgroundColor: C.surface,
-      borderRadius: 14,
-      padding: 14,
-      borderWidth: 1,
-      borderColor: C.border,
-    },
-    overviewLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginBottom: 4 },
-    overviewValue: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
-    scoreSection: { alignItems: "center", marginBottom: 28 },
-    sectionTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.white, marginBottom: 16 },
-    chartSection: { marginBottom: 28 },
-    chartRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 120 },
-    chartCol: { alignItems: "center", flex: 1 },
-    chartBarWrapper: { height: 100, justifyContent: "flex-end" },
-    chartBar: { width: 20, borderRadius: 6 },
-    chartDay: { fontSize: 11, fontFamily: FONT.regular, color: C.gray50, marginTop: 6 },
-    recSection: { marginBottom: 32 },
-    recItem: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-    recText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, flex: 1 },
-  });
-}
+const styles = StyleSheet.create({
+  content: { padding: 20, paddingBottom: 40 },
+  chartRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 120 },
+  chartCol: { alignItems: "center", flex: 1 },
+  chartBarWrapper: { height: 100, justifyContent: "flex-end" },
+  chartBar: { width: 20, borderRadius: 6 },
+});

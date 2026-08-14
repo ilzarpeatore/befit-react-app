@@ -1,100 +1,60 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 
 export default function AssignScreen({ navigation }: any) {
   const [select, setSelect] = useState(true);
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>Plan</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 50, paddingBottom: 14 }} className="flex-row items-center justify-between px-4 bg-card">
+        <Button variant="ghost" size="icon" onPress={() => navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Plan</Heading>
+        <Box className="w-10" />
+      </Box>
 
       {/* Tab bar */}
-      <View style={styles_local.tabBar}>
-        <TouchableOpacity
-          style={[styles_local.tab, select && styles_local.tabActive]}
+      <Box className="flex-row px-4 border-b border-border bg-card">
+        <Pressable
+          className={`flex-1 py-3 items-center border-b-2 ${select ? 'border-primary' : 'border-transparent'}`}
           onPress={() => setSelect(true)}
-          activeOpacity={0.7}
         >
-          <Text style={[styles_local.tabText, select && styles_local.tabTextActive]}>Workouts</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles_local.tab, !select && styles_local.tabActive]}
+          <Text weight="semibold" className={select ? 'text-foreground' : 'text-muted-foreground'}>
+            Workouts
+          </Text>
+        </Pressable>
+        <Pressable
+          className={`flex-1 py-3 items-center border-b-2 ${!select ? 'border-primary' : 'border-transparent'}`}
           onPress={() => setSelect(false)}
-          activeOpacity={0.7}
         >
-          <Text style={[styles_local.tabText, !select && styles_local.tabTextActive]}>Diet</Text>
-        </TouchableOpacity>
-      </View>
+          <Text weight="semibold" className={!select ? 'text-foreground' : 'text-muted-foreground'}>
+            Diet
+          </Text>
+        </Pressable>
+      </Box>
 
       {/* Content placeholder */}
-      <View style={styles_local.content}>
+      <Box className="flex-1 items-center justify-center">
         {select ? (
-          <View style={styles_local.placeholder}>
-            <Ionicons name="barbell-outline" size={48} color={C.gray60} />
-            <Text style={styles_local.placeholderText}>Workouts Assign View</Text>
-            <Text style={styles_local.placeholderSubtext}>TODO: Integrate ViewWorkoutsScreen</Text>
-          </View>
+          <Box className="items-center gap-3">
+            <Icon name="barbell-outline" size={48} className="text-muted-foreground" />
+            <Text weight="semibold" muted>Workouts Assign View</Text>
+            <Text size="sm" muted>TODO: Integrate ViewWorkoutsScreen</Text>
+          </Box>
         ) : (
-          <View style={styles_local.placeholder}>
-            <Ionicons name="nutrition-outline" size={48} color={C.gray60} />
-            <Text style={styles_local.placeholderText}>Diet Assign View</Text>
-            <Text style={styles_local.placeholderSubtext}>TODO: Integrate ViewAllDiet</Text>
-          </View>
+          <Box className="items-center gap-3">
+            <Icon name="nutrition-outline" size={48} className="text-muted-foreground" />
+            <Text weight="semibold" muted>Diet Assign View</Text>
+            <Text size="sm" muted>TODO: Integrate ViewAllDiet</Text>
+          </Box>
         )}
-      </View>
-    </View>
+      </Box>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  tabBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-    backgroundColor: C.surface,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabActive: {
-    borderBottomColor: C.brand5,
-  },
-  tabText: {
-    fontSize: 15,
-    fontFamily: FONT.semiBold,
-    color: C.gray40,
-  },
-  tabTextActive: {
-    color: C.textPrimary,
-  },
-  content: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  placeholder: { alignItems: 'center', gap: 12 },
-  placeholderText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray30 },
-  placeholderSubtext: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50 },
-});

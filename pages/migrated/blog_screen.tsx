@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, Image, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, ScrollView, TextInput, Dimensions, Image, Alert } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT } from './theme';
 import { blogApi, BlogListItem, BlogCategory } from '../../api/blog';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
@@ -134,72 +138,70 @@ export default function BlogScreen({ navigation }: any) {
   };
 
   const renderPostCard = (item: BlogListItem) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id}
       style={styles_local.blogCard}
-      activeOpacity={0.7}
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
         <Image source={{ uri: item.post_image }} style={styles_local.blogImage} resizeMode="cover" />
       ) : (
-        <View style={[styles_local.blogImage, { backgroundColor: C.surfaceLight }]} />
+        <Box style={[styles_local.blogImage, { backgroundColor: C.surfaceLight }]} />
       )}
-      <View style={styles_local.blogInfo}>
+      <Box style={styles_local.blogInfo}>
         <Text style={styles_local.blogTitle} numberOfLines={2}>{item.title || ''}</Text>
         <Text style={styles_local.blogExcerpt} numberOfLines={2}>
           {truncateText(item.description || item.content || '', 15)}
         </Text>
-      </View>
-    </TouchableOpacity>
+      </Box>
+    </Pressable>
   );
 
   const renderFeaturedCard = (item: BlogListItem, index: number) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id}
       style={[styles_local.featuredCard, index === 0 && styles_local.featuredCardLarge]}
-      activeOpacity={0.7}
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
         <Image source={{ uri: item.post_image }} style={styles_local.featuredImage} resizeMode="cover" />
       ) : (
-        <View style={[styles_local.featuredImage, { backgroundColor: C.surfaceLight }]} />
+        <Box style={[styles_local.featuredImage, { backgroundColor: C.surfaceLight }]} />
       )}
-      <View style={styles_local.featuredOverlay} />
+      <Box style={styles_local.featuredOverlay} />
       {item.blog_category && (
-        <View style={styles_local.featuredBadge}>
+        <Box style={styles_local.featuredBadge}>
           <Text style={styles_local.featuredBadgeText}>{item.blog_category.title}</Text>
-        </View>
+        </Box>
       )}
-      <View style={styles_local.featuredInfo}>
+      <Box style={styles_local.featuredInfo}>
         <Text style={styles_local.featuredTitle} numberOfLines={2}>{item.title ?? ''}</Text>
-      </View>
-    </TouchableOpacity>
+      </Box>
+    </Pressable>
   );
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+    <Box style={styles_local.container}>
+      <Box style={styles_local.header}>
+        <Pressable onPress={() => navigation.goBack()} style={styles_local.backBtn}>
+          <Icon name="chevron-back" size={24} color={C.white} />
+        </Pressable>
         <Text style={styles_local.headerTitle}>Blog</Text>
-        <TouchableOpacity
+        <Pressable
           style={styles_local.viewAllBtn}
           onPress={() => navigateToViewAll()}
         >
           <Text style={styles_local.viewAllText}>Ver todo</Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
 
       <ScrollView
         style={styles_local.body}
         showsVerticalScrollIndicator={false}
         bounces
       >
-        <View style={styles_local.searchWrap}>
-          <Ionicons name="search-outline" size={18} color={C.gray40} />
+        <Box style={styles_local.searchWrap}>
+          <Icon name="search-outline" size={18} color={C.gray40} />
           <TextInput
             style={styles_local.searchInput}
             placeholder="Buscar artículos..."
@@ -208,92 +210,92 @@ export default function BlogScreen({ navigation }: any) {
             onChangeText={handleSearch}
           />
           {searchText.length > 0 && (
-            <TouchableOpacity onPress={() => handleSearch('')}>
-              <Ionicons name="close-circle" size={18} color={C.gray40} />
-            </TouchableOpacity>
+            <Pressable onPress={() => handleSearch('')}>
+              <Icon name="close-circle" size={18} color={C.gray40} />
+            </Pressable>
           )}
-        </View>
+        </Box>
 
         {!isSearching && (
-          <View style={styles_local.filterRow}>
-            <TouchableOpacity style={styles_local.filterPill} onPress={() => setSortSheetVisible(true)} activeOpacity={0.75}>
-              <Ionicons name="swap-vertical-outline" size={15} color={C.white} />
+          <Box style={styles_local.filterRow}>
+            <Pressable style={styles_local.filterPill} onPress={() => setSortSheetVisible(true)}>
+              <Icon name="swap-vertical-outline" size={15} color={C.white} />
               <Text style={styles_local.filterPillText} numberOfLines={1}>
                 {SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.orderDir === orderDir)?.label ?? 'Ordenar'}
               </Text>
-              <Ionicons name="chevron-down" size={14} color={C.gray40} />
-            </TouchableOpacity>
+              <Icon name="chevron-down" size={14} color={C.gray40} />
+            </Pressable>
 
             {categories.length > 0 && (
-              <TouchableOpacity style={styles_local.filterPill} onPress={() => setCategorySheetVisible(true)} activeOpacity={0.75}>
-                <Ionicons name="pricetag-outline" size={15} color={C.white} />
+              <Pressable style={styles_local.filterPill} onPress={() => setCategorySheetVisible(true)}>
+                <Icon name="pricetag-outline" size={15} color={C.white} />
                 <Text style={styles_local.filterPillText} numberOfLines={1}>
                   {selectedCategory ? categories.find((c) => c.id === selectedCategory)?.title ?? 'Todos' : 'Todos'}
                 </Text>
-                <Ionicons name="chevron-down" size={14} color={C.gray40} />
-              </TouchableOpacity>
+                <Icon name="chevron-down" size={14} color={C.gray40} />
+              </Pressable>
             )}
-          </View>
+          </Box>
         )}
 
         {loading ? (
-          <View style={styles_local.loadingWrap}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={styles_local.loadingWrap}>
+            <Spinner size="large" color={C.orange} />
+          </Box>
         ) : isSearching ? (
-          <View style={styles_local.section}>
+          <Box style={styles_local.section}>
             <Text style={styles_local.sectionTitle}>Resultados ({searchResults.length})</Text>
             {searchResults.length > 0 ? (
               searchResults.map((item) => renderPostCard(item))
             ) : (
-              <View style={styles_local.emptyWrap}>
-                <Ionicons name="search-outline" size={48} color={C.gray60} />
+              <Box style={styles_local.emptyWrap}>
+                <Icon name="search-outline" size={48} color={C.gray60} />
                 <Text style={styles_local.emptyText}>Sin resultados</Text>
-              </View>
+              </Box>
             )}
-          </View>
+          </Box>
         ) : (
           <>
             {featuredPosts.length > 0 && !selectedCategory && (
-              <View style={styles_local.section}>
-                <View style={styles_local.sectionHeader}>
+              <Box style={styles_local.section}>
+                <Box style={styles_local.sectionHeader}>
                   <Text style={styles_local.sectionTitle}>Destacados</Text>
-                </View>
+                </Box>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles_local.featuredScroll}>
                   {featuredPosts.map((item, index) => renderFeaturedCard(item, index))}
                 </ScrollView>
-              </View>
+              </Box>
             )}
 
             {sections.map((section) => (
-              <View key={section.category.id || section.category.title} style={styles_local.section}>
-                <View style={styles_local.sectionHeader}>
+              <Box key={section.category.id || section.category.title} style={styles_local.section}>
+                <Box style={styles_local.sectionHeader}>
                   <Text style={styles_local.sectionTitle}>{section.category.title}</Text>
-                  <TouchableOpacity onPress={() => navigateToViewAll(section.category.title, section.category.id)}>
+                  <Pressable onPress={() => navigateToViewAll(section.category.title, section.category.id)}>
                     <Text style={styles_local.viewMoreText}>Ver más</Text>
-                  </TouchableOpacity>
-                </View>
+                  </Pressable>
+                </Box>
                 {section.posts.map((item) => renderPostCard(item))}
-              </View>
+              </Box>
             ))}
 
             {sections.length === 0 && featuredPosts.length === 0 && (
-              <View style={styles_local.emptyWrap}>
-                <Ionicons name="document-text-outline" size={48} color={C.gray60} />
+              <Box style={styles_local.emptyWrap}>
+                <Icon name="document-text-outline" size={48} color={C.gray60} />
                 <Text style={styles_local.emptyText}>No hay artículos disponibles</Text>
-              </View>
+              </Box>
             )}
           </>
         )}
       </ScrollView>
 
       <SimpleBottomSheet visible={sortSheetVisible} onClose={() => setSortSheetVisible(false)}>
-        <View style={styles_local.sheetContent}>
+        <Box style={styles_local.sheetContent}>
           <Text style={styles_local.sheetTitle}>Ordenar por</Text>
           {SORT_OPTIONS.map((opt) => {
             const active = opt.sortBy === sortBy && opt.orderDir === orderDir;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={opt.key}
                 style={styles_local.sheetOptionRow}
                 onPress={() => {
@@ -303,18 +305,18 @@ export default function BlogScreen({ navigation }: any) {
                 }}
               >
                 <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{opt.label}</Text>
-                {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-              </TouchableOpacity>
+                {active ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+              </Pressable>
             );
           })}
-        </View>
+        </Box>
       </SimpleBottomSheet>
 
       <SimpleBottomSheet visible={categorySheetVisible} onClose={() => setCategorySheetVisible(false)}>
-        <View style={styles_local.sheetContent}>
+        <Box style={styles_local.sheetContent}>
           <Text style={styles_local.sheetTitle}>Categoría</Text>
           <ScrollView style={{ maxHeight: 340 }}>
-            <TouchableOpacity
+            <Pressable
               style={styles_local.sheetOptionRow}
               onPress={() => {
                 setSelectedCategory(null);
@@ -322,12 +324,12 @@ export default function BlogScreen({ navigation }: any) {
               }}
             >
               <Text style={[styles_local.sheetOptionText, !selectedCategory && styles_local.sheetOptionTextActive]}>Todos</Text>
-              {!selectedCategory ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-            </TouchableOpacity>
+              {!selectedCategory ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+            </Pressable>
             {categories.map((cat) => {
               const active = selectedCategory === cat.id;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={cat.id}
                   style={styles_local.sheetOptionRow}
                   onPress={() => {
@@ -336,14 +338,14 @@ export default function BlogScreen({ navigation }: any) {
                   }}
                 >
                   <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{cat.title}</Text>
-                  {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-                </TouchableOpacity>
+                  {active ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+                </Pressable>
               );
             })}
           </ScrollView>
-        </View>
+        </Box>
       </SimpleBottomSheet>
-    </View>
+    </Box>
   );
 }
 

@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert, ActivityIndicator } from "react-native";
+import { Platform, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { VStack } from "@components/ui/vstack";
+import { Pressable } from "@components/ui/pressable";
+import { Icon } from "@components/ui/icon";
+import { Spinner } from "@components/ui/spinner";
 import { isHealthAvailable, requestHealthPermissions } from "@helper/health";
-import { C, FONT } from "../theme";
+import { C } from "../theme";
 
 const HEALTH_APP_NAME = Platform.OS === "ios" ? "Apple Salud" : "Health Connect";
 // HealthKit exige la capability 'com.apple.developer.healthkit', que Apple solo concede
@@ -15,7 +20,6 @@ const HEALTH_APP_NAME = Platform.OS === "ios" ? "Apple Salud" : "Health Connect"
 const HEALTH_INTEGRATION_AVAILABLE = Platform.OS === "android";
 
 export default function LinkDeviceChoiceScreen({ navigation }: any) {
-  const styles = useStyle();
   const [connecting, setConnecting] = useState(false);
 
   const handleConnectHealthApp = async () => {
@@ -45,117 +49,87 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
     }
   };
 
+  const renderOption = (
+    icon: string,
+    iconBg: string,
+    iconColor: string,
+    title: string,
+    desc: string,
+    onPress: () => void,
+    opts?: { disabled?: boolean; loading?: boolean }
+  ) => (
+    <Pressable
+      className="flex-row items-center bg-card rounded-lg border border-border"
+      style={{ padding: 20, gap: 16 }}
+      onPress={onPress}
+      disabled={opts?.disabled}
+    >
+      <Box className={`w-14 h-14 rounded-sm items-center justify-center ${iconBg}`}>
+        {opts?.loading ? (
+          <Spinner color={C.textPrimary} />
+        ) : (
+          <Icon name={icon as any} size={32} className={iconColor} />
+        )}
+      </Box>
+      <VStack className="flex-1" space="xs">
+        <Text weight="semibold">{title}</Text>
+        <Text size="xs" muted>{desc}</Text>
+      </VStack>
+      <Icon name="chevron-forward" size={20} className="text-muted-foreground" />
+    </Pressable>
+  );
+
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.content}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <VStack className="flex-1" space="lg" style={{ padding: 20, paddingBottom: 40 }}>
+        <Pressable
+          className="w-10 h-10 rounded-sm bg-card border border-border items-center justify-center"
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-back" size={22} className="text-foreground" />
+        </Pressable>
 
-          <Text style={styles.title}>Connect your device</Text>
-          <Text style={styles.subtitle}>Choose how you want to track your fitness data</Text>
+        <VStack space="xs">
+          <Heading size="xl">Connect your device</Heading>
+          <Text muted>Choose how you want to track your fitness data</Text>
+        </VStack>
 
-          {HEALTH_INTEGRATION_AVAILABLE && (
-            <TouchableOpacity
-              style={styles.optionTile}
-              activeOpacity={0.7}
-              onPress={handleConnectHealthApp}
-              disabled={connecting}
-            >
-              <View style={[styles.optionIcon, { backgroundColor: C.brand10 }]}>
-                {connecting ? (
-                  <ActivityIndicator color={C.textPrimary} />
-                ) : (
-                  <Ionicons name="heart" size={32} color={C.textPrimary} />
-                )}
-              </View>
-              <Text style={styles.optionTitle}>{HEALTH_APP_NAME}</Text>
-              <Text style={styles.optionDesc}>Sincroniza pasos, ritmo cardíaco y más</Text>
-              <Ionicons name="chevron-forward" size={20} color={C.gray50} />
-            </TouchableOpacity>
+        <VStack space="md">
+          {HEALTH_INTEGRATION_AVAILABLE &&
+            renderOption(
+              "heart",
+              "bg-secondary",
+              "text-foreground",
+              HEALTH_APP_NAME,
+              "Sincroniza pasos, ritmo cardíaco y más",
+              handleConnectHealthApp,
+              { disabled: connecting, loading: connecting }
+            )}
+
+          {renderOption(
+            "watch",
+            "bg-secondary",
+            "text-foreground",
+            "Wearable Device",
+            "Connect via Bluetooth",
+            () => navigation.navigate("MigratedLinkDeviceList")
           )}
 
-          <TouchableOpacity
-            style={styles.optionTile}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate("MigratedLinkDeviceList")}
-          >
-            <View style={[styles.optionIcon, { backgroundColor: C.brand10 }]}>
-              <Ionicons name="watch" size={32} color={C.textPrimary} />
-            </View>
-            <Text style={styles.optionTitle}>Wearable Device</Text>
-            <Text style={styles.optionDesc}>Connect via Bluetooth</Text>
-            <Ionicons name="chevron-forward" size={20} color={C.gray50} />
-          </TouchableOpacity>
+          {renderOption(
+            "create-outline",
+            "bg-success",
+            "text-success-foreground",
+            "Manual Entry",
+            "Log steps manually",
+            () => navigation.navigate("MigratedLogStepsForm")
+          )}
+        </VStack>
 
-          <TouchableOpacity
-            style={styles.optionTile}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate("MigratedLogStepsForm")}
-          >
-            <View style={[styles.optionIcon, { backgroundColor: C.success5 }]}>
-              <Ionicons name="create-outline" size={32} color={C.success50} />
-            </View>
-            <Text style={styles.optionTitle}>Manual Entry</Text>
-            <Text style={styles.optionDesc}>Log steps manually</Text>
-            <Ionicons name="chevron-forward" size={20} color={C.gray50} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.helpBtn}>
-            <Ionicons name="help-circle-outline" size={20} color={C.textPrimary} />
-            <Text style={styles.helpText}>Need help connecting?</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </View>
+        <Pressable className="flex-row items-center justify-center" style={{ gap: 8, marginTop: 20 }}>
+          <Icon name="help-circle-outline" size={20} className="text-primary" />
+          <Text size="sm" weight="medium" className="text-primary">Need help connecting?</Text>
+        </Pressable>
+      </VStack>
+    </SafeAreaView>
   );
-}
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    root: { flex: 1, backgroundColor: C.bg },
-    content: { flex: 1, padding: 20, paddingBottom: 40 },
-    backBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.border,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 24,
-    },
-    title: { fontSize: 28, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, marginBottom: 32 },
-    optionTile: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: C.surface,
-      borderRadius: 18,
-      padding: 20,
-      borderWidth: 1,
-      borderColor: C.border,
-      marginBottom: 16,
-      gap: 16,
-    },
-    optionIcon: {
-      width: 56,
-      height: 56,
-      borderRadius: 16,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    optionTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white, flex: 1 },
-    optionDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, position: "absolute", bottom: 20, left: 92 },
-    helpBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      marginTop: 20,
-    },
-    helpText: { fontSize: 14, fontFamily: FONT.medium, color: C.textPrimary },
-  });
 }

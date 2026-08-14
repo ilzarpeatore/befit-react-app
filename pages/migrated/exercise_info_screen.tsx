@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
   Image,
-  TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
   LayoutAnimation,
   Platform,
   UIManager,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT } from './theme';
 import { ExerciseMediaHeaderMem, ExerciseHeaderFloatingIcons, HEADER_HEIGHT_RATIO } from '../../components/ExerciseMediaHeader';
 import { MuscleIsolateIconMem } from '../../components/MuscleIsolateIcon';
@@ -188,9 +188,9 @@ export default function ExerciseInfoScreen(props: Props) {
           isFavourite={false}
           onToggleFavourite={() => {}}
         />
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
@@ -203,9 +203,9 @@ export default function ExerciseInfoScreen(props: Props) {
           isFavourite={false}
           onToggleFavourite={() => {}}
         />
-        <View style={styles.loader}>
+        <Box style={styles.loader}>
           <ErrorRetryMem message="No se pudo cargar el ejercicio." onRetry={loadDetail} />
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -239,56 +239,56 @@ export default function ExerciseInfoScreen(props: Props) {
           }
         />
 
-        <View style={styles.panel}>
+        <Box style={styles.panel}>
           {/* Badges */}
-          <View style={styles.badgeRow}>
+          <Box style={styles.badgeRow}>
             {detail.muscle?.primary ? (
-              <View style={styles.muscleBadge}>
+              <Box style={styles.muscleBadge}>
                 <Text style={styles.muscleBadgeText}>{detail.muscle.primary.name.toUpperCase()}</Text>
-              </View>
+              </Box>
             ) : null}
             {detail.is_popular ? (
-              <View style={styles.popularBadge}>
+              <Box style={styles.popularBadge}>
                 <Text style={styles.popularBadgeText}>MUY POPULAR</Text>
-              </View>
+              </Box>
             ) : null}
-          </View>
+          </Box>
 
           <Text style={styles.title}>{detail.title}</Text>
 
           {/* Feedback row */}
-          <View style={styles.feedbackRow}>
+          <Box style={styles.feedbackRow}>
             <Text style={styles.feedbackText}>
               ¿Cómo te gustaría que te recomendemos este ejercicio?
             </Text>
-            <View style={styles.feedbackBtns}>
-              <TouchableOpacity
+            <Box style={styles.feedbackBtns}>
+              <Pressable
                 style={[styles.feedbackBtn, detail.user_feedback === 'like' && styles.feedbackBtnActive]}
                 onPress={() => onFeedback('like')}
               >
-                <Ionicons
+                <Icon
                   name="thumbs-up"
                   size={20}
                   color={detail.user_feedback === 'like' ? '#FFFFFF' : C.textSecondary}
                 />
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 style={[styles.feedbackBtn, detail.user_feedback === 'dislike' && styles.feedbackBtnActiveNegative]}
                 onPress={() => onFeedback('dislike')}
               >
-                <Ionicons
+                <Icon
                   name="thumbs-down"
                   size={20}
                   color={detail.user_feedback === 'dislike' ? '#FFFFFF' : C.textSecondary}
                 />
-              </TouchableOpacity>
-            </View>
-          </View>
+              </Pressable>
+            </Box>
+          </Box>
 
           {/* Tab bar */}
-          <View style={styles.tabBar}>
+          <Box style={styles.tabBar}>
             {TABS.map((t) => (
-              <TouchableOpacity
+              <Pressable
                 key={t.key}
                 style={[styles.tabPill, activeTab === t.key && styles.tabPillActive]}
                 onPress={() => onSelectTab(t.key)}
@@ -296,12 +296,12 @@ export default function ExerciseInfoScreen(props: Props) {
                 <Text style={[styles.tabPillText, activeTab === t.key && styles.tabPillTextActive]}>
                   {t.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
-          </View>
+          </Box>
 
           {/* Tab content */}
-          <View style={styles.tabContent}>
+          <Box style={styles.tabContent}>
             {activeTab === 'muscle' && (
               <MuscleTab primary={detail.muscle?.primary ?? null} secondary={detail.muscle?.secondary ?? []} />
             )}
@@ -322,8 +322,8 @@ export default function ExerciseInfoScreen(props: Props) {
                 onRetry={loadAnalysis}
               />
             )}
-          </View>
-        </View>
+          </Box>
+        </Box>
       </ScrollView>
     </SafeAreaView>
   );
@@ -337,39 +337,39 @@ function MuscleTab({
   secondary: ExerciseDetailData['muscle']['secondary'];
 }) {
   return (
-    <View>
+    <Box>
       {primary ? (
-        <View style={styles.muscleSection}>
+        <Box style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>PRINCIPAL</Text>
           <MuscleRow name={primary.name} />
-        </View>
+        </Box>
       ) : (
         <Text style={styles.emptyText}>No hay información muscular disponible.</Text>
       )}
 
       {secondary.length > 0 && (
-        <View style={styles.muscleSection}>
+        <Box style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>SECUNDARIA</Text>
           {secondary.map((m, idx) => (
-            <View key={`${m.name}-${idx}`}>
+            <Box key={`${m.name}-${idx}`}>
               <MuscleRow name={m.name} />
-              {idx < secondary.length - 1 && <View style={styles.rowSeparator} />}
-            </View>
+              {idx < secondary.length - 1 && <Box style={styles.rowSeparator} />}
+            </Box>
           ))}
-        </View>
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
 
 function MuscleRow({ name }: { name: string }) {
   return (
-    <View style={styles.muscleRow}>
-      <View style={styles.muscleIconWrap}>
+    <Box style={styles.muscleRow}>
+      <Box style={styles.muscleIconWrap}>
         <MuscleIsolateIconMem muscleName={name} size={56} />
-      </View>
+      </Box>
       <Text style={styles.muscleRowText}>{name}</Text>
-    </View>
+    </Box>
   );
 }
 
@@ -385,45 +385,45 @@ function InstructionsTab({
   onToggleTips: () => void;
 }) {
   return (
-    <View>
+    <Box>
       {steps.length === 0 ? (
         <Text style={styles.emptyText}>Aún no hay instrucciones disponibles para este ejercicio.</Text>
       ) : (
         steps.map((step, idx) => (
-          <View key={idx}>
-            <View style={styles.stepRow}>
+          <Box key={idx}>
+            <Box style={styles.stepRow}>
               <Text style={styles.stepNumber}>{idx + 1}</Text>
               <Text style={styles.stepText}>{step}</Text>
-            </View>
-            {idx < steps.length - 1 && <View style={styles.rowSeparator} />}
-          </View>
+            </Box>
+            {idx < steps.length - 1 && <Box style={styles.rowSeparator} />}
+          </Box>
         ))
       )}
 
       {tips.length > 0 && (
-        <View style={styles.tipsSection}>
-          <TouchableOpacity style={styles.tipsHeader} onPress={onToggleTips} activeOpacity={0.7}>
+        <Box style={styles.tipsSection}>
+          <Pressable style={styles.tipsHeader} onPress={onToggleTips}>
             <Text style={styles.tipsHeaderText}>CONSEJOS IMPORTANTES</Text>
-            <Ionicons
+            <Icon
               name="chevron-down"
               size={18}
               color={C.textSecondary}
               style={{ transform: [{ rotate: tipsExpanded ? '180deg' : '0deg' }] }}
             />
-          </TouchableOpacity>
+          </Pressable>
           {tipsExpanded && (
-            <View style={styles.tipsBody}>
+            <Box style={styles.tipsBody}>
               {tips.map((tip, idx) => (
-                <View key={idx} style={styles.tipRow}>
+                <Box key={idx} style={styles.tipRow}>
                   <Text style={styles.tipBullet}>{'•'}</Text>
                   <Text style={styles.tipText}>{tip}</Text>
-                </View>
+                </Box>
               ))}
-            </View>
+            </Box>
           )}
-        </View>
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
 
@@ -432,16 +432,16 @@ function EquipmentTab({ equipment }: { equipment: ExerciseDetailData['equipment'
     return <Text style={styles.emptyText}>Este ejercicio no requiere equipamiento.</Text>;
   }
   return (
-    <View style={styles.equipmentRow}>
+    <Box style={styles.equipmentRow}>
       {equipment.image_url ? (
         <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} resizeMode="cover" />
       ) : (
-        <View style={[styles.equipmentImage, styles.equipmentImageFallback]}>
-          <Ionicons name="barbell-outline" size={32} color={C.gray30} />
-        </View>
+        <Box style={[styles.equipmentImage, styles.equipmentImageFallback]}>
+          <Icon name="barbell-outline" size={32} color={C.gray30} />
+        </Box>
       )}
       <Text style={styles.equipmentName}>{equipment.name}</Text>
-    </View>
+    </Box>
   );
 }
 
@@ -520,53 +520,52 @@ function ProgressChartSection({ sessions }: { sessions: ExerciseAnalysisSession[
   }));
 
   return (
-    <View style={styles.chartSection}>
+    <Box style={styles.chartSection}>
       <Text style={styles.chartSectionTitle}>Evolución</Text>
 
-      <View style={styles.metricChipRow}>
+      <Box style={styles.metricChipRow}>
         {numericMetricKeys.map((key) => {
           const meta = metricMeta(key);
           const active = selectedMetrics.includes(key);
           return (
-            <TouchableOpacity
+            <Pressable
               key={key}
               style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
               onPress={() => toggleMetric(key)}
-              activeOpacity={0.75}
             >
               <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
-      </View>
+      </Box>
 
       {chronoSessions.length < 2 ? (
         <Text style={styles.emptyText}>Necesitas al menos 2 sesiones registradas para ver la evolución.</Text>
       ) : (
         <>
           <MetricLineChart series={chartSeries} pointCount={chronoSessions.length} width={SCREEN_WIDTH - 72} height={170} />
-          <View style={styles.chartDateRow}>
+          <Box style={styles.chartDateRow}>
             <Text style={styles.chartDateText}>{formatShortDate(chronoSessions[0].date)}</Text>
             <Text style={styles.chartDateText}>{formatShortDate(chronoSessions[chronoSessions.length - 1].date)}</Text>
-          </View>
-          <View style={styles.legendWrap}>
+          </Box>
+          <Box style={styles.legendWrap}>
             {selectedMetrics.map((key) => {
               const meta = metricMeta(key);
               const values = valuesByMetric[key].filter((v): v is number => v !== null);
               const latest = values.length > 0 ? values[values.length - 1] : null;
               return (
-                <View key={key} style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: meta.color }]} />
+                <Box key={key} style={styles.legendItem}>
+                  <Box style={[styles.legendDot, { backgroundColor: meta.color }]} />
                   <Text style={styles.legendText}>
                     {meta.label}: {latest !== null ? `${latest}${meta.unit ? ` ${meta.unit}` : ''}` : '—'}
                   </Text>
-                </View>
+                </Box>
               );
             })}
-          </View>
+          </Box>
         </>
       )}
-    </View>
+    </Box>
   );
 }
 
@@ -583,9 +582,9 @@ function AnalysisTab({
 }) {
   if (loading) {
     return (
-      <View style={{ paddingVertical: 30 }}>
-        <ActivityIndicator size="small" color={C.textPrimary} />
-      </View>
+      <Box style={{ paddingVertical: 30 }}>
+        <Spinner size="small" color={C.textPrimary} />
+      </Box>
     );
   }
   if (error) {
@@ -595,12 +594,12 @@ function AnalysisTab({
     return <Text style={styles.emptyText}>Aún no hay datos.</Text>;
   }
   return (
-    <View>
+    <Box>
       <ProgressChartSection sessions={data.sessions} />
       {data.sessions.map((session, idx) => (
         <AnalysisHistoryCardMem key={`${session.date}-${idx}`} session={session} />
       ))}
-    </View>
+    </Box>
   );
 }
 

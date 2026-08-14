@@ -1,25 +1,24 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Platform ,
-  View,
-  Text,
   StyleSheet,
   ScrollView,
   RefreshControl,
-  TouchableOpacity,
   SafeAreaView,
   Dimensions,
-  ActivityIndicator,
   useWindowDimensions,
   Modal,
-  Pressable,
   Alert,
   Switch,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { Ionicons } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
 import { C, FONT } from './theme';
@@ -318,9 +317,9 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.orange} />
+        </Box>
       </SafeAreaView>
     );
   }
@@ -360,38 +359,38 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
     if (item.kind === 'checkin') {
       const a = item.data;
       return (
-        <TouchableOpacity
+        <Pressable
           key={item.key}
           style={rowStyle}
           onPress={() => navigation?.navigate('MigratedCheckInFill', { formAssignmentId: a.id, formId: a.form_id, title: a.form.title })}
         >
-          <View style={styles.todayWorkoutTopRow}>
+          <Box style={styles.todayWorkoutTopRow}>
             <AppIcon name="clipboard-outline" size={20} color={C.warning60} bg={C.warning10} containerSize={r(44)} borderRadius={r(12)} />
-            <View style={{ flex: 1 }}>
+            <Box style={{ flex: 1 }}>
               <Text style={styles.todayWorkoutTitle}>{a.form.title}</Text>
               <Text style={styles.todayWorkoutSub}>{checkinTypeLabel(a)}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-          </View>
-        </TouchableOpacity>
+            </Box>
+            <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+          </Box>
+        </Pressable>
       );
     }
     const w = item.data;
     return (
-      <TouchableOpacity
+      <Pressable
         key={item.key}
         style={rowStyle}
         onPress={() => navigation?.navigate('MigratedWorkoutPreview', { programDayAssignmentId: w.assignment_id, mTitle: w.title || 'Entrenamiento' })}
       >
-        <View style={styles.todayWorkoutTopRow}>
+        <Box style={styles.todayWorkoutTopRow}>
           <AppIcon name="barbell" size={22} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={r(44)} borderRadius={r(12)} />
-          <View style={{ flex: 1 }}>
+          <Box style={{ flex: 1 }}>
             <Text style={styles.todayWorkoutTitle}>{w.title || 'Entrenamiento'}</Text>
             <Text style={styles.todayWorkoutSub}>Toca para ver detalles</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-        </View>
-      </TouchableOpacity>
+          </Box>
+          <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+        </Box>
+      </Pressable>
     );
   };
 
@@ -412,48 +411,48 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
         }
       >
         {/* Header */}
-        <View style={styles.darkHeader}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={() => setShowMenu(true)}>
+        <Box style={styles.darkHeader}>
+          <Box style={styles.headerTop}>
+            <Pressable onPress={() => setShowMenu(true)}>
               {user?.profile_image ? (
                 <ExpoImage source={{ uri: user.profile_image }} style={styles.avatar} contentFit="cover" cachePolicy="memory-disk" transition={150} />
               ) : (
-                <View style={styles.avatar} />
+                <Box style={styles.avatar} />
               )}
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Hola, {displayName}!</Text>
-            <TouchableOpacity style={styles.notifBtn} onPress={() => navigation?.navigate('MigratedNotification')}>
-              <Ionicons name="notifications-outline" size={22} color={C.white} />
+            <Pressable style={styles.notifBtn} onPress={() => navigation?.navigate('MigratedNotification')}>
+              <Icon name="notifications-outline" size={22} color={C.white} />
               {notificationCount > 0 && (
-                <View style={styles.notifBadge}>
+                <Box style={styles.notifBadge}>
                   <Text style={styles.notifBadgeText}>{notificationCount > 9 ? '9+' : notificationCount}</Text>
-                </View>
+                </Box>
               )}
-            </TouchableOpacity>
-          </View>
+            </Pressable>
+          </Box>
 
           {/* Sandow Score → Solo acceso rápido a Progreso (sin número hardcodeado) */}
-          <TouchableOpacity style={styles.scoreRow} onPress={() => navigation?.navigate('MigratedProgress')}>
+          <Pressable style={styles.scoreRow} onPress={() => navigation?.navigate('MigratedProgress')}>
             <AppIcon name="trending-up" size={28} color="#FFFFFF" bg={C.orange} containerSize={r(64)} borderRadius={r(20)} style={{ marginRight: r(14) }} />
-            <View style={{ flex: 1 }}>
+            <Box style={{ flex: 1 }}>
               <Text style={styles.scoreTitle}>Mi Progreso</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                <Ionicons name="heart" size={14} color={C.white} />
+              <Box style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <Icon name="heart" size={14} color={C.white} />
                 <Text style={styles.scoreSub}>Ver reporte completo</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={24} color={C.white} />
-          </TouchableOpacity>
-        </View>
+              </Box>
+            </Box>
+            <Icon name="chevron-forward" size={24} color={C.white} />
+          </Pressable>
+        </Box>
 
         {errorMessage && (
-          <View style={styles.errorBanner}>
-            <Ionicons name="warning" size={16} color={C.destructive} />
+          <Box style={styles.errorBanner}>
+            <Icon name="warning" size={16} color={C.destructive} />
             <Text style={styles.errorText}>{errorMessage}</Text>
-            <TouchableOpacity onPress={() => fetchData()}>
-              <Ionicons name="refresh" size={16} color={C.destructive} />
-            </TouchableOpacity>
-          </View>
+            <Pressable onPress={() => fetchData()}>
+              <Icon name="refresh" size={16} color={C.destructive} />
+            </Pressable>
+          </Box>
         )}
 
         {/* Mi plan de hoy — para un cliente 1:1 esta ES su sección personalizada
@@ -465,56 +464,56 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             secciones separadas. Máximo 3 items visibles; con más, un botón
             lleva al calendario completo (que ya abre en el día de hoy por
             defecto, sin necesidad de parámetros). */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>
             {state.user?.is_personal_client ? 'Mi plan de hoy' : 'Actividad de Hoy'}
           </Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('MigratedMyProgramCalendar')}>
+          <Pressable onPress={() => navigation?.navigate('MigratedMyProgramCalendar')}>
             <Text style={styles.seeAll}>Ver Calendario</Text>
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </Box>
         {state.user?.is_personal_client && (
-          <View style={styles.myProgramBadge}>
-            <Ionicons name="person-circle" size={14} color={C.textPrimary} />
+          <Box style={styles.myProgramBadge}>
+            <Icon name="person-circle" size={14} color={C.textPrimary} />
             <Text style={styles.myProgramBadgeText}>Personalizado por tu coach</Text>
-          </View>
+          </Box>
         )}
         {todayItems.length > 0 ? (
           <>
-            <View style={styles.todayWorkoutCard}>
+            <Box style={styles.todayWorkoutCard}>
               {visibleTodayItems.map((item, i) => renderTodayItem(item, i))}
-            </View>
+            </Box>
             {todayItems.length > 3 && (
-              <TouchableOpacity
+              <Pressable
                 style={styles.seeAllTasksBtn}
                 onPress={() => navigation?.navigate('MigratedMyProgramCalendar')}
               >
                 <Text style={styles.seeAllTasksBtnText}>Ver todas las tareas ({todayItems.length})</Text>
-                <Ionicons name="arrow-forward" size={14} color={C.orange} />
-              </TouchableOpacity>
+                <Icon name="arrow-forward" size={14} color={C.orange} />
+              </Pressable>
             )}
           </>
         ) : (
-          <View style={[styles.todayWorkoutCard, { alignItems: 'center' }]}>
+          <Box style={[styles.todayWorkoutCard, { alignItems: 'center' }]}>
             <AppIcon name="bed-outline" size={26} color={C.textSecondary} bg={C.brand10} containerSize={r(48)} />
             <Text style={[styles.noWorkoutText, { marginTop: r(8) }]}>Día de descanso</Text>
             <Text style={[styles.noWorkoutText, { fontSize: r(11) }]}>No hay entrenamientos programados para hoy</Text>
-          </View>
+          </Box>
         )}
 
         {/* Actividad semanal */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Cumplimiento semanal</Text>
-        </View>
-        <View style={styles.activityCard}>
-          <View style={styles.activityWeekRow}>
+        </Box>
+        <Box style={styles.activityCard}>
+          <Box style={styles.activityWeekRow}>
             <Text style={styles.activityWeekTitle}>Esta semana</Text>
             <Text style={styles.activityWeekCount}>
               {weeklyWorkouts.filter(Boolean).length} de {Math.max(weeklyWorkouts.length, 7)} días
             </Text>
-          </View>
+          </Box>
           <WeekComplianceRow completedDays={weeklyWorkouts} color={C.orange} size={r(28)} />
-        </View>
+        </Box>
 
         {/* Hábitos — a diferencia de Check-ins (que se oculta si no hay nada
             pendiente porque el cliente no puede crear uno por su cuenta),
@@ -522,64 +521,64 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             la tarjeta es el único camino real para llegar a Añadir hábito
             (biblioteca o personal) — ocultarla dejaría al cliente sin forma
             de empezar. Mismo patrón que Recursos (visible con estado vacío). */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Hábitos</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate(habits.length > 0 ? 'MigratedHabits' : 'MigratedHabitAdd')}>
+          <Pressable onPress={() => navigation?.navigate(habits.length > 0 ? 'MigratedHabits' : 'MigratedHabitAdd')}>
             <Text style={styles.seeAll}>{habits.length > 0 ? `Ver todos (${habits.length})` : 'Añadir'}</Text>
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </Box>
         {habits.length > 0 ? (
-          <View style={styles.todayWorkoutCard}>
+          <Box style={styles.todayWorkoutCard}>
             {habits.slice(0, 3).map((h, i) => (
-              <TouchableOpacity
+              <Pressable
                 key={h.id}
                 style={i > 0 ? { marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border } : {}}
                 onPress={() => navigation?.navigate('MigratedHabitDetail', { habitId: h.id })}
               >
                 {/* marginLeft explícito además del gap de todayWorkoutTopRow — el
                     icono y el título quedaban muy pegados sin margen visible. */}
-                <View style={styles.todayWorkoutTopRow}>
+                <Box style={styles.todayWorkoutTopRow}>
                   <AppIcon name={habitIoniconFor(h.icon)} size={20} color={C.textPrimary} bg={C.bg} containerSize={r(44)} borderRadius={r(12)} />
-                  <View style={{ flex: 1, marginLeft: r(10) }}>
+                  <Box style={{ flex: 1, marginLeft: r(10) }}>
                     <Text style={styles.todayWorkoutTitle}>{h.title}</Text>
                     <Text style={styles.todayWorkoutSub}>{h.current_streak ? `🔥 ${h.current_streak} días de racha` : 'Sin racha activa todavía'}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-                </View>
+                  </Box>
+                  <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+                </Box>
                 <WeekComplianceRow completedDays={computeWeekCompliance(h.logs)} color={C.orange} size={r(24)} />
-              </TouchableOpacity>
+              </Pressable>
             ))}
-          </View>
+          </Box>
         ) : (
-          <TouchableOpacity style={styles.todayWorkoutCard} activeOpacity={0.8} onPress={() => navigation?.navigate('MigratedHabitAdd')}>
-            <View style={styles.todayWorkoutTopRow}>
+          <Pressable style={styles.todayWorkoutCard} onPress={() => navigation?.navigate('MigratedHabitAdd')}>
+            <Box style={styles.todayWorkoutTopRow}>
               <AppIcon name="flame-outline" size={20} color={C.textPrimary} bg={C.bg} containerSize={r(44)} borderRadius={r(12)} />
-              <View style={{ flex: 1 }}>
+              <Box style={{ flex: 1 }}>
                 <Text style={styles.todayWorkoutTitle}>Todavía no tienes hábitos</Text>
                 <Text style={styles.todayWorkoutSub}>Elige uno de la biblioteca o crea el tuyo propio</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-            </View>
-          </TouchableOpacity>
+              </Box>
+              <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+            </Box>
+          </Pressable>
         )}
 
         {/* Nutrición — subida junto a las secciones de uso diario (antes vivía
             enterrada después de los catálogos y Programas). */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Nutrición</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('DietDashboard')}>
+          <Pressable onPress={() => navigation?.navigate('DietDashboard')}>
             <Text style={styles.seeAll}>Ver dieta</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.nutritionCard}>
+          </Pressable>
+        </Box>
+        <Box style={styles.nutritionCard}>
           {dailyPlan ? (
             <>
-              <View style={styles.nutritionTopRow}>
-                <View style={styles.nutritionSide}>
+              <Box style={styles.nutritionTopRow}>
+                <Box style={styles.nutritionSide}>
                   <Text style={styles.nutritionSideLabel}>Objetivo</Text>
                   <Text style={styles.nutritionSideValue}>{dailyPlan.daily_kcal ?? 0}</Text>
-                </View>
-                <View style={styles.nutritionCalCenter}>
+                </Box>
+                <Box style={styles.nutritionCalCenter}>
                   <AnimatedRing
                     size={r(112)}
                     strokeWidth={r(8)}
@@ -591,35 +590,35 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                     <Text style={styles.nutritionCalValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{dailyPlan.eaten ?? 0}</Text>
                     <Text style={styles.nutritionCalLabel}>consumido</Text>
                   </AnimatedRing>
-                </View>
-                <View style={styles.nutritionSide}>
+                </Box>
+                <Box style={styles.nutritionSide}>
                   <Text style={styles.nutritionSideLabel}>Restante</Text>
                   <Text style={styles.nutritionSideValue}>{dailyPlan.left_eat ?? 0}</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', marginTop: r(12) }}>
-                <View style={styles.macroBar}>
-                  <View style={styles.macroTrack}>
-                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.protein ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.orange }]} />
-                  </View>
+                </Box>
+              </Box>
+              <Box style={{ flexDirection: 'row', marginTop: r(12) }}>
+                <Box style={styles.macroBar}>
+                  <Box style={styles.macroTrack}>
+                    <Box style={[styles.macroFill, { width: `${Math.min(((dailyPlan.protein ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.orange }]} />
+                  </Box>
                   <Text style={styles.macroLabel}>Proteína</Text>
                   <Text style={styles.macroValue}>{dailyPlan.protein ?? 0}g</Text>
-                </View>
-                <View style={[styles.macroBar, { marginHorizontal: r(12) }]}>
-                  <View style={styles.macroTrack}>
-                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.fats ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 9, 1)) * 100, 100)}%`, backgroundColor: C.purple }]} />
-                  </View>
+                </Box>
+                <Box style={[styles.macroBar, { marginHorizontal: r(12) }]}>
+                  <Box style={styles.macroTrack}>
+                    <Box style={[styles.macroFill, { width: `${Math.min(((dailyPlan.fats ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 9, 1)) * 100, 100)}%`, backgroundColor: C.purple }]} />
+                  </Box>
                   <Text style={styles.macroLabel}>Grasas</Text>
                   <Text style={styles.macroValue}>{dailyPlan.fats ?? 0}g</Text>
-                </View>
-                <View style={styles.macroBar}>
-                  <View style={styles.macroTrack}>
-                    <View style={[styles.macroFill, { width: `${Math.min(((dailyPlan.carbs ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.blue }]} />
-                  </View>
+                </Box>
+                <Box style={styles.macroBar}>
+                  <Box style={styles.macroTrack}>
+                    <Box style={[styles.macroFill, { width: `${Math.min(((dailyPlan.carbs ?? 0) / Math.max((dailyPlan.daily_kcal ?? 1) / 4, 1)) * 100, 100)}%`, backgroundColor: C.blue }]} />
+                  </Box>
                   <Text style={styles.macroLabel}>Carbos</Text>
                   <Text style={styles.macroValue}>{dailyPlan.carbs ?? 0}g</Text>
-                </View>
-              </View>
+                </Box>
+              </Box>
               <Text style={styles.nutritionMsg}>
                 {(dailyPlan.left_eat ?? 0) > 0
                   ? `Te quedan ${dailyPlan.left_eat} kcal por consumir. ¡Sigue así!`
@@ -627,49 +626,49 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
               </Text>
             </>
           ) : (
-            <View style={{ alignItems: 'center', paddingVertical: r(12) }}>
+            <Box style={{ alignItems: 'center', paddingVertical: r(12) }}>
               <AppIcon name="nutrition-outline" size={26} color={C.success} bg={C.success10} containerSize={r(48)} />
               <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
-            </View>
+            </Box>
           )}
-          <TouchableOpacity style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
+          <Pressable style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
             <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
-            <Ionicons name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
-          </TouchableOpacity>
-        </View>
+            <Icon name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
+          </Pressable>
+        </Box>
 
         {/* Explorar — accesos directos portados desde pages/Today.tsx (pantalla
             huérfana, retirada). MigratedRecipeMain es hoy el único punto de
             entrada real al catálogo libre de Recipe (Main/ListV2/CategoryList/
             TagList) — sin esta tarjeta ese catálogo queda inalcanzable. */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Explorar</Text>
-        </View>
-        <View style={styles.todayWorkoutCard}>
-          <TouchableOpacity onPress={() => navigation?.navigate('MigratedRecipeMain')}>
-            <View style={styles.todayWorkoutTopRow}>
+        </Box>
+        <Box style={styles.todayWorkoutCard}>
+          <Pressable onPress={() => navigation?.navigate('MigratedRecipeMain')}>
+            <Box style={styles.todayWorkoutTopRow}>
               <AppIcon name="restaurant-outline" size={20} color={C.success} bg={C.success10} containerSize={r(44)} borderRadius={r(12)} />
-              <View style={{ flex: 1 }}>
+              <Box style={{ flex: 1 }}>
                 <Text style={styles.todayWorkoutTitle}>Recetas y Nutrición</Text>
                 <Text style={styles.todayWorkoutSub}>Explora recetas y tu plan de comidas</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
+              </Box>
+              <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+            </Box>
+          </Pressable>
+          <Pressable
             style={{ marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border }}
             onPress={() => navigation?.navigate('MigratedViewBodyPart')}
           >
-            <View style={styles.todayWorkoutTopRow}>
+            <Box style={styles.todayWorkoutTopRow}>
               <AppIcon name="body-outline" size={20} color={C.blue} bg={C.blue10} containerSize={r(44)} borderRadius={r(12)} />
-              <View style={{ flex: 1 }}>
+              <Box style={{ flex: 1 }}>
                 <Text style={styles.todayWorkoutTitle}>Buscar por músculo</Text>
                 <Text style={styles.todayWorkoutSub}>Toca una zona del mapa para ver sus ejercicios</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-            </View>
-          </TouchableOpacity>
-        </View>
+              </Box>
+              <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+            </Box>
+          </Pressable>
+        </Box>
 
         {/* Workouts — catálogo genérico de exploración (sistema v2). "Rutinas"
             (v1 legacy) se quitó del Home: era un callejón sin salida, se podía
@@ -679,14 +678,14 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             "Mi Programa" arriba, así que este catálogo se oculta para ellos. */}
         {!state.user?.is_personal_client && (
           <>
-            <View style={styles.sectionRow}>
+            <Box style={styles.sectionRow}>
               <Text style={styles.sectionTitle}>Workouts</Text>
-            </View>
+            </Box>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
               {workoutTemplateList.map((w) => {
                 const locked = w.is_exclusive && !w.is_accessible;
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={w.id}
                     style={styles.blogCard}
                     onPress={() => navigation?.navigate('MigratedWorkoutPreview', { workoutTemplateId: w.id, mTitle: w.title })}
@@ -694,31 +693,31 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                     {w.thumbnail ? (
                       <ExpoImage source={{ uri: w.thumbnail }} style={styles.blogImage} contentFit="cover" cachePolicy="memory-disk" transition={200} />
                     ) : (
-                      <View style={styles.blogImage} />
+                      <Box style={styles.blogImage} />
                     )}
                     {locked && (
-                      <View style={styles.lockBadge}>
-                        <Ionicons name="lock-closed" size={11} color={'#FFFFFF'} />
+                      <Box style={styles.lockBadge}>
+                        <Icon name="lock-closed" size={11} color={'#FFFFFF'} />
                         <Text style={styles.lockBadgeText}>Exclusive</Text>
-                      </View>
+                      </Box>
                     )}
-                    <View style={styles.blogContent}>
+                    <Box style={styles.blogContent}>
                       <Text style={styles.blogTitle} numberOfLines={2}>{w.title}</Text>
-                    </View>
-                  </TouchableOpacity>
+                    </Box>
+                  </Pressable>
                 );
               })}
-              <TouchableOpacity
+              <Pressable
                 style={styles.blogCard}
                 onPress={() => navigation?.navigate('MigratedWorkoutTemplateList')}
               >
-                <View style={[styles.blogImage, styles.seeAllImage]}>
-                  <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
-                </View>
-                <View style={styles.blogContent}>
+                <Box style={[styles.blogImage, styles.seeAllImage]}>
+                  <Icon name="arrow-forward-circle" size={32} color="#FFFFFF" />
+                </Box>
+                <Box style={styles.blogContent}>
                   <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todos los workouts</Text>
-                </View>
-              </TouchableOpacity>
+                </Box>
+              </Pressable>
             </ScrollView>
           </>
         )}
@@ -728,154 +727,154 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             documentos asignados individualmente por su coach. */}
         {resourcesList.length > 0 && (
           <>
-            <View style={styles.sectionRow}>
+            <Box style={styles.sectionRow}>
               <Text style={styles.sectionTitle}>Recursos</Text>
-            </View>
+            </Box>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
               {resourcesList.map((r) => (
-                <TouchableOpacity
+                <Pressable
                   key={r.id}
                   style={styles.blogCard}
                   onPress={() => navigation?.navigate('MigratedResourceDetail', { resourceId: r.id, title: r.title })}
                 >
-                  <View style={[styles.blogImage, styles.seeAllImage]}>
-                    <Ionicons
+                  <Box style={[styles.blogImage, styles.seeAllImage]}>
+                    <Icon
                       name={r.type === 'video' ? 'play-circle-outline' : r.type === 'link' ? 'link-outline' : 'document-text-outline'}
                       size={32}
                       color="#FFFFFF"
                     />
-                  </View>
-                  <View style={styles.blogContent}>
+                  </Box>
+                  <Box style={styles.blogContent}>
                     <Text style={styles.blogTitle} numberOfLines={2}>{r.title}</Text>
-                  </View>
-                </TouchableOpacity>
+                  </Box>
+                </Pressable>
               ))}
-              <TouchableOpacity
+              <Pressable
                 style={styles.blogCard}
                 onPress={() => navigation?.navigate('MigratedResourcesList')}
               >
-                <View style={[styles.blogImage, styles.seeAllImage]}>
-                  <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
-                </View>
-                <View style={styles.blogContent}>
+                <Box style={[styles.blogImage, styles.seeAllImage]}>
+                  <Icon name="arrow-forward-circle" size={32} color="#FFFFFF" />
+                </Box>
+                <Box style={styles.blogContent}>
                   <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todos los recursos</Text>
-                </View>
-              </TouchableOpacity>
+                </Box>
+              </Pressable>
             </ScrollView>
           </>
         )}
 
         {/* Blog */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Blog</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('MigratedViewAllBlog')}>
+          <Pressable onPress={() => navigation?.navigate('MigratedViewAllBlog')}>
             <Text style={styles.seeAll}>Ver todos</Text>
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </Box>
         {blogPosts.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
             {blogPosts.map((post: any) => (
-              <TouchableOpacity key={post.id} style={styles.blogCard} onPress={() => navigation?.navigate('MigratedBlogDetail', { id: post.id })}>
+              <Pressable key={post.id} style={styles.blogCard} onPress={() => navigation?.navigate('MigratedBlogDetail', { id: post.id })}>
                 {post.post_image ? (
                   <ExpoImage source={{ uri: post.post_image }} style={styles.blogImage} contentFit="cover" cachePolicy="memory-disk" transition={200} />
                 ) : (
-                  <View style={styles.blogImage} />
+                  <Box style={styles.blogImage} />
                 )}
-                <View style={styles.blogContent}>
+                <Box style={styles.blogContent}>
                   {post.blog_category && (
-                    <View style={styles.blogTag}>
+                    <Box style={styles.blogTag}>
                       <Text style={styles.blogTagText}>{post.blog_category.title}</Text>
-                    </View>
+                    </Box>
                   )}
                   <Text style={styles.blogTitle} numberOfLines={2}>{post.title}</Text>
                   {post.datetime && <Text style={styles.blogDate}>{post.datetime}</Text>}
-                </View>
-              </TouchableOpacity>
+                </Box>
+              </Pressable>
             ))}
-            <TouchableOpacity style={styles.blogCard} onPress={() => navigation?.navigate('MigratedViewAllBlog')}>
-              <View style={[styles.blogImage, styles.seeAllImage]}>
-                <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
-              </View>
-              <View style={styles.blogContent}>
+            <Pressable style={styles.blogCard} onPress={() => navigation?.navigate('MigratedViewAllBlog')}>
+              <Box style={[styles.blogImage, styles.seeAllImage]}>
+                <Icon name="arrow-forward-circle" size={32} color="#FFFFFF" />
+              </Box>
+              <Box style={styles.blogContent}>
                 <Text style={[styles.blogTitle, { textAlign: 'center' }]}>Ver todas las publicaciones</Text>
-              </View>
-            </TouchableOpacity>
+              </Box>
+            </Pressable>
           </ScrollView>
         ) : (
-          <View style={styles.emptySection}>
+          <Box style={styles.emptySection}>
             <Text style={styles.emptyText}>No hay artículos disponibles</Text>
-          </View>
+          </Box>
         )}
 
         {/* Sueño — sin integración con wearables todavía (diferido, ver
             docs/TAREAS.md). Placeholder honesto en vez de horas inventadas:
             no se muestra ningún número falso, solo la invitación a conectar
             un dispositivo real. */}
-        <View style={styles.sectionRow}>
+        <Box style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Sueño</Text>
-        </View>
-        <View style={[styles.sleepCard, { alignItems: 'center', paddingVertical: r(20) }]}>
+        </Box>
+        <Box style={[styles.sleepCard, { alignItems: 'center', paddingVertical: r(20) }]}>
           <AppIcon name="moon-outline" size={26} color={C.textSecondary} bg={C.brand10} containerSize={r(48)} />
           <Text style={[styles.noWorkoutText, { marginTop: r(10), textAlign: 'center' }]}>
             Conecta tu reloj o app de salud para ver tus datos de sueño aquí
           </Text>
-        </View>
+        </Box>
 
         {/* Need Help → FitBot */}
-        <View style={{ height: r(16) }} />
-        <TouchableOpacity style={styles.supportCard} onPress={() => navigation?.navigate('MigratedChatting', { isDirect: true })}>
-          <View style={{ flex: 1 }}>
+        <Box style={{ height: r(16) }} />
+        <Pressable style={styles.supportCard} onPress={() => navigation?.navigate('MigratedChatting', { isDirect: true })}>
+          <Box style={{ flex: 1 }}>
             <Text style={styles.supportTitle}>¿Necesitas ayuda? Soluciona tus dudas con el bot</Text>
             <Text style={styles.supportLink}>Be Stronger AI</Text>
-          </View>
+          </Box>
           <AppIcon name="chatbubble-ellipses" size={28} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={r(52)} />
-        </TouchableOpacity>
+        </Pressable>
 
-        <View style={{ height: r(16) }} />
+        <Box style={{ height: r(16) }} />
       </ScrollView>
 
-      <TouchableOpacity
+      <Pressable
         onPress={() => navigation?.navigate('ScreenExplorer')}
         style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#E5E5EA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
       >
         <Text style={{ fontSize: 28, color: '#000000', marginTop: -2 }}>+</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Menú de usuario (perfil, favoritos, ajustes, salud, comunidad, logout) */}
       <Modal visible={showMenu} transparent animationType="slide" onRequestClose={() => setShowMenu(false)}>
         <Pressable style={styles.menuOverlay} onPress={() => setShowMenu(false)}>
           <Pressable style={styles.menuSheet} onPress={(e) => e.stopPropagation()}>
-            <View style={styles.menuHandle} />
-            <View style={styles.menuHeader}>
+            <Box style={styles.menuHandle} />
+            <Box style={styles.menuHeader}>
               {user?.profile_image ? (
                 <ExpoImage source={{ uri: user.profile_image }} style={styles.menuAvatar} contentFit="cover" cachePolicy="memory-disk" transition={150} />
               ) : (
-                <View style={styles.menuAvatar} />
+                <Box style={styles.menuAvatar} />
               )}
-              <View style={{ flex: 1 }}>
+              <Box style={{ flex: 1 }}>
                 <Text style={styles.menuGreeting}>Hola</Text>
                 <Text style={styles.menuUserName}>{user?.display_name || displayName}</Text>
-              </View>
-              <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setShowMenu(false)}>
-                <Ionicons name="close" size={18} color={C.white} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.menuDivider} />
+              </Box>
+              <Pressable style={styles.menuCloseBtn} onPress={() => setShowMenu(false)}>
+                <Icon name="close" size={18} color={C.white} />
+              </Pressable>
+            </Box>
+            <Box style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('MigratedProfile')}>
+            <Pressable style={styles.menuItem} onPress={() => navigateFromMenu('MigratedProfile')}>
               <AppIcon name="person-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Mi Perfil</Text>
-              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
+              <Icon name="chevron-forward" size={18} color={C.textSecondary} />
+            </Pressable>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('MigratedFavourite')}>
+            <Pressable style={styles.menuItem} onPress={() => navigateFromMenu('MigratedFavourite')}>
               <AppIcon name="heart-outline" size={18} color={C.destructive} bg={C.destructive10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Mis Favoritos</Text>
-              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
+              <Icon name="chevron-forward" size={18} color={C.textSecondary} />
+            </Pressable>
 
 
-            <View style={styles.menuItem}>
+            <Box style={styles.menuItem}>
               <AppIcon name="fitness-outline" size={18} color={C.success} bg={C.success10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Apple Health</Text>
               <Switch
@@ -884,9 +883,9 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                 trackColor={{ false: C.gray70, true: C.primary }}
                 thumbColor={C.white}
               />
-            </View>
+            </Box>
 
-            <View style={styles.menuItem}>
+            <Box style={styles.menuItem}>
               <AppIcon name="watch-outline" size={18} color={C.blue} bg={C.blue10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Smart Watch</Text>
               <Switch
@@ -895,20 +894,20 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
                 trackColor={{ false: C.gray70, true: C.primary }}
                 thumbColor={C.white}
               />
-            </View>
+            </Box>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateFromMenu('MigratedCommunity')}>
+            <Pressable style={styles.menuItem} onPress={() => navigateFromMenu('MigratedCommunity')}>
               <AppIcon name="people-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={styles.menuItemText}>Community</Text>
-              <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
+              <Icon name="chevron-forward" size={18} color={C.textSecondary} />
+            </Pressable>
 
-            <View style={styles.menuDivider} />
+            <Box style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+            <Pressable style={styles.menuItem} onPress={handleLogout}>
               <AppIcon name="log-out-outline" size={18} color={C.destructive} bg={C.destructive10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
               <Text style={[styles.menuItemText, styles.menuItemTextDanger]}>Cerrar sesión</Text>
-            </TouchableOpacity>
+            </Pressable>
           </Pressable>
         </Pressable>
       </Modal>

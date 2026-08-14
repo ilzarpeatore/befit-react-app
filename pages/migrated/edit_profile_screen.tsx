@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Dimensions, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, Image, TextInput, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { useAuth } from '@store/AuthContext';
 import { authApi } from '@api/auth';
 import { C, FONT } from './theme';
@@ -134,31 +137,31 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
   const renderProfileImage = () => {
     if (imageUri) {
       return (
-        <View style={localStyles.profileImageContainer}>
+        <Box style={localStyles.profileImageContainer}>
           <Image source={{ uri: imageUri }} style={localStyles.profileImage} />
-        </View>
+        </Box>
       );
     }
     if (profileImage) {
       return (
-        <View style={localStyles.profileImageContainer}>
+        <Box style={localStyles.profileImageContainer}>
           <Image source={{ uri: profileImage }} style={localStyles.profileImage} />
-        </View>
+        </Box>
       );
     }
     return (
-      <View style={localStyles.profileImageContainer}>
-        <View style={localStyles.profileImagePlaceholder}>
-          <Ionicons name="person" size={40} color={C.gray40} />
-        </View>
-      </View>
+      <Box style={localStyles.profileImageContainer}>
+        <Box style={localStyles.profileImagePlaceholder}>
+          <Icon name="person" size={40} color={C.gray40} />
+        </Box>
+      </Box>
     );
   };
 
   const renderHeightOption = (label: string, index: number) => {
     const isActive = mHeight === index;
     return (
-      <TouchableOpacity
+      <Pressable
         style={[localStyles.unitBtn, isActive && localStyles.unitBtnActive]}
         onPress={() => {
           setMHeight(index);
@@ -172,14 +175,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
         <Text style={[localStyles.unitBtnText, isActive && localStyles.unitBtnTextActive]}>
           {label}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   const renderWeightOption = (label: string, index: number) => {
     const isActive = mWeight === index;
     return (
-      <TouchableOpacity
+      <Pressable
         style={[localStyles.unitBtn, isActive && localStyles.unitBtnActive]}
         onPress={() => {
           setMWeight(index);
@@ -193,7 +196,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
         <Text style={[localStyles.unitBtnText, isActive && localStyles.unitBtnTextActive]}>
           {label}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -202,28 +205,28 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={localStyles.container}>
+      <Box style={localStyles.container}>
         {/* Header Background */}
-        <View style={localStyles.headerBg} />
+        <Box style={localStyles.headerBg} />
 
         {/* Back Button */}
-        <TouchableOpacity style={localStyles.backBtn} onPress={() => props.navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+        <Pressable style={localStyles.backBtn} onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} color={C.white} />
+        </Pressable>
 
         <ScrollView contentContainerStyle={localStyles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Profile Image */}
-          <View style={localStyles.imageSection}>
+          <Box style={localStyles.imageSection}>
             {renderProfileImage()}
-            <TouchableOpacity style={localStyles.cameraBtn} onPress={pickImage}>
-              <Ionicons name="camera" size={20} color={C.textPrimary} />
-            </TouchableOpacity>
-          </View>
+            <Pressable style={localStyles.cameraBtn} onPress={pickImage}>
+              <Icon name="camera" size={20} color={C.textPrimary} />
+            </Pressable>
+          </Box>
 
           {/* Form Fields */}
-          <View style={localStyles.formContainer}>
+          <Box style={localStyles.formContainer}>
             {/* First Name */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>First Name</Text>
               <TextInput
                 style={localStyles.input}
@@ -232,10 +235,10 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 placeholder="First Name"
                 placeholderTextColor={C.gray40}
               />
-            </View>
+            </Box>
 
             {/* Last Name */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Last Name</Text>
               <TextInput
                 style={localStyles.input}
@@ -244,10 +247,10 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 placeholder="Last Name"
                 placeholderTextColor={C.gray40}
               />
-            </View>
+            </Box>
 
             {/* Email */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Email</Text>
               <TextInput
                 style={localStyles.input}
@@ -258,14 +261,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-            </View>
+            </Box>
 
             {/* Gender */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Gender</Text>
-              <View style={localStyles.genderRow}>
+              <Box style={localStyles.genderRow}>
                 {genderList.map((g) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={g.id}
                     style={[localStyles.genderBtn, selectGender === g.id && localStyles.genderBtnActive]}
                     onPress={() => {
@@ -276,13 +279,13 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                     <Text style={[localStyles.genderText, selectGender === g.id && localStyles.genderTextActive]}>
                       {g.label}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
-              </View>
-            </View>
+              </Box>
+            </Box>
 
             {/* Phone Number */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Phone Number</Text>
               <TextInput
                 style={localStyles.input}
@@ -292,10 +295,10 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 placeholderTextColor={C.gray40}
                 keyboardType="phone-pad"
               />
-            </View>
+            </Box>
 
             {/* Age */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Age</Text>
               <TextInput
                 style={localStyles.input}
@@ -305,10 +308,10 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 placeholderTextColor={C.gray40}
                 keyboardType="number-pad"
               />
-            </View>
+            </Box>
 
             {/* Weight */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Weight</Text>
               <TextInput
                 style={localStyles.input}
@@ -318,14 +321,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 placeholderTextColor={C.gray40}
                 keyboardType="decimal-pad"
               />
-              <View style={localStyles.unitRow}>
+              <Box style={localStyles.unitRow}>
                 {renderWeightOption('lbs', 0)}
                 {renderWeightOption('kg', 1)}
-              </View>
-            </View>
+              </Box>
+            </Box>
 
             {/* Height */}
-            <View style={localStyles.fieldGroup}>
+            <Box style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Height</Text>
               <TextInput
                 style={localStyles.input}
@@ -335,29 +338,29 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                 placeholderTextColor={C.gray40}
                 keyboardType="decimal-pad"
               />
-              <View style={localStyles.unitRow}>
+              <Box style={localStyles.unitRow}>
                 {renderHeightOption('feet', 0)}
                 {renderHeightOption('cm', 1)}
-              </View>
-            </View>
+              </Box>
+            </Box>
 
             {/* Save Button */}
-            <TouchableOpacity style={localStyles.saveBtn} onPress={save} disabled={isLoading}>
+            <Pressable style={localStyles.saveBtn} onPress={save} disabled={isLoading}>
               {isLoading ? (
-                <ActivityIndicator color={C.white} />
+                <Spinner color={C.white} />
               ) : (
                 <Text style={localStyles.saveBtnText}>Save</Text>
               )}
-            </TouchableOpacity>
-          </View>
+            </Pressable>
+          </Box>
         </ScrollView>
 
         {isLoading && (
-          <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={localStyles.loaderContainer}>
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
     </KeyboardAvoidingView>
   );
 }

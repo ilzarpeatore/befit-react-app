@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, FlatList, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, ScrollView, Alert, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -335,148 +339,147 @@ export default function PlanScreen(props: any) {
   const renderWeekDays = (offset: number) => {
     const days = getWeekDays(offset);
     return (
-      <View style={s.weekStrip}>
+      <Box style={s.weekStrip}>
         {days.map((day, i) => {
           const isSelected = isSameDay(day, selectedDay);
           const isToday = isSameDay(day, new Date());
           return (
-            <TouchableOpacity
+            <Pressable
               key={i}
               style={[s.weekDayItem, isSelected && s.weekDayItemSelected]}
               onPress={() => setSelectedDay(day)}
             >
               <Text style={[s.weekDayLabel, isSelected && s.weekDayLabelSelected]}>{formatWeekday(day)}</Text>
               <Text style={[s.weekDayNum, isSelected && s.weekDayNumSelected, isToday && !isSelected && s.weekDayToday]}>{formatDay(day)}</Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
-      </View>
+      </Box>
     );
   };
 
   const renderCompactStat = (label: string, value: string, progress: number) => (
-    <View style={s.compactStat}>
+    <Box style={s.compactStat}>
       <Text style={s.compactStatLabel}>{label}</Text>
       <Text style={s.compactStatValue}>{value}</Text>
-      <View style={s.compactProgressBar}>
-        <View style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
-      </View>
-    </View>
+      <Box style={s.compactProgressBar}>
+        <Box style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
+      </Box>
+    </Box>
   );
 
   const renderNutrientGraph = () => (
-    <View style={s.nutrientCard}>
-      <View style={s.kcalSection}>
+    <Box style={s.nutrientCard}>
+      <Box style={s.kcalSection}>
         <Text style={s.kcalValue}>{kcalCurrent}</Text>
         <Text style={s.kcalTarget}>/ {kcalTarget} kcal</Text>
-      </View>
-      <View style={s.nutrientRow}>
+      </Box>
+      <Box style={s.nutrientRow}>
         {[
           { label: 'Proteína', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
           { label: 'Carbos', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
           { label: 'Grasas', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
         ].map((n, i) => (
-          <View key={i} style={s.nutrientItem}>
+          <Box key={i} style={s.nutrientItem}>
             <Text style={s.nutrientLabel}>{n.label}</Text>
             <Text style={s.nutrientValue}>{n.current}g</Text>
             <Text style={s.nutrientTarget}>de {n.target}g</Text>
-            <View style={s.nutrientBar}>
-              <View style={[s.nutrientBarFill, { width: `${n.progress * 100}%`, backgroundColor: n.color }]} />
-            </View>
-          </View>
+            <Box style={s.nutrientBar}>
+              <Box style={[s.nutrientBarFill, { width: `${n.progress * 100}%`, backgroundColor: n.color }]} />
+            </Box>
+          </Box>
         ))}
-      </View>
-    </View>
+      </Box>
+    </Box>
   );
 
   const renderMealSection = (key: string, displayName: string) => {
     const total = mealTotals[key] ?? {};
     const recipes = mealRecipes[key] ?? [];
     return (
-      <View key={key} style={s.mealSection}>
-        <View style={s.mealHeader}>
-          <View>
+      <Box key={key} style={s.mealSection}>
+        <Box style={s.mealHeader}>
+          <Box>
             <Text style={s.mealTitle}>{displayName}</Text>
             <Text style={s.mealCalories}>{total.totalCalories ?? 0} kcal | P: {total.totalProtein ?? 0}g | C: {total.totalCarbs ?? 0}g | F: {total.totalFats ?? 0}g</Text>
-          </View>
-          <TouchableOpacity style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
-            <Ionicons name="add-circle-outline" size={24} color={C.textPrimary} />
-          </TouchableOpacity>
-        </View>
+          </Box>
+          <Pressable style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
+            <Icon name="add-circle-outline" size={24} color={C.textPrimary} />
+          </Pressable>
+        </Box>
         {recipes.length === 0 ? (
           <Text style={s.emptyMealText}>Todavía no has añadido {displayName.toLowerCase()}.</Text>
         ) : (
           recipes.map((recipe, i) => (
-            <View key={i} style={s.recipeItem}>
-              <TouchableOpacity
+            <Box key={i} style={s.recipeItem}>
+              <Pressable
                 style={s.recipeItemTouchable}
-                activeOpacity={0.7}
                 onPress={() => openRecipeDetail(recipe)}
               >
                 {recipe.recipeImage ? (
                   <Image source={{ uri: recipe.recipeImage }} style={s.recipeImage} />
                 ) : (
-                  <View style={s.recipeImage} />
+                  <Box style={s.recipeImage} />
                 )}
-                <View style={s.recipeInfo}>
+                <Box style={s.recipeInfo}>
                   <Text style={s.recipeName} numberOfLines={1}>{recipe.recipeName ?? 'Receta'}</Text>
-                  <View style={s.recipeMacrosRow}>
+                  <Box style={s.recipeMacrosRow}>
                     <Text style={s.recipeMacroCal}>{recipe.calories ?? 0} kcal</Text>
                     <Text style={s.recipeMacro}>P {recipe.protein ?? 0}g</Text>
                     <Text style={s.recipeMacro}>C {recipe.carbs ?? 0}g</Text>
                     <Text style={s.recipeMacro}>F {recipe.fats ?? 0}g</Text>
-                  </View>
+                  </Box>
                   {recipe.isCoachAssigned && (
-                    <View style={s.coachBadge}>
-                      <Ionicons name="ribbon-outline" size={11} color={C.orange} />
+                    <Box style={s.coachBadge}>
+                      <Icon name="ribbon-outline" size={11} color={C.orange} />
                       <Text style={s.coachBadgeText}>
                         Asignado por {recipe.assignedByName ?? 'tu coach'}
                       </Text>
-                    </View>
+                    </Box>
                   )}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => toggleRecipeCompletion(recipe, key)}>
-                <Ionicons
+                </Box>
+              </Pressable>
+              <Pressable onPress={() => toggleRecipeCompletion(recipe, key)}>
+                <Icon
                   name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
                   size={22}
                   color={recipe.isComplete ? C.success : C.gray40}
                 />
-              </TouchableOpacity>
-            </View>
+              </Pressable>
+            </Box>
           ))
         )}
-      </View>
+      </Box>
     );
   };
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
+    <Box style={s.container}>
+      <Box style={s.appBar}>
+        <Pressable onPress={() => props.navigation?.goBack()} style={s.backBtn}>
+          <Icon name="chevron-back" size={24} color={C.textPrimary} />
+        </Pressable>
         <Text style={s.appBarTitle}>Plan diario</Text>
-        <TouchableOpacity onPress={clearDailyPlan} style={s.clearBtn}>
-          <Ionicons name="trash-outline" size={20} color={C.destructive} />
-        </TouchableOpacity>
-      </View>
-      <View style={s.weekdayPicker}>
-        <TouchableOpacity onPress={() => setWeekOffset(prev => prev - 1)} style={s.weekNavBtn}>
-          <Ionicons name="chevron-back" size={20} color={C.gray30} />
-        </TouchableOpacity>
+        <Pressable onPress={clearDailyPlan} style={s.clearBtn}>
+          <Icon name="trash-outline" size={20} color={C.destructive} />
+        </Pressable>
+      </Box>
+      <Box style={s.weekdayPicker}>
+        <Pressable onPress={() => setWeekOffset(prev => prev - 1)} style={s.weekNavBtn}>
+          <Icon name="chevron-back" size={20} color={C.gray30} />
+        </Pressable>
         {renderWeekDays(weekOffset)}
-        <TouchableOpacity onPress={() => setWeekOffset(prev => prev + 1)} style={s.weekNavBtn}>
-          <Ionicons name="chevron-forward" size={20} color={C.gray30} />
-        </TouchableOpacity>
-      </View>
+        <Pressable onPress={() => setWeekOffset(prev => prev + 1)} style={s.weekNavBtn}>
+          <Icon name="chevron-forward" size={20} color={C.gray30} />
+        </Pressable>
+      </Box>
       {showCompactSummary && (
-        <View style={s.compactBar}>
+        <Box style={s.compactBar}>
           {renderCompactStat('Kcal', `${kcalCurrent}/${kcalTarget}`, kcalProgress)}
           {renderCompactStat('Proteína', `${proteinCurrent}/${proteinTarget}g`, proteinProgress)}
           {renderCompactStat('Carbos', `${carbsCurrent}/${carbsTarget}g`, carbsProgress)}
           {renderCompactStat('Grasas', `${fatsCurrent}/${fatsTarget}g`, fatsProgress)}
-        </View>
+        </Box>
       )}
       <ScrollView
         ref={scrollRef}
@@ -491,9 +494,9 @@ export default function PlanScreen(props: any) {
         {Object.entries(MEAL_TYPES).map(([key, displayName]) => renderMealSection(key, displayName))}
       </ScrollView>
       {isLoading && (
-        <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={s.loadingOverlay}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       )}
 
       <Modal visible={!!addMealFor} animationType="slide" onRequestClose={() => setAddMealFor(null)}>
@@ -501,30 +504,30 @@ export default function PlanScreen(props: any) {
           style={[s.modalSheet, { paddingTop: insets.top + 12 }]}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <View style={s.modalHeaderRow}>
+          <Box style={s.modalHeaderRow}>
             <Text style={s.modalTitle}>Añadir a {addMealFor?.label ?? ''}</Text>
-            <TouchableOpacity onPress={() => setAddMealFor(null)} style={s.modalCloseBtn}>
-              <Ionicons name="close" size={26} color={C.white} />
-            </TouchableOpacity>
-          </View>
-          <View style={s.addMealTabsRow}>
-            <TouchableOpacity
+            <Pressable onPress={() => setAddMealFor(null)} style={s.modalCloseBtn}>
+              <Icon name="close" size={26} color={C.white} />
+            </Pressable>
+          </Box>
+          <Box style={s.addMealTabsRow}>
+            <Pressable
               style={[s.addMealTab, addMealTab === 'assigned' && s.addMealTabActive]}
               onPress={() => setAddMealTab('assigned')}
             >
               <Text style={[s.addMealTabText, addMealTab === 'assigned' && s.addMealTabTextActive]}>
                 Asignadas
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={[s.addMealTab, addMealTab === 'recipes' && s.addMealTabActive]}
               onPress={() => setAddMealTab('recipes')}
             >
               <Text style={[s.addMealTabText, addMealTab === 'recipes' && s.addMealTabTextActive]}>
                 Recetario
               </Text>
-            </TouchableOpacity>
-          </View>
+            </Pressable>
+          </Box>
           {addMealTab === 'assigned' ? (
             (() => {
               const assignedForMeal: AssignedMealRecipe[] =
@@ -539,7 +542,7 @@ export default function PlanScreen(props: any) {
               return (
                 <ScrollView style={s.searchResultsScroll} keyboardShouldPersistTaps="handled">
                   {assignedForMeal.map((recipe) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={recipe.id}
                       style={s.searchResultRow}
                       disabled={savingRecipeId === recipe.id}
@@ -548,18 +551,18 @@ export default function PlanScreen(props: any) {
                       {recipe.recipe_image ? (
                         <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
                       ) : (
-                        <View style={s.searchResultImage} />
+                        <Box style={s.searchResultImage} />
                       )}
-                      <View style={{ flex: 1 }}>
+                      <Box style={{ flex: 1 }}>
                         <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
                         <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                      </View>
+                      </Box>
                       {savingRecipeId === recipe.id ? (
-                        <ActivityIndicator size="small" color={C.textPrimary} />
+                        <Spinner size="small" color={C.textPrimary} />
                       ) : (
-                        <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
+                        <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
                       )}
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </ScrollView>
               );
@@ -575,7 +578,7 @@ export default function PlanScreen(props: any) {
                 autoFocus
               />
               {searchLoading ? (
-                <ActivityIndicator size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
+                <Spinner size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
               ) : searchResults.length === 0 ? (
                 <Text style={s.noResultsText}>No se encontraron recetas.</Text>
               ) : (
@@ -586,7 +589,7 @@ export default function PlanScreen(props: any) {
                   keyboardShouldPersistTaps="handled"
                 >
                   {searchResults.map((recipe) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={recipe.id}
                       style={s.searchResultRow}
                       disabled={savingRecipeId === recipe.id}
@@ -595,21 +598,21 @@ export default function PlanScreen(props: any) {
                       {recipe.recipe_image ? (
                         <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
                       ) : (
-                        <View style={s.searchResultImage} />
+                        <Box style={s.searchResultImage} />
                       )}
-                      <View style={{ flex: 1 }}>
+                      <Box style={{ flex: 1 }}>
                         <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
                         <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                      </View>
+                      </Box>
                       {savingRecipeId === recipe.id ? (
-                        <ActivityIndicator size="small" color={C.textPrimary} />
+                        <Spinner size="small" color={C.textPrimary} />
                       ) : (
-                        <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
+                        <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
                       )}
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                   {searchLoadingMore && (
-                    <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
+                    <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                   )}
                 </ScrollView>
               )}
@@ -617,7 +620,7 @@ export default function PlanScreen(props: any) {
           )}
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </Box>
   );
 }
 

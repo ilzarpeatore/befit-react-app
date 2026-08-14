@@ -1,9 +1,13 @@
-﻿import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { HStack } from "@components/ui/hstack";
+import { VStack } from "@components/ui/vstack";
+import { Pressable } from "@components/ui/pressable";
+import { Button, ButtonText } from "@components/ui/button";
+import { Icon } from "@components/ui/icon";
 
 const DEVICES = [
   { name: "Garmin", icon: "watch", desc: "Garmin smartwatch" },
@@ -13,88 +17,50 @@ const DEVICES = [
 ];
 
 export default function LinkDeviceListScreen({ navigation }: any) {
-  const styles = useStyle();
-
   const handleConnect = () => {
     navigation.navigate("MigratedEmparejando");
   };
 
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.content}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <VStack className="flex-1" space="lg" style={{ padding: 20, paddingBottom: 40 }}>
+        <Pressable
+          className="w-10 h-10 rounded-sm bg-card border border-border items-center justify-center"
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-back" size={22} className="text-foreground" />
+        </Pressable>
 
-          <Text style={styles.title}>Select Device</Text>
-          <Text style={styles.subtitle}>Choose your wearable to start syncing</Text>
+        <VStack space="xs">
+          <Heading size="xl">Select Device</Heading>
+          <Text muted>Choose your wearable to start syncing</Text>
+        </VStack>
 
+        <VStack space="md">
           {DEVICES.map((device) => (
-            <View key={device.name} style={styles.deviceCard}>
-              <View style={styles.deviceIcon}>
-                <Ionicons name={device.icon as any} size={28} color={C.textPrimary} />
-              </View>
-              <View style={styles.deviceInfo}>
-                <Text style={styles.deviceName}>{device.name}</Text>
-                <Text style={styles.deviceDesc}>{device.desc}</Text>
-              </View>
-              <TouchableOpacity style={styles.connectBtn} onPress={handleConnect}>
-                <Text style={styles.connectBtnText}>Connect</Text>
-              </TouchableOpacity>
-            </View>
+            <HStack
+              key={device.name}
+              space="md"
+              className="items-center bg-card rounded-md border border-border"
+              style={{ padding: 16 }}
+            >
+              <Box
+                className="rounded-sm bg-secondary items-center justify-center"
+                style={{ width: 52, height: 52 }}
+              >
+                <Icon name={device.icon as any} size={28} className="text-foreground" />
+              </Box>
+              <VStack className="flex-1" space="xs">
+                <Text weight="semibold">{device.name}</Text>
+                <Text size="xs" muted>{device.desc}</Text>
+              </VStack>
+              <Button size="sm" onPress={handleConnect}>
+                <ButtonText>Connect</ButtonText>
+              </Button>
+            </HStack>
           ))}
-        </View>
-      </SafeAreaView>
-    </View>
+        </VStack>
+      </VStack>
+    </SafeAreaView>
   );
-}
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    root: { flex: 1, backgroundColor: C.bg },
-    content: { flex: 1, padding: 20, paddingBottom: 40 },
-    backBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      backgroundColor: C.surface,
-      borderWidth: 1,
-      borderColor: C.border,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 24,
-    },
-    title: { fontSize: 28, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
-    subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, marginBottom: 28 },
-    deviceCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 16,
-      borderWidth: 1,
-      borderColor: C.border,
-      marginBottom: 12,
-      gap: 14,
-    },
-    deviceIcon: {
-      width: 52,
-      height: 52,
-      borderRadius: 14,
-      backgroundColor: C.brand10,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    deviceInfo: { flex: 1 },
-    deviceName: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-    deviceDesc: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
-    connectBtn: {
-      backgroundColor: C.brand50,
-      borderRadius: 12,
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-    },
-    connectBtnText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-  });
 }

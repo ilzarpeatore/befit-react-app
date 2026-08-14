@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT } from './theme';
 import { dietApi } from '../../api/diet';
 import { recipesApi, RecipeStep, RecipeIngredient } from '../../api/recipes';
@@ -139,53 +142,53 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
   };
 
   const getVitamins = (icon: string, title: string, subTitle: string) => (
-    <View style={localStyles.vitaminItem}>
-      <Ionicons name={icon as any} size={26} color={C.textPrimary} />
+    <Box style={localStyles.vitaminItem}>
+      <Icon name={icon as any} size={26} color={C.textPrimary} />
       <Text style={localStyles.vitaminTitle}>{title}</Text>
       <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
-    </View>
+    </Box>
   );
 
   const isLockedRecipe = isRecipeMode && dietState.isPremium === 1 && dietState.isAccessible === 0;
 
   const ingredients = () =>
     isLockedRecipe ? (
-      <View style={localStyles.htmlContent}>
+      <Box style={localStyles.htmlContent}>
         <Text style={localStyles.htmlText}>
           Contenido exclusivo de tu coach.
         </Text>
-      </View>
+      </Box>
     ) : isRecipeMode ? (
-      <View style={localStyles.htmlContent}>
+      <Box style={localStyles.htmlContent}>
         {recipeIngredients.length === 0 ? (
           <Text style={localStyles.htmlText}>No hay ingredientes.</Text>
         ) : (
           recipeIngredients.map((ing) => (
-            <View key={ing.id} style={localStyles.ingredientRow}>
-              <View style={localStyles.ingredientDot} />
+            <Box key={ing.id} style={localStyles.ingredientRow}>
+              <Box style={localStyles.ingredientDot} />
               <Text style={[localStyles.htmlText, { flex: 1 }]}>{ing.ingredient_title}</Text>
               <Text style={localStyles.ingredientQty}>
                 {ing.quantity_display || `${ing.quantity} ${ing.measurement_unit_title}`}
               </Text>
-            </View>
+            </Box>
           ))
         )}
-      </View>
+      </Box>
     ) : (
-      <View style={localStyles.htmlContent}>
+      <Box style={localStyles.htmlContent}>
         <Text style={localStyles.htmlText}>{dietState.ingredients || ''}</Text>
-      </View>
+      </Box>
     );
 
   const instruction = () =>
     isLockedRecipe ? (
-      <View style={localStyles.htmlContent}>
+      <Box style={localStyles.htmlContent}>
         <Text style={localStyles.htmlText}>
           Contenido exclusivo de tu coach.
         </Text>
-      </View>
+      </Box>
     ) : isRecipeMode ? (
-      <View style={localStyles.htmlContent}>
+      <Box style={localStyles.htmlContent}>
         {recipeSteps.length === 0 ? (
           <Text style={localStyles.htmlText}>No hay instrucciones.</Text>
         ) : (
@@ -195,113 +198,113 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             </Text>
           ))
         )}
-      </View>
+      </Box>
     ) : (
-      <View style={localStyles.htmlContent}>
+      <Box style={localStyles.htmlContent}>
         <Text style={localStyles.htmlText}>{dietState.description || ''}</Text>
-      </View>
+      </Box>
     );
 
   return (
     <SafeAreaView style={localStyles.container} edges={['bottom']}>
       {/* Header Image */}
-      <View style={localStyles.headerSection}>
+      <Box style={localStyles.headerSection}>
         <Image
           source={{ uri: dietState.dietImage || '' }}
           style={localStyles.headerImage}
           resizeMode="cover"
         />
-        <View style={localStyles.headerOverlay} />
+        <Box style={localStyles.headerOverlay} />
 
         {/* Back Button */}
-        <TouchableOpacity
+        <Pressable
           style={[localStyles.backBtn, { top: insets.top + 8 }]}
           onPress={() => props.navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color={'#FFFFFF'} />
-        </TouchableOpacity>
+          <Icon name="chevron-back" size={24} color={'#FFFFFF'} />
+        </Pressable>
 
         {/* Premium Badge */}
         {dietState.isPremium === 1 && (
-          <View style={[localStyles.premiumBadge, { top: insets.top + 16 }]}>
+          <Box style={[localStyles.premiumBadge, { top: insets.top + 16 }]}>
             <Text style={localStyles.premiumText}>PRO</Text>
-          </View>
+          </Box>
         )}
 
         {/* Favourite Button */}
-        <TouchableOpacity
+        <Pressable
           style={[localStyles.favBtn, { top: insets.top + 18 }]}
           onPress={() => setDiet(dietState.id)}
         >
-          <View style={localStyles.favBtnInner}>
-            <Ionicons
+          <Box style={localStyles.favBtnInner}>
+            <Icon
               name={dietState.isFavourite === 1 ? 'heart' : 'heart-outline'}
               size={20}
               color={dietState.isFavourite === 1 ? C.red : C.white}
             />
-          </View>
-        </TouchableOpacity>
+          </Box>
+        </Pressable>
 
         {/* Title + Time */}
-        <View style={localStyles.titleRow}>
+        <Box style={localStyles.titleRow}>
           <Text style={localStyles.dietTitle} numberOfLines={2}>
             {dietState.title || ''}
           </Text>
-          <View style={localStyles.timeBadge}>
-            <Ionicons name="time-outline" size={16} color={'#FFFFFF'} />
+          <Box style={localStyles.timeBadge}>
+            <Icon name="time-outline" size={16} color={'#FFFFFF'} />
             <Text style={localStyles.timeText}>{dietState.totalTime || ''}</Text>
-          </View>
-        </View>
-      </View>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Content Sheet */}
-      <View style={localStyles.contentSheet}>
+      <Box style={localStyles.contentSheet}>
         <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
           {/* Nutrients Row */}
-          <View style={localStyles.nutrientsRow}>
+          <Box style={localStyles.nutrientsRow}>
             {getVitamins('flame-outline', `${dietState.calories || '0'} Kcal`, 'Calorías')}
-            <View style={localStyles.divider} />
+            <Box style={localStyles.divider} />
             {getVitamins('leaf-outline', `${dietState.carbs || '0'} g`, 'Carbohidratos')}
-            <View style={localStyles.divider} />
+            <Box style={localStyles.divider} />
             {getVitamins('water-outline', `${dietState.fat || '0'} g`, 'Grasas')}
-            <View style={localStyles.divider} />
+            <Box style={localStyles.divider} />
             {getVitamins('nutrition-outline', `${dietState.protein || '0'} g`, 'Proteína')}
-          </View>
+          </Box>
 
-          <View style={localStyles.separator} />
+          <Box style={localStyles.separator} />
 
           {/* Tabs: Ingredients / Instruction */}
-          <View style={localStyles.tabsRowWrap}>
-            <View style={localStyles.tabBar}>
-              <TouchableOpacity
+          <Box style={localStyles.tabsRowWrap}>
+            <Box style={localStyles.tabBar}>
+              <Pressable
                 style={[localStyles.tabPill, select && localStyles.tabPillActive]}
                 onPress={() => setSelect(true)}
               >
                 <Text style={[localStyles.tabPillText, select && localStyles.tabPillTextActive]}>
                   Ingredientes
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 style={[localStyles.tabPill, !select && localStyles.tabPillActive]}
                 onPress={() => setSelect(false)}
               >
                 <Text style={[localStyles.tabPillText, !select && localStyles.tabPillTextActive]}>
                   Instrucciones
                 </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              </Pressable>
+            </Box>
+          </Box>
 
-          <View style={{ padding: 16 }}>
+          <Box style={{ padding: 16 }}>
             {select ? ingredients() : instruction()}
-          </View>
+          </Box>
         </ScrollView>
-      </View>
+      </Box>
 
       {isLoading && (
-        <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={localStyles.loaderContainer}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       )}
     </SafeAreaView>
   );

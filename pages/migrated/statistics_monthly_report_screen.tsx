@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 import { C, FONT, SHADOW } from './theme';
 import { statisticsApi, PeriodStats, MonthlySessionItem, MonthlyPrEvent } from '../../api/statistics';
 import { muscleVolumeApi, MuscleVolumeGroup, MuscleVolumeByDate } from '../../api/muscleVolume';
@@ -177,96 +181,96 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
 
   return (
     <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
+      <Box style={s.appBar}>
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
         <Text style={s.appBarTitle} numberOfLines={1}>
           Informe mensual
         </Text>
-        <View style={s.iconBtn} />
-      </View>
+        <Box style={s.iconBtn} />
+      </Box>
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.monthNav}>
-          <TouchableOpacity onPress={goPrevMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-back" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
+        <Box style={s.monthNav}>
+          <Pressable onPress={goPrevMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="chevron-back" size={18} className="text-muted-foreground" />
+          </Pressable>
           <Text style={s.monthNavLabel}>
             {MONTHS_ES[monthAnchor.getMonth()]} {monthAnchor.getFullYear()}
           </Text>
-          <TouchableOpacity onPress={goNextMonth} disabled={isCurrentMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-forward" size={18} color={isCurrentMonth ? C.border : C.textSecondary} />
-          </TouchableOpacity>
-        </View>
+          <Pressable onPress={goNextMonth} disabled={isCurrentMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="chevron-forward" size={18} color={isCurrentMonth ? C.border : C.textSecondary} />
+          </Pressable>
+        </Box>
 
         {isLoading ? (
           <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
         ) : (
           <>
             {/* KPIs con comparativa vs mes anterior */}
-            <View style={s.grid2x2}>
-              <View style={s.kpiCard}>
+            <Box style={s.grid2x2}>
+              <Box style={s.kpiCard}>
                 <Text style={s.kpiLabel}>Entrenamientos</Text>
                 <Text style={s.kpiValue}>{stats.sessionsCount}</Text>
                 <DeltaText current={stats.sessionsCount} previous={prevStats.sessionsCount} format={(n) => String(Math.round(n))} />
-              </View>
-              <View style={s.kpiCard}>
+              </Box>
+              <Box style={s.kpiCard}>
                 <Text style={s.kpiLabel}>Duración</Text>
                 <Text style={s.kpiValue}>{formatDuration(stats.durationSeconds)}</Text>
                 <DeltaText current={stats.durationSeconds} previous={prevStats.durationSeconds} format={formatDuration} />
-              </View>
-              <View style={s.kpiCard}>
+              </Box>
+              <Box style={s.kpiCard}>
                 <Text style={s.kpiLabel}>Volumen</Text>
                 <Text style={s.kpiValue}>{formatVolume(stats.volumeKg)}</Text>
                 <DeltaText current={stats.volumeKg} previous={prevStats.volumeKg} format={formatVolume} />
-              </View>
-              <View style={s.kpiCard}>
+              </Box>
+              <Box style={s.kpiCard}>
                 <Text style={s.kpiLabel}>Series</Text>
                 <Text style={s.kpiValue}>{totalSeries}</Text>
                 <DeltaText current={totalSeries} previous={prevTotalSeries} format={(n) => String(Math.round(n))} />
-              </View>
-            </View>
+              </Box>
+            </Box>
 
             {/* Desglose semanal */}
             {weeklyBreakdown.length > 0 && (
-              <View style={s.card}>
+              <Box style={s.card}>
                 <Text style={s.cardTitle}>Desglose semanal</Text>
-                <View style={s.weekRow}>
+                <Box style={s.weekRow}>
                   {weeklyBreakdown.map((w) => {
                     const heightPct = maxWeekVolume > 0 ? Math.max(w.volume > 0 ? 6 : 2, (w.volume / maxWeekVolume) * 100) : 2;
                     return (
-                      <View key={w.label} style={s.weekCol}>
-                        <View style={s.weekBarTrack}>
-                          <View style={[s.weekBarFill, { height: `${heightPct}%` }]} />
-                        </View>
+                      <Box key={w.label} style={s.weekCol}>
+                        <Box style={s.weekBarTrack}>
+                          <Box style={[s.weekBarFill, { height: `${heightPct}%` }]} />
+                        </Box>
                         <Text style={s.weekLabel}>{w.label}</Text>
-                      </View>
+                      </Box>
                     );
                   })}
-                </View>
-              </View>
+                </Box>
+              </Box>
             )}
 
             {/* PRs y progreso */}
-            <View style={s.card}>
+            <Box style={s.card}>
               <Text style={s.cardTitle}>Progreso y marcas</Text>
-              <View style={s.progressStatsRow}>
-                <View style={s.progressStat}>
+              <Box style={s.progressStatsRow}>
+                <Box style={s.progressStat}>
                   <Text style={s.progressStatValue}>{exercisesWithProgress}</Text>
                   <Text style={s.progressStatLabel}>ejercicios con progreso</Text>
-                </View>
-                <View style={s.progressStat}>
+                </Box>
+                <Box style={s.progressStat}>
                   <Text style={s.progressStatValue}>{prEvents.length}</Text>
                   <Text style={s.progressStatLabel}>marcas personales batidas</Text>
-                </View>
-              </View>
+                </Box>
+              </Box>
               {prEvents.length > 0 && (
                 <>
                   {visiblePrs.map((p, idx) => (
-                    <View key={idx} style={s.prRow}>
-                      <Ionicons name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
-                      <View style={{ flex: 1 }}>
+                    <Box key={idx} style={s.prRow}>
+                      <Icon name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
+                      <Box style={{ flex: 1 }}>
                         <Text style={s.prTitle} numberOfLines={1}>
                           {p.title}
                         </Text>
@@ -274,93 +278,93 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
                           {RECORD_TYPE_LABEL[p.record_type] || p.record_type}: {p.value} kg
                           {p.achieved_at ? ` · ${formatDate(p.achieved_at)}` : ''}
                         </Text>
-                      </View>
-                    </View>
+                      </Box>
+                    </Box>
                   ))}
                   {prEvents.length > 4 && (
-                    <TouchableOpacity onPress={() => setPrsModalVisible(true)} style={s.expandBtn}>
+                    <Pressable onPress={() => setPrsModalVisible(true)} style={s.expandBtn}>
                       <Text style={s.expandBtnText}>{`Ver las ${prEvents.length}`}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
                 </>
               )}
-            </View>
+            </Box>
 
             {/* Músculos que suben / bajan */}
             {(musclesUp.length > 0 || musclesDown.length > 0) && (
-              <View style={s.card}>
+              <Box style={s.card}>
                 <Text style={s.cardTitle}>Cambios de volumen por músculo</Text>
                 {musclesUp.length > 0 && (
-                  <View style={s.muscleDeltaGroup}>
+                  <Box style={s.muscleDeltaGroup}>
                     <Text style={s.muscleDeltaGroupLabel}>Suben</Text>
                     {musclesUp.map((m) => (
-                      <View key={m.group} style={s.muscleDeltaRow}>
+                      <Box key={m.group} style={s.muscleDeltaRow}>
                         <Text style={s.muscleDeltaName} numberOfLines={1}>
                           {m.group}
                         </Text>
                         <Text style={s.deltaUp}>↑ {formatVolume(m.delta)}</Text>
-                      </View>
+                      </Box>
                     ))}
-                  </View>
+                  </Box>
                 )}
                 {musclesDown.length > 0 && (
-                  <View style={s.muscleDeltaGroup}>
+                  <Box style={s.muscleDeltaGroup}>
                     <Text style={s.muscleDeltaGroupLabel}>Bajan</Text>
                     {musclesDown.map((m) => (
-                      <View key={m.group} style={s.muscleDeltaRow}>
+                      <Box key={m.group} style={s.muscleDeltaRow}>
                         <Text style={s.muscleDeltaName} numberOfLines={1}>
                           {m.group}
                         </Text>
                         <Text style={s.deltaDown}>↓ {formatVolume(Math.abs(m.delta))}</Text>
-                      </View>
+                      </Box>
                     ))}
-                  </View>
+                  </Box>
                 )}
-              </View>
+              </Box>
             )}
 
             {/* Lista de entrenamientos */}
-            <View style={s.card}>
+            <Box style={s.card}>
               <Text style={s.cardTitle}>Entrenamientos del mes</Text>
               {sortedSessions.length === 0 ? (
                 <Text style={s.emptyText}>Sin entrenamientos registrados este mes.</Text>
               ) : (
                 <>
                   {visibleSessions.map((sess, idx) => (
-                    <View key={idx} style={s.sessionRow}>
-                      <View style={s.sessionDateWrap}>
+                    <Box key={idx} style={s.sessionRow}>
+                      <Box style={s.sessionDateWrap}>
                         <Text style={s.sessionDate}>{formatDate(sess.date)}</Text>
-                      </View>
-                      <View style={{ flex: 1 }}>
+                      </Box>
+                      <Box style={{ flex: 1 }}>
                         <Text style={s.sessionTitle} numberOfLines={1}>
                           {sess.title}
                         </Text>
                         <Text style={s.sessionSubtitle}>
                           {formatDuration(sess.duration_seconds)} · {formatVolume(sess.volume_kg)}
                         </Text>
-                      </View>
-                    </View>
+                      </Box>
+                    </Box>
                   ))}
                   {sortedSessions.length > 4 && (
-                    <TouchableOpacity onPress={() => setSessionsModalVisible(true)} style={s.expandBtn}>
+                    <Pressable onPress={() => setSessionsModalVisible(true)} style={s.expandBtn}>
                       <Text style={s.expandBtnText}>{`Ver los ${sortedSessions.length}`}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
                 </>
               )}
-            </View>
+            </Box>
           </>
         )}
       </ScrollView>
 
       <SimpleBottomSheet visible={prsModalVisible} onClose={() => setPrsModalVisible(false)}>
-        <View style={s.modalHandle} />
+        <Box style={s.modalHandle} />
         <Text style={s.modalTitle}>Progreso y marcas ({prEvents.length})</Text>
         <ScrollView style={s.modalScroll} contentContainerStyle={s.modalScrollContent}>
           {prEvents.map((p, idx) => (
-            <View key={idx} style={s.prRow}>
-              <Ionicons name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
-              <View style={{ flex: 1 }}>
+            <Box key={idx} style={s.prRow}>
+              <Icon name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
+              <Box style={{ flex: 1 }}>
                 <Text style={s.prTitle} numberOfLines={1}>
                   {p.title}
                 </Text>
@@ -368,30 +372,30 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
                   {RECORD_TYPE_LABEL[p.record_type] || p.record_type}: {p.value} kg
                   {p.achieved_at ? ` · ${formatDate(p.achieved_at)}` : ''}
                 </Text>
-              </View>
-            </View>
+              </Box>
+            </Box>
           ))}
         </ScrollView>
       </SimpleBottomSheet>
 
       <SimpleBottomSheet visible={sessionsModalVisible} onClose={() => setSessionsModalVisible(false)}>
-        <View style={s.modalHandle} />
+        <Box style={s.modalHandle} />
         <Text style={s.modalTitle}>Entrenamientos del mes ({sortedSessions.length})</Text>
         <ScrollView style={s.modalScroll} contentContainerStyle={s.modalScrollContent}>
           {sortedSessions.map((sess, idx) => (
-            <View key={idx} style={s.sessionRow}>
-              <View style={s.sessionDateWrap}>
+            <Box key={idx} style={s.sessionRow}>
+              <Box style={s.sessionDateWrap}>
                 <Text style={s.sessionDate}>{formatDate(sess.date)}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
+              </Box>
+              <Box style={{ flex: 1 }}>
                 <Text style={s.sessionTitle} numberOfLines={1}>
                   {sess.title}
                 </Text>
                 <Text style={s.sessionSubtitle}>
                   {formatDuration(sess.duration_seconds)} · {formatVolume(sess.volume_kg)}
                 </Text>
-              </View>
-            </View>
+              </Box>
+            </Box>
           ))}
         </ScrollView>
       </SimpleBottomSheet>

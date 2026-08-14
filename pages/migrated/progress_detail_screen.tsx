@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Alert } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import logger from '@helper/logger';
 
 type SampleMenu = 'all' | 'month' | 'year';
@@ -24,21 +29,23 @@ function HorizontalBarChart({ data }: { data: GraphDataItem[] }) {
   if (!data || data.length === 0) return null;
   const maxVal = Math.max(...data.map(d => parseFloat(d.value?.replace(/[^0-9.]/g, '') ?? '0') || 0));
   return (
-    <View style={chartStyles.container}>
+    <Box style={{ padding: 16 }}>
       {data.map((item, i) => {
         const val = parseFloat(item.value?.replace(/[^0-9.]/g, '') ?? '0') || 0;
         const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
         return (
-          <View key={i} style={chartStyles.barRow}>
-            <Text style={chartStyles.barLabel} numberOfLines={1}>{item.label ?? item.date ?? ''}</Text>
-            <View style={chartStyles.barTrack}>
-              <View style={[chartStyles.barFill, { width: `${pct}%` }]} />
-            </View>
-            <Text style={chartStyles.barValue}>{val}{item.unit ? ` ${item.unit}` : ''}</Text>
-          </View>
+          <Box key={i} className="flex-row items-center" style={{ marginBottom: 10 }}>
+            <Text size="xs" muted numberOfLines={1} style={{ width: 60, textAlign: 'right', marginRight: 8 }}>
+              {item.label ?? item.date ?? ''}
+            </Text>
+            <Box className="flex-1 rounded-sm overflow-hidden" style={{ height: 20, backgroundColor: C.gray70 }}>
+              <Box className="rounded-sm" style={{ height: 20, width: `${pct}%`, backgroundColor: C.brand5 }} />
+            </Box>
+            <Text size="xs" muted style={{ width: 80, marginLeft: 8 }}>{val}{item.unit ? ` ${item.unit}` : ''}</Text>
+          </Box>
         );
       })}
-    </View>
+    </Box>
   );
 }
 
@@ -134,106 +141,97 @@ export default function ProgressDetailScreen(props: any) {
   };
 
   const renderWeightOption = (label: string, index: number) => (
-    <TouchableOpacity
-      style={[s.weightOption, mWeight === index && s.weightOptionActive]}
+    <Pressable
+      key={label}
+      className={`rounded-sm px-2.5 ${mWeight === index ? 'bg-primary' : ''}`}
+      style={{ paddingVertical: 4 }}
       onPress={() => handleWeightToggle(index)}
     >
-      <Text style={[s.weightOptionText, mWeight === index && s.weightOptionTextActive]}>{label}</Text>
-    </TouchableOpacity>
+      <Text size="xs" className={mWeight === index ? 'text-primary-foreground' : 'text-muted-foreground'}>{label}</Text>
+    </Pressable>
   );
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>{mTitle}</Text>
-        <View style={s.appBarActions}>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 48, paddingBottom: 12 }} className="px-3 flex-row items-center gap-2 bg-card">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={28} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1">{mTitle}</Heading>
+        <Box className="flex-row items-center gap-2">
           {mTitle === 'Weight' && (
-            <View style={s.weightToggle}>
+            <Box className="flex-row rounded-sm bg-secondary" style={{ padding: 4 }}>
               {renderWeightOption('LBS', 0)}
               {renderWeightOption('KG', 1)}
-            </View>
+            </Box>
           )}
-          <TouchableOpacity style={s.moreBtn} onPress={() => {
-            Alert.alert('Filter', 'Select filter', [
-              { text: 'All', onPress: () => handleFilterSelect('all') },
-              { text: 'Month', onPress: () => handleFilterSelect('month') },
-              { text: 'Year', onPress: () => handleFilterSelect('year') },
-            ]);
-          }}>
-            <Ionicons name="ellipsis-vertical" size={20} color={C.gray40} />
-          </TouchableOpacity>
-        </View>
-      </View>
+          <Button
+            variant="ghost"
+            size="icon"
+            onPress={() => {
+              Alert.alert('Filter', 'Select filter', [
+                { text: 'All', onPress: () => handleFilterSelect('all') },
+                { text: 'Month', onPress: () => handleFilterSelect('month') },
+                { text: 'Year', onPress: () => handleFilterSelect('year') },
+              ]);
+            }}
+          >
+            <Icon name="ellipsis-vertical" size={20} className="text-muted-foreground" />
+          </Button>
+        </Box>
+      </Box>
 
-      <View style={s.body}>
+      <Box className="flex-1">
         {isLoading ? (
-          <View style={s.loadingContainer}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         ) : graphData.length > 0 ? (
-          <ScrollView ref={scrollRef} contentContainerStyle={s.scrollContent}>
-            <View style={s.chartSection}>
+          <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 24 }}>
+            <Box className="rounded-md bg-card" style={{ margin: 16, padding: 8 }}>
               <HorizontalBarChart data={graphData} />
-            </View>
-            <View style={s.listSection}>
+            </Box>
+            <Box className="px-4">
               {graphData.map((item, index) => (
-                <View key={index} style={s.listItem}>
-                  <Text style={s.listItemValue}>
+                <Box
+                  key={index}
+                  className="flex-row justify-between items-center"
+                  style={{ paddingVertical: 12, borderBottomWidth: 0.3, borderBottomColor: C.gray70 }}
+                >
+                  <Text weight="bold" size="sm">
                     {item.value?.replace('user', '') ?? ''} {item.unit ?? ''}
                   </Text>
-                  <Text style={s.listItemDate}>{progressDateStringWidget(item.date ?? '')}</Text>
-                </View>
+                  <Text size="sm" muted>{progressDateStringWidget(item.date ?? '')}</Text>
+                </Box>
               ))}
-            </View>
+            </Box>
           </ScrollView>
         ) : (
-          <View style={s.emptyContainer}>
-            <Ionicons name="bar-chart-outline" size={64} color={C.gray50} />
-            <Text style={s.emptyText}>No results found</Text>
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Icon name="bar-chart-outline" size={64} className="text-muted-foreground" />
+            <Text weight="medium" muted style={{ marginTop: 16 }}>No results found</Text>
+          </Box>
         )}
-      </View>
+      </Box>
 
-      <TouchableOpacity style={s.fab} onPress={openAddProgress}>
-        <Ionicons name="add" size={28} color={C.white} />
-      </TouchableOpacity>
-    </View>
+      <Pressable
+        className="items-center justify-center rounded-pill bg-primary"
+        style={{
+          position: 'absolute',
+          bottom: 24,
+          right: 24,
+          width: 56,
+          height: 56,
+          elevation: 6,
+          shadowColor: C.brand5,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        }}
+        onPress={openAddProgress}
+      >
+        <Icon name="add" size={28} className="text-primary-foreground" />
+      </Pressable>
+    </Box>
   );
 }
-
-const chartStyles = StyleSheet.create({
-  container: { padding: 16 },
-  barRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  barLabel: { width: 60, fontSize: 11, color: C.gray40, textAlign: 'right', marginRight: 8 },
-  barTrack: { flex: 1, height: 20, backgroundColor: C.gray70, borderRadius: 4, overflow: 'hidden' },
-  barFill: { height: 20, backgroundColor: C.brand5, borderRadius: 4 },
-  barValue: { width: 80, fontSize: 11, color: C.gray40, marginLeft: 8 },
-});
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  backBtn: { padding: 4, marginRight: 8 },
-  appBarTitle: { flex: 1, fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  appBarActions: { flexDirection: 'row', alignItems: 'center' },
-  weightToggle: { flexDirection: 'row', backgroundColor: C.surfaceLight, borderRadius: 8, padding: 4, marginRight: 8 },
-  weightOption: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  weightOptionActive: { backgroundColor: C.brand5 },
-  weightOptionText: { fontSize: 12, color: C.gray40 },
-  weightOptionTextActive: { color: C.white },
-  moreBtn: { padding: 8 },
-  body: { flex: 1 },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollContent: { paddingBottom: 24 },
-  chartSection: { backgroundColor: C.surface, borderRadius: 16, margin: 16, padding: 8 },
-  listSection: { paddingHorizontal: 16 },
-  listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 0.3, borderBottomColor: C.gray70 },
-  listItemValue: { fontSize: 14, fontFamily: FONT.bold, color: C.white },
-  listItemDate: { fontSize: 13, color: C.gray40 },
-  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.gray40, marginTop: 16 },
-  fab: { position: 'absolute', bottom: 24, right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: C.brand5, alignItems: 'center', justifyContent: 'center', elevation: 6, shadowColor: C.brand5, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-});

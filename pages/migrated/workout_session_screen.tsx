@@ -1,12 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   TextInput,
-  ActivityIndicator,
   Platform,
   Modal,
   FlatList,
@@ -17,7 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { ConfirmDialogMem } from '../../components/ConfirmDialog';
@@ -665,9 +665,9 @@ export default function WorkoutSessionScreen(props: Props) {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
@@ -675,14 +675,14 @@ export default function WorkoutSessionScreen(props: Props) {
   if (error || blocks.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <Ionicons name="close" size={26} color={C.textPrimary} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.loader}>
+        <Box style={styles.header}>
+          <Pressable onPress={() => navigation?.goBack()}>
+            <Icon name="close" size={26} color={C.textPrimary} />
+          </Pressable>
+        </Box>
+        <Box style={styles.loader}>
           <Text style={styles.emptyText}>No se pudo cargar el entrenamiento.</Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -697,44 +697,43 @@ export default function WorkoutSessionScreen(props: Props) {
       >
         {block.exercises.map((ex, exIdx) =>
           exIdx === activeExIdx ? (
-            <View key={ex.id} style={styles.activeCard}>
-              <View style={styles.activeHeaderRow}>
-                <TouchableOpacity
+            <Box key={ex.id} style={styles.activeCard}>
+              <Box style={styles.activeHeaderRow}>
+                <Pressable
                   style={styles.activeHeaderTapArea}
-                  activeOpacity={0.7}
                   onPress={() => openExerciseInfo(ex)}
                 >
                   <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={56} />
-                  <View style={styles.activeInfo}>
+                  <Box style={styles.activeInfo}>
                     <Text style={styles.activeTitle} numberOfLines={2}>
                       {ex.title}
                     </Text>
                     <Text style={styles.activeSubtitle}>
                       {formatPrescribedSubtitle(ex.prescribed)}
                     </Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  </Box>
+                </Pressable>
+                <Pressable
                   style={styles.painReportBtn}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   onPress={() => setPainReportTarget(ex)}
                 >
-                  <Ionicons name="medkit-outline" size={20} color={C.textSecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity
+                  <Icon name="medkit-outline" size={20} color={C.textSecondary} />
+                </Pressable>
+                <Pressable
                   style={styles.collapseBtn}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: -1 }))}
                 >
-                  <Ionicons name="chevron-up" size={20} color={C.textSecondary} />
-                </TouchableOpacity>
-              </View>
+                  <Icon name="chevron-up" size={20} color={C.textSecondary} />
+                </Pressable>
+              </Box>
 
               {ex.coachNotes ? (
-                <View style={styles.coachNoteBanner}>
-                  <Ionicons name="chatbubble-ellipses-outline" size={14} color={C.warning60} />
+                <Box style={styles.coachNoteBanner}>
+                  <Icon name="chatbubble-ellipses-outline" size={14} color={C.warning60} />
                   <Text style={styles.coachNoteText}>{ex.coachNotes}</Text>
-                </View>
+                </Box>
               ) : null}
 
               <TextInput
@@ -753,19 +752,19 @@ export default function WorkoutSessionScreen(props: Props) {
                   como una única fila horizontalmente scrolleable (en vez de
                   comprimir texto) mantiene # / métricas / ✓ siempre alineados. */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.table}>
-                  <View style={styles.tableHeaderRow}>
+                <Box style={styles.table}>
+                  <Box style={styles.tableHeaderRow}>
                     <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
                     {ex.enabledMetrics.map((key) => (
                       <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]} numberOfLines={1}>
                         {metricLabel(key)}
                       </Text>
                     ))}
-                    <View style={styles.checkCol} />
-                  </View>
+                    <Box style={styles.checkCol} />
+                  </Box>
 
                   {ex.rows.map((row, rowIdx) => (
-                    <View key={rowIdx} style={styles.tableRow}>
+                    <Box key={rowIdx} style={styles.tableRow}>
                       <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
                       {ex.enabledMetrics.map((key) => {
                         // Punto 1 (Motor de Auto-Regulacion de Carga): si hay una
@@ -779,7 +778,7 @@ export default function WorkoutSessionScreen(props: Props) {
                         const hasSuggestion = suggestedValue != null;
                         const target = hasSuggestion ? suggestedValue : ex.prescribed?.[key];
                         return (
-                          <View key={key} style={styles.metricCol}>
+                          <Box key={key} style={styles.metricCol}>
                             <TextInput
                               style={styles.tableInput}
                               value={row.values[key] ?? ''}
@@ -796,63 +795,62 @@ export default function WorkoutSessionScreen(props: Props) {
                                 {hasSuggestion ? `Sugerido: ${target}` : `Obj: ${target}`}
                               </Text>
                             ) : null}
-                          </View>
+                          </Box>
                         );
                       })}
-                      <TouchableOpacity
+                      <Pressable
                         style={styles.checkCol}
                         onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
                       >
-                        <Ionicons
+                        <Icon
                           name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
                           size={26}
                           color={row.completed ? C.success : C.textSecondary}
                         />
-                      </TouchableOpacity>
-                    </View>
+                      </Pressable>
+                    </Box>
                   ))}
-                </View>
+                </Box>
               </ScrollView>
 
-              <View style={styles.rowActions}>
-                <TouchableOpacity onPress={() => addRow(blockIdx, exIdx)}>
+              <Box style={styles.rowActions}>
+                <Pressable onPress={() => addRow(blockIdx, exIdx)}>
                   <Text style={styles.rowActionText}>+ AÑADIR SERIE</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   style={styles.rowActionRight}
                   onPress={() => markAllRows(blockIdx, exIdx)}
                 >
-                  <Ionicons name="checkmark-done" size={16} color={C.textPrimary} />
+                  <Icon name="checkmark-done" size={16} color={C.textPrimary} />
                   <Text style={styles.rowActionText}>MARCAR TODAS LAS SERIES</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                </Pressable>
+              </Box>
+            </Box>
           ) : (
-            <TouchableOpacity
+            <Pressable
               key={ex.id}
               style={styles.collapsedRow}
-              activeOpacity={0.7}
               onPress={() => {
                 setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }));
                 fetchLoadSuggestion(ex);
               }}
             >
-              <TouchableOpacity activeOpacity={0.7} onPress={() => openExerciseInfo(ex)}>
+              <Pressable onPress={() => openExerciseInfo(ex)}>
                 <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={48} />
-              </TouchableOpacity>
-              <View style={styles.collapsedInfo}>
+              </Pressable>
+              <Box style={styles.collapsedInfo}>
                 <Text style={styles.collapsedTitle} numberOfLines={2}>
                   {ex.title}
                 </Text>
                 <Text style={styles.collapsedSubtitle}>
                   {formatPrescribedSubtitle(ex.prescribed)}
                 </Text>
-              </View>
+              </Box>
               {/* Punto 2: el boton de reportar dolor solo se ve con el
                   acordeon del ejercicio abierto (tarjeta activa, arriba) --
                   aqui, en fila colapsada, se quita. */}
-              <Ionicons name="chevron-down" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
+              <Icon name="chevron-down" size={18} color={C.textSecondary} />
+            </Pressable>
           )
         )}
       </ScrollView>
@@ -862,62 +860,62 @@ export default function WorkoutSessionScreen(props: Props) {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onClose}>
-          <Ionicons name="close" size={26} color={C.textPrimary} />
-        </TouchableOpacity>
+      <Box style={styles.header}>
+        <Pressable onPress={onClose}>
+          <Icon name="close" size={26} color={C.textPrimary} />
+        </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {mTitle || 'Entrenamiento'}
         </Text>
-        <TouchableOpacity
+        <Pressable
           onPress={onMinimize}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Minimizar entrenamiento"
         >
-          <Ionicons name="chevron-down-circle-outline" size={24} color={C.textSecondary} />
-        </TouchableOpacity>
-      </View>
+          <Icon name="chevron-down-circle-outline" size={24} color={C.textSecondary} />
+        </Pressable>
+      </Box>
 
       {/* Live stats */}
-      <View style={styles.statsRow}>
-        <View style={styles.statItem}>
-          <View style={styles.statTop}>
-            <View style={styles.liveDot} />
+      <Box style={styles.statsRow}>
+        <Box style={styles.statItem}>
+          <Box style={styles.statTop}>
+            <Box style={styles.liveDot} />
             <Text style={styles.statValue}>{formatTimer(elapsedSeconds)}</Text>
-          </View>
+          </Box>
           <Text style={styles.statLabel}>Duración</Text>
-        </View>
-        <View style={styles.statItem}>
+        </Box>
+        <Box style={styles.statItem}>
           <Text style={styles.statValue}>{liveCalories}</Text>
           <Text style={styles.statLabel}>Calorías (est.)</Text>
-        </View>
-        <View style={styles.statItem}>
+        </Box>
+        <Box style={styles.statItem}>
           <Text style={styles.statValue}>{volumeKg}</Text>
           <Text style={styles.statLabel}>Volumen (kg)</Text>
-        </View>
-      </View>
+        </Box>
+      </Box>
 
       {/* Block progress dots + count/add row */}
       {blocks.length > 1 && (
-        <View style={styles.dotsRow}>
+        <Box style={styles.dotsRow}>
           {blocks.map((b, idx) => (
-            <TouchableOpacity key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-              <View style={[styles.dot, idx === pageIndex && styles.dotActive]} />
-            </TouchableOpacity>
+            <Pressable key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+              <Box style={[styles.dot, idx === pageIndex && styles.dotActive]} />
+            </Pressable>
           ))}
-        </View>
+        </Box>
       )}
 
-      <View style={styles.countRow}>
+      <Box style={styles.countRow}>
         <Text style={styles.countText} numberOfLines={1}>
           {blocks.length > 1
             ? `${blocks[pageIndex]?.title || `BLOQUE ${pageIndex + 1}`} · ${blocks[pageIndex]?.exercises.length ?? 0} EJERCICIOS`
             : `${allExercises.length} EJERCICIOS`}
         </Text>
-        <TouchableOpacity onPress={openExercisePicker}>
+        <Pressable onPress={openExercisePicker}>
           <Text style={styles.addExerciseText}>Añadir ejercicio +</Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
 
       {/* Horizontal pager — una página por bloque */}
       <FlatList
@@ -933,11 +931,11 @@ export default function WorkoutSessionScreen(props: Props) {
       />
 
       {/* Sticky finish button — siempre visible, sin importar el bloque activo */}
-      <View style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 14) + 6 }]}>
-        <TouchableOpacity style={styles.finishBtn} activeOpacity={0.85} onPress={onFinish}>
+      <Box style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 14) + 6 }]}>
+        <Pressable style={styles.finishBtn} onPress={onFinish}>
           <Text style={styles.finishBtnText}>✓ FINALIZAR ENTRENAMIENTO</Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
 
       <Modal
         visible={isPickerVisible}
@@ -945,13 +943,13 @@ export default function WorkoutSessionScreen(props: Props) {
         onRequestClose={() => setIsPickerVisible(false)}
       >
         <SafeAreaView style={styles.container}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => setIsPickerVisible(false)}>
-              <Ionicons name="close" size={26} color={C.textPrimary} />
-            </TouchableOpacity>
+          <Box style={styles.header}>
+            <Pressable onPress={() => setIsPickerVisible(false)}>
+              <Icon name="close" size={26} color={C.textPrimary} />
+            </Pressable>
             <Text style={styles.headerTitle}>Añadir ejercicio</Text>
-            <View style={{ width: 26 }} />
-          </View>
+            <Box style={{ width: 26 }} />
+          </Box>
           <TextInput
             style={styles.pickerSearchInput}
             placeholder="Buscar ejercicio..."
@@ -965,16 +963,16 @@ export default function WorkoutSessionScreen(props: Props) {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.bodyPartRow}
             >
-              <TouchableOpacity
+              <Pressable
                 style={[styles.bodyPartChip, selectedBodyPartId === null && styles.bodyPartChipActive]}
                 onPress={() => setSelectedBodyPartId(null)}
               >
                 <Text style={[styles.bodyPartChipText, selectedBodyPartId === null && styles.bodyPartChipTextActive]}>
                   Todos
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
               {bodyParts.map((bp) => (
-                <TouchableOpacity
+                <Pressable
                   key={bp.id}
                   style={[styles.bodyPartChip, selectedBodyPartId === bp.id && styles.bodyPartChipActive]}
                   onPress={() => setSelectedBodyPartId(selectedBodyPartId === bp.id ? null : bp.id)}
@@ -987,14 +985,14 @@ export default function WorkoutSessionScreen(props: Props) {
                   >
                     {bp.title}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </ScrollView>
           )}
           {pickerLoading ? (
-            <View style={styles.loader}>
-              <ActivityIndicator size="large" color={C.textPrimary} />
-            </View>
+            <Box style={styles.loader}>
+              <Spinner size="large" color={C.textPrimary} />
+            </Box>
           ) : (
             <FlatList
               data={pickerResults}
@@ -1007,21 +1005,21 @@ export default function WorkoutSessionScreen(props: Props) {
               }
               ListFooterComponent={
                 pickerLoadingMore ? (
-                  <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
+                  <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                 ) : null
               }
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.pickerRow} onPress={() => onAddExercise(item)}>
+                <Pressable style={styles.pickerRow} onPress={() => onAddExercise(item)}>
                   {item.exercise_image ? (
                     <Image source={{ uri: item.exercise_image }} style={styles.pickerImage} />
                   ) : (
-                    <View style={styles.pickerImage} />
+                    <Box style={styles.pickerImage} />
                   )}
                   <Text style={styles.pickerRowTitle} numberOfLines={2}>
                     {item.title}
                   </Text>
-                  <Ionicons name="add-circle-outline" size={22} color={C.textPrimary} />
-                </TouchableOpacity>
+                  <Icon name="add-circle-outline" size={22} color={C.textPrimary} />
+                </Pressable>
               )}
             />
           )}

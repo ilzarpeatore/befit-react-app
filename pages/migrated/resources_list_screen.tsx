@@ -1,8 +1,14 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import { resourcesApi, ResourceListItem, ResourceCategory } from '../../api/resources';
 
 type Tab = 'mine' | 'shared';
@@ -83,122 +89,101 @@ export default function ResourcesListScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Recursos</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
+      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Recursos</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <View style={styles.tabsRow}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'mine' && styles.tabActive]}
+      <Box className="flex-row gap-2 px-5" style={{ marginBottom: 16 }}>
+        <Pressable
+          className={`flex-1 py-2.5 rounded-md items-center ${activeTab === 'mine' ? 'bg-primary' : 'bg-secondary'}`}
           onPress={() => setActiveTab('mine')}
         >
-          <Text style={[styles.tabText, activeTab === 'mine' && styles.tabTextActive]}>Mis Recursos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'shared' && styles.tabActive]}
+          <Text weight="semibold" size="sm" className={activeTab === 'mine' ? 'text-primary-foreground' : 'text-muted-foreground'}>
+            Mis Recursos
+          </Text>
+        </Pressable>
+        <Pressable
+          className={`flex-1 py-2.5 rounded-md items-center ${activeTab === 'shared' ? 'bg-primary' : 'bg-secondary'}`}
           onPress={() => setActiveTab('shared')}
         >
-          <Text style={[styles.tabText, activeTab === 'shared' && styles.tabTextActive]}>Compartidos</Text>
-        </TouchableOpacity>
-      </View>
+          <Text weight="semibold" size="sm" className={activeTab === 'shared' ? 'text-primary-foreground' : 'text-muted-foreground'}>
+            Compartidos
+          </Text>
+        </Pressable>
+      </Box>
 
       {isLoading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box className="flex-1 items-center justify-center" style={{ paddingTop: 60 }}>
+          <ActivityIndicator size="large" color="#000000" />
+        </Box>
       ) : error ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No se pudieron cargar los recursos.</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center" style={{ paddingTop: 60 }}>
+          <Text muted className="text-center px-8">No se pudieron cargar los recursos.</Text>
+        </Box>
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
           {activeList.length === 0 ? (
-            <View style={styles.center}>
-              <Ionicons name="folder-open-outline" size={40} color={C.textSecondary} />
-              <Text style={[styles.emptyText, { marginTop: 12 }]}>
+            <Box className="flex-1 items-center justify-center" style={{ paddingTop: 60 }}>
+              <Icon name="folder-open-outline" size={40} className="text-muted-foreground" />
+              <Text muted className="text-center px-8" style={{ marginTop: 12 }}>
                 {activeTab === 'mine' ? 'Todavía no tienes recursos asignados.' : 'Aún no hay recursos compartidos.'}
               </Text>
-            </View>
+            </Box>
           ) : (
-            sections.map((section) =>
-              section.data.length === 0 ? null : (
-                <View key={section.label} style={styles.section}>
-                  <Text style={styles.sectionTitle}>{section.label}</Text>
-                  {section.data.map((item) => (
-                    <TouchableOpacity key={item.id} style={styles.card} activeOpacity={0.75} onPress={() => openResource(item)}>
-                      <View style={[styles.iconWrap, { backgroundColor: `${TYPE_COLOR[item.type] ?? C.textPrimary}1A` }]}>
-                        <Ionicons name={TYPE_ICON[item.type] ?? 'document-text-outline'} size={20} color={TYPE_COLOR[item.type] ?? C.textPrimary} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
-                        <Text style={styles.cardType}>{item.type}</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )
-            )
+            <Box className="gap-2">
+              {sections.map((section) =>
+                section.data.length === 0 ? null : (
+                  <Box key={section.label}>
+                    <Text
+                      weight="bold"
+                      size="xs"
+                      muted
+                      className="uppercase"
+                      style={{ letterSpacing: 0.4, marginBottom: 10, marginTop: 4 }}
+                    >
+                      {section.label}
+                    </Text>
+                    <Box className="gap-2.5">
+                      {section.data.map((item) => (
+                        <Pressable
+                          key={item.id}
+                          className="flex-row items-center gap-3 bg-card rounded-lg p-3.5"
+                          onPress={() => openResource(item)}
+                        >
+                          <Box
+                            className="w-11 h-11 rounded-md items-center justify-center"
+                            style={{ backgroundColor: `${TYPE_COLOR[item.type] ?? C.textPrimary}1A` }}
+                          >
+                            <Icon
+                              name={TYPE_ICON[item.type] ?? 'document-text-outline'}
+                              size={20}
+                              color={TYPE_COLOR[item.type] ?? C.textPrimary}
+                            />
+                          </Box>
+                          <Box className="flex-1">
+                            <Text weight="bold" size="sm" numberOfLines={2}>
+                              {item.title}
+                            </Text>
+                            <Text muted size="xs" className="capitalize" style={{ marginTop: 3 }}>
+                              {item.type}
+                            </Text>
+                          </Box>
+                          <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+                        </Pressable>
+                      ))}
+                    </Box>
+                  </Box>
+                )
+              )}
+            </Box>
           )}
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  headerTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, textAlign: 'center', paddingHorizontal: 32 },
-  tabsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: C.surfaceLight,
-    alignItems: 'center',
-  },
-  tabActive: { backgroundColor: C.orange },
-  tabText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.gray50 },
-  tabTextActive: { color: C.white },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 24 },
-  section: { marginBottom: 8 },
-  sectionTitle: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 10, marginTop: 4 },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: C.surface,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardTitle: { fontFamily: FONT.bold, fontSize: 14.5, color: C.textPrimary },
-  cardType: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary, marginTop: 3, textTransform: 'capitalize' },
-});

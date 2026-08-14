@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { ScrollView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C, SHADOW } from './theme';
 import MuscleBodyMap from '@components/MuscleBodyMap';
 import { ViewSide } from '../../constants/bodyMusclesPaths';
 import { bodyMetricsApi, BodyMetricChartData } from '../../api/bodyMetrics';
@@ -36,29 +42,46 @@ function CompositionTile({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity style={s.compTile} onPress={onPress} activeOpacity={0.75}>
-      <Text style={s.compLabel}>{label}</Text>
+    <Pressable
+      className="rounded-md bg-card"
+      style={{ width: '47%', padding: 14, ...SHADOW.card }}
+      onPress={onPress}
+    >
+      <Text size="xs" weight="medium" muted>{label}</Text>
       {entry ? (
         <>
-          <Text style={s.compValue}>
+          <Text weight="bold" size="xl" style={{ marginTop: 6 }}>
             {entry.value}
-            <Text style={s.compUnit}> {entry.unit}</Text>
+            <Text size="xs" weight="medium" muted> {entry.unit}</Text>
           </Text>
           {delta !== null ? (
-            <View style={[s.compDeltaBadge, delta < 0 ? s.deltaDown : delta > 0 ? s.deltaUp : s.deltaFlat]}>
-              <Ionicons name={delta < 0 ? 'arrow-down' : delta > 0 ? 'arrow-up' : 'remove'} size={10} color={delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40} />
-              <Text style={[s.compDeltaText, { color: delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40 }]}>
+            <Box
+              className="flex-row items-center self-start rounded-sm"
+              style={{
+                gap: 3,
+                paddingHorizontal: 7,
+                paddingVertical: 3,
+                marginTop: 6,
+                backgroundColor: delta < 0 ? C.success10 : delta > 0 ? C.warning10 : C.gray5,
+              }}
+            >
+              <Icon
+                name={delta < 0 ? 'arrow-down' : delta > 0 ? 'arrow-up' : 'remove'}
+                size={10}
+                color={delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40}
+              />
+              <Text weight="bold" size="xs" style={{ color: delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40 }}>
                 {Math.abs(delta).toFixed(1)}
               </Text>
-            </View>
+            </Box>
           ) : (
-            <Text style={s.compNoDelta}>Primera medida</Text>
+            <Text size="xs" muted style={{ marginTop: 6 }}>Primera medida</Text>
           )}
         </>
       ) : (
-        <Text style={s.compEmpty}>Sin datos</Text>
+        <Text size="xs" muted style={{ marginTop: 8 }}>Sin datos</Text>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -110,159 +133,113 @@ export default function ProgressScreen(props: any) {
   const goToMetric = (metricType: string) => props.navigation?.navigate('MigratedBodyMetrics', { metricType });
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Informe</Text>
-        <View style={{ width: 32 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 48, paddingBottom: 12 }} className="px-4 flex-row items-center justify-between bg-card">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Informe</Heading>
+        <Box className="w-8" />
+      </Box>
 
       {loading ? (
-        <View style={s.loadingWrap}>
-          <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Spinner size="large" color={C.orange} />
+        </Box>
       ) : (
-        <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
           {/* Composición corporal */}
-          <Text style={s.sectionTitle}>Composición corporal</Text>
-          <View style={s.compGrid}>
+          <Text size="sm" weight="bold" style={{ marginTop: 20, marginBottom: 10 }}>Composición corporal</Text>
+          <Box className="flex-row flex-wrap gap-3">
             {composition.map((m) => (
               <CompositionTile key={m.key} label={m.label} entry={m.entry} delta={m.delta} onPress={() => goToMetric(m.key)} />
             ))}
-          </View>
-          <TouchableOpacity style={s.moreMetricsLink} onPress={() => props.navigation?.navigate('MigratedBodyMetrics')} activeOpacity={0.8}>
-            <Text style={s.moreMetricsText}>Ver todas las medidas (cintura, cadera, pecho...)</Text>
-            <Ionicons name="chevron-forward" size={16} color={C.orange} />
-          </TouchableOpacity>
+          </Box>
+          <Pressable
+            className="flex-row items-center justify-center gap-1.5 rounded-sm py-3 px-4"
+            style={{ marginTop: 2, backgroundColor: 'rgba(255,107,53,0.12)' }}
+            onPress={() => props.navigation?.navigate('MigratedBodyMetrics')}
+          >
+            <Text size="sm" weight="bold" style={{ color: C.orange }}>Ver todas las medidas (cintura, cadera, pecho...)</Text>
+            <Icon name="chevron-forward" size={16} color={C.orange} />
+          </Pressable>
 
           {/* Constancia */}
-          <Text style={s.sectionTitle}>Constancia</Text>
-          <View style={s.card}>
+          <Text size="sm" weight="bold" style={{ marginTop: 20, marginBottom: 10 }}>Constancia</Text>
+          <Box className="rounded-md bg-card" style={{ padding: 16, ...SHADOW.card }}>
             {adherence?.mode === 'program' ? (
               <>
-                <View style={s.cardHeaderRow}>
-                  <View>
-                    <Text style={s.cardBigValue}>
+                <Box className="flex-row items-center justify-between">
+                  <Box>
+                    <Text weight="bold" size="2xl">
                       {adherence.ratio !== null ? Math.round(adherence.ratio * 100) : '--'}
-                      <Text style={s.cardBigUnit}>%</Text>
+                      <Text size="sm" weight="medium" muted>%</Text>
                     </Text>
-                    <Text style={s.cardMeta}>
+                    <Text size="xs" muted style={{ marginTop: 3 }}>
                       {adherence.completedCount}/{adherence.scheduledCount} entrenamientos programados (últimos {adherence.periodDays} días)
                     </Text>
-                  </View>
-                  <View style={s.streakBadge}>
-                    <Ionicons name="flame" size={16} color={C.orange} />
-                    <Text style={s.streakText}>{adherence.currentStreak}</Text>
-                  </View>
-                </View>
+                  </Box>
+                  <Box className="flex-row items-center gap-1 rounded-sm px-2.5 py-1.5" style={{ backgroundColor: 'rgba(255,107,53,0.12)' }}>
+                    <Icon name="flame" size={16} color={C.orange} />
+                    <Text weight="bold" size="sm" style={{ color: C.orange }}>{adherence.currentStreak}</Text>
+                  </Box>
+                </Box>
                 {adherence.days.length > 0 && (
-                  <View style={s.dotsRow}>
+                  <Box className="flex-row flex-wrap gap-1" style={{ marginTop: 14 }}>
                     {adherence.days.slice(-21).map((d) => (
-                      <View key={d.date} style={[s.dot, { backgroundColor: habitCellColor(d.completed ? 1 : 0, d.completed, C.gray10) }]} />
+                      <Box key={d.date} style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: habitCellColor(d.completed ? 1 : 0, d.completed, C.gray10) }} />
                     ))}
-                  </View>
+                  </Box>
                 )}
               </>
             ) : adherence?.mode === 'freeform' ? (
-              <View style={s.cardHeaderRow}>
-                <View>
-                  <Text style={s.cardBigValue}>{adherence.sessionsCount}</Text>
-                  <Text style={s.cardMeta}>
+              <Box className="flex-row items-center justify-between">
+                <Box>
+                  <Text weight="bold" size="2xl">{adherence.sessionsCount}</Text>
+                  <Text size="xs" muted style={{ marginTop: 3 }}>
                     entrenamientos en los últimos {adherence.periodDays} días · {adherence.daysActive} días activos
                   </Text>
-                </View>
-                <View style={s.streakBadge}>
-                  <Ionicons name="flame" size={16} color={C.orange} />
-                  <Text style={s.streakText}>{adherence.currentStreak}</Text>
-                </View>
-              </View>
+                </Box>
+                <Box className="flex-row items-center gap-1 rounded-sm px-2.5 py-1.5" style={{ backgroundColor: 'rgba(255,107,53,0.12)' }}>
+                  <Icon name="flame" size={16} color={C.orange} />
+                  <Text weight="bold" size="sm" style={{ color: C.orange }}>{adherence.currentStreak}</Text>
+                </Box>
+              </Box>
             ) : (
-              <Text style={s.cardMeta}>Sin datos todavía</Text>
+              <Text size="xs" muted>Sin datos todavía</Text>
             )}
-          </View>
+          </Box>
 
           {/* Entrenamiento */}
-          <Text style={s.sectionTitle}>Entrenamiento</Text>
-          <View style={s.card}>
-            <View style={s.heatmapRow}>
-              <View style={s.heatmapCol}>
+          <Text size="sm" weight="bold" style={{ marginTop: 20, marginBottom: 10 }}>Entrenamiento</Text>
+          <Box className="rounded-md bg-card" style={{ padding: 16, ...SHADOW.card }}>
+            <Box className="flex-row">
+              <Box className="flex-1 items-center">
                 <MuscleBodyMap data={muscleVolume.volumeByMuscle} height={150} showToggle={false} forcedView={ViewSide.FRONT} />
-              </View>
-              <View style={s.heatmapCol}>
+              </Box>
+              <Box className="flex-1 items-center">
                 <MuscleBodyMap data={muscleVolume.volumeByMuscle} height={150} showToggle={false} forcedView={ViewSide.BACK} />
-              </View>
-            </View>
-            <Text style={s.heatmapCaption}>Volumen muscular de los últimos 7 días</Text>
+              </Box>
+            </Box>
+            <Text size="xs" muted className="text-center" style={{ marginTop: 4 }}>Volumen muscular de los últimos 7 días</Text>
             {periodStats && (
-              <Text style={s.heatmapCaption}>
+              <Text size="xs" muted className="text-center" style={{ marginTop: 4 }}>
                 {periodStats.sessionsCount} sesiones · {Math.round(periodStats.volumeKg).toLocaleString('es-ES')} kg en los últimos 30 días
               </Text>
             )}
-            <View style={s.trainingBtnRow}>
-              <TouchableOpacity style={s.trainingBtn} onPress={() => props.navigation?.navigate('MigratedStatistics')} activeOpacity={0.8}>
-                <Ionicons name="stats-chart-outline" size={18} color="#FFFFFF" />
-                <Text style={s.trainingBtnText}>Estadísticas</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={s.trainingBtn} onPress={() => props.navigation?.navigate('MigratedMuscleProgress')} activeOpacity={0.8}>
-                <Ionicons name="body-outline" size={18} color="#FFFFFF" />
-                <Text style={s.trainingBtnText}>Progreso muscular</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+            <Box className="flex-row gap-2.5" style={{ marginTop: 14 }}>
+              <Button className="flex-1" onPress={() => props.navigation?.navigate('MigratedStatistics')}>
+                <Icon name="stats-chart-outline" size={18} className="text-primary-foreground" />
+                <ButtonText>Estadísticas</ButtonText>
+              </Button>
+              <Button className="flex-1" onPress={() => props.navigation?.navigate('MigratedMuscleProgress')}>
+                <Icon name="body-outline" size={18} className="text-primary-foreground" />
+                <ButtonText>Progreso muscular</ButtonText>
+              </Button>
+            </Box>
+          </Box>
         </ScrollView>
       )}
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  backBtn: { padding: 4 },
-  appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.textPrimary },
-  settingsBtn: { padding: 4 },
-  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 32 },
-  sectionTitle: { fontSize: 15, fontFamily: FONT.bold, color: C.textPrimary, marginTop: 20, marginBottom: 10 },
-  compGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  compTile: { width: '47%', backgroundColor: C.surface, borderRadius: 16, padding: 14, ...SHADOW.card },
-  compLabel: { fontSize: 11.5, color: C.gray40, fontFamily: FONT.medium },
-  compValue: { fontSize: 20, fontFamily: FONT.bold, color: C.textPrimary, marginTop: 6 },
-  compUnit: { fontSize: 12, fontFamily: FONT.medium, color: C.textSecondary },
-  compEmpty: { fontSize: 12, color: C.textSecondary, fontFamily: FONT.regular, marginTop: 8 },
-  compNoDelta: { fontSize: 10.5, color: C.gray40, fontFamily: FONT.regular, marginTop: 6 },
-  compDeltaBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 3, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8, marginTop: 6 },
-  compDeltaText: { fontFamily: FONT.bold, fontSize: 10.5 },
-  moreMetricsLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 2,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,107,53,0.12)',
-  },
-  moreMetricsText: { fontSize: 13, color: C.orange, fontFamily: FONT.bold },
-  card: { backgroundColor: C.surface, borderRadius: 18, padding: 16, ...SHADOW.card },
-  cardHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardBigValue: { fontSize: 26, fontFamily: FONT.bold, color: C.textPrimary },
-  cardBigUnit: { fontSize: 14, fontFamily: FONT.medium, color: C.textSecondary },
-  cardMeta: { fontSize: 12, color: C.textSecondary, marginTop: 3, fontFamily: FONT.regular },
-  deltaDown: { backgroundColor: C.success10 },
-  deltaUp: { backgroundColor: C.warning10 },
-  deltaFlat: { backgroundColor: C.gray5 },
-  streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,107,53,0.12)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
-  streakText: { fontFamily: FONT.bold, fontSize: 13, color: C.orange },
-  dotsRow: { flexDirection: 'row', gap: 4, marginTop: 14, flexWrap: 'wrap' },
-  dot: { width: 12, height: 12, borderRadius: 3 },
-  heatmapRow: { flexDirection: 'row' },
-  heatmapCol: { flex: 1, alignItems: 'center' },
-  heatmapCaption: { fontSize: 11.5, color: C.gray40, fontFamily: FONT.regular, textAlign: 'center', marginTop: 4 },
-  trainingBtnRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
-  trainingBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: C.accentBlack, borderRadius: 14, paddingVertical: 12 },
-  trainingBtnText: { fontFamily: FONT.bold, fontSize: 12.5, color: '#FFFFFF' },
-});

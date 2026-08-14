@@ -1,20 +1,20 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Image,
-  ActivityIndicator,
   Dimensions,
   Platform,
   StatusBar,
   Alert,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT, SHADOW } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { workoutTemplateApi } from '../../api/workoutTemplate';
@@ -65,19 +65,18 @@ function ScaleRow({
   labels?: string[];
 }) {
   return (
-    <View style={rs.scaleRow}>
+    <Box style={rs.scaleRow}>
       {Array.from({ length: count }, (_, i) => i + 1).map((n) => (
-        <TouchableOpacity
+        <Pressable
           key={n}
           style={[rs.scaleChip, value === n && rs.scaleChipActive]}
           onPress={() => onChange(n)}
-          activeOpacity={0.75}
         >
           <Text style={[rs.scaleChipText, value === n && rs.scaleChipTextActive]}>{n}</Text>
-        </TouchableOpacity>
+        </Pressable>
       ))}
       {labels && value ? <Text style={rs.scaleHint}>{labels[value - 1]}</Text> : null}
-    </View>
+    </Box>
   );
 }
 
@@ -113,50 +112,49 @@ function ReadinessForm({ onDone }: { onDone: () => void }) {
   return (
     <SafeAreaView style={rs.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={[rs.scroll, { paddingTop: insets.top + 12 }]} showsVerticalScrollIndicator={false}>
-        <View style={rs.badge}>
-          <Ionicons name="pulse-outline" size={22} color={C.textPrimary} />
-        </View>
+        <Box style={rs.badge}>
+          <Icon name="pulse-outline" size={22} color={C.textPrimary} />
+        </Box>
         <Text style={rs.title}>¿Cómo llegas hoy?</Text>
         <Text style={rs.subtitle}>
           Responde antes de empezar — ayuda a tu coach a ajustar tu entrenamiento a cómo te sientes de verdad.
         </Text>
 
-        <View style={rs.card}>
+        <Box style={rs.card}>
           <Text style={rs.question}>Valora tu descanso nocturno</Text>
           <ScaleRow count={5} value={sleepQuality} onChange={setSleepQuality} labels={SLEEP_LABELS} />
-        </View>
+        </Box>
 
-        <View style={rs.card}>
+        <Box style={rs.card}>
           <Text style={rs.question}>Nivel de agujetas</Text>
           <Text style={rs.questionHint}>1 = ninguna · 10 = muy intensas</Text>
           <ScaleRow count={10} value={sorenessLevel} onChange={setSorenessLevel} />
-        </View>
+        </Box>
 
-        <View style={rs.card}>
+        <Box style={rs.card}>
           <Text style={rs.question}>Nivel de energía</Text>
           <ScaleRow count={5} value={energyLevel} onChange={setEnergyLevel} labels={ENERGY_LABELS} />
-        </View>
+        </Box>
 
-        <View style={rs.card}>
+        <Box style={rs.card}>
           <Text style={rs.question}>Nivel de estrés mental</Text>
           <ScaleRow count={5} value={stressLevel} onChange={setStressLevel} labels={STRESS_LABELS} />
-        </View>
+        </Box>
       </ScrollView>
 
-      <View style={[rs.footer, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
-        <TouchableOpacity
+      <Box style={[rs.footer, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
+        <Pressable
           style={[rs.submitBtn, !allAnswered && rs.submitBtnDisabled]}
-          activeOpacity={0.85}
           onPress={onSubmit}
           disabled={!allAnswered || saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <Spinner size="small" color="#FFFFFF" />
           ) : (
             <Text style={rs.submitBtnText}>CONTINUAR AL ENTRENAMIENTO</Text>
           )}
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
     </SafeAreaView>
   );
 }
@@ -243,9 +241,9 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (!readinessResolved || isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
@@ -257,12 +255,12 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (error || !workout) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.loader}>
+        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
+        <Box style={styles.loader}>
           <Text style={styles.emptyText}>No se pudo cargar el entrenamiento.</Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -270,15 +268,15 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (workout.isRest || workout.isAdjusted) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.loader}>
-          <Ionicons name="moon-outline" size={40} color={C.textSecondary} />
+        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
+        <Box style={styles.loader}>
+          <Icon name="moon-outline" size={40} color={C.textSecondary} />
           <Text style={[styles.emptyText, { marginTop: 12 }]}>
             {workout.isAdjusted ? 'Sesión ajustada por tu entrenador' : 'Día de descanso'}
           </Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -286,16 +284,16 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (workout.isExclusive && !workout.isAccessible) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.loader}>
-          <Ionicons name="lock-closed-outline" size={40} color={C.textSecondary} />
+        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
+        <Box style={styles.loader}>
+          <Icon name="lock-closed-outline" size={40} color={C.textSecondary} />
           <Text style={[styles.title, { textAlign: 'center', marginTop: 16 }]}>{workout.title}</Text>
           <Text style={[styles.emptyText, { marginTop: 8 }]}>
             Contenido exclusivo — hazte cliente 1:1 o compra un paquete con acceso completo a Workouts.
           </Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -309,7 +307,7 @@ export default function WorkoutPreviewScreen(props: Props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Header image */}
-        <View style={styles.heroSection}>
+        <Box style={styles.heroSection}>
           {workout.thumbnail ? (
             <Image source={{ uri: workout.thumbnail }} style={styles.heroImage} resizeMode="cover" />
           ) : (
@@ -317,69 +315,69 @@ export default function WorkoutPreviewScreen(props: Props) {
               colors={[C.gray20, C.surface]}
               style={[styles.heroImage, styles.heroFallback]}
             >
-              <Ionicons name="barbell-outline" size={64} color={C.gray30} />
+              <Icon name="barbell-outline" size={64} color={C.gray30} />
             </LinearGradient>
           )}
           <LinearGradient
             colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0)']}
             style={styles.heroTopFade}
           />
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+          <Pressable style={styles.backBtn} onPress={() => navigation?.goBack()}>
+            <Icon name="chevron-back" size={22} color="#FFFFFF" />
+          </Pressable>
+        </Box>
 
         {/* Title row — sin numberOfLines: es el título de la propia pantalla
             (dentro de un ScrollView con espacio de sobra), así que se deja
             envolver en tantas líneas como haga falta en vez de cortarlo con
             "..." cuando el nombre del workout es largo. */}
-        <View style={styles.titleRow}>
+        <Box style={styles.titleRow}>
           <Text style={styles.title}>
             {workout.title}
           </Text>
           {workoutTemplateId ? (
-            <View style={styles.titleActions}>
-              <TouchableOpacity style={styles.iconBtn} onPress={onToggleFavourite} activeOpacity={0.75}>
-                <Ionicons name={isFavourite ? 'bookmark' : 'bookmark-outline'} size={18} color={isFavourite ? C.accentBlack : C.textPrimary} />
-              </TouchableOpacity>
-            </View>
+            <Box style={styles.titleActions}>
+              <Pressable style={styles.iconBtn} onPress={onToggleFavourite}>
+                <Icon name={isFavourite ? 'bookmark' : 'bookmark-outline'} size={18} color={isFavourite ? C.accentBlack : C.textPrimary} />
+              </Pressable>
+            </Box>
           ) : null}
-        </View>
+        </Box>
 
         {workout.description ? (
           <Text style={styles.description}>{workout.description}</Text>
         ) : null}
 
         {/* Stats row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
+        <Box style={styles.statsRow}>
+          <Box style={styles.statItem}>
             <Text style={styles.statValue}>{workout.exerciseCount}</Text>
             <Text style={styles.statLabel}>Ejercicios</Text>
-          </View>
+          </Box>
           {totalSeries > 0 && (
             <>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
+              <Box style={styles.statDivider} />
+              <Box style={styles.statItem}>
                 <Text style={styles.statValue}>{totalSeries}</Text>
                 <Text style={styles.statLabel}>Series totales</Text>
-              </View>
+              </Box>
             </>
           )}
           {workout.blocks.length > 1 && (
             <>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
+              <Box style={styles.statDivider} />
+              <Box style={styles.statItem}>
                 <Text style={styles.statValue}>{workout.blocks.length}</Text>
                 <Text style={styles.statLabel}>Bloques</Text>
-              </View>
+              </Box>
             </>
           )}
-        </View>
+        </Box>
 
         {/* Exercise list */}
-        <View style={styles.exerciseList}>
+        <Box style={styles.exerciseList}>
           {workout.blocks.map((block) => (
-            <View key={block.id}>
+            <Box key={block.id}>
               {workout.blocks.length > 1 && block.title ? (
                 <Text style={styles.blockTitle}>{block.title}</Text>
               ) : null}
@@ -388,68 +386,67 @@ export default function WorkoutPreviewScreen(props: Props) {
                 const lastPerformance = formatLastPerformance(ex);
                 const noteExpanded = expandedNoteId === ex.id;
                 return (
-                  <View key={ex.id} style={styles.exerciseCard}>
-                    <View style={styles.exerciseRow}>
+                  <Box key={ex.id} style={styles.exerciseCard}>
+                    <Box style={styles.exerciseRow}>
                       <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} />
-                      <View style={styles.exerciseInfo}>
+                      <Box style={styles.exerciseInfo}>
                         <Text style={styles.exerciseTitle} numberOfLines={2}>
                           {ex.title}
                         </Text>
-                        <View style={styles.exerciseMetaRow}>
+                        <Box style={styles.exerciseMetaRow}>
                           {seriesCount != null && (
-                            <View style={styles.seriesChip}>
+                            <Box style={styles.seriesChip}>
                               <Text style={styles.seriesChipText}>{seriesCount} series</Text>
-                            </View>
+                            </Box>
                           )}
                           <Text style={styles.exerciseSubtitle} numberOfLines={1}>
                             {formatPrescribedSubtitle(ex.prescribed)}
                           </Text>
-                        </View>
-                      </View>
-                    </View>
+                        </Box>
+                      </Box>
+                    </Box>
 
                     {lastPerformance && (
-                      <View style={styles.lastPerformanceRow}>
-                        <View style={styles.lastPerformanceIconWrap}>
-                          <Ionicons name="time-outline" size={13} color={C.blue60} />
-                        </View>
+                      <Box style={styles.lastPerformanceRow}>
+                        <Box style={styles.lastPerformanceIconWrap}>
+                          <Icon name="time-outline" size={13} color={C.blue60} />
+                        </Box>
                         <Text style={styles.lastPerformanceLabel}>Última vez</Text>
                         <Text style={styles.lastPerformanceText}>{lastPerformance}</Text>
-                      </View>
+                      </Box>
                     )}
 
                     {ex.coachNotes ? (
-                      <TouchableOpacity
+                      <Pressable
                         style={styles.coachNoteBanner}
-                        activeOpacity={0.8}
                         onPress={() => setExpandedNoteId(noteExpanded ? null : ex.id)}
                       >
-                        <View style={styles.coachNoteHeaderRow}>
-                          <Ionicons name="warning-outline" size={15} color={C.warning60} />
+                        <Box style={styles.coachNoteHeaderRow}>
+                          <Icon name="warning-outline" size={15} color={C.warning60} />
                           <Text style={styles.coachNoteHeaderText}>Revisa las notas de este ejercicio</Text>
-                          <Ionicons
+                          <Icon
                             name={noteExpanded ? 'chevron-up' : 'chevron-down'}
                             size={15}
                             color={C.warning60}
                           />
-                        </View>
+                        </Box>
                         {noteExpanded ? <Text style={styles.coachNoteBody}>{ex.coachNotes}</Text> : null}
-                      </TouchableOpacity>
+                      </Pressable>
                     ) : null}
-                  </View>
+                  </Box>
                 );
               })}
-            </View>
+            </Box>
           ))}
-        </View>
+        </Box>
       </ScrollView>
 
       {/* Sticky start button */}
-      <View style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
-        <TouchableOpacity style={styles.startBtn} activeOpacity={0.85} onPress={onStart}>
+      <Box style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
+        <Pressable style={styles.startBtn} onPress={onStart}>
           <Text style={styles.startBtnText}>INICIAR ENTRENAMIENTO</Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
     </SafeAreaView>
   );
 }

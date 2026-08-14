@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  SafeAreaView,
-  Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { ScrollView, KeyboardAvoidingView, Platform, Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { Box } from '@components/ui/box';
+import { VStack } from '@components/ui/vstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField } from '@components/ui/input';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { authApi } from '@api/auth';
-import { C, FONT } from './theme';
+import { C } from './theme';
 
 interface ForgotPwdScreenProps {
   navigation?: any;
@@ -27,20 +21,6 @@ export default function ForgotPwdScreen(props: ForgotPwdScreenProps) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const styles = useResponsiveStyleSheet({
-    container: { flex: 1, backgroundColor: C.bg },
-    scrollContent: { padding: '16@ratio', paddingBottom: '40@ratio' },
-    title: { fontSize: '22@ratio', fontFamily: FONT.bold, color: C.white, marginBottom: '12@ratio' },
-    subtitle: { fontSize: '14@ratio', fontFamily: FONT.regular, color: C.textSecondary, marginBottom: '24@ratio' },
-    label: { fontSize: '14@ratio', fontFamily: FONT.medium, color: C.white, marginBottom: '4@ratio' },
-    inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surfaceLight, borderRadius: '12@ratio', borderWidth: 1, borderColor: C.border, marginBottom: '16@ratio' },
-    input: { flex: 1, height: '48@ratio', paddingHorizontal: '16@ratio', color: C.white, fontSize: '15@ratio', fontFamily: FONT.regular },
-    inputIcon: { paddingHorizontal: '12@ratio' },
-    btn: { backgroundColor: C.brand5, borderRadius: '12@ratio', height: '50@ratio', alignItems: 'center', justifyContent: 'center' },
-    btnText: { color: C.white, fontSize: '16@ratio', fontFamily: FONT.bold },
-    loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
-  });
 
   const resetPassword = async () => {
     if (!email.trim()) {
@@ -61,38 +41,42 @@ export default function ForgotPwdScreen(props: ForgotPwdScreenProps) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Forgot Password</Text>
-          <Text style={styles.subtitle}>
-            Enter your email address and we will send you a link to reset your password.
-          </Text>
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              placeholderTextColor={C.gray50}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              onSubmitEditing={resetPassword}
-            />
-            <View style={styles.inputIcon}>
-              <Ionicons name="mail-outline" size={20} color={C.gray40} />
-            </View>
-          </View>
-          {error ? <Text style={{ color: C.destructive, marginBottom: 8 }}>{error}</Text> : null}
-          <TouchableOpacity style={styles.btn} onPress={resetPassword} activeOpacity={0.8}>
-            <Text style={styles.btnText}>Continue</Text>
-          </TouchableOpacity>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+          <VStack space="lg">
+            <VStack space="xs">
+              <Heading size="lg">Forgot Password</Heading>
+              <Text muted>
+                Enter your email address and we will send you a link to reset your password.
+              </Text>
+            </VStack>
+
+            <VStack space="xs">
+              <Text weight="medium">Email</Text>
+              <Input className="rounded-sm" size="lg">
+                <InputField
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onSubmitEditing={resetPassword}
+                />
+                <Icon name="mail-outline" size={20} className="text-muted-foreground" style={{ marginRight: 12 }} />
+              </Input>
+              {error ? <Text className="text-destructive">{error}</Text> : null}
+            </VStack>
+
+            <Button onPress={resetPassword} radius="pill" className="w-full">
+              <ButtonText>Continue</ButtonText>
+            </Button>
+          </VStack>
         </ScrollView>
         {isLoading && (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={StyleSheet.absoluteFill} className="items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>

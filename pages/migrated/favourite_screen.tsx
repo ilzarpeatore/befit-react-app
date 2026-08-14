@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Image, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { FlatList, Image, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 import { workoutTemplateApi } from '../../api/workoutTemplate';
 import { recipesApi } from '../../api/recipes';
 import logger from '@helper/logger';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface FavouriteScreenProps {
   navigation: any;
@@ -28,46 +29,50 @@ export default function FavouriteScreen(props: FavouriteScreenProps) {
   }, [initialIndex]);
 
   return (
-    <SafeAreaView style={localStyles.container}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
       {/* App Bar */}
-      <View style={localStyles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={localStyles.appBarTitle}>Favourite Workouts & Nutritions</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <Box style={{ paddingTop: 48, paddingBottom: 12 }} className="flex-row items-center px-2 bg-background">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center">
+          Favourite Workouts & Nutritions
+        </Heading>
+        <Box className="w-10" />
+      </Box>
 
       {/* Tab Bar */}
-      <View style={localStyles.tabBarContainer}>
-        <View style={localStyles.tabBar}>
-          <TouchableOpacity
-            style={[localStyles.tab, select && localStyles.activeTab]}
+      <Box className="border-b border-border px-4">
+        <Box className="flex-row">
+          <Pressable
+            style={{ paddingBottom: 8 }}
+            className={`flex-1 items-center border-b-2 ${select ? 'border-foreground' : 'border-transparent'}`}
             onPress={() => setSelect(true)}
           >
-            <Text style={[localStyles.tabText, select && localStyles.activeTabText]}>
+            <Text weight="bold" size="sm" className={select ? 'text-foreground' : 'text-muted-foreground'}>
               Workouts
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[localStyles.tab, !select && localStyles.activeTab]}
+          </Pressable>
+          <Pressable
+            style={{ paddingBottom: 8 }}
+            className={`flex-1 items-center border-b-2 ${!select ? 'border-foreground' : 'border-transparent'}`}
             onPress={() => setSelect(false)}
           >
-            <Text style={[localStyles.tabText, !select && localStyles.activeTabText]}>
+            <Text weight="bold" size="sm" className={!select ? 'text-foreground' : 'text-muted-foreground'}>
               Recipes
             </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          </Pressable>
+        </Box>
+      </Box>
 
       {/* Content */}
-      <View style={localStyles.body}>
+      <Box className="flex-1">
         {select ? (
           <WorkoutsFavContent navigation={props.navigation} />
         ) : (
           <RecipesFavContent navigation={props.navigation} />
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
 }
@@ -98,17 +103,17 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
 
   if (isLoading) {
     return (
-      <View style={localStyles.centerContent}>
-        <ActivityIndicator size="large" color={C.orange} />
-      </View>
+      <Box className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#000000" />
+      </Box>
     );
   }
 
   if (workouts.length === 0) {
     return (
-      <View style={localStyles.centerContent}>
-        <Text style={localStyles.emptyText}>No favourite workouts</Text>
-      </View>
+      <Box className="flex-1 items-center justify-center">
+        <Text muted size="sm">No favourite workouts</Text>
+      </Box>
     );
   }
 
@@ -116,23 +121,24 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
     <FlatList
       data={workouts}
       keyExtractor={(item, i) => `${item.id}-${i}`}
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={{ padding: 16, gap: 10 }}
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={localStyles.listItem}
+        <Pressable
+          className="flex-row items-center gap-3 bg-secondary rounded-lg p-4"
           onPress={() =>
             navigation.navigate('MigratedWorkoutPreview', {
               workoutTemplateId: item.id,
               mTitle: item.title,
             })
           }
-          activeOpacity={0.7}
         >
           {item.thumbnail ? (
-            <Image source={{ uri: item.thumbnail }} style={localStyles.itemThumb} />
+            <Image source={{ uri: item.thumbnail }} style={{ width: 44, height: 44, borderRadius: 8 }} />
           ) : null}
-          <Text style={localStyles.listItemTitle}>{item.title || ''}</Text>
-        </TouchableOpacity>
+          <Text weight="semibold" size="sm" className="flex-1">
+            {item.title || ''}
+          </Text>
+        </Pressable>
       )}
     />
   );
@@ -164,17 +170,17 @@ function RecipesFavContent({ navigation }: { navigation: any }) {
 
   if (isLoading) {
     return (
-      <View style={localStyles.centerContent}>
-        <ActivityIndicator size="large" color={C.orange} />
-      </View>
+      <Box className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#000000" />
+      </Box>
     );
   }
 
   if (recipes.length === 0) {
     return (
-      <View style={localStyles.centerContent}>
-        <Text style={localStyles.emptyText}>No favourite recipes</Text>
-      </View>
+      <Box className="flex-1 items-center justify-center">
+        <Text muted size="sm">No favourite recipes</Text>
+      </Box>
     );
   }
 
@@ -182,100 +188,25 @@ function RecipesFavContent({ navigation }: { navigation: any }) {
     <FlatList
       data={recipes}
       keyExtractor={(item, i) => `${item.id}-${i}`}
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={{ padding: 16, gap: 10 }}
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={localStyles.listItem}
+        <Pressable
+          className="flex-row items-center gap-3 bg-secondary rounded-lg p-4"
           onPress={() =>
             navigation.navigate('MigratedDietDetail', {
               recipeId: item.id,
               recipeImage: item.recipe_image || '',
             })
           }
-          activeOpacity={0.7}
         >
           {item.recipe_image ? (
-            <Image source={{ uri: item.recipe_image }} style={localStyles.itemThumb} />
+            <Image source={{ uri: item.recipe_image }} style={{ width: 44, height: 44, borderRadius: 8 }} />
           ) : null}
-          <Text style={localStyles.listItemTitle}>{item.title || ''}</Text>
-        </TouchableOpacity>
+          <Text weight="semibold" size="sm" className="flex-1">
+            {item.title || ''}
+          </Text>
+        </Pressable>
       )}
     />
   );
 }
-
-const localStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-    backgroundColor: C.bg,
-  },
-  backBtn: { padding: 8 },
-  appBarTitle: {
-    flex: 1,
-    fontFamily: FONT.bold,
-    fontSize: 16,
-    color: C.white,
-    textAlign: 'center',
-  },
-  tabBarContainer: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: C.border,
-    paddingHorizontal: 16,
-  },
-  tabBar: {
-    flexDirection: 'row',
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingBottom: 8,
-    borderBottomWidth: 1.5,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomColor: C.brand5,
-  },
-  tabText: {
-    fontFamily: FONT.bold,
-    fontSize: 14,
-    color: C.gray30,
-  },
-  activeTabText: {
-    color: C.textPrimary,
-  },
-  body: { flex: 1 },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    color: C.gray30,
-  },
-  listItem: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  itemThumb: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-  },
-  listItemTitle: {
-    flex: 1,
-    fontFamily: FONT.semiBold,
-    fontSize: 14,
-    color: C.white,
-  },
-});

@@ -1,11 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
   FlatList,
   Image,
   ScrollView,
@@ -19,6 +15,11 @@ import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import * as MediaLibrary from 'expo-media-library';
 import Share from 'react-native-share';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT, SHADOW } from './theme';
 import MuscleBodyMap, { MuscleVolumeGroup } from '../../components/MuscleBodyMap';
 import { ViewSide } from '../../constants/bodyMusclesPaths';
@@ -90,53 +91,53 @@ const SHARE_ICONS: { key: string; icon: keyof typeof Ionicons.glyphMap; label: s
   { key: 'more', icon: 'ellipsis-horizontal', label: 'Más' },
 ];
 
-const Card = React.forwardRef<View, { children: React.ReactNode; footerCentered?: boolean }>(
+const Card = React.forwardRef<React.ComponentRef<typeof Box>, { children: React.ReactNode; footerCentered?: boolean }>(
   ({ children, footerCentered }, ref) => (
-    <View ref={ref} collapsable={false} style={s.card}>
-      <View style={s.cardBody}>{children}</View>
-      <View style={[s.cardFooter, footerCentered && s.cardFooterCentered]}>
+    <Box ref={ref} collapsable={false} style={s.card}>
+      <Box style={s.cardBody}>{children}</Box>
+      <Box style={[s.cardFooter, footerCentered && s.cardFooterCentered]}>
         <Image source={require('@assets/logo.png')} style={s.cardFooterLogo} resizeMode="contain" />
         <Text style={s.cardFooterHandle}>@befit</Text>
-      </View>
-    </View>
+      </Box>
+    </Box>
   )
 );
 
 function StatCol({ label, value }: { label: string; value: string }) {
   return (
-    <View style={s.statCol}>
+    <Box style={s.statCol}>
       <Text style={s.statColValue}>{value}</Text>
       <Text style={s.statColLabel}>{label}</Text>
-    </View>
+    </Box>
   );
 }
 
 function GridCell({ value, label }: { value: string; label: string }) {
   return (
-    <View style={s.gridCell}>
+    <Box style={s.gridCell}>
       <Text style={s.gridValue}>{value}</Text>
       <Text style={s.gridLabel}>{label}</Text>
-    </View>
+    </Box>
   );
 }
 
 function CondensedStat({ value, label }: { value: string; label: string }) {
   return (
-    <View style={s.condensedStat}>
+    <Box style={s.condensedStat}>
       <Text style={s.condensedValue}>{value}</Text>
       <Text style={s.condensedLabel}>{label}</Text>
-    </View>
+    </Box>
   );
 }
 
 function ExerciseRow({ item }: { item: ExerciseSummaryItem }) {
   return (
-    <View style={s.exerciseRow}>
+    <Box style={s.exerciseRow}>
       <Text style={s.exerciseSets}>{item.sets}x</Text>
       <Text style={s.exerciseName} numberOfLines={1}>
         {item.title}
       </Text>
-    </View>
+    </Box>
   );
 }
 
@@ -158,7 +159,7 @@ export default function WorkoutSummaryScreen(props: Props) {
   const [pageIndex, setPageIndex] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const pagerRef = useRef<FlatList>(null);
-  const cardRefs = useRef<Record<number, View | null>>({});
+  const cardRefs = useRef<Record<number, React.ComponentRef<typeof Box> | null>>({});
 
   useEffect(() => {
     const sets: MuscleVolumeSet[] = muscleVolumeSets;
@@ -300,7 +301,7 @@ export default function WorkoutSummaryScreen(props: Props) {
   };
 
   const renderMap = (height: number, forcedView?: ViewSide) => {
-    if (mapLoading) return <ActivityIndicator size="small" color={C.textSecondary} />;
+    if (mapLoading) return <Spinner size="small" color={C.textSecondary} />;
     return <MuscleBodyMap data={muscleVolume} height={height} showToggle={false} forcedView={forcedView} />;
   };
 
@@ -308,7 +309,7 @@ export default function WorkoutSummaryScreen(props: Props) {
     switch (index) {
       case 0:
         return (
-          <View style={s.p0Wrap}>
+          <Box style={s.p0Wrap}>
             <Text style={s.p0Label}>Has levantado un total de</Text>
             <Text style={s.p0Value}>{Math.round(volumeKg)} kg</Text>
             {funFact ? (
@@ -317,56 +318,56 @@ export default function WorkoutSummaryScreen(props: Props) {
                 <Text style={s.p0Fact}>{funFact.text}</Text>
               </>
             ) : null}
-          </View>
+          </Box>
         );
       case 1:
         return (
-          <View style={s.pageFill}>
-            <View style={s.statsRow3}>
+          <Box style={s.pageFill}>
+            <Box style={s.statsRow3}>
               <StatCol label="Duración" value={formatDuration(durationSeconds)} />
               <StatCol label="Volumen" value={`${Math.round(volumeKg)} kg`} />
               <StatCol label="Series" value={String(completedSets)} />
-            </View>
-            <View style={[s.miniMapWrap, s.heatmapRow]}>
-              <View style={s.heatmapCol}>{renderMap(170, ViewSide.FRONT)}</View>
-              <View style={s.heatmapCol}>{renderMap(170, ViewSide.BACK)}</View>
-            </View>
-          </View>
+            </Box>
+            <Box style={[s.miniMapWrap, s.heatmapRow]}>
+              <Box style={s.heatmapCol}>{renderMap(170, ViewSide.FRONT)}</Box>
+              <Box style={s.heatmapCol}>{renderMap(170, ViewSide.BACK)}</Box>
+            </Box>
+          </Box>
         );
       case 2:
         return (
-          <View style={s.pageFill}>
+          <Box style={s.pageFill}>
             <Text style={s.routineTitle} numberOfLines={2}>
               {mTitle || 'Tu entrenamiento'}
             </Text>
-            <View style={s.grid2x2}>
+            <Box style={s.grid2x2}>
               <GridCell value={formatDuration(durationSeconds)} label="Duración" />
               <GridCell value={`${Math.round(volumeKg)} kg`} label="Volumen" />
               <GridCell value={String(exerciseCount)} label="Ejercicios" />
               <GridCell value={String(completedSets)} label="Series" />
-            </View>
-          </View>
+            </Box>
+          </Box>
         );
       case 3:
         return (
-          <View style={s.pageFill}>
+          <Box style={s.pageFill}>
             <Text style={s.routineTitle} numberOfLines={2}>
               {mTitle || 'Tu entrenamiento'}
             </Text>
-            <View style={s.statsRowCompact}>
-              <View style={s.compactStat}>
+            <Box style={s.statsRowCompact}>
+              <Box style={s.compactStat}>
                 <Text style={s.compactLabel}>Duración</Text>
                 <Text style={s.compactValue}>{formatDuration(durationSeconds)}</Text>
-              </View>
-              <View style={s.compactStat}>
+              </Box>
+              <Box style={s.compactStat}>
                 <Text style={s.compactLabel}>Volumen</Text>
                 <Text style={s.compactValue}>{Math.round(volumeKg)} kg</Text>
-              </View>
-              <View style={s.compactStat}>
+              </Box>
+              <Box style={s.compactStat}>
                 <Text style={s.compactLabel}>Series</Text>
                 <Text style={s.compactValue}>{completedSets}</Text>
-              </View>
-            </View>
+              </Box>
+            </Box>
             <ScrollView style={s.exerciseListScroll} showsVerticalScrollIndicator={false}>
               {exercisesSummary.length > 0 ? (
                 exercisesSummary.map((ex: ExerciseSummaryItem, i: number) => <ExerciseRow key={i} item={ex} />)
@@ -374,20 +375,20 @@ export default function WorkoutSummaryScreen(props: Props) {
                 <Text style={s.emptyHint}>Sin ejercicios registrados.</Text>
               )}
             </ScrollView>
-          </View>
+          </Box>
         );
       case CONDENSED_PAGE_INDEX:
         return (
-          <View style={s.p4Wrap}>
+          <Box style={s.p4Wrap}>
             <CondensedStat value={formatDuration(durationSeconds)} label="Duración" />
             <CondensedStat value={`${Math.round(volumeKg)} kg`} label="Volumen" />
             <CondensedStat value={String(completedSets)} label="Series" />
-          </View>
+          </Box>
         );
       case 5:
       default:
         return (
-          <View style={s.pageFill}>
+          <Box style={s.pageFill}>
             <Text style={s.routineTitle} numberOfLines={2}>
               {mTitle || 'Tu entrenamiento'}
             </Text>
@@ -395,36 +396,36 @@ export default function WorkoutSummaryScreen(props: Props) {
               {exercisesSummary.length > 0 ? (
                 exercisesSummary.map((ex: ExerciseSummaryItem, i: number) => <ExerciseRow key={i} item={ex} />)
               ) : null}
-              <View style={s.heatmapRow}>
-                <View style={s.heatmapCol}>{renderMap(140, ViewSide.FRONT)}</View>
-                <View style={s.heatmapCol}>{renderMap(140, ViewSide.BACK)}</View>
-              </View>
+              <Box style={s.heatmapRow}>
+                <Box style={s.heatmapCol}>{renderMap(140, ViewSide.FRONT)}</Box>
+                <Box style={s.heatmapCol}>{renderMap(140, ViewSide.BACK)}</Box>
+              </Box>
               {topMuscles.length > 0 ? <Text style={s.topMusclesText}>{topMuscles.join(' · ')}</Text> : null}
             </ScrollView>
-          </View>
+          </Box>
         );
     }
   };
 
   return (
     <SafeAreaView style={s.container} edges={['top', 'bottom']}>
-      <View style={s.header}>
-        <View style={s.confettiBadge}>
-          <Ionicons name="sparkles" size={26} color={C.orange} />
-        </View>
+      <Box style={s.header}>
+        <Box style={s.confettiBadge}>
+          <Icon name="sparkles" size={26} color={C.orange} />
+        </Box>
         <Text style={s.headerTitle}>¡Bien hecho!</Text>
         <Text style={s.headerSubtitle}>
           {workoutNumber ? `Este es tu entrenamiento número ${workoutNumber}` : 'Entrenamiento completado'}
         </Text>
-      </View>
+      </Box>
 
-      <View style={s.pagerWrap}>
+      <Box style={s.pagerWrap}>
         <FlatList
           ref={pagerRef}
           data={PAGE_INDEXES}
           keyExtractor={(i) => String(i)}
           renderItem={({ item }) => (
-            <View style={{ width: SCREEN_WIDTH, flex: 1, paddingHorizontal: 20 }}>
+            <Box style={{ width: SCREEN_WIDTH, flex: 1, paddingHorizontal: 20 }}>
               <Card
                 ref={(el) => {
                   cardRefs.current[item] = el;
@@ -433,7 +434,7 @@ export default function WorkoutSummaryScreen(props: Props) {
               >
                 {renderPage(item)}
               </Card>
-            </View>
+            </Box>
           )}
           horizontal
           pagingEnabled
@@ -441,43 +442,42 @@ export default function WorkoutSummaryScreen(props: Props) {
           onMomentumScrollEnd={onPagerScrollEnd}
           style={{ flex: 1 }}
         />
-      </View>
+      </Box>
 
-      <View style={s.dotsRow}>
+      <Box style={s.dotsRow}>
         {PAGE_INDEXES.map((i) => (
-          <TouchableOpacity key={i} onPress={() => goToPage(i)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-            <View style={[s.dot, i === pageIndex && s.dotActive]} />
-          </TouchableOpacity>
+          <Pressable key={i} onPress={() => goToPage(i)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+            <Box style={[s.dot, i === pageIndex && s.dotActive]} />
+          </Pressable>
         ))}
-      </View>
+      </Box>
 
       <Text style={s.shareLabel}>Compartir entrenamiento</Text>
-      <View style={s.shareRow}>
+      <Box style={s.shareRow}>
         {SHARE_ICONS.map((item) => (
-          <TouchableOpacity
+          <Pressable
             key={item.key}
             style={s.shareItem}
             onPress={() => onShareAction(item.key)}
             disabled={isSharing}
-            activeOpacity={0.75}
           >
-            <View style={s.shareCircle}>
+            <Box style={s.shareCircle}>
               {isSharing ? (
-                <ActivityIndicator size="small" color={C.textPrimary} />
+                <Spinner size="small" color={C.textPrimary} />
               ) : (
-                <Ionicons name={item.icon} size={19} color={C.textPrimary} />
+                <Icon name={item.icon} size={19} color={C.textPrimary} />
               )}
-            </View>
+            </Box>
             <Text style={s.shareItemLabel}>{item.label}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
-      </View>
+      </Box>
 
-      <View style={s.footer}>
-        <TouchableOpacity style={s.doneBtn} activeOpacity={0.85} onPress={onDone}>
+      <Box style={s.footer}>
+        <Pressable style={s.doneBtn} onPress={onDone}>
           <Text style={s.doneBtnText}>OK</Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
     </SafeAreaView>
   );
 }

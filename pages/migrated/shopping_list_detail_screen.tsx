@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, Modal, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, SafeAreaView, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { HStack } from '@components/ui/hstack';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import { shoppingApi, ShoppingListDetail, ShoppingListItemDetail, MeasurementUnit } from '@api/shopping';
 import logger from '@helper/logger';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ShoppingListDetailScreen(props: any) {
   const shoppingListId = props.route?.params?.shoppingListId ?? 0;
@@ -15,7 +19,6 @@ export default function ShoppingListDetailScreen(props: any) {
   const [showByCategory, setShowByCategory] = useState(false);
   const [checkedMap, setCheckedMap] = useState<Map<number, boolean>>(new Map());
   const [showAddSheet, setShowAddSheet] = useState(false);
-  const styles = useStyle();
 
   useEffect(() => {
     fetchDetail();
@@ -96,34 +99,39 @@ export default function ShoppingListDetailScreen(props: any) {
     const quantityText = `${item.display_quantity ?? ''} ${item.display_unit_symbol ?? ''}`.trim();
 
     return (
-      <TouchableOpacity
+      <Pressable
         key={item.id}
-        style={s.itemRow}
+        className="flex-row items-center bg-card rounded-sm p-3"
+        style={{ marginBottom: 12, borderWidth: 1, borderColor: `${C.border}80` }}
         onPress={() => toggleItem(item)}
-        activeOpacity={0.7}
       >
-        <View style={[s.checkbox, checked && s.checkboxChecked]}>
-          {checked && <Ionicons name="checkmark" size={16} color={C.white} />}
-        </View>
+        <Box
+          className="items-center justify-center"
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 4,
+            borderWidth: 1.5,
+            borderColor: checked ? C.brand5 : C.gray50,
+            backgroundColor: checked ? C.brand5 : 'transparent',
+            marginRight: 12,
+          }}
+        >
+          {checked && <Icon name="checkmark" size={16} color="#FFFFFF" />}
+        </Box>
         <Text
-          style={[
-            s.itemName,
-            styles.fontRegular,
-            checked && s.itemNameChecked,
-          ]}
+          className="flex-1"
+          style={{ fontSize: 15, color: checked ? C.gray40 : C.textPrimary, textDecorationLine: checked ? 'line-through' : 'none' }}
         >
           {itemName}
         </Text>
         <Text
-          style={[
-            s.itemQuantity,
-            styles.fontBold,
-            checked && s.itemNameChecked,
-          ]}
+          weight="bold"
+          style={{ fontSize: 15, marginLeft: 8, color: checked ? C.gray40 : C.textPrimary, textDecorationLine: checked ? 'line-through' : 'none' }}
         >
           {quantityText}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -131,14 +139,14 @@ export default function ShoppingListDetailScreen(props: any) {
     const items = detailData?.items;
     if (!items || items.length === 0) {
       return (
-        <View style={s.emptyContainer}>
-          <Ionicons name="cart-outline" size={64} color={C.gray50} />
-          <Text style={[s.emptyText, styles.fontMedium]}>No items found</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Icon name="cart-outline" size={64} color={C.gray50} />
+          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No items found</Text>
+        </Box>
       );
     }
     return (
-      <ScrollView contentContainerStyle={s.listContent}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 90 }}>
         {items.map((item) => buildItem(item))}
       </ScrollView>
     );
@@ -148,66 +156,66 @@ export default function ShoppingListDetailScreen(props: any) {
     const categories = detailData?.items_by_category;
     if (!categories || categories.length === 0) {
       return (
-        <View style={s.emptyContainer}>
-          <Ionicons name="cart-outline" size={64} color={C.gray50} />
-          <Text style={[s.emptyText, styles.fontMedium]}>No items found</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Icon name="cart-outline" size={64} color={C.gray50} />
+          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No items found</Text>
+        </Box>
       );
     }
     return (
-      <ScrollView contentContainerStyle={s.listContent}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 90 }}>
         {categories.map((category, index) => (
-          <View key={index}>
-            <Text style={[s.categoryTitle, styles.fontBold]}>
+          <Box key={index}>
+            <Text weight="bold" size="lg" style={{ marginBottom: 12 }}>
               {category.ingredient_category_title || 'Otros'}
             </Text>
             {(category.items ?? []).map((item) => buildItem(item))}
-            <View style={{ height: 16 }} />
-          </View>
+            <Box style={{ height: 16 }} />
+          </Box>
         ))}
       </ScrollView>
     );
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, styles.fontBold]} numberOfLines={1}>
+    <SafeAreaView className="flex-1 bg-background">
+      <HStack className="items-center justify-between p-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Text weight="bold" size="lg" numberOfLines={1} className="flex-1 text-center">
           {detailData?.title ?? 'Shopping List'}
         </Text>
-        <TouchableOpacity style={s.moreBtn} onPress={() => handleMenuAction(1)}>
-          <Ionicons name="ellipsis-vertical" size={22} color={C.white} />
-        </TouchableOpacity>
-      </View>
+        <Button variant="ghost" size="icon" onPress={() => handleMenuAction(1)}>
+          <Icon name="ellipsis-vertical" size={22} className="text-foreground" />
+        </Button>
+      </HStack>
 
       {/* Simple menu actions */}
-      <View style={s.menuActions}>
-        <TouchableOpacity style={s.menuAction} onPress={() => handleMenuAction(1)}>
-          <Ionicons name={showByCategory ? 'list' : 'grid-outline'} size={20} color={C.white} />
-          <Text style={[s.menuActionText, styles.fontRegular]}>{showByCategory ? 'Simple List' : 'Categorized'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={s.menuAction} onPress={() => handleMenuAction(2)}>
-          <Ionicons name="create-outline" size={20} color={C.white} />
-          <Text style={[s.menuActionText, styles.fontRegular]}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={s.menuAction} onPress={() => handleMenuAction(3)}>
-          <Ionicons name="trash-outline" size={20} color={C.red} />
-          <Text style={[s.menuActionText, styles.fontRegular, { color: C.red }]}>Delete</Text>
-        </TouchableOpacity>
-      </View>
+      <HStack className="justify-around px-4 py-2 border-b border-border">
+        <Pressable className="flex-row items-center gap-1" style={{ padding: 8 }} onPress={() => handleMenuAction(1)}>
+          <Icon name={showByCategory ? 'list' : 'grid-outline'} size={20} className="text-foreground" />
+          <Text size="xs" style={{ color: C.gray30 }}>{showByCategory ? 'Simple List' : 'Categorized'}</Text>
+        </Pressable>
+        <Pressable className="flex-row items-center gap-1" style={{ padding: 8 }} onPress={() => handleMenuAction(2)}>
+          <Icon name="create-outline" size={20} className="text-foreground" />
+          <Text size="xs" style={{ color: C.gray30 }}>Edit</Text>
+        </Pressable>
+        <Pressable className="flex-row items-center gap-1" style={{ padding: 8 }} onPress={() => handleMenuAction(3)}>
+          <Icon name="trash-outline" size={20} color={C.red} />
+          <Text size="xs" style={{ color: C.red }}>Delete</Text>
+        </Pressable>
+      </HStack>
 
       {isLoading ? (
-        <View style={s.loadingContainer}>
-          <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Spinner size="large" color={C.orange} />
+        </Box>
       ) : !detailData ? (
-        <View style={s.emptyContainer}>
-          <Ionicons name="document-text-outline" size={64} color={C.gray50} />
-          <Text style={[s.emptyText, styles.fontMedium]}>No data</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Icon name="document-text-outline" size={64} color={C.gray50} />
+          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No data</Text>
+        </Box>
       ) : showByCategory ? (
         buildItemsByCategory()
       ) : (
@@ -215,11 +223,11 @@ export default function ShoppingListDetailScreen(props: any) {
       )}
 
       {/* Add Item Button */}
-      <View style={s.bottomBar}>
-        <TouchableOpacity style={s.addBtn} onPress={() => setShowAddSheet(true)}>
-          <Text style={[s.addBtnText, styles.fontSemiBold]}>Add Item</Text>
-        </TouchableOpacity>
-      </View>
+      <Box className="p-4" style={{ paddingBottom: 24 }}>
+        <Button size="lg" onPress={() => setShowAddSheet(true)}>
+          <ButtonText>Add Item</ButtonText>
+        </Button>
+      </Box>
 
       {/* Add Item Bottom Sheet */}
       <AddItemSheet
@@ -252,7 +260,6 @@ function AddItemSheet({
   const [selectedUnit, setSelectedUnit] = useState<MeasurementUnit | null>(null);
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const styles = useStyle();
 
   useEffect(() => {
     if (visible) loadUnits();
@@ -297,211 +304,71 @@ function AddItemSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <Pressable style={sAdd.modalOverlay} onPress={onClose}>
+      <Pressable className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={onClose}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={sAdd.sheetContainer}
+          style={{ justifyContent: 'flex-end' }}
         >
-          <Pressable style={sAdd.sheet} onPress={(e) => e.stopPropagation()}>
-            <View style={sAdd.handle} />
-            <View style={sAdd.headerRow}>
-              <View style={sAdd.headerIcon}>
-                <Ionicons name="add" size={24} color={C.textPrimary} />
-              </View>
-              <View style={sAdd.headerTextWrap}>
-                <Text style={[sAdd.sheetTitle, styles.fontBold]}>Add Item</Text>
-                <Text style={[sAdd.sheetSubtitle, styles.fontRegular]}>Add a new item to your shopping list</Text>
-              </View>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={24} color={C.gray30} />
-              </TouchableOpacity>
-            </View>
+          <Pressable className="bg-background rounded-t-lg" style={{ paddingBottom: 20 }} onPress={(e: any) => e.stopPropagation()}>
+            <Box className="w-10 h-1 rounded-pill bg-muted self-center" style={{ marginTop: 10 }} />
+            <HStack className="items-center p-5">
+              <Box className="w-11 h-11 rounded-md items-center justify-center" style={{ backgroundColor: `${C.brand5}1F` }}>
+                <Icon name="add" size={24} className="text-foreground" />
+              </Box>
+              <Box className="flex-1" style={{ marginLeft: 14 }}>
+                <Text weight="bold" size="lg">Add Item</Text>
+                <Text size="sm" muted style={{ marginTop: 4 }}>Add a new item to your shopping list</Text>
+              </Box>
+              <Pressable onPress={onClose}>
+                <Icon name="close" size={24} color={C.gray30} />
+              </Pressable>
+            </HStack>
 
-            <View style={sAdd.divider} />
+            <Box className="h-px bg-border mx-5" />
 
             {loadingUnits ? (
-              <ActivityIndicator size="large" color={C.orange} style={{ padding: 32 }} />
+              <Spinner size="large" color={C.orange} style={{ padding: 32 }} />
             ) : (
-              <View style={sAdd.form}>
-                <Text style={[sAdd.label, styles.fontBold]}>Item</Text>
-                <TextInput
-                  style={[sAdd.input, styles.fontRegular]}
-                  placeholder="Enter item name"
-                  placeholderTextColor={C.gray50}
-                  value={name}
-                  onChangeText={setName}
-                />
-
-                <Text style={[sAdd.label, styles.fontBold]}>Quantity</Text>
-                <View style={sAdd.quantityRow}>
-                  <TextInput
-                    style={[sAdd.quantityInput, styles.fontRegular]}
-                    placeholder="Quantity"
-                    placeholderTextColor={C.gray50}
-                    value={quantity}
-                    onChangeText={setQuantity}
-                    keyboardType="decimal-pad"
+              <Box className="p-5">
+                <Text weight="bold" style={{ marginBottom: 8 }}>Item</Text>
+                <Input style={{ marginBottom: 16 }}>
+                  <InputField
+                    placeholder="Enter item name"
+                    value={name}
+                    onChangeText={setName}
                   />
-                  <View style={sAdd.unitDropdown}>
-                    <Text style={[sAdd.unitText, styles.fontRegular]}>
+                </Input>
+
+                <Text weight="bold" style={{ marginBottom: 8 }}>Quantity</Text>
+                <HStack space="md" style={{ marginBottom: 24 }}>
+                  <Input style={{ width: 140 }}>
+                    <InputField
+                      placeholder="Quantity"
+                      value={quantity}
+                      onChangeText={setQuantity}
+                      keyboardType="decimal-pad"
+                    />
+                  </Input>
+                  <Box className="flex-1 h-11 justify-center bg-card rounded-sm border border-border px-3">
+                    <Text>
                       {selectedUnit ? `${selectedUnit.title ?? ''} (${selectedUnit.symbol ?? ''})` : 'None'}
                     </Text>
-                  </View>
-                </View>
+                  </Box>
+                </HStack>
 
-                <View style={sAdd.buttonRow}>
-                  <TouchableOpacity style={sAdd.cancelBtn} onPress={onClose}>
-                    <Text style={[sAdd.cancelBtnText, styles.fontRegular]}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[sAdd.addBtn, submitting && { opacity: 0.6 }]}
-                    onPress={submit}
-                    disabled={submitting}
-                  >
-                    {submitting ? (
-                      <ActivityIndicator size="small" color={C.white} />
-                    ) : (
-                      <Text style={[sAdd.addBtnText, styles.fontSemiBold]}>Add</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
+                <HStack space="lg">
+                  <Button variant="secondary" className="flex-1" onPress={onClose}>
+                    <ButtonText>Cancel</ButtonText>
+                  </Button>
+                  <Button className="flex-1" onPress={submit} disabled={submitting}>
+                    {submitting ? <Spinner size="small" color="#FFFFFF" /> : <ButtonText>Add</ButtonText>}
+                  </Button>
+                </HStack>
+              </Box>
             )}
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
     </Modal>
   );
-}
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: { fontSize: 18, color: C.white, flex: 1, textAlign: 'center' },
-  moreBtn: { width: 40, alignItems: 'center' },
-  menuActions: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: C.border },
-  menuAction: { flexDirection: 'row', alignItems: 'center', padding: 8, gap: 4 },
-  menuActionText: { fontSize: 13, color: C.gray30 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: C.gray30, marginTop: 12 },
-  listContent: { padding: 16, paddingBottom: 90 },
-  categoryTitle: { fontSize: 18, color: C.white, marginBottom: 12 },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    padding: 12,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: `${C.border}80`,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: C.gray50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  checkboxChecked: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  itemName: { flex: 1, fontSize: 15, color: C.white },
-  itemNameChecked: { textDecorationLine: 'line-through', color: C.gray40 },
-  itemQuantity: { fontSize: 15, color: C.white, marginLeft: 8 },
-  bottomBar: { padding: 16, paddingBottom: 24 },
-  addBtn: { backgroundColor: C.brand5, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  addBtnText: { fontSize: 16, color: C.white },
-});
-
-const sAdd = StyleSheet.create({
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  sheetContainer: { justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: C.bg,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 20,
-  },
-  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: C.gray60, alignSelf: 'center', marginTop: 10 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', padding: 20 },
-  headerIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: `${C.brand5}1F`,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTextWrap: { flex: 1, marginLeft: 14 },
-  sheetTitle: { fontSize: 18, color: C.white },
-  sheetSubtitle: { fontSize: 13, color: C.gray30, marginTop: 4 },
-  divider: { height: 1, backgroundColor: C.border, marginHorizontal: 20 },
-  form: { padding: 20 },
-  label: { fontSize: 15, color: C.white, marginBottom: 8 },
-  input: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: C.border,
-    color: C.white,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    marginBottom: 16,
-  },
-  quantityRow: { flexDirection: 'row', marginBottom: 24 },
-  quantityInput: {
-    width: 140,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: C.border,
-    color: C.white,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    marginRight: 16,
-  },
-  unitDropdown: {
-    flex: 1,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: C.border,
-    paddingHorizontal: 12,
-    justifyContent: 'center',
-  },
-  unitText: { fontSize: 15, color: C.white },
-  buttonRow: { flexDirection: 'row', gap: 16 },
-  cancelBtn: {
-    flex: 1,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: `${C.border}80`,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  cancelBtnText: { fontSize: 15, color: C.white },
-  addBtn: {
-    flex: 1,
-    backgroundColor: C.brand5,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  addBtnText: { fontSize: 15, color: C.white },
-});
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontRegular: { fontFamily: FONT.regular },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
 }
