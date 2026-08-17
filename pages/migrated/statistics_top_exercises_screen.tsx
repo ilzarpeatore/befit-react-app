@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import MuscleFilterSheet from '../../components/MuscleFilterSheet';
 import { exerciseStatsApi, TopExerciseItem } from '../../api/exerciseStats';
@@ -28,25 +35,25 @@ const RANGE_OPTIONS: RangeOption[] = [
 
 function TopExerciseRow({ item, rank, onPress }: { item: TopExerciseItem; rank: number; onPress: () => void }) {
   return (
-    <TouchableOpacity style={s.row} onPress={onPress} activeOpacity={0.7}>
-      <Text style={s.rank}>{rank}</Text>
+    <Pressable className="flex-row items-center" style={{ padding: 12, gap: 12 }} onPress={onPress}>
+      <Text weight="bold" size="sm" muted style={{ width: 20, textAlign: 'center' }}>{rank}</Text>
       {item.image ? (
-        <Image source={{ uri: item.image }} style={s.thumb} />
+        <Image source={{ uri: item.image }} style={{ width: 48, height: 48, borderRadius: 10, backgroundColor: C.gray5 }} />
       ) : (
-        <View style={[s.thumb, s.thumbPlaceholder]}>
-          <Ionicons name="barbell-outline" size={18} color={C.textSecondary} />
-        </View>
+        <Box className="items-center justify-center bg-muted" style={{ width: 48, height: 48, borderRadius: 10 }}>
+          <Icon name="barbell-outline" size={18} className="text-muted-foreground" />
+        </Box>
       )}
-      <View style={{ flex: 1 }}>
-        <Text style={s.title} numberOfLines={2}>
+      <Box className="flex-1">
+        <Text weight="semibold" size="sm" numberOfLines={2} style={{ fontSize: 14.5 }}>
           {item.title}
         </Text>
-        <Text style={s.subtitle}>
+        <Text size="xs" muted style={{ marginTop: 3 }}>
           {item.sessions} {item.sessions === 1 ? 'sesión' : 'sesiones'} · {item.sets} series
         </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-    </TouchableOpacity>
+      </Box>
+      <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+    </Pressable>
   );
 }
 
@@ -81,45 +88,51 @@ export default function StatisticsTopExercisesScreen(props: Props) {
   }, [range, muscleId]);
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle} numberOfLines={1}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <HStack className="items-center justify-between px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center mx-1" numberOfLines={1}>
           Ejercicios principales
-        </Text>
-        <TouchableOpacity style={s.iconBtn} onPress={() => setMuscleSheetVisible(true)}>
-          <Ionicons name="body-outline" size={22} color={muscleId ? C.orange : C.textPrimary} />
-        </TouchableOpacity>
-      </View>
+        </Heading>
+        <Button variant="ghost" size="icon" onPress={() => setMuscleSheetVisible(true)}>
+          <Icon name="body-outline" size={22} color={muscleId ? C.orange : C.textPrimary} />
+        </Button>
+      </HStack>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.pillRow}>
-          <TouchableOpacity style={s.rangePill} onPress={() => setRangeSheetVisible(true)} activeOpacity={0.75}>
-            <Text style={s.rangePillText}>{range.label}</Text>
-            <Ionicons name="chevron-down" size={16} color={C.textPrimary} />
-          </TouchableOpacity>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <HStack className="items-center flex-wrap gap-2" style={{ marginTop: 12 }}>
+          <Pressable
+            className="flex-row items-center self-start bg-card rounded-pill shadow-card gap-2"
+            style={{ paddingHorizontal: 18, paddingVertical: 10 }}
+            onPress={() => setRangeSheetVisible(true)}
+          >
+            <Text weight="semibold" size="sm">{range.label}</Text>
+            <Icon name="chevron-down" size={16} className="text-foreground" />
+          </Pressable>
           {muscleId ? (
-            <TouchableOpacity
-              style={s.muscleChip}
+            <Pressable
+              className="flex-row items-center rounded-pill gap-1.5"
+              style={{ backgroundColor: C.orange, paddingHorizontal: 14, paddingVertical: 10 }}
               onPress={() => { setMuscleId(null); setMuscleName(''); }}
-              activeOpacity={0.75}
             >
-              <Text style={s.muscleChipText}>{muscleName}</Text>
-              <Ionicons name="close" size={14} color={C.white} />
-            </TouchableOpacity>
+              <Text weight="semibold" size="sm" style={{ color: C.white }}>{muscleName}</Text>
+              <Icon name="close" size={14} color={C.white} />
+            </Pressable>
           ) : null}
-        </View>
+        </HStack>
 
-        <View style={s.listCard}>
+        <Box className="bg-card rounded-lg shadow-card" style={{ marginTop: 16, padding: 8 }}>
           {isLoading ? (
-            <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
+            <Spinner size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
           ) : items.length === 0 ? (
-            <Text style={s.emptyText}>Todavía no hay ejercicios registrados en este periodo.</Text>
+            <Text size="xs" muted className="text-center" style={{ paddingVertical: 52 }}>
+              Todavía no hay ejercicios registrados en este periodo.
+            </Text>
           ) : (
             items.map((item, idx) => (
-              <View key={item.exercise_id}>
+              <Box key={item.exercise_id}>
                 <TopExerciseRow
                   item={item}
                   rank={idx + 1}
@@ -131,29 +144,33 @@ export default function StatisticsTopExercisesScreen(props: Props) {
                     })
                   }
                 />
-                {idx < items.length - 1 && <View style={s.divider} />}
-              </View>
+                {idx < items.length - 1 && <Box className="border-b border-border" style={{ marginLeft: 76 }} />}
+              </Box>
             ))
           )}
-        </View>
+        </Box>
       </ScrollView>
 
       <SimpleBottomSheet visible={rangeSheetVisible} onClose={() => setRangeSheetVisible(false)}>
-        <View style={s.sheetContent}>
-          {RANGE_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.key}
-              style={s.rangeOptionRow}
-              onPress={() => {
-                setRange(opt);
-                setRangeSheetVisible(false);
-              }}
-            >
-              <Text style={[s.rangeOptionText, opt.key === range.key && s.rangeOptionTextActive]}>{opt.label}</Text>
-              {opt.key === range.key ? <Ionicons name="checkmark" size={18} color={C.accentBlack} /> : null}
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Box style={{ padding: 24 }}>
+          {RANGE_OPTIONS.map((opt) => {
+            const active = opt.key === range.key;
+            return (
+              <Pressable
+                key={opt.key}
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 14 }}
+                onPress={() => {
+                  setRange(opt);
+                  setRangeSheetVisible(false);
+                }}
+              >
+                <Text size="sm" weight={active ? 'bold' : 'medium'}>{opt.label}</Text>
+                {active ? <Icon name="checkmark" size={18} className="text-foreground" /> : null}
+              </Pressable>
+            );
+          })}
+        </Box>
       </SimpleBottomSheet>
 
       <MuscleFilterSheet
@@ -174,43 +191,3 @@ export default function StatisticsTopExercisesScreen(props: Props) {
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  appBarTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary, marginHorizontal: 4 },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  pillRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  muscleChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: C.orange, borderRadius: 24, paddingHorizontal: 14, paddingVertical: 10,
-  },
-  muscleChipText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.white },
-  rangePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: C.surface,
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginTop: 12,
-    gap: 8,
-    ...SHADOW.card,
-  },
-  rangePillText: { fontFamily: FONT.semiBold, fontSize: 14, color: C.textPrimary },
-  listCard: { backgroundColor: C.surface, borderRadius: 20, marginTop: 16, padding: 8, ...SHADOW.card },
-  emptyText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, textAlign: 'center', paddingVertical: 52 },
-  row: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12 },
-  rank: { width: 20, fontFamily: FONT.bold, fontSize: 14, color: C.textSecondary, textAlign: 'center' },
-  thumb: { width: 48, height: 48, borderRadius: 10, backgroundColor: C.gray5 },
-  thumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  title: { fontFamily: FONT.semiBold, fontSize: 14.5, color: C.textPrimary },
-  subtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
-  divider: { height: 1, backgroundColor: C.border, marginLeft: 76 },
-  sheetContent: { padding: 24 },
-  rangeOptionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
-  rangeOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textPrimary },
-  rangeOptionTextActive: { fontFamily: FONT.bold, color: C.accentBlack },
-});

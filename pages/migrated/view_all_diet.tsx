@@ -1,31 +1,35 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, ActivityIndicator, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import React, { useState, useEffect, useRef } from 'react';
+import { FlatList, Image, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import { dietApi } from '../../api/diet';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 function DietItem({ item, onCall }: { item: any; onCall?: () => void }) {
   return (
-    <TouchableOpacity style={styles.dietCard} activeOpacity={0.8} onPress={onCall}>
-      <Image
-        source={{ uri: item.image || '' }}
-        style={styles.dietImage}
-        resizeMode="cover"
-      />
-      <View style={styles.dietInfo}>
-        <Text style={styles.dietTitle} numberOfLines={2}>{item.title || 'Diet Plan'}</Text>
-        <Text style={styles.dietMeta} numberOfLines={1}>
-          {item.category || ''} {item.duration ? `â€¢ ${item.duration}` : ''}
+    <Pressable
+      className="flex-row bg-card rounded-sm overflow-hidden"
+      style={{ marginBottom: 12 }}
+      onPress={onCall}
+    >
+      <Image source={{ uri: item.image || '' }} style={{ width: 110, height: 100 }} resizeMode="cover" />
+      <Box className="flex-1 justify-center p-3">
+        <Text weight="semibold" size="sm" numberOfLines={2} style={{ marginBottom: 4 }}>
+          {item.title || 'Diet Plan'}
         </Text>
-        <View style={styles.dietRow}>
-          <Ionicons name="flame" size={14} color={C.orange} />
-          <Text style={styles.dietCalories}>{item.calories || '0'} kcal</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+        <Text size="xs" muted numberOfLines={1} style={{ marginBottom: 6 }}>
+          {item.category || ''} {item.duration ? `• ${item.duration}` : ''}
+        </Text>
+        <Box className="flex-row items-center gap-1">
+          <Icon name="flame" size={14} color={C.orange} />
+          <Text size="xs" weight="medium" style={{ color: C.orange }}>{item.calories || '0'} kcal</Text>
+        </Box>
+      </Box>
+    </Pressable>
   );
 }
 
@@ -97,21 +101,21 @@ export default function ViewAllDiet(props: any) {
   const renderEmpty = () => {
     if (isLoading) return <ActivityIndicator size="large" color={C.orange} style={{ marginTop: 60 }} />;
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No results found</Text>
-      </View>
+      <Box className="items-center" style={{ paddingVertical: 60 }}>
+        <Text size="sm" muted>No results found</Text>
+      </Box>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <Box className="flex-1 bg-background">
       {showAppBar && (
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => props.navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={C.white} />
-          </TouchableOpacity>
-          <Text style={styles.appBarTitle}>{mTitle}</Text>
-        </View>
+        <Box style={{ paddingTop: 50, paddingBottom: 12 }} className="flex-row items-center px-4 gap-3">
+          <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+            <Icon name="arrow-back" size={24} className="text-foreground" />
+          </Button>
+          <Heading size="md">{mTitle}</Heading>
+        </Box>
       )}
 
       <FlatList
@@ -120,7 +124,7 @@ export default function ViewAllDiet(props: any) {
         keyExtractor={(item, i) => String(item.id || i)}
         renderItem={({ item }) => <DietItem item={item} onCall={() => handleItemCall(item)} />}
         contentContainerStyle={[
-          styles.listContent,
+          { paddingHorizontal: 16, paddingVertical: 8 },
           (isFav || isAssign) && { paddingVertical: 16 },
         ]}
         showsVerticalScrollIndicator={false}
@@ -128,35 +132,6 @@ export default function ViewAllDiet(props: any) {
         onEndReachedThreshold={0.3}
         ListEmptyComponent={renderEmpty}
       />
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-  listContent: { paddingHorizontal: 16, paddingVertical: 8 },
-  dietCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
-    flexDirection: 'row',
-  },
-  dietImage: { width: 110, height: 100 },
-  dietInfo: { flex: 1, padding: 12, justifyContent: 'center' },
-  dietTitle: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white, marginBottom: 4 },
-  dietMeta: { fontSize: 12, color: C.gray30, fontFamily: FONT.regular, marginBottom: 6 },
-  dietRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dietCalories: { fontSize: 12, fontFamily: FONT.medium, color: C.orange },
-  emptyContainer: { alignItems: 'center', paddingVertical: 60 },
-  emptyText: { fontSize: 14, color: C.gray30, fontFamily: FONT.regular },
-});

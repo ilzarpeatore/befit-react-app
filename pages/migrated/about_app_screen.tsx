@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Divider } from '@components/ui/divider';
 import logger from '@helper/logger';
 
 export default function AboutAppScreen({ navigation }: any) {
@@ -28,73 +32,50 @@ export default function AboutAppScreen({ navigation }: any) {
   }
 
   const mOption = (icon: string, title: string, onPress: () => void) => (
-    <TouchableOpacity style={styles_local.optionRow} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles_local.optionIcon}>
-        <Ionicons name={icon as any} size={20} color={C.textPrimary} />
-      </View>
-      <Text style={styles_local.optionText}>{title}</Text>
-      <Ionicons name="chevron-forward" size={18} color={C.gray30} />
-    </TouchableOpacity>
+    <Pressable
+      className="flex-row items-center gap-3 px-4 py-4 bg-card"
+      onPress={onPress}
+    >
+      <Box className="w-9 h-9 rounded-md bg-secondary items-center justify-center">
+        <Icon name={icon as any} size={20} className="text-foreground" />
+      </Box>
+      <Text className="flex-1">{title}</Text>
+      <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+    </Pressable>
   );
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>About App</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 48, paddingBottom: 16 }} className="flex-row items-center justify-between px-4 bg-card">
+        <Button variant="ghost" size="icon" onPress={() => navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">About App</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <ScrollView style={styles_local.body} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 8 }} showsVerticalScrollIndicator={false}>
         {mOption('document-text-outline', 'Privacy Policy', () => {
           // TODO: navigation.navigate('PrivacyPolicyScreen')
         })}
-        <View style={styles_local.divider} />
+        <Divider />
         {mOption('document-text-outline', 'Terms of Services', () => {
           // TODO: navigation.navigate('TermsAndConditionScreen')
         })}
-        <View style={styles_local.divider} />
+        <Divider />
         {mOption('information-circle-outline', 'About Us', () => {
           navigation.navigate('MigratedAboutUs');
         })}
-        <View style={styles_local.divider} />
+        <Divider />
         {aboutPages.map((page: any, index: number) => (
-          <View key={index}>
+          <Box key={index}>
             {mOption('information-circle-outline', page.title ?? '', () => {
               // TODO: navigation.navigate('InAppWebPage', { url: page.url, title: page.title })
             })}
-            <View style={styles_local.divider} />
-          </View>
+            <Divider />
+          </Box>
         ))}
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  body: { flex: 1, paddingTop: 8 },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    backgroundColor: C.surface,
-  },
-  optionIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: C.surfaceLight, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
-  optionText: { flex: 1, fontSize: 15, fontFamily: FONT.medium, color: C.white },
-  divider: { height: 1, backgroundColor: C.border, marginHorizontal: 16 },
-});

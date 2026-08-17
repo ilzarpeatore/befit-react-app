@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { ScrollView, Image } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { VStack } from '@components/ui/vstack';
+import { HStack } from '@components/ui/hstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Card } from '@components/ui/card';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import { dietApi, AssignedMealsSummary, AssignedMealRecipe } from '../../api/diet';
 import logger from '@helper/logger';
 
@@ -93,193 +102,136 @@ export default function AssignedMealsScreen(props: any) {
       : '';
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle} numberOfLines={1}>{title}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <HStack style={{ paddingTop: 48, paddingBottom: 12 }} className="items-center justify-between px-2">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm" numberOfLines={1} className="flex-1 text-center">{title}</Heading>
+        <Box className="w-10" />
+      </HStack>
 
       {isLoading ? (
-        <View style={s.loadingWrap}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       ) : (
         <>
           {!isDietMode && (
-            <View style={s.goalCard}>
-              <View style={s.goalKcalRow}>
-                <Ionicons name="flame-outline" size={22} color={C.orange} />
-                <Text style={s.goalKcalValue}>{goal?.kcal ?? 0}</Text>
-                <Text style={s.goalKcalLabel}>kcal / day goal</Text>
-              </View>
-              <View style={s.goalMacrosRow}>
-                <View style={s.goalMacroItem}>
-                  <Text style={s.goalMacroValue}>{goal?.protein ?? 0}g</Text>
-                  <Text style={s.goalMacroLabel}>Protein</Text>
-                </View>
-                <View style={s.goalMacroItem}>
-                  <Text style={s.goalMacroValue}>{goal?.carbs ?? 0}g</Text>
-                  <Text style={s.goalMacroLabel}>Carbs</Text>
-                </View>
-                <View style={s.goalMacroItem}>
-                  <Text style={s.goalMacroValue}>{goal?.fats ?? 0}g</Text>
-                  <Text style={s.goalMacroLabel}>Fats</Text>
-                </View>
-              </View>
-            </View>
+            <Card variant="ghost" className="mx-4" style={{ marginBottom: 12 }}>
+              <HStack space="sm" className="items-center justify-center">
+                <Icon name="flame-outline" size={22} color={C.orange} />
+                <Text weight="extrabold" size="xl">{goal?.kcal ?? 0}</Text>
+                <Text size="xs" muted>kcal / day goal</Text>
+              </HStack>
+              <HStack className="justify-around" style={{ marginTop: 14 }}>
+                <VStack className="items-center">
+                  <Text weight="bold" size="sm">{goal?.protein ?? 0}g</Text>
+                  <Text size="xs" muted style={{ marginTop: 2 }}>Protein</Text>
+                </VStack>
+                <VStack className="items-center">
+                  <Text weight="bold" size="sm">{goal?.carbs ?? 0}g</Text>
+                  <Text size="xs" muted style={{ marginTop: 2 }}>Carbs</Text>
+                </VStack>
+                <VStack className="items-center">
+                  <Text weight="bold" size="sm">{goal?.fats ?? 0}g</Text>
+                  <Text size="xs" muted style={{ marginTop: 2 }}>Fats</Text>
+                </VStack>
+              </HStack>
+            </Card>
           )}
 
           {!isDietMode && selectedIds.size > 0 && (
-            <View style={[s.selectionBar, { borderColor: kcalStatusColor }]}>
-              <Text style={s.selectionBarKcal}>
-                {selectedKcal} <Text style={s.selectionBarKcalGoal}>/ {goalKcal} kcal seleccionadas</Text>
+            <Card
+              variant="ghost"
+              className="mx-4"
+              style={{ marginBottom: 12, borderWidth: 1.5, borderColor: kcalStatusColor }}
+            >
+              <Text weight="extrabold" size="lg">
+                {selectedKcal} <Text size="xs" muted>/ {goalKcal} kcal seleccionadas</Text>
               </Text>
-              <Text style={[s.selectionBarStatus, { color: kcalStatusColor }]}>{kcalStatusText}</Text>
-            </View>
+              <Text weight="semibold" size="xs" style={{ color: kcalStatusColor, marginTop: 4 }}>
+                {kcalStatusText}
+              </Text>
+            </Card>
           )}
 
-          <View style={s.tabsRow}>
+          <HStack space="sm" className="px-4" style={{ marginBottom: 12 }}>
             {MEAL_TYPES.map(({ key, label }) => (
-              <TouchableOpacity
+              <Pressable
                 key={key}
-                style={[s.tab, activeTab === key && s.tabActive]}
+                className={`flex-1 items-center py-2 rounded-md ${activeTab === key ? 'bg-primary' : 'bg-secondary'}`}
                 onPress={() => setActiveTab(key)}
               >
-                <Text style={[s.tabText, activeTab === key && s.tabTextActive]}>{label}</Text>
-              </TouchableOpacity>
+                <Text
+                  weight="semibold"
+                  size="xs"
+                  className={activeTab === key ? 'text-primary-foreground' : 'text-muted-foreground'}
+                >
+                  {label}
+                </Text>
+              </Pressable>
             ))}
-          </View>
+          </HStack>
 
-          <ScrollView contentContainerStyle={s.listContent}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
             {activeRecipes.length === 0 ? (
-              <View style={s.emptyWrap}>
-                <Ionicons name="restaurant-outline" size={40} color={C.gray30} />
-                <Text style={s.emptyText}>
+              <Box className="items-center" style={{ paddingVertical: 60 }}>
+                <Icon name="restaurant-outline" size={40} color={C.gray30} />
+                <Text size="sm" style={{ color: C.gray30, marginTop: 10 }}>
                   No {MEAL_TYPES.find(m => m.key === activeTab)?.label.toLowerCase()} assigned yet.
                 </Text>
-              </View>
+              </Box>
             ) : (
               activeRecipes.map(recipe => (
-                <View
+                <Box
                   key={recipe.id}
-                  style={[s.recipeCard, !isDietMode && selectedIds.has(recipe.id) && s.recipeCardSelected]}
+                  className="flex-row items-center bg-card rounded-lg"
+                  style={{
+                    marginBottom: 10,
+                    borderWidth: 1.5,
+                    borderColor: !isDietMode && selectedIds.has(recipe.id) ? C.brand50 : 'transparent',
+                  }}
                 >
                   {!isDietMode && (
-                    <TouchableOpacity
-                      style={s.recipeCheckbox}
-                      activeOpacity={0.7}
+                    <Pressable
+                      style={{ paddingLeft: 12, paddingVertical: 12 }}
                       onPress={() => toggleSelected(recipe.id)}
                     >
-                      <Ionicons
+                      <Icon
                         name={selectedIds.has(recipe.id) ? 'checkmark-circle' : 'ellipse-outline'}
                         size={22}
                         color={selectedIds.has(recipe.id) ? C.brand50 : C.gray40}
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
-                  <TouchableOpacity style={s.recipeCardBody} activeOpacity={0.8} onPress={() => openRecipe(recipe)}>
+                  <Pressable
+                    className="flex-1 flex-row items-center p-3"
+                    style={{ paddingLeft: 0 }}
+                    onPress={() => openRecipe(recipe)}
+                  >
                     {recipe.recipe_image ? (
-                      <Image source={{ uri: recipe.recipe_image }} style={s.recipeImage} />
+                      <Image source={{ uri: recipe.recipe_image }} style={{ width: 52, height: 52, borderRadius: 10, marginRight: 12 }} />
                     ) : (
-                      <View style={s.recipeImage} />
+                      <Box className="bg-muted" style={{ width: 52, height: 52, borderRadius: 10, marginRight: 12 }} />
                     )}
-                    <View style={s.recipeInfo}>
-                      <Text style={s.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
-                      <View style={s.recipeMacrosRow}>
-                        <Text style={s.recipeMacroCal}>{recipe.calories} kcal</Text>
-                        <Text style={s.recipeMacro}>P {recipe.protein}g</Text>
-                        <Text style={s.recipeMacro}>C {recipe.carbs}g</Text>
-                        <Text style={s.recipeMacro}>F {recipe.fats}g</Text>
-                      </View>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={C.gray30} />
-                  </TouchableOpacity>
-                </View>
+                    <Box className="flex-1">
+                      <Text weight="bold" size="sm" numberOfLines={1} style={{ marginBottom: 4 }}>{recipe.title}</Text>
+                      <HStack space="sm">
+                        <Text size="xs" weight="semibold">{recipe.calories} kcal</Text>
+                        <Text size="xs" muted>P {recipe.protein}g</Text>
+                        <Text size="xs" muted>C {recipe.carbs}g</Text>
+                        <Text size="xs" muted>F {recipe.fats}g</Text>
+                      </HStack>
+                    </Box>
+                    <Icon name="chevron-forward" size={18} color={C.gray30} />
+                  </Pressable>
+                </Box>
               ))
             )}
           </ScrollView>
         </>
       )}
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingTop: 48,
-    paddingBottom: 12,
-  },
-  backBtn: { padding: 8 },
-  appBarTitle: { fontFamily: FONT.bold, fontSize: 18, color: C.white },
-  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  goalCard: {
-    backgroundColor: C.surface,
-    borderRadius: 16,
-    marginHorizontal: 16,
-    padding: 20,
-    marginBottom: 12,
-  },
-  goalKcalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  goalKcalValue: { fontFamily: FONT.extraBold, fontSize: 24, color: C.white },
-  goalKcalLabel: { fontFamily: FONT.regular, fontSize: 12, color: C.gray50 },
-  goalMacrosRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 14 },
-  goalMacroItem: { alignItems: 'center' },
-  goalMacroValue: { fontFamily: FONT.bold, fontSize: 15, color: C.white },
-  goalMacroLabel: { fontFamily: FONT.regular, fontSize: 11, color: C.gray50, marginTop: 2 },
-  tabsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
-    marginBottom: 12,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: C.surfaceLight,
-  },
-  tabActive: { backgroundColor: C.brand50 },
-  tabText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.gray50 },
-  tabTextActive: { color: C.white },
-  listContent: { paddingHorizontal: 16, paddingBottom: 24 },
-  emptyWrap: { alignItems: 'center', paddingVertical: 60 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 13, color: C.gray30, marginTop: 10 },
-  selectionBar: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    backgroundColor: C.surface,
-  },
-  selectionBarKcal: { fontFamily: FONT.extraBold, fontSize: 16, color: C.white },
-  selectionBarKcalGoal: { fontFamily: FONT.regular, fontSize: 12, color: C.gray50 },
-  selectionBarStatus: { fontFamily: FONT.semiBold, fontSize: 12, marginTop: 4 },
-  recipeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surface,
-    borderRadius: 14,
-    marginBottom: 10,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  recipeCardSelected: { borderColor: C.brand50 },
-  recipeCardBody: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: 12, paddingLeft: 0 },
-  recipeCheckbox: { paddingLeft: 12, paddingVertical: 12 },
-  recipeImage: { width: 52, height: 52, borderRadius: 10, backgroundColor: C.gray40, marginRight: 12 },
-  recipeInfo: { flex: 1 },
-  recipeTitle: { fontFamily: FONT.bold, fontSize: 14, color: C.white, marginBottom: 4 },
-  recipeMacrosRow: { flexDirection: 'row', gap: 10 },
-  recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.textPrimary },
-  recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50 },
-});

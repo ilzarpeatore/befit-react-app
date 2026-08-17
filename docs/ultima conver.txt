@@ -1,0 +1,1036 @@
+Lo que NO usamos del catálogo de Gluestack: Modal, Actionsheet, Accordion, Avatar, Checkbox, FormControl, Menu, Popover, Radio, Select, Slider, Switch, Tabs, Textarea, Tooltip, Fab. En pantallas con Modal, Switch, WebView, FlatList o formularios largos, dejé los componentes nativos de React Native tal cual (por seguridad funcional) y solo until envolví el layout alrededor con Box/Text/Pressable/Icon — nunca reemplacé esos componentes críticos por variantes de Gluestack sin generar.
+
+✻ Brewed for 25s
+
+❯ Quiero usar todos los componentes donde haga falta y en las screen que se puedan importar
+
+  Ran 2 shell commands
+
+Voy a hacer una segunda pasada sobre las 16 pantallas que usé con la estrategia "segura" (mantuvieron su StyleSheet.create original, solo cambié las etiquetas) para convertirlas a usar Card, Button, Badge, VStack/HStack y el resto de componentes de verdad. workout_session_screen.tsx la hago yo mismo aparte por su lógica de timers en tiempo real.
+
+● 4 background agents launched (↓ to manage)
+Pulir pantallas a full Gluestack (grupo 21)
+Pulir pantallas a full Gluestack (grupo 22)
+Pulir pantallas a full Gluestack (grupo 23)
+Pulir pantallas a full Gluestack (grupo 24)
+
+Mientras esos 4 agentes trabajan en paralelo, reviso workout_session_screen.tsx yo mismo por su lógica de timers en tiempo real.
+
+  Read 1 file
+
+● Write(pages\migrated\workout_session_screen.tsx)
+Added 180 lines, removed 329 lines
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import {
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  Platform,
+
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Box } from '@components/ui/box';
+import { VStack } from '@components/ui/vstack';
+import { HStack } from '@components/ui/hstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Card } from '@components/ui/card';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Divider } from '@components/ui/divider';
+import { C, FONT } from './theme';
+import { ExerciseThumbMem } from '../../components/ExerciseThumb';
+import { ConfirmDialogMem } from '../../components/ConfirmDialog';
+
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Box style={styles.loader}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        <Box className="flex-1 items-center justify-center">
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
+      </SafeAreaView>
+
+
+  if (error || blocks.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Box style={styles.header}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        <Box
+          className="flex-row items-center justify-between px-5"
+          style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+        >
+          <Pressable onPress={() => navigation?.goBack()}>
+            <Icon name="close" size={26} color={C.textPrimary} />
+          </Pressable>
+        </Box>
+        <Box style={styles.loader}>
+          <Text style={styles.emptyText}>No se pudo cargar el entrenamiento.</Text>
+        <Box className="flex-1 items-center justify-center">
+          <Text muted className="text-center px-6" style={{ fontSize: 15 }}>
+            No se pudo cargar el entrenamiento.
+          </Text>
+        </Box>
+      </SafeAreaView>
+    );
+
+      >
+        {block.exercises.map((ex, exIdx) =>
+          exIdx === activeExIdx ? (
+            <Box key={ex.id} style={styles.activeCard}>
+              <Box style={styles.activeHeaderRow}>
+            <Card key={ex.id} variant="filled" className="mx-4 mb-2.5">
+              <HStack className="items-center">
+                <Pressable
+                  style={styles.activeHeaderTapArea}
+                  className="flex-1 flex-row items-center"
+                  onPress={() => openExerciseInfo(ex)}
+                >
+                  <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={56} />
+                  <Box style={styles.activeInfo}>
+                    <Text style={styles.activeTitle} numberOfLines={2}>
+                  <Box className="flex-1 ml-3">
+                    <Text weight="bold" className="text-foreground" style={{ fontSize: 16 }} numberOfLines={2}>
+                      {ex.title}
+                    </Text>
+                    <Text style={styles.activeSubtitle}>
+                    <Text muted style={{ fontSize: 13, marginTop: 4 }}>
+                      {formatPrescribedSubtitle(ex.prescribed)}
+                    </Text>
+                  </Box>
+                </Pressable>
+                <Pressable
+                  style={styles.painReportBtn}
+                  className="p-1 ml-2"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setPainReportTarget(ex)}
+                >
+                  <Icon name="medkit-outline" size={20} color={C.textSecondary} />
+                  <Icon name="medkit-outline" size={20} className="text-muted-foreground" />
+                </Pressable>
+                <Pressable
+                  style={styles.collapseBtn}
+                  className="p-1 ml-2"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: -1 }))}
+                >
+                  <Icon name="chevron-up" size={20} color={C.textSecondary} />
+                  <Icon name="chevron-up" size={20} className="text-muted-foreground" />
+                </Pressable>
+              </Box>
+              </HStack>
+
+              {ex.coachNotes ? (
+                <Box style={styles.coachNoteBanner}>
+                <HStack
+                  space="sm"
+                  className="items-start rounded-md p-2.5"
+                  style={{ marginTop: 14, backgroundColor: C.warning5 }}
+                >
+                  <Icon name="chatbubble-ellipses-outline" size={14} color={C.warning60} />
+                  <Text style={styles.coachNoteText}>{ex.coachNotes}</Text>
+                </Box>
+                  <Text muted className="flex-1" style={{ fontSize: 12.5, lineHeight: 18 }}>
+                    {ex.coachNotes}
+                  </Text>
+                </HStack>
+              ) : null}
+
+              <TextInput
+                style={styles.noteInput}
+                className="bg-card rounded-md px-3 py-2.5 text-foreground"
+                style={{ marginTop: 14, fontFamily: FONT.regular, fontSize: 13 }}
+                placeholder="Añadir nota..."
+                placeholderTextColor={C.textSecondary}
+                value={ex.note}
+
+                  como una única fila horizontalmente scrolleable (en vez de
+                  comprimir texto) mantiene # / métricas / ✓ siempre alineados. */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <Box style={styles.table}>
+                  <Box style={styles.tableHeaderRow}>
+                    <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
+                <Box style={{ marginTop: 16 }}>
+                  <HStack className="items-center mb-2">
+                    <Text weight="semibold" muted className="text-center" style={{ fontSize: 11, width: 26 }}>
+                      #
+                    </Text>
+                    {ex.enabledMetrics.map((key) => (
+                      <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]} numberOfLines={1}>
+                      <Text
+                        key={key}
+                        weight="semibold"
+                        muted
+                        className="text-center"
+                        style={{ fontSize: 11, width: 72, marginHorizontal: 2 }}
+                        numberOfLines={1}
+                      >
+                        {metricLabel(key)}
+                      </Text>
+                    ))}
+                    <Box style={styles.checkCol} />
+                  </Box>
+                    <Box style={{ width: 34 }} />
+                  </HStack>
+
+                  {ex.rows.map((row, rowIdx) => (
+                    <Box key={rowIdx} style={styles.tableRow}>
+                      <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
+                    <HStack key={rowIdx} className="items-center mb-2">
+                      <Text
+                        weight="medium"
+                        className="text-center text-foreground"
+                        style={{ fontSize: 13, width: 26 }}
+                      >
+                        {rowIdx + 1}
+                      </Text>
+                      {ex.enabledMetrics.map((key) => {
+                        // Punto 1 (Motor de Auto-Regulacion de Carga): si hay una
+                        // sugerencia PENDIENTE del motor para este ejercicio, esa
+
+                        const hasSuggestion = suggestedValue != null;
+                        const target = hasSuggestion ? suggestedValue : ex.prescribed?.[key];
+                        return (
+                          <Box key={key} style={styles.metricCol}>
+                          <Box key={key} style={{ width: 72, marginHorizontal: 2 }}>
+                            <TextInput
+                              style={styles.tableInput}
+                              className="bg-card rounded-sm text-center text-foreground"
+                              style={{ paddingVertical: 8, fontFamily: FONT.regular, fontSize: 13 }}
+                              value={row.values[key] ?? ''}
+                              onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
+                              keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
+
+                            />
+                            {target != null && target !== '' ? (
+                              <Text
+                                style={[styles.targetHint, hasSuggestion && styles.targetHintSuggested]}
+                                className="text-center"
+                                style={{
+                                  fontSize: 9.5,
+                                  marginTop: 2,
+                                  fontFamily: hasSuggestion ? FONT.semiBold : FONT.regular,
+                                  color: hasSuggestion ? C.warning60 : C.textSecondary,
+                                }}
+                                numberOfLines={1}
+                              >
+                                {hasSuggestion ? `Sugerido: ${target}` : `Obj: ${target}`}
+
+                        );
+                      })}
+                      <Pressable
+                        style={styles.checkCol}
+                        className="items-center"
+                        style={{ width: 34 }}
+                        onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
+                      >
+                        <Icon
+
+                          color={row.completed ? C.success : C.textSecondary}
+                        />
+                      </Pressable>
+                    </Box>
+                    </HStack>
+                  ))}
+                </Box>
+              </ScrollView>
+
+              <Box style={styles.rowActions}>
+              <HStack className="items-center justify-between" style={{ marginTop: 14 }}>
+                <Pressable onPress={() => addRow(blockIdx, exIdx)}>
+                  <Text style={styles.rowActionText}>+ AÑADIR SERIE</Text>
+                  <Text weight="semibold" className="text-foreground" style={{ fontSize: 12 }}>
+                    + AÑADIR SERIE
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={styles.rowActionRight}
+                  className="flex-row items-center"
+                  style={{ gap: 6 }}
+                  onPress={() => markAllRows(blockIdx, exIdx)}
+                >
+                  <Icon name="checkmark-done" size={16} color={C.textPrimary} />
+                  <Text style={styles.rowActionText}>MARCAR TODAS LAS SERIES</Text>
+                  <Icon name="checkmark-done" size={16} className="text-foreground" />
+                  <Text weight="semibold" className="text-foreground" style={{ fontSize: 12 }}>
+                    MARCAR TODAS LAS SERIES
+                  </Text>
+                </Pressable>
+              </Box>
+            </Box>
+              </HStack>
+            </Card>
+          ) : (
+            <Pressable
+              key={ex.id}
+              style={styles.collapsedRow}
+              className="flex-row items-center mx-4 mb-2.5 p-3 rounded-lg bg-card"
+              onPress={() => {
+                setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }));
+                fetchLoadSuggestion(ex);
+
+              <Pressable onPress={() => openExerciseInfo(ex)}>
+                <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={48} />
+              </Pressable>
+              <Box style={styles.collapsedInfo}>
+                <Text style={styles.collapsedTitle} numberOfLines={2}>
+              <Box className="flex-1 ml-3">
+                <Text weight="semibold" className="text-foreground" style={{ fontSize: 14 }} numberOfLines={2}>
+                  {ex.title}
+                </Text>
+                <Text style={styles.collapsedSubtitle}>
+                <Text muted style={{ fontSize: 12, marginTop: 3 }}>
+                  {formatPrescribedSubtitle(ex.prescribed)}
+                </Text>
+              </Box>
+              {/* Punto 2: el boton de reportar dolor solo se ve con el
+                  acordeon del ejercicio abierto (tarjeta activa, arriba) --
+                  aqui, en fila colapsada, se quita. */}
+              <Icon name="chevron-down" size={18} color={C.textSecondary} />
+              <Icon name="chevron-down" size={18} className="text-muted-foreground" />
+            </Pressable>
+          )
+        )}
+
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'left', 'right']}>
+      {/* Header */}
+      <Box style={styles.header}>
+      <Box
+        className="flex-row items-center justify-between px-5"
+        style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+      >
+        <Pressable onPress={onClose}>
+          <Icon name="close" size={26} color={C.textPrimary} />
+          <Icon name="close" size={26} className="text-foreground" />
+        </Pressable>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+        <Heading size="sm" className="flex-1 text-center mx-3" numberOfLines={1}>
+          {mTitle || 'Entrenamiento'}
+        </Text>
+        </Heading>
+        <Pressable
+          onPress={onMinimize}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Minimizar entrenamiento"
+        >
+          <Icon name="chevron-down-circle-outline" size={24} color={C.textSecondary} />
+          <Icon name="chevron-down-circle-outline" size={24} className="text-muted-foreground" />
+        </Pressable>
+      </Box>
+
+      {/* Live stats */}
+      <Box style={styles.statsRow}>
+        <Box style={styles.statItem}>
+          <Box style={styles.statTop}>
+            <Box style={styles.liveDot} />
+            <Text style={styles.statValue}>{formatTimer(elapsedSeconds)}</Text>
+          </Box>
+          <Text style={styles.statLabel}>Duración</Text>
+      <HStack className="px-5 py-4">
+        <Box className="flex-1 items-center">
+          <HStack space="xs" className="items-center">
+            <Box className="w-2 h-2 rounded-pill bg-success" />
+            <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+              {formatTimer(elapsedSeconds)}
+            </Text>
+          </HStack>
+          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+            Duración
+          </Text>
+        </Box>
+        <Box style={styles.statItem}>
+          <Text style={styles.statValue}>{liveCalories}</Text>
+          <Text style={styles.statLabel}>Calorías (est.)</Text>
+        <Box className="flex-1 items-center">
+          <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+            {liveCalories}
+          </Text>
+          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+            Calorías (est.)
+          </Text>
+        </Box>
+        <Box style={styles.statItem}>
+          <Text style={styles.statValue}>{volumeKg}</Text>
+          <Text style={styles.statLabel}>Volumen (kg)</Text>
+        <Box className="flex-1 items-center">
+          <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+            {volumeKg}
+          </Text>
+          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+            Volumen (kg)
+          </Text>
+        </Box>
+      </Box>
+      </HStack>
+
+      {/* Block progress dots + count/add row */}
+      {blocks.length > 1 && (
+        <Box style={styles.dotsRow}>
+        <HStack space="sm" className="justify-center items-center mb-2">
+          {blocks.map((b, idx) => (
+            <Pressable key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+              <Box style={[styles.dot, idx === pageIndex && styles.dotActive]} />
+              <Box
+                className="rounded-pill"
+                style={{
+                  width: idx === pageIndex ? 18 : 7,
+                  height: 7,
+                  backgroundColor: idx === pageIndex ? C.textPrimary : C.border,
+                }}
+              />
+            </Pressable>
+          ))}
+        </Box>
+        </HStack>
+      )}
+
+      <Box style={styles.countRow}>
+        <Text style={styles.countText} numberOfLines={1}>
+      <HStack space="md" className="items-center justify-between px-5 mb-3">
+        <Text weight="bold" muted className="flex-1" style={{ fontSize: 13, letterSpacing: 0.5 }} numberOfLines={1}>
+          {blocks.length > 1
+            ? `${blocks[pageIndex]?.title || `BLOQUE ${pageIndex + 1}`} · ${blocks[pageIndex]?.exercises.length ?? 0} EJERCICIOS`
+            : `${allExercises.length} EJERCICIOS`}
+        </Text>
+        <Pressable onPress={openExercisePicker}>
+          <Text style={styles.addExerciseText}>Añadir ejercicio +</Text>
+          <Text weight="semibold" className="text-foreground" style={{ fontSize: 13 }}>
+            Añadir ejercicio +
+          </Text>
+        </Pressable>
+      </Box>
+      </HStack>
+
+      {/* Horizontal pager — una página por bloque */}
+      <FlatList
+
+      />
+
+      {/* Sticky finish button — siempre visible, sin importar el bloque activo */}
+      <Box style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 14) + 6 }]}>
+        <Pressable style={styles.finishBtn} onPress={onFinish}>
+          <Text style={styles.finishBtnText}>✓ FINALIZAR ENTRENAMIENTO</Text>
+        </Pressable>
+      <Box
+        className="px-5 border-t border-border bg-background"
+        style={{ paddingTop: 10, paddingBottom: Math.max(insets.bottom, 14) + 6 }}
+      >
+        <Button radius="pill" onPress={onFinish}>
+          <ButtonText style={{ letterSpacing: 0.5 }}>✓ FINALIZAR ENTRENAMIENTO</ButtonText>
+        </Button>
+      </Box>
+
+      <Modal
+
+        animationType="slide"
+        onRequestClose={() => setIsPickerVisible(false)}
+      >
+        <SafeAreaView style={styles.container}>
+          <Box style={styles.header}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+          <Box
+            className="flex-row items-center justify-between px-5"
+            style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+          >
+            <Pressable onPress={() => setIsPickerVisible(false)}>
+              <Icon name="close" size={26} color={C.textPrimary} />
+              <Icon name="close" size={26} className="text-foreground" />
+            </Pressable>
+            <Text style={styles.headerTitle}>Añadir ejercicio</Text>
+            <Heading size="sm">Añadir ejercicio</Heading>
+            <Box style={{ width: 26 }} />
+          </Box>
+          <TextInput
+            style={styles.pickerSearchInput}
+            className="mx-5 mb-3 bg-card rounded-md px-3.5 py-3 text-foreground"
+            style={{ fontFamily: FONT.regular, fontSize: 14 }}
+            placeholder="Buscar ejercicio..."
+            placeholderTextColor={C.textSecondary}
+            value={pickerQuery}
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.bodyPartRow}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 12 }}
+            >
+              <Pressable
+                style={[styles.bodyPartChip, selectedBodyPartId === null && styles.bodyPartChipActive]}
+                className="px-3.5 py-1.5 rounded-pill"
+                style={{ backgroundColor: selectedBodyPartId === null ? C.accentBlack : C.surfaceLight }}
+                onPress={() => setSelectedBodyPartId(null)}
+              >
+                <Text style={[styles.bodyPartChipText, selectedBodyPartId === null && styles.bodyPartChipTextActive]}>
+                <Text
+                  weight="semibold"
+                  style={{ fontSize: 12.5, color: selectedBodyPartId === null ? '#FFFFFF' : C.textSecondary }}
+                >
+                  Todos
+                </Text>
+              </Pressable>
+              {bodyParts.map((bp) => (
+                <Pressable
+                  key={bp.id}
+                  style={[styles.bodyPartChip, selectedBodyPartId === bp.id && styles.bodyPartChipActive]}
+                  className="px-3.5 py-1.5 rounded-pill"
+                  style={{ backgroundColor: selectedBodyPartId === bp.id ? C.accentBlack : C.surfaceLight }}
+                  onPress={() => setSelectedBodyPartId(selectedBodyPartId === bp.id ? null : bp.id)}
+                >
+                  <Text
+                    style={[
+                      styles.bodyPartChipText,
+                      selectedBodyPartId === bp.id && styles.bodyPartChipTextActive,
+                    ]}
+                    weight="semibold"
+                    style={{ fontSize: 12.5, color: selectedBodyPartId === bp.id ? '#FFFFFF' : C.textSecondary }}
+                  >
+                    {bp.title}
+                  </Text>
+
+            </ScrollView>
+          )}
+          {pickerLoading ? (
+            <Box style={styles.loader}>
+            <Box className="flex-1 items-center justify-center">
+              <Spinner size="large" color={C.textPrimary} />
+            </Box>
+          ) : (
+
+              contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
+              onEndReached={onPickerEndReached}
+              onEndReachedThreshold={0.4}
+              ItemSeparatorComponent={Divider}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No se encontraron ejercicios.</Text>
+                <Text muted className="text-center" style={{ fontSize: 15 }}>
+                  No se encontraron ejercicios.
+                </Text>
+              }
+              ListFooterComponent={
+                pickerLoadingMore ? (
+
+                ) : null
+              }
+              renderItem={({ item }) => (
+                <Pressable style={styles.pickerRow} onPress={() => onAddExercise(item)}>
+                <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
+                  {item.exercise_image ? (
+                    <Image source={{ uri: item.exercise_image }} style={styles.pickerImage} />
+                    <Image source={{ uri: item.exercise_image }} style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }} />
+                  ) : (
+                    <Box style={styles.pickerImage} />
+                    <Box className="rounded-md bg-card" style={{ width: 44, height: 44, marginRight: 12 }} />
+                  )}
+                  <Text style={styles.pickerRowTitle} numberOfLines={2}>
+                  <Text weight="semibold" className="flex-1 text-foreground mr-2" style={{ fontSize: 14 }} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Icon name="add-circle-outline" size={22} color={C.textPrimary} />
+                  <Icon name="add-circle-outline" size={22} className="text-foreground" />
+                </Pressable>
+              )}
+            />
+
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.bg },
+  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { fontFamily: FONT.regular, fontSize: 15, color: C.textSecondary, textAlign: 'center', paddingHorizontal: 24 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 12 : 16,
+    paddingBottom: 12,
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: FONT.bold,
+    fontSize: 16,
+    color: C.textPrimary,
+    marginHorizontal: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  statItem: { flex: 1, alignItems: 'center' },
+  statTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.success },
+  statValue: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary },
+  statLabel: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 4 },
+  dotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: C.border,
+  },
+  dotActive: {
+    backgroundColor: C.textPrimary,
+    width: 18,
+  },
+  countRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    gap: 12,
+  },
+  countText: { flex: 1, fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary, letterSpacing: 0.5 },
+  addExerciseText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.textPrimary },
+  pickerSearchInput: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    backgroundColor: C.surfaceLight,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: FONT.regular,
+    fontSize: 14,
+    color: C.textPrimary,
+  },
+  bodyPartRow: {
+    paddingHorizontal: 20,
+    gap: 8,
+    paddingBottom: 12,
+  },
+  bodyPartChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: C.surfaceLight,
+    marginRight: 8,
+  },
+  bodyPartChipActive: {
+    backgroundColor: C.accentBlack,
+  },
+  bodyPartChipText: {
+    fontFamily: FONT.semiBold,
+    fontSize: 12.5,
+    color: C.textSecondary,
+  },
+  bodyPartChipTextActive: {
+    color: '#FFFFFF',
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  pickerImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: C.surfaceLight,
+    marginRight: 12,
+  },
+  pickerRowTitle: {
+    flex: 1,
+    fontFamily: FONT.semiBold,
+    fontSize: 14,
+    color: C.textPrimary,
+    marginRight: 8,
+  },
+  activeCard: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    backgroundColor: C.surfaceLight,
+    borderRadius: 16,
+    padding: 16,
+  },
+  activeHeaderRow: { flexDirection: 'row', alignItems: 'center' },
+  activeHeaderTapArea: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  collapseBtn: { padding: 4, marginLeft: 8 },
+  painReportBtn: { padding: 4, marginLeft: 8 },
+  activeInfo: { flex: 1, marginLeft: 12 },
+  activeTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary },
+  activeSubtitle: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
+  coachNoteBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 14,
+    backgroundColor: C.warning5,
+    borderRadius: 12,
+    padding: 10,
+  },
+  coachNoteText: {
+    flex: 1,
+    fontFamily: FONT.regular,
+    fontSize: 12.5,
+    color: C.textSecondary,
+    lineHeight: 18,
+  },
+  noteInput: {
+    marginTop: 14,
+    backgroundColor: C.surface,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: FONT.regular,
+    fontSize: 13,
+    color: C.textPrimary,
+  },
+  table: { marginTop: 16 },
+  tableHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  tableHeaderCell: {
+    fontFamily: FONT.semiBold,
+    fontSize: 11,
+    color: C.textSecondary,
+    textAlign: 'center',
+  },
+  tableRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  tableCellText: {
+    fontFamily: FONT.medium,
+    fontSize: 13,
+    color: C.textPrimary,
+    textAlign: 'center',
+  },
+  tableInput: {
+    backgroundColor: C.surface,
+    borderRadius: 8,
+    paddingVertical: 8,
+    marginHorizontal: 3,
+    fontFamily: FONT.regular,
+    fontSize: 13,
+    color: C.textPrimary,
+    textAlign: 'center',
+  },
+  targetHint: {
+    fontFamily: FONT.regular,
+    fontSize: 9.5,
+    color: C.textSecondary,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  // Punto 1: carga sugerida por el Motor de Auto-Regulacion (aun pendiente
+  // de aprobacion del coach) -- distinguible en color/peso del objetivo
+  // generico normal, misma posicion y tamano.
+  targetHintSuggested: {
+    fontFamily: FONT.semiBold,
+    color: C.warning60,
+  },
+  serieCol: { width: 26 },
+  metricCol: { width: 72, marginHorizontal: 2 },
+  checkCol: { width: 34, alignItems: 'center' },
+  stickyFooter: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 16 : 14,
+    backgroundColor: C.bg,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  finishBtn: {
+    backgroundColor: C.accentBlack,
+    borderRadius: 30,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  finishBtnText: { fontFamily: FONT.bold, fontSize: 14, color: '#FFFFFF', letterSpacing: 0.5 },
+  rowActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+  rowActionRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowActionText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.textPrimary },
+  collapsedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    padding: 12,
+    backgroundColor: C.surfaceLight,
+    borderRadius: 16,
+  },
+  collapsedInfo: { flex: 1, marginLeft: 12 },
+  collapsedTitle: { fontFamily: FONT.semiBold, fontSize: 14, color: C.textPrimary },
+  collapsedSubtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
+});
+
+● Agent "Pulir pantallas a full Gluestack (grupo 23)" failed: Agent terminated early due to an API error: You've hit your session limit · resets 5:30pm (Europe/Madrid)
+
+● Agent "Pulir pantallas a full Gluestack (grupo 22)" failed: Agent terminated early due to an API error: You've hit your session limit · resets 5:30pm (Europe/Madrid)
+
+● Agent "Pulir pantallas a full Gluestack (grupo 24)" failed: Agent terminated early due to an API error: You've hit your session limit · resets 5:30pm (Europe/Madrid)
+
+● Agent "Pulir pantallas a full Gluestack (grupo 21)" failed: Agent terminated early due to an API error: You've hit your session limit · resets 5:30pm (Europe/Madrid)
+You've hit your session limit · resets 5:30pm (Europe/Madrid)
+/upgrade to increase your usage limit.
+
+✻ Worked for 5m 26s
+
+❯ continua
+Referenced file pages\migrated\workout_session_screen.tsx
+Referenced file ..\..\..\..\..\AppData\Local\Temp\claude\C--Users-hamza-Desktop-PROYECTOS-APP-BeFit-react-React-App\45d896b3-0944-4ea7-a1bc-e09068b198e1\tasks\bj10v14q2.output
+Referenced file ..\..\..\..\..\AppData\Local\Temp\claude\C--Users-hamza-Desktop-PROYECTOS-APP-BeFit-react-React-App\45d896b3-0944-4ea7-a1bc-e09068b198e1\tasks\blf49x8yl.output
+Read ..\..\..\..\..\AppData\Local\Temp\claude\C--Users-hamza-Desktop-PROYECTOS-APP-BeFit-react-React-App\45d896b3-0944-4ea7-a1bc-e09068b198e1\tasks\b94n8snlz.output (8 lines)
+Referenced file pages\ScreenExplorer.tsx
+Plan file referenced (~\.claude\plans\peppy-sparking-falcon.md)
+
+  Ran 1 shell command
+
+tsc is clean. Now checking eslint on the file I rewrote and the status of the 15 files assigned to the 4 failed agents.
+
+  Ran 1 shell command
+
+Only a trivial unused-import warning. Let me remove the unused VStack import.
+
+  Read 1 file
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Removed 1 line
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Box } from '@components/ui/box';
+import { VStack } from '@components/ui/vstack';
+import { HStack } from '@components/ui/hstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+
+workout_session_screen.tsx is clean. Now checking the padding-gotcha grep and the status of the 15 files assigned to the 4 failed agents.
+
+  Ran 1 shell command
+
+The padding-gotcha grep caught real violations in my rewrite — mb-*, ml-*, mr-* classes don't resolve in this NativeWind build. I need to fix these before moving on. Let me look at each occurrence.
+
+  Read 1 file
+
+Now fixing each violation by moving single-side spacing to inline style.
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 6 lines, removed 4 lines
+      >
+        {block.exercises.map((ex, exIdx) =>
+          exIdx === activeExIdx ? (
+            <Card key={ex.id} variant="filled" className="mx-4 mb-2.5">
+            <Card key={ex.id} variant="filled" className="mx-4" style={{ marginBottom: 10 }}>
+              <HStack className="items-center">
+                <Pressable
+                  className="flex-1 flex-row items-center"
+                  onPress={() => openExerciseInfo(ex)}
+                >
+                  <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={56} />
+                  <Box className="flex-1 ml-3">
+                  <Box className="flex-1" style={{ marginLeft: 12 }}>
+                    <Text weight="bold" className="text-foreground" style={{ fontSize: 16 }} numberOfLines={2}>
+                      {ex.title}
+                    </Text>
+
+                  </Box>
+                </Pressable>
+                <Pressable
+                  className="p-1 ml-2"
+                  className="p-1"
+                  style={{ marginLeft: 8 }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setPainReportTarget(ex)}
+                >
+                  <Icon name="medkit-outline" size={20} className="text-muted-foreground" />
+                </Pressable>
+                <Pressable
+                  className="p-1 ml-2"
+                  className="p-1"
+                  style={{ marginLeft: 8 }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: -1 }))}
+                >
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 2 lines, removed 2 lines
+                  comprimir texto) mantiene # / métricas / ✓ siempre alineados. */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <Box style={{ marginTop: 16 }}>
+                  <HStack className="items-center mb-2">
+                  <HStack className="items-center" style={{ marginBottom: 8 }}>
+                    <Text weight="semibold" muted className="text-center" style={{ fontSize: 11, width: 26 }}>
+                      #
+                    </Text>
+
+                  </HStack>
+
+                  {ex.rows.map((row, rowIdx) => (
+                    <HStack key={rowIdx} className="items-center mb-2">
+                    <HStack key={rowIdx} className="items-center" style={{ marginBottom: 8 }}>
+                      <Text
+                        weight="medium"
+                        className="text-center text-foreground"
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 3 lines, removed 2 lines
+          ) : (
+            <Pressable
+              key={ex.id}
+              className="flex-row items-center mx-4 mb-2.5 p-3 rounded-lg bg-card"
+              className="flex-row items-center mx-4 p-3 rounded-lg bg-card"
+              style={{ marginBottom: 10 }}
+              onPress={() => {
+                setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }));
+                fetchLoadSuggestion(ex);
+
+              <Pressable onPress={() => openExerciseInfo(ex)}>
+                <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={48} />
+              </Pressable>
+              <Box className="flex-1 ml-3">
+              <Box className="flex-1" style={{ marginLeft: 12 }}>
+                <Text weight="semibold" className="text-foreground" style={{ fontSize: 14 }} numberOfLines={2}>
+                  {ex.title}
+                </Text>
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 1 line, removed 1 line
+
+      {/* Block progress dots + count/add row */}
+      {blocks.length > 1 && (
+        <HStack space="sm" className="justify-center items-center mb-2">
+        <HStack space="sm" className="justify-center items-center" style={{ marginBottom: 8 }}>
+          {blocks.map((b, idx) => (
+            <Pressable key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+              <Box
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 1 line, removed 1 line
+        </HStack>
+      )}
+
+      <HStack space="md" className="items-center justify-between px-5 mb-3">
+      <HStack space="md" className="items-center justify-between px-5" style={{ marginBottom: 12 }}>
+        <Text weight="bold" muted className="flex-1" style={{ fontSize: 13, letterSpacing: 0.5 }} numberOfLines={1}>
+          {blocks.length > 1
+            ? `${blocks[pageIndex]?.title || `BLOQUE ${pageIndex + 1}`} · ${blocks[pageIndex]?.exercises.length ?? 0} EJERCICIOS`
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 2 lines, removed 2 lines
+            <Box style={{ width: 26 }} />
+          </Box>
+          <TextInput
+            className="mx-5 mb-3 bg-card rounded-md px-3.5 py-3 text-foreground"
+            style={{ fontFamily: FONT.regular, fontSize: 14 }}
+            className="mx-5 bg-card rounded-md px-3.5 py-3 text-foreground"
+            style={{ fontFamily: FONT.regular, fontSize: 14, marginBottom: 12 }}
+            placeholder="Buscar ejercicio..."
+            placeholderTextColor={C.textSecondary}
+            value={pickerQuery}
+
+● Update(pages\migrated\workout_session_screen.tsx)
+Added 1 line, removed 1 line
+                  ) : (
+                    <Box className="rounded-md bg-card" style={{ width: 44, height: 44, marginRight: 12 }} />
+                  )}
+                  <Text weight="semibold" className="flex-1 text-foreground mr-2" style={{ fontSize: 14 }} numberOfLines={2}>
+                  <Text weight="semibold" className="flex-1 text-foreground" style={{ fontSize: 14, marginRight: 8 }} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Icon name="add-circle-outline" size={22} className="text-foreground" />
+
+Now re-verifying the file is clean.
+
+  Ran 1 shell command
+
+Clean (grep exit 1 = no matches, tsc clean). Now checking the 15 files the 4 failed agents were assigned — need to determine what each actually completed.
+
+  Ran 1 shell command
+
+None of the 4 agents made any progress — all 15 files are untouched (still zero Card/HStack/Badge imports, unchanged from before the batch was launched). I'll take these on directly myself, working through them in priority order. Let me check the actual current state of each file to understand their existing Strategy-B baseline before upgrading.
+
+  Read 4 files, ran 2 shell commands
+
+Now launching 6 parallel agents to upgrade the 15 remaining Strategy-B screens, split by size to keep each batch small enough to survive a session.
+
+● Agent(Gluestack polish grupo A)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● Agent(Gluestack polish grupo B)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● Agent(Gluestack polish grupo C)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● Agent(Gluestack polish grupo D)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● Agent(Gluestack polish grupo E)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● Agent(Gluestack polish grupo F)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+I missed diet_detail_screen.tsx in the split — launching one more agent for it.
+
+● Agent(Gluestack polish grupo G)
+Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+I've fixed and verified workout_session_screen.tsx (including a real padding-gotcha regression I introduced in my own rewrite — mb-*/ml-*/mr-* classes don't apply in this NativeWind build, now moved to inline style) and relaunched 7 parallel agents to cover the remaining 15 Strategy-B screens after confirming the previous 4 agents made zero progress before hitting the session limit. Marking task #20 in progress while these run.
+
+7 agents are now running in parallel, each covering 1–3 of the 15 remaining screens. I'll wait for their completion notifications and then verify/merge the results.
+
+✻ Worked for 9m 31s
+
+● Agent "Gluestack polish grupo G" finished · 5m 46s
+
+Grupo G (diet_detail_screen.tsx) finished cleanly. It flagged 37 tsc errors in home_screen_modern.tsx — likely just a mid-edit snapshot from grupo A, which is still working on that file. I'll wait for the rest before checking.
+
+The remaining 6 agents will notify automatically as they finish — no need to poll manually. I'll wait for those notifications.
+
+✻ Worked for 16s
+
+● Agent "Gluestack polish grupo B" finished · 12m 54s
+
+Grupo B finished cleanly too. It made a minor unblocking edit to home_screen_modern.tsx (a closing-tag fix) while noting that file is being actively edited by grupo A concurrently — I'll need to check for edit conflicts there once grupo A finishes. Continuing to wait for the rest.
+
+✻ Worked for 4s
+
+● Agent "Gluestack polish grupo E" finished · 12m 7s
+
+Grupo E finished cleanly, and confirms tsc is now 0 errors project-wide (grupo A's home_screen_modern.tsx work must have settled). Continuing to wait for grupos A, C, D, F.
+
+✻ Baked for 2s
+
+● Agent "Gluestack polish grupo F" failed: Agent terminated early due to an API error: You've hit your session limit · resets 10:50pm (Europe/Madrid)
+You've hit your session limit · resets 10:50pm (Europe/Madrid)
+/upgrade to increase your usage limit.
+
+✻ Brewed for 0s
+
+● Agent "Gluestack polish grupo A" failed: Agent terminated early due to an API error: You've hit your session limit · resets 10:50pm (Europe/Madrid)
+You've hit your session limit · resets 10:50pm (Europe/Madrid)
+/upgrade to increase your usage limit.
+
+✻ Brewed for 0s
+
+● Agent "Gluestack polish grupo D" finished · 13m 15s
+You've hit your session limit · resets 10:50pm (Europe/Madrid)
+/upgrade to increase your usage limit.
+
+✻ Brewed for 0s
+
+● Agent "Gluestack polish grupo C" finished · 13m 47s
+You've hit your session limit · resets 10:50pm (Europe/Madrid)
+/upgrade to increase your usage limit.

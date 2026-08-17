@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { ScrollView, TextInput, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT, SHADOW } from './theme';
 import SimpleBottomSheet from '@components/SimpleBottomSheet';
 import MetricLineChart from '@components/MetricLineChart';
@@ -118,83 +124,112 @@ export default function BodyMetricsScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Antropometría</Text>
-        <View style={{ width: 32 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top']}>
+      <Box className="flex-row items-center justify-between px-3 py-3">
+        <Pressable onPress={() => props.navigation?.goBack()} style={{ padding: 4 }}>
+          <Icon name="chevron-back" size={24} color={C.textPrimary} />
+        </Pressable>
+        <Text weight="bold" size="lg">Antropometría</Text>
+        <Box style={{ width: 32 }} />
+      </Box>
 
       {loading ? (
-        <View style={s.loadingWrap}>
-          <ActivityIndicator size="large" color={C.textSecondary} />
-        </View>
+        <Box className="flex-1 items-center justify-center px-8" style={{ gap: 12 }}>
+          <Spinner size="large" color={C.textSecondary} />
+        </Box>
       ) : types.length === 0 ? (
-        <View style={s.loadingWrap}>
-          <Ionicons name="body-outline" size={40} color={C.gray30} />
-          <Text style={s.emptyScreenText}>Tu coach todavía no ha configurado ningún tipo de medida.</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center px-8" style={{ gap: 12 }}>
+          <Icon name="body-outline" size={40} color={C.gray30} />
+          <Text size="sm" muted className="text-center">Tu coach todavía no ha configurado ningún tipo de medida.</Text>
+        </Box>
       ) : (
         <>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipsRow} contentContainerStyle={s.chipsContent}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12, gap: 8 }}>
             {types.map((t) => (
-              <TouchableOpacity
+              <Pressable
                 key={t.value}
-                style={[s.chip, selectedType === t.value && s.chipActive]}
+                className="flex-row items-center rounded-pill"
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  backgroundColor: selectedType === t.value ? C.accentBlack : C.surface,
+                  shadowColor: '#000',
+                  shadowOpacity: 0.04,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 2 },
+                  elevation: 1,
+                }}
                 onPress={() => setSelectedType(t.value)}
-                activeOpacity={0.75}
               >
-                {typesWithData.has(t.value) && <View style={s.chipDot} />}
-                <Text style={[s.chipText, selectedType === t.value && s.chipTextActive]}>{t.label}</Text>
-              </TouchableOpacity>
+                {typesWithData.has(t.value) && (
+                  <Box style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.statusSuccess, marginRight: 6 }} />
+                )}
+                <Text
+                  weight="semibold"
+                  size="xs"
+                  style={{ fontSize: 12.5, color: selectedType === t.value ? '#FFFFFF' : C.textSecondary }}
+                >
+                  {t.label}
+                </Text>
+              </Pressable>
             ))}
           </ScrollView>
 
-          <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={s.valueCard}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+            <Box className="bg-card rounded-md" style={{ padding: 18, ...SHADOW.card }}>
               {latest ? (
                 <>
-                  <View style={s.valueCardTop}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.latestLabel}>{meta?.label}</Text>
-                      <Text style={s.latestValue}>
+                  <Box className="flex-row items-start justify-between">
+                    <Box style={{ flex: 1 }}>
+                      <Text weight="medium" size="sm" muted>{meta?.label}</Text>
+                      <Text weight="bold" style={{ fontSize: 32, marginTop: 4 }}>
                         {latest.value}
-                        <Text style={s.latestUnit}> {unit}</Text>
+                        <Text weight="medium" size="md" muted> {unit}</Text>
                       </Text>
-                    </View>
-                    <TouchableOpacity style={s.addIconBtn} onPress={openAdd}>
-                      <Ionicons name="add" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  </View>
-                  <View style={s.valueCardMetaRow}>
-                    <Text style={s.latestDate}>
+                    </Box>
+                    <Pressable
+                      className="items-center justify-center rounded-pill"
+                      style={{ width: 34, height: 34, backgroundColor: C.accentBlack }}
+                      onPress={openAdd}
+                    >
+                      <Icon name="add" size={20} color="#FFFFFF" />
+                    </Pressable>
+                  </Box>
+                  <Box className="flex-row items-center justify-between" style={{ marginTop: 8 }}>
+                    <Text size="xs" muted>
                       {formatShortDate(latest.date)} · {latest.source === 'coach' ? 'Tu coach' : 'Tú'}
                     </Text>
                     {delta !== null && (
-                      <View style={[s.deltaBadge, delta < 0 ? s.deltaDown : delta > 0 ? s.deltaUp : s.deltaFlat]}>
-                        <Ionicons name={delta < 0 ? 'arrow-down' : delta > 0 ? 'arrow-up' : 'remove'} size={11} color={delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40} />
-                        <Text style={[s.deltaText, { color: delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40 }]}>
+                      <Box
+                        className="flex-row items-center rounded-sm"
+                        style={{
+                          gap: 4,
+                          paddingHorizontal: 9,
+                          paddingVertical: 5,
+                          backgroundColor: delta < 0 ? C.success10 : delta > 0 ? C.warning10 : C.gray5,
+                        }}
+                      >
+                        <Icon name={delta < 0 ? 'arrow-down' : delta > 0 ? 'arrow-up' : 'remove'} size={11} color={delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40} />
+                        <Text weight="bold" style={{ fontSize: 11.5, color: delta < 0 ? C.statusSuccess : delta > 0 ? C.statusWarning : C.gray40 }}>
                           {Math.abs(delta).toFixed(1)} {unit}
                         </Text>
-                      </View>
+                      </Box>
                     )}
-                  </View>
+                  </Box>
                 </>
               ) : (
-                <View style={s.emptyValueWrap}>
-                  <Ionicons name="body-outline" size={32} color={C.gray30} />
-                  <Text style={s.emptyText}>Sin medidas de {meta?.label.toLowerCase()} todavía</Text>
-                  <TouchableOpacity style={s.emptyAddBtn} onPress={openAdd}>
-                    <Text style={s.emptyAddBtnText}>Añadir primera medida</Text>
-                  </TouchableOpacity>
-                </View>
+                <Box className="items-center" style={{ paddingVertical: 16, gap: 10 }}>
+                  <Icon name="body-outline" size={32} color={C.gray30} />
+                  <Text size="sm" muted className="text-center">Sin medidas de {meta?.label.toLowerCase()} todavía</Text>
+                  <Button style={{ backgroundColor: C.accentBlack, marginTop: 4 }} onPress={openAdd}>
+                    <Text weight="bold" size="sm" style={{ color: '#FFFFFF' }}>Añadir primera medida</Text>
+                  </Button>
+                </Box>
               )}
-            </View>
+            </Box>
 
             {sortedAsc.length >= 2 && (
-              <View style={s.chartCard}>
+              <Box className="bg-card rounded-md items-center" style={{ padding: 18, marginTop: 12, ...SHADOW.card }}>
                 <MetricLineChart
                   series={[{ key: selectedType ?? 'metric', color: C.orange, values: sortedAsc.map((p) => p.value) }]}
                   pointCount={sortedAsc.length}
@@ -203,46 +238,46 @@ export default function BodyMetricsScreen(props: any) {
                   unit={unit}
                   pointLabels={sortedAsc.map((p) => formatShortDate(p.date))}
                 />
-                <View style={[s.chartLegendRow, { width: CHART_WIDTH }]}>
-                  <Text style={s.chartLegendText}>{formatShortDate(sortedAsc[0].date)}</Text>
-                  <Text style={s.chartLegendText}>{formatShortDate(sortedAsc[sortedAsc.length - 1].date)}</Text>
-                </View>
-              </View>
+                <Box className="flex-row justify-between" style={{ width: CHART_WIDTH, marginTop: 6 }}>
+                  <Text size="xs" muted>{formatShortDate(sortedAsc[0].date)}</Text>
+                  <Text size="xs" muted>{formatShortDate(sortedAsc[sortedAsc.length - 1].date)}</Text>
+                </Box>
+              </Box>
             )}
 
             {sortedDesc.length > 0 && (
-              <View style={s.historySection}>
-                <Text style={s.historyTitle}>Historial</Text>
+              <Box style={{ marginTop: 20 }}>
+                <Text weight="bold" size="xs" muted style={{ textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Historial</Text>
                 {sortedDesc.map((entry) => (
-                  <View key={entry.id} style={s.historyRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.historyValue}>
+                  <Box key={entry.id} className="flex-row items-center bg-card rounded-md p-3.5" style={{ marginBottom: 8, ...SHADOW.card }}>
+                    <Box style={{ flex: 1 }}>
+                      <Text weight="bold" size="md">
                         {entry.value} {unit}
                       </Text>
-                      <Text style={s.historyMeta}>
+                      <Text size="xs" muted style={{ marginTop: 2 }}>
                         {formatShortDate(entry.date)} · {entry.source === 'coach' ? 'Coach' : 'Tú'}
                       </Text>
-                      {entry.notes ? <Text style={s.historyNotes}>{entry.notes}</Text> : null}
-                    </View>
+                      {entry.notes ? <Text size="xs" muted style={{ marginTop: 4, fontStyle: 'italic' }}>{entry.notes}</Text> : null}
+                    </Box>
                     {entry.source === 'client' && (
-                      <TouchableOpacity onPress={() => deleteEntry(entry.id)} style={s.historyDeleteBtn}>
-                        <Ionicons name="trash-outline" size={16} color={C.gray40} />
-                      </TouchableOpacity>
+                      <Pressable onPress={() => deleteEntry(entry.id)} style={{ padding: 8 }}>
+                        <Icon name="trash-outline" size={16} color={C.gray40} />
+                      </Pressable>
                     )}
-                  </View>
+                  </Box>
                 ))}
-              </View>
+              </Box>
             )}
           </ScrollView>
         </>
       )}
 
       <SimpleBottomSheet visible={sheetVisible} onClose={() => setSheetVisible(false)}>
-        <View style={s.sheetContent}>
-          <Text style={s.sheetTitle}>Añadir {meta?.label.toLowerCase()}</Text>
-          <View style={s.sheetInputRow}>
+        <Box style={{ padding: 24 }}>
+          <Heading size="sm" className="text-center" style={{ marginBottom: 16 }}>Añadir {meta?.label.toLowerCase()}</Heading>
+          <Box className="flex-row items-center bg-secondary rounded-md" style={{ paddingHorizontal: 16 }}>
             <TextInput
-              style={s.sheetInput}
+              style={{ flex: 1, fontFamily: FONT.bold, fontSize: 28, color: C.textPrimary, paddingVertical: 14 }}
               keyboardType="decimal-pad"
               value={formValue}
               onChangeText={setFormValue}
@@ -250,64 +285,13 @@ export default function BodyMetricsScreen(props: any) {
               placeholderTextColor={C.gray30}
               autoFocus
             />
-            <Text style={s.sheetInputUnit}>{unit}</Text>
-          </View>
-          <TouchableOpacity style={s.sheetSaveBtn} onPress={save} disabled={saving}>
-            {saving ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={s.sheetSaveBtnText}>Guardar</Text>}
-          </TouchableOpacity>
-        </View>
+            <Text weight="medium" size="md" muted>{unit}</Text>
+          </Box>
+          <Button style={{ backgroundColor: C.accentBlack, marginTop: 16 }} onPress={save} disabled={saving}>
+            {saving ? <Spinner size="small" color="#FFFFFF" /> : <Text weight="bold" size="sm" style={{ color: '#FFFFFF' }}>Guardar</Text>}
+          </Button>
+        </Box>
       </SimpleBottomSheet>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
-  backBtn: { padding: 4 },
-  appBarTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
-  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 12 },
-  emptyScreenText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, textAlign: 'center' },
-  chipsRow: { flexGrow: 0 },
-  chipsContent: { paddingHorizontal: 20, paddingBottom: 12, gap: 8 },
-  chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: C.surface, ...SHADOW.card },
-  chipActive: { backgroundColor: C.accentBlack },
-  chipText: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.textSecondary },
-  chipTextActive: { color: '#FFFFFF' },
-  chipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.statusSuccess, marginRight: 6 },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  valueCard: { backgroundColor: C.surface, borderRadius: 20, padding: 18, ...SHADOW.card },
-  valueCardTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-  valueCardMetaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
-  latestLabel: { fontFamily: FONT.medium, fontSize: 13, color: C.textSecondary },
-  latestValue: { fontFamily: FONT.bold, fontSize: 32, color: C.textPrimary, marginTop: 4 },
-  latestUnit: { fontFamily: FONT.medium, fontSize: 15, color: C.textSecondary },
-  latestDate: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary },
-  addIconBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.accentBlack, alignItems: 'center', justifyContent: 'center' },
-  emptyValueWrap: { alignItems: 'center', paddingVertical: 16, gap: 10 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, textAlign: 'center' },
-  emptyAddBtn: { backgroundColor: C.accentBlack, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 10, marginTop: 4 },
-  emptyAddBtnText: { fontFamily: FONT.bold, fontSize: 13, color: '#FFFFFF' },
-  deltaBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 10 },
-  deltaDown: { backgroundColor: C.success10 },
-  deltaUp: { backgroundColor: C.warning10 },
-  deltaFlat: { backgroundColor: C.gray5 },
-  deltaText: { fontFamily: FONT.bold, fontSize: 11.5 },
-  chartCard: { backgroundColor: C.surface, borderRadius: 20, padding: 18, marginTop: 12, alignItems: 'center', ...SHADOW.card },
-  chartLegendRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
-  chartLegendText: { fontFamily: FONT.regular, fontSize: 11, color: C.textSecondary },
-  historySection: { marginTop: 20 },
-  historyTitle: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
-  historyRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, borderRadius: 14, padding: 14, marginBottom: 8, ...SHADOW.card },
-  historyValue: { fontFamily: FONT.bold, fontSize: 15, color: C.textPrimary },
-  historyMeta: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 2 },
-  historyNotes: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 4, fontStyle: 'italic' },
-  historyDeleteBtn: { padding: 8 },
-  sheetContent: { padding: 24 },
-  sheetTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary, marginBottom: 16, textAlign: 'center' },
-  sheetInputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.gray5, borderRadius: 14, paddingHorizontal: 16 },
-  sheetInput: { flex: 1, fontFamily: FONT.bold, fontSize: 28, color: C.textPrimary, paddingVertical: 14 },
-  sheetInputUnit: { fontFamily: FONT.medium, fontSize: 16, color: C.textSecondary },
-  sheetSaveBtn: { backgroundColor: C.accentBlack, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginTop: 16 },
-  sheetSaveBtnText: { fontFamily: FONT.bold, fontSize: 15, color: '#FFFFFF' },
-});

@@ -1,8 +1,18 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, useWindowDimensions } from 'react-native';
+import { StyleSheet, ScrollView, Alert, TextInput, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Badge, BadgeText } from '@components/ui/badge';
+import { Button, ButtonText } from '@components/ui/button';
+import { Modal, ModalBackdrop, ModalContent } from '@components/ui/modal';
 import { C, FONT, SHADOW } from './theme';
 import { habitsApi, Habit, HabitLogEntry, HABIT_HISTORY_DAYS } from '../../api/habits';
 import { habitIoniconFor } from '../../constants/habitIcons';
@@ -61,10 +71,9 @@ interface DayCellProps {
 
 function DayCell({ date, fillColor, isCompleted, future, size, onPress, showLabel }: DayCellProps) {
   return (
-    <TouchableOpacity
+    <Pressable
       disabled={future}
       onPress={onPress}
-      activeOpacity={0.7}
       style={[
         cellStyles.cell,
         { width: size, height: size, borderRadius: size >= 24 ? size * 0.28 : 3, backgroundColor: fillColor },
@@ -75,9 +84,9 @@ function DayCell({ date, fillColor, isCompleted, future, size, onPress, showLabe
         <Text style={[cellStyles.cellLabel, { fontSize: Math.min(15, size * 0.3) }, isCompleted && cellStyles.cellLabelDone]}>{date.getDate()}</Text>
       )}
       {showLabel && size >= 26 && isCompleted && (
-        <Ionicons name="checkmark" size={Math.min(22, size * 0.42)} color="#FFFFFF" style={{ position: 'absolute' }} />
+        <Icon name="checkmark" size={Math.min(22, size * 0.42)} color="#FFFFFF" style={{ position: 'absolute' }} />
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -285,72 +294,70 @@ export default function HabitDetailScreen(props: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
+      <Box style={styles.header}>
+        <Pressable onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} color={C.textPrimary} />
+        </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>{habit?.title || 'Hábito'}</Text>
-        <TouchableOpacity onPress={handleDelete} disabled={!habit}>
-          <Ionicons name="trash-outline" size={20} color={C.destructive} />
-        </TouchableOpacity>
-      </View>
+        <Pressable onPress={handleDelete} disabled={!habit}>
+          <Icon name="trash-outline" size={20} color={C.destructive} />
+        </Pressable>
+      </Box>
 
       {isLoading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color={C.textPrimary} /></View>
+        <Box style={styles.center}><Spinner size="large" color={C.textPrimary} /></Box>
       ) : error || !habit ? (
-        <View style={styles.center}><Text style={styles.emptyText}>No se pudo cargar este hábito.</Text></View>
+        <Box style={styles.center}><Text style={styles.emptyText}>No se pudo cargar este hábito.</Text></Box>
       ) : (
         <>
-          <View style={styles.topSection} onLayout={(e) => setTopSectionHeight(e.nativeEvent.layout.height)}>
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryIconWrap}>
-                <Ionicons name={habitIoniconFor(habit.icon)} size={26} color={C.textPrimary} />
-              </View>
-              <View style={{ flex: 1 }}>
+          <Box style={styles.topSection} onLayout={(e) => setTopSectionHeight(e.nativeEvent.layout.height)}>
+            <Box style={styles.summaryCard}>
+              <Box style={styles.summaryIconWrap}>
+                <Icon name={habitIoniconFor(habit.icon)} size={26} color={C.textPrimary} />
+              </Box>
+              <Box style={{ flex: 1 }}>
                 <Text style={styles.summaryTitle}>{habit.title}</Text>
                 {habit.target_value && habit.target_unit && (
                   <Text style={styles.summarySub}>{habit.target_value} {habit.target_unit} / {habit.frequency === 'daily' ? 'día' : 'semana'}</Text>
                 )}
-              </View>
+              </Box>
               {!!habit.current_streak && (
-                <View style={styles.streakBadge}>
-                  <Ionicons name="flame" size={16} color={C.warning60} />
+                <Box style={styles.streakBadge}>
+                  <Icon name="flame" size={16} color={C.warning60} />
                   <Text style={styles.streakBadgeText}>{habit.current_streak}</Text>
-                </View>
+                </Box>
               )}
-              <TouchableOpacity
+              <Pressable
                 style={styles.quickAddBtn}
-                activeOpacity={0.75}
                 onPress={handleQuickAdd}
                 disabled={pendingDate === todayStr}
               >
-                <Ionicons name="add" size={22} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
+                <Icon name="add" size={22} color="#FFFFFF" />
+              </Pressable>
+            </Box>
 
-            <View style={styles.tabsRow}>
+            <Box style={styles.tabsRow}>
               {PERIODS.map((p) => (
-                <TouchableOpacity
+                <Pressable
                   key={p.key}
                   style={[styles.tab, period === p.key && styles.tabActive]}
                   onPress={() => setPeriod(p.key)}
-                  activeOpacity={0.75}
                 >
                   <Text style={[styles.tabText, period === p.key && styles.tabTextActive]}>{p.label}</Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
-            </View>
+            </Box>
 
             <Text style={styles.rangeStat}>{rangeStats.completed}/{rangeStats.total} días completados</Text>
-          </View>
+          </Box>
 
           {period === 'week' ? (
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-              <View style={styles.weekCard}>
-                <View style={styles.weekHeaderRow}>
+              <Box style={styles.weekCard}>
+                <Box style={styles.weekHeaderRow}>
                   {WEEKDAY_LABELS.map((l) => <Text key={l} style={styles.weekdayLabel}>{l}</Text>)}
-                </View>
-                <View style={styles.weekCellsRow}>
+                </Box>
+                <Box style={styles.weekCellsRow}>
                   {weekDays.map((d) => {
                     const iso = toIso(d);
                     const log = logMap.get(iso);
@@ -369,20 +376,20 @@ export default function HabitDetailScreen(props: Props) {
                       />
                     );
                   })}
-                </View>
-              </View>
+                </Box>
+              </Box>
             </ScrollView>
           ) : (
-            <View style={styles.bigArea}>
+            <Box style={styles.bigArea}>
               {period === 'month' && (
-                <View style={[styles.weekCard, styles.bigCard]}>
-                  <View style={styles.weekHeaderRow}>
+                <Box style={[styles.weekCard, styles.bigCard]}>
+                  <Box style={styles.weekHeaderRow}>
                     {WEEKDAY_LABELS.map((l) => <Text key={l} style={[styles.weekdayLabel, { width: monthCellSize }]}>{l}</Text>)}
-                  </View>
+                  </Box>
                   {Array.from({ length: monthRows }, (_, row) => (
-                    <View key={row} style={styles.weekCellsRow}>
+                    <Box key={row} style={styles.weekCellsRow}>
                       {monthCells.slice(row * 7, row * 7 + 7).map((d, i) => {
-                        if (!d) return <View key={i} style={{ width: monthCellSize, height: monthCellSize }} />;
+                        if (!d) return <Box key={i} style={{ width: monthCellSize, height: monthCellSize }} />;
                         const iso = toIso(d);
                         const log = logMap.get(iso);
                         const ratio = isGoalHabit ? habitProgressRatio(log?.value_logged, habit.target_value) : null;
@@ -400,40 +407,39 @@ export default function HabitDetailScreen(props: Props) {
                           />
                         );
                       })}
-                    </View>
+                    </Box>
                   ))}
-                </View>
+                </Box>
               )}
 
               {(period === 'quarter' || period === 'half' || period === 'year') && (
-                <View style={[styles.weekCard, styles.bigCard]}>
-                  <View style={styles.heatGrid}>
+                <Box style={[styles.weekCard, styles.bigCard]}>
+                  <Box style={styles.heatGrid}>
                     {heatmapWeeks.map((week, wi) => (
-                      <View key={wi} style={styles.heatColumn}>
+                      <Box key={wi} style={styles.heatColumn}>
                         {week.map((d) => {
                           const iso = toIso(d);
                           const log = logMap.get(iso);
                           const ratio = isGoalHabit ? habitProgressRatio(log?.value_logged, habit.target_value) : null;
                           const future = d > today;
                           return (
-                            <TouchableOpacity
+                            <Pressable
                               key={iso}
                               disabled={future}
-                              activeOpacity={0.7}
                               onPress={() => handleDayPress(d)}
                               style={[styles.heatCell, { backgroundColor: habitCellColor(ratio, !!log?.is_completed, C.bg) }, future && cellStyles.cellFuture]}
                             />
                           );
                         })}
-                      </View>
+                      </Box>
                     ))}
-                  </View>
-                </View>
+                  </Box>
+                </Box>
               )}
-            </View>
+            </Box>
           )}
 
-          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
+          <Box style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
             {(() => {
               const todayLog = logMap.get(todayStr);
               const isTodayDone = !!todayLog?.is_completed;
@@ -443,21 +449,20 @@ export default function HabitDetailScreen(props: Props) {
                 ? `${todayLog.value_logged} ${habit.target_unit || ''} hoy`
                 : `Registrar ${habit.target_unit || 'progreso'} de hoy`;
               return (
-                <TouchableOpacity
+                <Pressable
                   style={[
                     styles.todayBtn,
                     isTodayDone && styles.todayBtnDone,
                     isGoalHabit && !isTodayDone && todayBtnBg ? { backgroundColor: todayBtnBg, borderColor: todayBtnBg } : null,
                   ]}
-                  activeOpacity={0.85}
                   onPress={handleQuickAdd}
                   disabled={pendingDate === todayStr}
                 >
                   {pendingDate === todayStr ? (
-                    <ActivityIndicator size="small" color={isTodayDone ? '#FFFFFF' : C.textPrimary} />
+                    <Spinner size="small" color={isTodayDone ? '#FFFFFF' : C.textPrimary} />
                   ) : (
                     <>
-                      <Ionicons
+                      <Icon
                         name={isTodayDone ? 'checkmark-circle' : isGoalHabit ? 'create-outline' : 'checkmark-circle-outline'}
                         size={20}
                         color={isTodayDone ? '#FFFFFF' : C.textPrimary}
@@ -467,39 +472,41 @@ export default function HabitDetailScreen(props: Props) {
                       </Text>
                     </>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               );
             })()}
-          </View>
+          </Box>
         </>
       )}
 
-      <Modal visible={!!valueModalDate} transparent animationType="fade" onRequestClose={() => setValueModalDate(null)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{habit?.title}</Text>
-            <Text style={styles.modalSub}>
-              {valueModalDate === todayStr ? 'Hoy' : valueModalDate} · Objetivo: {habit?.target_value} {habit?.target_unit}
-            </Text>
-            <TextInput
-              style={styles.modalInput}
-              keyboardType="decimal-pad"
-              placeholder={habit?.target_value != null ? String(habit.target_value) : '0'}
-              placeholderTextColor={C.textTertiary}
-              value={valueInput}
-              onChangeText={setValueInput}
-              autoFocus
-            />
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setValueModalDate(null)} disabled={savingValue}>
-                <Text style={styles.modalCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalSaveBtn} onPress={submitValue} disabled={savingValue}>
-                {savingValue ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.modalSaveText}>Guardar</Text>}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+      <Modal isOpen={!!valueModalDate} onClose={() => setValueModalDate(null)} avoidKeyboard>
+        <ModalBackdrop />
+        <ModalContent
+          className="items-stretch"
+          style={{ backgroundColor: C.surface, borderRadius: 20, padding: 20, maxWidth: 360, width: '100%', ...SHADOW.card }}
+        >
+          <Text style={styles.modalTitle}>{habit?.title}</Text>
+          <Text style={styles.modalSub}>
+            {valueModalDate === todayStr ? 'Hoy' : valueModalDate} · Objetivo: {habit?.target_value} {habit?.target_unit}
+          </Text>
+          <TextInput
+            style={styles.modalInput}
+            keyboardType="decimal-pad"
+            placeholder={habit?.target_value != null ? String(habit.target_value) : '0'}
+            placeholderTextColor={C.textTertiary}
+            value={valueInput}
+            onChangeText={setValueInput}
+            autoFocus
+          />
+          <Box style={styles.modalActions}>
+            <Pressable style={styles.modalCancelBtn} onPress={() => setValueModalDate(null)} disabled={savingValue}>
+              <Text style={styles.modalCancelText}>Cancelar</Text>
+            </Pressable>
+            <Pressable style={styles.modalSaveBtn} onPress={submitValue} disabled={savingValue}>
+              {savingValue ? <Spinner size="small" color="#FFFFFF" /> : <Text style={styles.modalSaveText}>Guardar</Text>}
+            </Pressable>
+          </Box>
+        </ModalContent>
       </Modal>
     </SafeAreaView>
   );
@@ -569,8 +576,6 @@ const styles = StyleSheet.create({
   todayBtnDone: { backgroundColor: C.success50, borderColor: C.success50 },
   todayBtnText: { fontFamily: FONT.bold, fontSize: 14, color: C.textPrimary },
   todayBtnTextDone: { color: '#FFFFFF' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  modalCard: { width: '100%', maxWidth: 360, backgroundColor: C.surface, borderRadius: 20, padding: 20, ...SHADOW.card },
   modalTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, textAlign: 'center' },
   modalSub: { fontFamily: FONT.regular, fontSize: 12.5, color: C.textSecondary, textAlign: 'center', marginTop: 4, marginBottom: 16 },
   modalInput: {

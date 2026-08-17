@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Image,
-  FlatList,
   SafeAreaView,
-  ActivityIndicator,
   TextInput,
+  StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { C, FONT } from './theme';
 import { workoutsApi } from '../../api/workouts';
 import { exercisesApi, BodyPartItem } from '../../api/exercises';
@@ -169,53 +168,53 @@ export default function ViewWorkoutsScreen(props: any) {
   const renderWorkoutItem = ({ item, index }: { item: WorkoutItem; index: number }) => (
     <TouchableOpacity
       key={item.id?.toString() || index.toString()}
-      style={styles.workoutItem}
+      style={workoutItemStyle}
       activeOpacity={0.7}
       onPress={() => {
         props.navigation?.navigate('MigratedWorkoutDetail', { id: item.id });
       }}
     >
       {item.image ? (
-        <Image source={{ uri: item.image }} style={styles.workoutImage} resizeMode="cover" />
+        <Image source={{ uri: item.image }} style={{ width: 60, height: 60, borderRadius: 10 }} resizeMode="cover" />
       ) : null}
-      <View style={styles.workoutContent}>
-        <Text style={styles.workoutTitle} numberOfLines={1}>{item.title}</Text>
+      <Box className="flex-1" style={{ marginLeft: 12 }}>
+        <Text weight="semibold" size="sm" numberOfLines={1}>{item.title}</Text>
         {item.workoutTypeTitle ? (
-          <Text style={styles.workoutSubtitle} numberOfLines={1}>{item.workoutTypeTitle}</Text>
+          <Text size="xs" muted numberOfLines={1} style={{ marginTop: 2 }}>{item.workoutTypeTitle}</Text>
         ) : null}
-        <View style={styles.workoutMeta}>
+        <Box className="flex-row items-center gap-2" style={{ marginTop: 4 }}>
           {item.levelTitle ? (
-            <Text style={styles.levelText}>{item.levelTitle}</Text>
+            <Text size="xs" style={{ color: C.gray30 }}>{item.levelTitle}</Text>
           ) : null}
           {item.isPremium === 1 && (
-            <View style={styles.proBadge}>
-              <Text style={styles.proText}>PRO</Text>
-            </View>
+            <Box className="rounded-sm" style={{ backgroundColor: C.orange, paddingHorizontal: 6, paddingVertical: 2 }}>
+              <Text weight="bold" size="xs" style={{ fontSize: 10, color: '#FFFFFF' }}>PRO</Text>
+            </Box>
           )}
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color={C.gray30} />
+        </Box>
+      </Box>
+      <Icon name="chevron-forward" size={20} color={C.gray30} />
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-background">
       {showAppbar !== false && (
-        <View style={styles.header}>
+        <Box className="flex-row items-center justify-between px-4 py-3.5 bg-card border-b border-border">
           <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={C.white} />
+            <Icon name="chevron-back" size={24} className="text-foreground" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Workouts</Text>
-          <View style={{ width: 24 }} />
-        </View>
+          <Text weight="semibold" size="lg">Workouts</Text>
+          <Box className="w-6" />
+        </Box>
       )}
 
       {canFilter && (
         <>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={18} color={C.textSecondary} />
+          <Box className="flex-row items-center bg-secondary rounded-sm mx-4 px-3 py-2 gap-2" style={{ marginTop: 12 }}>
+            <Icon name="search" size={18} className="text-muted-foreground" />
             <TextInput
-              style={styles.searchInput}
+              style={{ flex: 1, fontFamily: FONT.regular, fontSize: 14, color: C.textPrimary, padding: 0 }}
               placeholder="Search workouts..."
               placeholderTextColor={C.textSecondary}
               value={searchText}
@@ -223,61 +222,70 @@ export default function ViewWorkoutsScreen(props: any) {
             />
             {searchText.length > 0 && (
               <TouchableOpacity onPress={() => handleSearchChange('')}>
-                <Ionicons name="close-circle" size={18} color={C.textSecondary} />
+                <Icon name="close-circle" size={18} className="text-muted-foreground" />
               </TouchableOpacity>
             )}
-          </View>
+          </Box>
 
           {types.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 8 }}>
               {types.map((t) => (
-                <TouchableOpacity
+                <Pressable
                   key={t.id}
-                  style={[styles.chip, selectedType === t.id && styles.chipActive]}
+                  className={`rounded-pill px-3.5 py-2 ${selectedType === t.id ? '' : 'bg-secondary'}`}
+                  style={selectedType === t.id ? { backgroundColor: '#1C1C1E' } : undefined}
                   onPress={() => toggleType(t.id)}
                 >
-                  <Text style={[styles.chipText, selectedType === t.id && styles.chipTextActive]}>{t.title}</Text>
-                </TouchableOpacity>
+                  <Text weight="medium" size="sm" style={selectedType === t.id ? { color: '#FFFFFF' } : { color: C.textSecondary }}>
+                    {t.title}
+                  </Text>
+                </Pressable>
               ))}
             </ScrollView>
           )}
 
           {levels.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 8 }}>
               {levels.map((l) => (
-                <TouchableOpacity
+                <Pressable
                   key={l.id}
-                  style={[styles.chip, selectedLevel === l.id && styles.chipActive]}
+                  className={`rounded-pill px-3.5 py-2 ${selectedLevel === l.id ? '' : 'bg-secondary'}`}
+                  style={selectedLevel === l.id ? { backgroundColor: '#1C1C1E' } : undefined}
                   onPress={() => toggleLevel(l.id)}
                 >
-                  <Text style={[styles.chipText, selectedLevel === l.id && styles.chipTextActive]}>{l.title}</Text>
-                </TouchableOpacity>
+                  <Text weight="medium" size="sm" style={selectedLevel === l.id ? { color: '#FFFFFF' } : { color: C.textSecondary }}>
+                    {l.title}
+                  </Text>
+                </Pressable>
               ))}
             </ScrollView>
           )}
 
           {bodyParts.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 8 }}>
               {bodyParts.map((bp) => (
-                <TouchableOpacity
+                <Pressable
                   key={bp.id}
-                  style={[styles.chip, selectedBodyPart === bp.id && styles.chipActive]}
+                  className={`rounded-pill px-3.5 py-2 ${selectedBodyPart === bp.id ? '' : 'bg-secondary'}`}
+                  style={selectedBodyPart === bp.id ? { backgroundColor: '#1C1C1E' } : undefined}
                   onPress={() => toggleBodyPart(bp.id)}
                 >
-                  <Text style={[styles.chipText, selectedBodyPart === bp.id && styles.chipTextActive]}>{bp.title}</Text>
-                </TouchableOpacity>
+                  <Text weight="medium" size="sm" style={selectedBodyPart === bp.id ? { color: '#FFFFFF' } : { color: C.textSecondary }}>
+                    {bp.title}
+                  </Text>
+                </Pressable>
               ))}
             </ScrollView>
           )}
         </>
       )}
 
-      <View style={styles.body}>
+      <Box className="flex-1">
         {workoutList.length > 0 ? (
           <ScrollView
             ref={scrollRef}
             contentContainerStyle={[
-              styles.scrollContent,
+              { paddingVertical: 4, paddingHorizontal: 16 },
               (isFav || isAssign) && { paddingVertical: 16 },
             ]}
             onScroll={handleScroll}
@@ -287,146 +295,28 @@ export default function ViewWorkoutsScreen(props: any) {
           </ScrollView>
         ) : (
           !isLoading && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No Workouts Found</Text>
-            </View>
+            <Box className="flex-1 items-center justify-center">
+              <Text muted size="lg">No Workouts Found</Text>
+            </Box>
           )
         )}
 
         {isLoading && (
-          <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color="#FFFFFF" />
-          </View>
+          <Box style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} className="items-center justify-center">
+            <Spinner size="large" color="#FFFFFF" />
+          </Box>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: C.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  headerTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 18,
-    color: C.white,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    color: C.white,
-    padding: 0,
-  },
-  chipRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  chip: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  chipActive: {
-    backgroundColor: '#1C1C1E',
-  },
-  chipText: {
-    fontFamily: FONT.medium,
-    fontSize: 13,
-    color: C.textSecondary,
-  },
-  chipTextActive: {
-    color: '#FFFFFF',
-  },
-  body: { flex: 1 },
-  scrollContent: { paddingVertical: 4, paddingHorizontal: 16 },
-  workoutItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
-    padding: 10,
-  },
-  workoutImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-  },
-  workoutContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  workoutTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 15,
-    color: C.white,
-  },
-  workoutSubtitle: {
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.textSecondary,
-    marginTop: 2,
-  },
-  workoutMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    gap: 8,
-  },
-  levelText: {
-    fontFamily: FONT.regular,
-    fontSize: 12,
-    color: C.gray30,
-  },
-  proBadge: {
-    backgroundColor: C.orange,
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  proText: {
-    fontFamily: FONT.bold,
-    fontSize: 10,
-    color: '#FFFFFF',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: FONT.regular,
-    fontSize: 16,
-    color: C.textSecondary,
-  },
-  loaderOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-});
+const workoutItemStyle = {
+  flexDirection: 'row' as const,
+  alignItems: 'center' as const,
+  backgroundColor: C.surfaceLight,
+  borderRadius: 12,
+  marginBottom: 12,
+  overflow: 'hidden' as const,
+  padding: 10,
+};

@@ -1,7 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { Alert, ScrollView, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { VStack } from '@components/ui/vstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField, InputSlot } from '@components/ui/input';
 import MuscleBodyMap from '../../components/MuscleBodyMap';
 import { bodyPartIdForMuscle, BODY_PART_ID_TO_NAME } from '../../constants/bodyMusclesMap';
 
@@ -46,92 +52,68 @@ export default function ViewBodyPartScreen(props: any) {
   }, [searchText]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Buscar por músculo</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 50, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="arrow-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Buscar por músculo</Heading>
+        <Box className="w-6" />
+      </Box>
 
-      <View style={styles.searchRow}>
-        <Ionicons name="search" size={16} color={C.textSecondary} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar grupo muscular..."
-          placeholderTextColor={C.textSecondary}
-          value={searchText}
-          onChangeText={(v) => {
-            setSearchText(v);
-            if (v.length > 0) setListExpanded(true);
-          }}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText('')}>
-            <Ionicons name="close-circle" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
-        )}
-      </View>
+      <VStack space="sm" className="mx-5">
+        <Input className="rounded-sm bg-card border-0 px-3.5 gap-2" size="md">
+          <Icon name="search" size={16} className="text-muted-foreground" />
+          <InputField
+            placeholder="Buscar grupo muscular..."
+            value={searchText}
+            onChangeText={(v) => {
+              setSearchText(v);
+              if (v.length > 0) setListExpanded(true);
+            }}
+          />
+          {searchText.length > 0 && (
+            <InputSlot onPress={() => setSearchText('')}>
+              <Icon name="close-circle" size={18} className="text-muted-foreground" />
+            </InputSlot>
+          )}
+        </Input>
 
-      <TouchableOpacity style={styles.toggleRow} onPress={() => setListExpanded((prev) => !prev)}>
-        <Text style={styles.toggleText}>Ver lista de grupos musculares</Text>
-        <Ionicons name={listExpanded ? 'chevron-up' : 'chevron-down'} size={18} color={C.textPrimary} />
-      </TouchableOpacity>
+        <Pressable
+          className="flex-row items-center justify-center gap-1.5 py-2"
+          onPress={() => setListExpanded((prev) => !prev)}
+        >
+          <Text size="sm" weight="medium">Ver lista de grupos musculares</Text>
+          <Icon name={listExpanded ? 'chevron-up' : 'chevron-down'} size={18} className="text-foreground" />
+        </Pressable>
+      </VStack>
 
       {listExpanded ? (
-        <ScrollView style={styles.listWrap}>
+        <ScrollView className="flex-1 px-5">
           {filteredOptions.map((opt) => (
-            <TouchableOpacity key={opt.id} style={styles.listRow} onPress={() => goToExercises(opt.id)}>
-              <Text style={styles.listRowText}>{opt.name}</Text>
-              <Ionicons name="chevron-forward" size={16} color={C.textSecondary} />
-            </TouchableOpacity>
+            <Pressable
+              key={opt.id}
+              className="flex-row items-center justify-between py-3.5 border-b border-border"
+              onPress={() => goToExercises(opt.id)}
+            >
+              <Text size="sm" className="text-foreground">{opt.name}</Text>
+              <Icon name="chevron-forward" size={16} className="text-muted-foreground" />
+            </Pressable>
           ))}
           {filteredOptions.length === 0 && (
-            <Text style={styles.emptyText}>Ningún grupo muscular coincide con la búsqueda.</Text>
+            <Text size="xs" muted className="text-center py-10">Ningún grupo muscular coincide con la búsqueda.</Text>
           )}
         </ScrollView>
       ) : (
         <>
-          <Text style={styles.hint}>Toca una zona del cuerpo para ver sus ejercicios</Text>
-          <View style={styles.mapWrap}>
+          <Text size="xs" muted className="text-center px-5" style={{ marginBottom: 12 }}>
+            Toca una zona del cuerpo para ver sus ejercicios
+          </Text>
+          <Box className="flex-1 items-center justify-center" style={{ paddingBottom: 40 }}>
             <MuscleBodyMap onMusclePress={handleMusclePress} height={BODY_MAP_HEIGHT} />
-          </View>
+          </Box>
         </>
       )}
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 12,
-  },
-  appBarTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
-  searchRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: C.surfaceLight, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
-    marginHorizontal: 20, marginBottom: 10,
-  },
-  searchInput: { flex: 1, fontFamily: FONT.regular, fontSize: 14, color: C.textPrimary },
-  toggleRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 8, marginHorizontal: 20, marginBottom: 8,
-  },
-  toggleText: { fontSize: 13, fontFamily: FONT.medium, color: C.textPrimary },
-  listWrap: { flex: 1, paddingHorizontal: 20 },
-  listRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: C.border,
-  },
-  listRowText: { fontSize: 15, fontFamily: FONT.regular, color: C.textPrimary },
-  emptyText: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, textAlign: 'center', paddingVertical: 40 },
-  hint: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, textAlign: 'center', marginBottom: 12 },
-  mapWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 40 },
-});

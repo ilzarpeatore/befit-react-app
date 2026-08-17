@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { VStack } from '@components/ui/vstack';
+import { Button, ButtonText } from '@components/ui/button';
+import { Icon } from '@components/ui/icon';
 import AppIcon from '@components/AppIcon';
-import { C, FONT } from './theme';
+import { C } from './theme';
 import { notificationsApi, NotificationItem } from '../../api/notifications';
 
 interface DisplayNotification {
@@ -45,19 +51,28 @@ function mapNotification(item: NotificationItem): DisplayNotification {
 
 function NotificationCard({ item }: { item: DisplayNotification }) {
   return (
-    <View style={[s.card, item.isUnread && s.cardUnread]}>
+    <Box className={`flex-row gap-3.5 p-3.5 rounded-sm ${item.isUnread ? 'bg-secondary border border-border' : 'bg-background'}`}>
       <AppIcon name={item.icon} size={22} color={item.iconColor} bg={item.iconBg} containerSize={44} borderRadius={12} />
-      <View style={s.cardContent}>
-        <View style={s.cardTitleRow}>
-          <Text style={[s.cardTitle, item.isUnread && s.cardTitleUnread]} numberOfLines={1}>{item.title}</Text>
-          {item.isUnread && <View style={s.unreadDot} />}
-        </View>
-        {item.subtitle ? (
-          <Text style={s.cardSubtitle} numberOfLines={2}>{item.subtitle}</Text>
-        ) : null}
-        <Text style={s.cardTime}>{item.time}</Text>
-      </View>
-    </View>
+      <Box className="flex-1">
+        <VStack space="xs">
+          <Box className="flex-row items-center gap-2">
+            <Text
+              size="sm"
+              weight={item.isUnread ? 'semibold' : 'regular'}
+              className="flex-1 text-foreground"
+              numberOfLines={1}
+            >
+              {item.title}
+            </Text>
+            {item.isUnread && <Box className="w-2 h-2 rounded-pill bg-warning" />}
+          </Box>
+          {item.subtitle ? (
+            <Text size="xs" muted numberOfLines={2}>{item.subtitle}</Text>
+          ) : null}
+          <Text size="xs" muted className="text-[11px]">{item.time}</Text>
+        </VStack>
+      </Box>
+    </Box>
   );
 }
 
@@ -104,63 +119,46 @@ export default function NotificationScreen(props: any) {
   };
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Notificaciones</Text>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 48, paddingBottom: 12 }} className="flex-row items-center justify-between px-4 bg-card">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Notificaciones</Heading>
         {unreadCount > 0 ? (
-          <TouchableOpacity onPress={markAllRead} style={s.markAllBtn}>
-            <Text style={s.markAllText}>Marcar leídas</Text>
-          </TouchableOpacity>
+          <Button variant="secondary" size="sm" onPress={markAllRead}>
+            <ButtonText className="text-warning">Marcar leídas</ButtonText>
+          </Button>
         ) : (
-          <View style={{ width: 90 }} />
+          <Box style={{ width: 90 }} />
         )}
-      </View>
+      </Box>
 
       {isLoading && notifications.length === 0 ? (
-        <View style={s.center}>
+        <Box className="flex-1 items-center justify-center gap-3">
           <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        </Box>
       ) : notifications.length === 0 ? (
-        <View style={s.center}>
+        <Box className="flex-1 items-center justify-center gap-3">
           <AppIcon name="notifications-off-outline" size={40} color={C.gray50} bg={C.brand10} containerSize={72} borderRadius={36} />
-          <Text style={s.emptyTitle}>Sin notificaciones</Text>
-        </View>
+          <Text weight="semibold" muted>Sin notificaciones</Text>
+        </Box>
       ) : (
         <FlatList
           data={notifications}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={s.listContent}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          contentContainerStyle={{ padding: 20 }}
+          ItemSeparatorComponent={() => <Box className="h-2" />}
           renderItem={({ item }) => <NotificationCard item={item} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
-          ListFooterComponent={isLoading ? <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} /> : null}
+          ListFooterComponent={isLoading ? (
+            <Box className="my-4">
+              <ActivityIndicator size="small" color={C.orange} />
+            </Box>
+          ) : null}
         />
       )}
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  backBtn: { padding: 4 },
-  appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  markAllBtn: { backgroundColor: C.surfaceLight, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  markAllText: { fontSize: 12, color: C.orange, fontFamily: FONT.medium },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  emptyTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray40 },
-  listContent: { padding: 20 },
-  card: { flexDirection: 'row', padding: 14, backgroundColor: C.bg, borderRadius: 14 },
-  cardUnread: { backgroundColor: C.gray80, borderWidth: 0.5, borderColor: C.surfaceLight },
-  cardContent: { flex: 1, marginLeft: 14 },
-  cardTitleRow: { flexDirection: 'row', alignItems: 'center' },
-  cardTitle: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white },
-  cardTitleUnread: { fontFamily: FONT.semiBold },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.orange, marginLeft: 8 },
-  cardSubtitle: { fontSize: 12, color: C.gray30, marginTop: 4 },
-  cardTime: { fontSize: 11, color: C.gray50, marginTop: 4 },
-});

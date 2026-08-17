@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Alert, StyleSheet } from 'react-native';
+import { Box } from '@components/ui/box';
+import { VStack } from '@components/ui/vstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField } from '@components/ui/input';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 
 export default function OTPScreen(props: any) {
   const [mobileNumber, setMobileNumber] = useState('');
@@ -37,72 +43,51 @@ export default function OTPScreen(props: any) {
   };
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={{ width: 24 }} />
-      </View>
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <Text style={s.title}>Continue with Phone</Text>
-        <Text style={s.subtitle}>We will send you a verification code via SMS to verify your phone number.</Text>
-        <Text style={s.label}>Phone Number</Text>
-        <View style={s.phoneRow}>
-          <View style={s.countryCodeBox}>
-            <TextInput
-              style={s.countryCodeInput}
-              value={countryCode}
-              onChangeText={setCountryCode}
-              keyboardType="phone-pad"
-              maxLength={5}
-            />
-          </View>
-          <View style={s.divider} />
-          <TextInput
-            style={s.phoneInput}
-            value={mobileNumber}
-            onChangeText={setMobileNumber}
-            placeholder="Enter phone number"
-            placeholderTextColor={C.gray50}
-            keyboardType="phone-pad"
-          />
-          <View style={s.phoneSuffix}>
-            <Ionicons name="call-outline" size={18} color={C.gray40} />
-          </View>
-        </View>
-        <TouchableOpacity style={s.continueBtn} onPress={sendOTP} disabled={isLoading}>
-          {isLoading ? (
-            <ActivityIndicator size="small" color={C.white} />
-          ) : (
-            <Text style={s.continueBtnText}>Continue</Text>
-          )}
-        </TouchableOpacity>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 48, paddingBottom: 12 }} className="flex-row items-center justify-between px-4 bg-card">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Box className="w-6" />
+      </Box>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 24 }} keyboardShouldPersistTaps="handled">
+        <VStack space="2xl">
+          <VStack space="xs">
+            <Heading size="lg">Continue with Phone</Heading>
+            <Text muted>We will send you a verification code via SMS to verify your phone number.</Text>
+          </VStack>
+
+          <VStack space="xs">
+            <Text muted>Phone Number</Text>
+            <Input className="rounded-sm" size="lg">
+              <InputField
+                value={countryCode}
+                onChangeText={setCountryCode}
+                keyboardType="phone-pad"
+                maxLength={5}
+                className="flex-none w-12"
+              />
+              <Box className="w-px h-6 bg-border" />
+              <InputField
+                value={mobileNumber}
+                onChangeText={setMobileNumber}
+                placeholder="Enter phone number"
+                keyboardType="phone-pad"
+              />
+              <Icon name="call-outline" size={18} className="text-muted-foreground" style={{ marginRight: 12 }} />
+            </Input>
+          </VStack>
+
+          <Button onPress={sendOTP} disabled={isLoading} radius="pill" className="w-full">
+            {isLoading ? <Spinner size="small" color="#FFFFFF" /> : <ButtonText>Continue</ButtonText>}
+          </Button>
+        </VStack>
       </ScrollView>
       {isLoading && (
-        <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        <Box style={StyleSheet.absoluteFill} className="bg-black/50 items-center justify-center">
+          <Spinner size="large" color={C.orange} />
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  backBtn: { padding: 4 },
-  content: { padding: 16, paddingTop: 24 },
-  title: { fontSize: 22, fontFamily: FONT.bold, color: C.white, marginBottom: 6 },
-  subtitle: { fontSize: 14, color: C.gray30, marginBottom: 24 },
-  label: { fontSize: 14, color: C.gray30, marginBottom: 6 },
-  phoneRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surfaceLight, borderRadius: 12, borderWidth: 1, borderColor: C.border, paddingHorizontal: 12, marginBottom: 30 },
-  countryCodeBox: { paddingRight: 12 },
-  countryCodeInput: { fontSize: 16, fontFamily: FONT.medium, color: C.white, minWidth: 40 },
-  divider: { width: 1, height: 24, backgroundColor: C.gray60 },
-  phoneInput: { flex: 1, fontSize: 16, fontFamily: FONT.regular, color: C.white, paddingVertical: 14, marginLeft: 12 },
-  phoneSuffix: { marginLeft: 8 },
-  continueBtn: { backgroundColor: C.brand5, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
-  continueBtnText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-  loadingOverlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
-});

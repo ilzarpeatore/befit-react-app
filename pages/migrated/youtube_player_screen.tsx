@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import { SafeAreaView, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 
 function extractYoutubeVideoId(url: string): string | null {
   const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -187,45 +179,63 @@ export default function YoutubePlayerScreen(props: YoutubePlayerScreenProps) {
 
   if (!videoId) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Invalid YouTube URL</Text>
-          <TouchableOpacity style={styles.closeBtn} onPress={exitScreen}>
-            <Text style={styles.closeBtnText}>Close</Text>
-          </TouchableOpacity>
-        </View>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: '#000' }}>
+        <Box className="flex-1 items-center justify-center">
+          <Text style={{ color: '#FFFFFF', fontSize: 16, marginBottom: 20 }}>Invalid YouTube URL</Text>
+          <Pressable
+            className="rounded-sm"
+            style={{ backgroundColor: '#FFFFFF', paddingHorizontal: 24, paddingVertical: 10 }}
+            onPress={exitScreen}
+          >
+            <Text weight="semibold" size="sm" style={{ color: C.white }}>Close</Text>
+          </Pressable>
+        </Box>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.playerContainer}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: '#000' }}>
+      <Box className="flex-1" style={{ position: 'relative' }}>
         {/* Close and PiP buttons */}
         {visibleOption && (
-          <View style={styles.topBar}>
-            <TouchableOpacity style={styles.closeCircle} onPress={exitScreen}>
-              <Ionicons name="close" size={25} color={'#FFFFFF'} />
-            </TouchableOpacity>
+          <Box
+            className="flex-row justify-between"
+            style={{
+              position: 'absolute',
+              top: Platform.OS === 'ios' ? 50 : 30,
+              left: 8,
+              right: 8,
+              zIndex: 10,
+            }}
+          >
+            <Pressable
+              className="items-center justify-center"
+              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)' }}
+              onPress={exitScreen}
+            >
+              <Icon name="close" size={25} color={'#FFFFFF'} />
+            </Pressable>
             {Platform.OS === 'android' && (
-              <TouchableOpacity
-                style={styles.pipBtn}
+              <Pressable
+                className="items-center justify-center"
+                style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)' }}
                 onPress={() => {
                   setVisibleOption(false);
                   // SimplePip.enterPipMode() equivalent
                 }}
               >
-                <Ionicons name="copy-outline" size={25} color={'#FFFFFF'} />
-              </TouchableOpacity>
+                <Icon name="copy-outline" size={25} color={'#FFFFFF'} />
+              </Pressable>
             )}
-          </View>
+          </Box>
         )}
 
         {/* WebView YouTube Player */}
         <WebView
           ref={webViewRef}
           source={{ html: youtubeHtml }}
-          style={styles.webView}
+          style={{ flex: 1, backgroundColor: '#000' }}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           allowsInlineMediaPlayback={true}
@@ -235,108 +245,37 @@ export default function YoutubePlayerScreen(props: YoutubePlayerScreenProps) {
         />
 
         {/* Custom Controls Overlay */}
-        <View style={styles.controlsOverlay}>
+        <Box
+          className="flex-row items-center justify-around"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          pointerEvents="box-none"
+        >
           {/* Rewind 10s */}
           {!isPlaying && isPlayerReady && (
-            <TouchableOpacity style={styles.controlBtn} onPress={goBackward10}>
-              <Ionicons name="play-back" size={30} color={'#FFFFFF'} />
-            </TouchableOpacity>
+            <Pressable
+              className="items-center justify-center"
+              style={{ width: 50, height: 50 }}
+              onPress={goBackward10}
+            >
+              <Icon name="play-back" size={30} color={'#FFFFFF'} />
+            </Pressable>
           )}
 
           {/* Play/Pause Center Touch Area */}
-          <TouchableOpacity style={styles.playPauseArea} onPress={togglePlayPause} />
+          <Pressable style={{ width: 60, height: 60 }} onPress={togglePlayPause} />
 
           {/* Forward 10s */}
           {!isPlaying && isPlayerReady && (
-            <TouchableOpacity style={styles.controlBtn} onPress={goForward10}>
-              <Ionicons name="play-forward" size={30} color={'#FFFFFF'} />
-            </TouchableOpacity>
+            <Pressable
+              className="items-center justify-center"
+              style={{ width: 50, height: 50 }}
+              onPress={goForward10}
+            >
+              <Icon name="play-forward" size={30} color={'#FFFFFF'} />
+            </Pressable>
           )}
-        </View>
-      </View>
+        </Box>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  playerContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  topBar: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 30,
-    left: 8,
-    right: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    zIndex: 10,
-  },
-  closeCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pipBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  webView: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  controlsOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    pointerEvents: 'box-none',
-  },
-  controlBtn: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playPauseArea: {
-    width: 60,
-    height: 60,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontFamily: FONT.regular,
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginBottom: 20,
-  },
-  closeBtn: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  closeBtnText: {
-    fontFamily: FONT.semiBold,
-    fontSize: 14,
-    color: C.white,
-  },
-});
