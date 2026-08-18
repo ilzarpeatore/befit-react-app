@@ -927,8 +927,8 @@ export default function WorkoutSessionScreen(props: Props) {
                         return (
                           <Box key={key} style={{ width: 72, marginHorizontal: 2 }}>
                             <TextInput
-                              className="bg-card rounded-sm text-center text-foreground"
-                              style={{ paddingVertical: 8, fontFamily: FONT.regular, fontSize: 13 }}
+                              className="bg-card rounded-sm text-foreground"
+                              style={{ paddingVertical: 8, fontFamily: FONT.regular, fontSize: 13, textAlign: 'center' }}
                               value={row.values[key] ?? ''}
                               onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
                               keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}

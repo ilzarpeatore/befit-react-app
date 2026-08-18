@@ -73,6 +73,7 @@ const FavouriteRecipeScreen = React.lazy(() => import('@pages/migrated/favourite
 const FavouriteScreen = React.lazy(() => import('@pages/migrated/favourite_screen'));
 
 const HomeScreenModern = React.lazy(() => import('@pages/migrated/home_screen_modern'));
+const HomeScreenModernV2 = React.lazy(() => import('@pages/migrated/home_screen_modern_v2'));
 const HabitsListScreen = React.lazy(() => import('@pages/migrated/habits_list_screen'));
 const HabitDetailScreen = React.lazy(() => import('@pages/migrated/habit_detail_screen'));
 const HabitAddScreen = React.lazy(() => import('@pages/migrated/habit_add_screen'));
@@ -227,6 +228,7 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedFavouriteRecipe" component={FavouriteRecipeScreen} />
       <MStack.Screen name="MigratedFavourite" component={FavouriteScreen as any} />
       <MStack.Screen name="MigratedHomeModern" component={HomeScreenModern} />
+      <MStack.Screen name="MigratedHomeModernV2" component={HomeScreenModernV2} />
       <MStack.Screen name="MigratedLanguage" component={LanguageScreen} />
       <MStack.Screen name="MigratedMainGoal" component={MainGoalScreen} />
       <MStack.Screen name="MigratedMealsReminders" component={MealsRemindersScreen} />
