@@ -1,9 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import { habitsApi, Habit, HabitSourceType } from '../../api/habits';
 import { habitIoniconFor } from '../../constants/habitIcons';
 import WeekComplianceRow, { computeWeekCompliance } from '../../components/WeekComplianceRow';
@@ -95,78 +100,92 @@ export default function HabitsListScreen(props: Props) {
   const renderCard = (habit: Habit) => {
     const done = isDoneToday(habit);
     return (
-      <TouchableOpacity key={habit.id} style={styles.card} activeOpacity={0.8} onPress={() => openDetail(habit)}>
-        <View style={styles.cardTopRow}>
-          <View style={styles.iconWrap}>
-            <Ionicons name={habitIoniconFor(habit.icon)} size={20} color={C.textPrimary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle} numberOfLines={1}>{habit.title}</Text>
-            <View style={styles.metaRow}>
+      <Pressable
+        key={habit.id}
+        className="bg-card rounded-md"
+        style={{ padding: 14, marginBottom: 10 }}
+        onPress={() => openDetail(habit)}
+      >
+        <Box className="flex-row items-center" style={{ gap: 12, marginBottom: 12 }}>
+          <Box className="w-11 h-11 rounded-md bg-background items-center justify-center">
+            <Icon name={habitIoniconFor(habit.icon)} size={20} className="text-foreground" />
+          </Box>
+          <Box className="flex-1">
+            <Text weight="bold" size="sm" numberOfLines={1}>{habit.title}</Text>
+            <Box className="flex-row items-center" style={{ gap: 6, marginTop: 5 }}>
               {!!habit.current_streak && (
-                <View style={styles.streakChip}>
-                  <Ionicons name="flame" size={11} color={C.warning60} />
-                  <Text style={styles.streakChipText}>{habit.current_streak}</Text>
-                </View>
+                <Box
+                  className="flex-row items-center rounded-sm"
+                  style={{ gap: 3, backgroundColor: C.warning5, paddingHorizontal: 6, paddingVertical: 2 }}
+                >
+                  <Icon name="flame" size={11} color={C.warning60} />
+                  <Text size="xs" weight="bold" style={{ color: C.warning60 }}>{habit.current_streak}</Text>
+                </Box>
               )}
-              <View style={[styles.sourceChip, { backgroundColor: SOURCE_BG[habit.source_type] }]}>
-                <Text style={[styles.sourceChipText, { color: SOURCE_COLOR[habit.source_type] }]}>{SOURCE_LABEL[habit.source_type]}</Text>
-              </View>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={[styles.checkBtn, done && styles.checkBtnDone]}
-            activeOpacity={0.75}
+              <Box
+                className="rounded-sm"
+                style={{ backgroundColor: SOURCE_BG[habit.source_type], paddingHorizontal: 6, paddingVertical: 2 }}
+              >
+                <Text size="xs" weight="medium" style={{ color: SOURCE_COLOR[habit.source_type] }}>{SOURCE_LABEL[habit.source_type]}</Text>
+              </Box>
+            </Box>
+          </Box>
+          <Pressable
+            className="w-9 h-9 rounded-pill items-center justify-center"
+            style={{ backgroundColor: done ? C.success50 : C.bg }}
             onPress={() => toggleToday(habit)}
             disabled={togglingId === habit.id}
           >
             {togglingId === habit.id ? (
               <ActivityIndicator size="small" color={done ? '#FFFFFF' : C.textSecondary} />
             ) : (
-              <Ionicons name="checkmark" size={20} color={done ? '#FFFFFF' : C.gray30} />
+              <Icon name="checkmark" size={20} color={done ? '#FFFFFF' : C.gray30} />
             )}
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </Box>
         <WeekComplianceRow completedDays={computeWeekCompliance(habit.logs)} color={C.orange} size={24} />
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mis hábitos</Text>
-        <TouchableOpacity onPress={() => navigation?.navigate('MigratedHabitAdd')}>
-          <Ionicons name="add-circle" size={26} color={C.textPrimary} />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['bottom']}>
+      <Box className="flex-row items-center justify-between" style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12 }}>
+        <Pressable onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Pressable>
+        <Heading size="sm">Mis hábitos</Heading>
+        <Pressable onPress={() => navigation?.navigate('MigratedHabitAdd')}>
+          <Icon name="add-circle" size={26} className="text-foreground" />
+        </Pressable>
+      </Box>
 
       {isLoading ? (
-        <View style={styles.center}>
+        <Box className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        </Box>
       ) : error ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No se pudieron cargar tus hábitos.</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center">
+          <Text size="sm" muted className="text-center">No se pudieron cargar tus hábitos.</Text>
+        </Box>
       ) : items.length === 0 ? (
-        <View style={styles.center}>
-          <Ionicons name="flame-outline" size={40} color={C.textSecondary} />
-          <Text style={[styles.emptyText, { marginTop: 12 }]}>Todavía no tienes ningún hábito.</Text>
-          <TouchableOpacity style={styles.emptyCta} onPress={() => navigation?.navigate('MigratedHabitAdd')}>
-            <Text style={styles.emptyCtaText}>Añadir mi primer hábito</Text>
-          </TouchableOpacity>
-        </View>
+        <Box className="flex-1 items-center justify-center" style={{ paddingHorizontal: 32 }}>
+          <Icon name="flame-outline" size={40} className="text-muted-foreground" />
+          <Text size="sm" muted className="text-center" style={{ marginTop: 12 }}>Todavía no tienes ningún hábito.</Text>
+          <Button radius="pill" style={{ marginTop: 18, paddingHorizontal: 22, paddingVertical: 12 }} onPress={() => navigation?.navigate('MigratedHabitAdd')}>
+            <ButtonText size="sm" style={{ fontSize: 13.5 }}>Añadir mi primer hábito</ButtonText>
+          </Button>
+        </Box>
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
           {totalStreakDays > 0 && (
-            <View style={styles.summaryCard}>
-              <Ionicons name="flame" size={22} color={C.warning60} />
-              <Text style={styles.summaryText}>{totalStreakDays} días de racha combinada</Text>
-            </View>
+            <Box
+              className="flex-row items-center rounded-md"
+              style={{ gap: 10, backgroundColor: C.warning5, padding: 14, marginBottom: 14 }}
+            >
+              <Icon name="flame" size={22} color={C.warning60} />
+              <Text weight="bold" size="sm" style={{ color: C.warning60 }}>{totalStreakDays} días de racha combinada</Text>
+            </Box>
           )}
           {items.map(renderCard)}
         </ScrollView>
@@ -174,67 +193,3 @@ export default function HabitsListScreen(props: Props) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  headerTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60, paddingHorizontal: 32 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, textAlign: 'center' },
-  emptyCta: { marginTop: 18, backgroundColor: C.accentBlack, borderRadius: 24, paddingHorizontal: 22, paddingVertical: 12 },
-  emptyCtaText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#FFFFFF' },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 24 },
-  summaryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: C.warning5,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 14,
-  },
-  summaryText: { fontFamily: FONT.bold, fontSize: 13.5, color: C.warning60 },
-  card: {
-    backgroundColor: C.surface,
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 10,
-    ...SHADOW.card,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: C.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardTitle: { fontFamily: FONT.bold, fontSize: 14.5, color: C.textPrimary },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5 },
-  streakChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: C.warning5, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-  streakChipText: { fontFamily: FONT.bold, fontSize: 11, color: C.warning60 },
-  sourceChip: { borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-  sourceChipText: { fontFamily: FONT.medium, fontSize: 10.5 },
-  checkBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: C.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkBtnDone: { backgroundColor: C.success50 },
-});

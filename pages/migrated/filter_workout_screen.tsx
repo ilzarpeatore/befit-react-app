@@ -1,20 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-  SafeAreaView,
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import React, { useState, useEffect, useRef } from 'react';
+import { ScrollView, ActivityIndicator, Image, SafeAreaView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { C } from './theme';
 import { workoutsApi } from '../../api/workouts';
 import { exercisesApi, BodyPartItem } from '../../api/exercises';
 
@@ -56,38 +48,6 @@ export default function FilterWorkoutScreen(props: FilterWorkoutScreenProps) {
   const [isLastPage, setIsLastPage] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const styles = useResponsiveStyleSheet({
-    container: { flex: 1, backgroundColor: C.bg },
-    header: { fontSize: '20@ratio', fontFamily: FONT.bold, color: C.white, padding: '16@ratio' },
-    searchContainer: {
-      flexDirection: 'row', alignItems: 'center', backgroundColor: C.surfaceLight,
-      borderRadius: '12@ratio', marginHorizontal: '16@ratio', marginBottom: '8@ratio',
-      paddingHorizontal: '12@ratio', paddingVertical: '8@ratio', gap: 8,
-    },
-    searchInput: { flex: 1, fontFamily: FONT.regular, fontSize: '14@ratio', color: C.white, padding: 0 },
-    filterRow: { flexDirection: 'row', paddingHorizontal: '16@ratio', paddingVertical: '6@ratio' },
-    filterChip: {
-      paddingHorizontal: '16@ratio', paddingVertical: '8@ratio', borderRadius: '20@ratio',
-      marginRight: '8@ratio', borderWidth: 1,
-    },
-    filterChipActive: { backgroundColor: '#1C1C1E', borderColor: '#1C1C1E' },
-    filterChipInactive: { backgroundColor: C.surface, borderColor: C.border },
-    filterChipTextActive: { color: '#FFFFFF', fontFamily: FONT.semiBold, fontSize: '13@ratio' },
-    filterChipTextInactive: { color: C.textSecondary, fontFamily: FONT.medium, fontSize: '13@ratio' },
-    workoutCard: {
-      flexDirection: 'row', alignItems: 'center', backgroundColor: C.surfaceLight,
-      borderRadius: '14@ratio', marginBottom: '10@ratio', padding: '10@ratio',
-    },
-    workoutImage: { width: '72@ratio', height: '72@ratio', borderRadius: '10@ratio', backgroundColor: C.gray70 },
-    workoutInfo: { flex: 1, marginLeft: '12@ratio' },
-    workoutTitle: { fontSize: '15@ratio', fontFamily: FONT.bold, color: C.white },
-    workoutSubtitle: { fontSize: '13@ratio', fontFamily: FONT.regular, color: C.textSecondary, marginTop: '4@ratio' },
-    favBtn: { padding: '4@ratio' },
-    emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: '60@ratio' },
-    emptyText: { fontSize: '16@ratio', fontFamily: FONT.medium, color: C.textSecondary, textAlign: 'center' },
-    loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' },
-  });
 
   const getWorkoutData = async (pageNum: number) => {
     setIsLoading(true);
@@ -171,106 +131,101 @@ export default function FilterWorkoutScreen(props: FilterWorkoutScreenProps) {
     setWorkoutFav(item.id);
   };
 
+  const renderChip = (
+    key: number,
+    title: string,
+    isActive: boolean,
+    onPress: () => void
+  ) => (
+    <Pressable
+      key={key}
+      className={`rounded-pill px-4 py-2 border ${isActive ? 'bg-foreground border-foreground' : 'bg-secondary border-border'}`}
+      onPress={onPress}
+    >
+      <Text size="sm" weight={isActive ? 'semibold' : 'medium'} className={isActive ? 'text-background' : 'text-muted-foreground'}>
+        {title}
+      </Text>
+    </Pressable>
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Workouts</Text>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={18} color={C.textSecondary} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search workouts..."
-          placeholderTextColor={C.textSecondary}
-          value={searchText}
-          onChangeText={handleSearchChange}
-        />
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <Heading size="lg" className="p-4">Workouts</Heading>
+      <Box className="flex-row items-center bg-secondary rounded-md mx-4 px-3 gap-2" style={{ marginBottom: 8 }}>
+        <Icon name="search" size={18} className="text-muted-foreground" />
+        <Input className="flex-1 border-0 bg-transparent">
+          <InputField
+            placeholder="Search workouts..."
+            value={searchText}
+            onChangeText={handleSearchChange}
+            className="px-0"
+          />
+        </Input>
         {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => handleSearchChange('')}>
-            <Ionicons name="close-circle" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
+          <Pressable onPress={() => handleSearchChange('')}>
+            <Icon name="close-circle" size={18} className="text-muted-foreground" />
+          </Pressable>
         )}
-      </View>
+      </Box>
       <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 20 }}>
         {types.length > 0 && (
-          <View style={styles.filterRow}>
-            {types.map((t) => (
-              <TouchableOpacity
-                key={t.id}
-                style={[styles.filterChip, selectedType === t.id ? styles.filterChipActive : styles.filterChipInactive]}
-                onPress={() => setSelectedType((prev) => (prev === t.id ? null : t.id))}
-              >
-                <Text style={selectedType === t.id ? styles.filterChipTextActive : styles.filterChipTextInactive}>
-                  {t.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Box className="flex-row flex-wrap gap-2 px-4 py-1.5">
+            {types.map((t) => renderChip(t.id, t.title, selectedType === t.id, () => setSelectedType((prev) => (prev === t.id ? null : t.id))))}
+          </Box>
         )}
         {levels.length > 0 && (
-          <View style={styles.filterRow}>
-            {levels.map((l) => (
-              <TouchableOpacity
-                key={l.id}
-                style={[styles.filterChip, selectedLevel === l.id ? styles.filterChipActive : styles.filterChipInactive]}
-                onPress={() => setSelectedLevel((prev) => (prev === l.id ? null : l.id))}
-              >
-                <Text style={selectedLevel === l.id ? styles.filterChipTextActive : styles.filterChipTextInactive}>
-                  {l.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Box className="flex-row flex-wrap gap-2 px-4 py-1.5">
+            {levels.map((l) => renderChip(l.id, l.title, selectedLevel === l.id, () => setSelectedLevel((prev) => (prev === l.id ? null : l.id))))}
+          </Box>
         )}
         {bodyParts.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-            {bodyParts.map((bp) => (
-              <TouchableOpacity
-                key={bp.id}
-                style={[styles.filterChip, selectedBodyPart === bp.id ? styles.filterChipActive : styles.filterChipInactive]}
-                onPress={() => setSelectedBodyPart((prev) => (prev === bp.id ? null : bp.id))}
-              >
-                <Text style={selectedBodyPart === bp.id ? styles.filterChipTextActive : styles.filterChipTextInactive}>
-                  {bp.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8 }}>
+            {bodyParts.map((bp) => renderChip(bp.id, bp.title, selectedBodyPart === bp.id, () => setSelectedBodyPart((prev) => (prev === bp.id ? null : bp.id))))}
           </ScrollView>
         )}
-        <View style={{ height: 8 }} />
+        <Box className="h-2" />
         {mWorkoutList.length > 0 ? (
-          <View style={{ paddingHorizontal: 16 }}>
+          <Box className="px-4 gap-2.5">
             {mWorkoutList.map((item, index) => (
-              <TouchableOpacity key={`${item.id}-${index}`} style={styles.workoutCard} onPress={() => handleWorkoutTap(item)}>
+              <Pressable
+                key={`${item.id}-${index}`}
+                className="flex-row items-center bg-card rounded-md p-2.5 gap-3"
+                onPress={() => handleWorkoutTap(item)}
+              >
                 {item.workoutImage ? (
-                  <Image source={{ uri: item.workoutImage }} style={styles.workoutImage} resizeMode="cover" />
+                  <Image source={{ uri: item.workoutImage }} style={{ width: 72, height: 72, borderRadius: 10 }} resizeMode="cover" />
                 ) : (
-                  <View style={styles.workoutImage} />
+                  <Box className="bg-muted rounded-md" style={{ width: 72, height: 72 }} />
                 )}
-                <View style={styles.workoutInfo}>
-                  <Text style={styles.workoutTitle} numberOfLines={1}>{item.title || ''}</Text>
-                  <Text style={styles.workoutSubtitle}>{item.levelTitle || ''}</Text>
-                </View>
-                <TouchableOpacity style={styles.favBtn} onPress={() => handleFavTap(item, index)}>
-                  <Ionicons
+                <Box className="flex-1">
+                  <Text weight="bold" numberOfLines={1}>{item.title || ''}</Text>
+                  <Text size="sm" muted style={{ marginTop: 4 }}>{item.levelTitle || ''}</Text>
+                </Box>
+                <Pressable className="p-1" onPress={() => handleFavTap(item, index)}>
+                  <Icon
                     name={item.isFavourite === 1 ? 'heart' : 'heart-outline'}
                     size={22}
                     color={item.isFavourite === 1 ? C.destructive : C.gray30}
                   />
-                </TouchableOpacity>
-              </TouchableOpacity>
+                </Pressable>
+              </Pressable>
             ))}
-          </View>
+          </Box>
         ) : (
           !isLoading && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No workouts found</Text>
-            </View>
+            <Box className="flex-1 items-center justify-center" style={{ paddingVertical: 60 }}>
+              <Text weight="medium" muted className="text-center">No workouts found</Text>
+            </Box>
           )
         )}
       </ScrollView>
       {isLoading && (
-        <View style={styles.loader}>
+        <Box
+          className="items-center justify-center"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)' }}
+        >
           <ActivityIndicator size="large" color="#FFFFFF" />
-        </View>
+        </Box>
       )}
     </SafeAreaView>
   );

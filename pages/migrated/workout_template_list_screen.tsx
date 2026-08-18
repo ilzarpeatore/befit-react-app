@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Image, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import { workoutTemplateApi, WorkoutTemplateListItem } from '../../api/workoutTemplate';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -18,11 +22,6 @@ export default function WorkoutTemplateListScreen(props: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLastPage, setIsLastPage] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
-  const styles = useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
 
   const loadWorkouts = useCallback(async () => {
     setIsLoading(true);
@@ -60,39 +59,38 @@ export default function WorkoutTemplateListScreen(props: any) {
   const columnWidth = (SCREEN_WIDTH - 48) / 2;
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, styles.fontBold]}>Workouts</Text>
-        <View style={s.backBtn} />
-      </View>
+    <SafeAreaView className="flex-1 bg-background">
+      <Box className="flex-row items-center justify-between p-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Workouts</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <View style={s.body}>
+      <Box className="flex-1">
         {isLoading && page === 1 ? (
-          <View style={s.center}>
+          <Box className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          </Box>
         ) : !isLoading && items.length === 0 ? (
-          <View style={s.center}>
-            <Text style={[s.emptyText, styles.fontMedium]}>No workouts found</Text>
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Text muted>No workouts found</Text>
+          </Box>
         ) : (
           <ScrollView
             ref={scrollRef}
             onScroll={handleScroll}
             scrollEventThrottle={16}
-            contentContainerStyle={s.scrollContent}
+            contentContainerStyle={{ padding: 16 }}
           >
-            <View style={s.grid}>
+            <Box className="flex-row flex-wrap justify-between">
               {items.map((item) => {
                 const locked = item.is_exclusive && !item.is_accessible;
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={item.id}
-                    style={[s.card, { width: columnWidth }]}
-                    activeOpacity={0.7}
+                    style={{ width: columnWidth, marginBottom: 16 }}
                     onPress={() =>
                       props.navigation.navigate('MigratedWorkoutPreview', {
                         workoutTemplateId: item.id,
@@ -103,59 +101,48 @@ export default function WorkoutTemplateListScreen(props: any) {
                     {item.thumbnail ? (
                       <Image
                         source={{ uri: item.thumbnail }}
-                        style={[s.thumbnail, { width: columnWidth, height: 140 }]}
+                        style={{ width: columnWidth, height: 140, borderRadius: 12 }}
                         resizeMode="cover"
                       />
                     ) : (
-                      <View style={[s.thumbnail, { width: columnWidth, height: 140, backgroundColor: C.surfaceLight }]} />
+                      <Box
+                        className="bg-secondary"
+                        style={{ width: columnWidth, height: 140, borderRadius: 12 }}
+                      />
                     )}
                     {locked && (
-                      <View style={s.lockBadge}>
-                        <Ionicons name="lock-closed" size={14} color={C.white} />
-                        <Text style={[s.lockBadgeText, styles.fontSemiBold]}>Exclusive</Text>
-                      </View>
+                      <Box
+                        className="flex-row items-center"
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: 'rgba(0,0,0,0.6)',
+                          borderRadius: 12,
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          gap: 4,
+                        }}
+                      >
+                        <Icon name="lock-closed" size={14} color="#FFFFFF" />
+                        <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>
+                          Exclusive
+                        </Text>
+                      </Box>
                     )}
-                    <Text style={[s.title, styles.fontBold]} numberOfLines={1}>
+                    <Text weight="bold" numberOfLines={1} style={{ marginTop: 8 }}>
                       {item.title}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
-            </View>
+            </Box>
             {isLoading && page > 1 && (
               <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
             )}
           </ScrollView>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: { fontSize: 18, color: C.white, flex: 1, textAlign: 'center' },
-  body: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: C.gray30 },
-  scrollContent: { padding: 16 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  card: { marginBottom: 16 },
-  thumbnail: { borderRadius: 12 },
-  lockBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  lockBadgeText: { fontSize: 11, color: '#FFFFFF' },
-  title: { fontSize: 14, color: '#FFFFFF', marginTop: 8 },
-});

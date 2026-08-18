@@ -1,10 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import RadarChart from '../../components/RadarChart';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import { MACRO_MUSCLE_GROUPS, MacroMuscleGroup, macroGroupFor } from '../../constants/bodyMusclesMap';
@@ -60,10 +67,16 @@ function macroValues(data: MuscleVolumeGroup[]): Record<MacroMuscleGroup, number
 
 function DeltaText({ current, previous, format }: { current: number; previous: number; format: (n: number) => string }) {
   const delta = current - previous;
-  if (previous === 0 && current === 0) return <Text style={s.deltaNeutral}>—</Text>;
+  if (previous === 0 && current === 0) {
+    return (
+      <Text weight="semibold" size="xs" muted style={{ marginTop: 4 }}>
+        —
+      </Text>
+    );
+  }
   const positive = delta >= 0;
   return (
-    <Text style={positive ? s.deltaUp : s.deltaDown}>
+    <Text weight="semibold" size="xs" style={{ marginTop: 4, color: positive ? C.success60 : C.destructive60 }}>
       {positive ? '↑' : '↓'} {format(Math.abs(delta))}
     </Text>
   );
@@ -152,160 +165,129 @@ export default function StatisticsMuscleDistributionScreen(props: Props) {
     }
   };
 
+  const kpis: { label: string; value: string; current: number; previous: number; format: (n: number) => string }[] = [
+    { label: 'Entrenamientos', value: String(currentStats.sessionsCount), current: currentStats.sessionsCount, previous: previousStats.sessionsCount, format: (n) => String(Math.round(n)) },
+    { label: 'Duración media', value: formatDuration(currentStats.avgDurationSeconds), current: currentStats.avgDurationSeconds, previous: previousStats.avgDurationSeconds, format: formatDuration },
+    { label: 'Volumen', value: formatVolume(currentStats.volumeKg), current: currentStats.volumeKg, previous: previousStats.volumeKg, format: formatVolume },
+    { label: 'Series', value: String(currentSeries), current: currentSeries, previous: previousSeries, format: (n) => String(Math.round(n)) },
+  ];
+
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle} numberOfLines={1}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <HStack className="items-center justify-between px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center mx-1" numberOfLines={1}>
           Distribución de los músculos
-        </Text>
-        <View style={s.appBarRightIcons}>
-          <TouchableOpacity style={s.smallIconBtn} onPress={openHelp}>
-            <Text style={s.helpBtnText}>?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.smallIconBtn} onPress={onShare} disabled={isSharing}>
+        </Heading>
+        <HStack space="sm">
+          <Pressable
+            className="rounded-pill bg-card items-center justify-center shadow-card"
+            style={{ width: 32, height: 32 }}
+            onPress={openHelp}
+          >
+            <Text weight="bold" size="xs" muted>?</Text>
+          </Pressable>
+          <Pressable
+            className="rounded-pill bg-card items-center justify-center shadow-card"
+            style={{ width: 32, height: 32 }}
+            onPress={onShare}
+            disabled={isSharing}
+          >
             {isSharing ? (
-              <ActivityIndicator size="small" color={C.textSecondary} />
+              <Spinner size="small" color={C.textSecondary} />
             ) : (
-              <Ionicons name="share-outline" size={16} color={C.textSecondary} />
+              <Icon name="share-outline" size={16} className="text-muted-foreground" />
             )}
-          </TouchableOpacity>
-        </View>
-      </View>
+          </Pressable>
+        </HStack>
+      </HStack>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity style={s.rangePill} onPress={openRangePicker} activeOpacity={0.75}>
-          <Text style={s.rangePillText}>{range.label}</Text>
-          <Ionicons name="chevron-down" size={16} color={C.textPrimary} />
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <Pressable
+          className="flex-row items-center self-start bg-card rounded-pill shadow-card gap-2"
+          style={{ paddingHorizontal: 18, paddingVertical: 10, marginTop: 12 }}
+          onPress={openRangePicker}
+        >
+          <Text weight="semibold" size="sm">{range.label}</Text>
+          <Icon name="chevron-down" size={16} className="text-foreground" />
+        </Pressable>
 
-        <View ref={shareRef} collapsable={false}>
-        <View style={s.radarCard}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 80 }} />
-          ) : (
-            <>
-              <View style={{ alignItems: 'center' }}>
-                <RadarChart
-                  axisLabels={MACRO_MUSCLE_GROUPS as unknown as string[]}
-                  size={260}
-                  series={[
-                    { values: currentAxis, fillColor: C.orange, fillOpacity: 0.3, strokeColor: C.orange, strokeWidth: 2 },
-                    { values: previousAxis, fillColor: C.textSecondary, fillOpacity: 0.1, strokeColor: C.textSecondary, strokeWidth: 2, dashed: true },
-                  ]}
-                />
-              </View>
-              <View style={s.legendRow}>
-                <View style={s.legendItem}>
-                  <View style={[s.legendDot, { backgroundColor: C.orange }]} />
-                  <Text style={s.legendText}>Actual</Text>
-                </View>
-                <View style={s.legendItem}>
-                  <View style={[s.legendDot, { backgroundColor: C.textSecondary }]} />
-                  <Text style={s.legendText}>Anterior</Text>
-                </View>
-              </View>
-            </>
-          )}
-        </View>
+        <Box ref={shareRef} collapsable={false}>
+          <Box className="bg-card rounded-lg shadow-card" style={{ marginTop: 16, paddingVertical: 20 }}>
+            {isLoading ? (
+              <Spinner size="large" color={C.textSecondary} style={{ paddingVertical: 80 }} />
+            ) : (
+              <>
+                <Box className="items-center">
+                  <RadarChart
+                    axisLabels={MACRO_MUSCLE_GROUPS as unknown as string[]}
+                    size={260}
+                    series={[
+                      { values: currentAxis, fillColor: C.orange, fillOpacity: 0.3, strokeColor: C.orange, strokeWidth: 2 },
+                      { values: previousAxis, fillColor: C.textSecondary, fillOpacity: 0.1, strokeColor: C.textSecondary, strokeWidth: 2, dashed: true },
+                    ]}
+                  />
+                </Box>
+                <HStack className="justify-end px-5" style={{ marginTop: 12, gap: 16 }}>
+                  <HStack space="xs" className="items-center">
+                    <Box style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.orange }} />
+                    <Text weight="medium" size="sm" muted>Actual</Text>
+                  </HStack>
+                  <HStack space="xs" className="items-center">
+                    <Box style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.textSecondary }} />
+                    <Text weight="medium" size="sm" muted>Anterior</Text>
+                  </HStack>
+                </HStack>
+              </>
+            )}
+          </Box>
 
-        <View style={s.grid2x2}>
-          <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Entrenamientos</Text>
-            <Text style={s.kpiValue}>{currentStats.sessionsCount}</Text>
-            <DeltaText current={currentStats.sessionsCount} previous={previousStats.sessionsCount} format={(n) => String(Math.round(n))} />
-          </View>
-          <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Duración media</Text>
-            <Text style={s.kpiValue}>{formatDuration(currentStats.avgDurationSeconds)}</Text>
-            <DeltaText current={currentStats.avgDurationSeconds} previous={previousStats.avgDurationSeconds} format={formatDuration} />
-          </View>
-          <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Volumen</Text>
-            <Text style={s.kpiValue}>{formatVolume(currentStats.volumeKg)}</Text>
-            <DeltaText current={currentStats.volumeKg} previous={previousStats.volumeKg} format={formatVolume} />
-          </View>
-          <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Series</Text>
-            <Text style={s.kpiValue}>{currentSeries}</Text>
-            <DeltaText current={currentSeries} previous={previousSeries} format={(n) => String(Math.round(n))} />
-          </View>
-        </View>
-        </View>
+          <Box className="flex-row flex-wrap gap-3" style={{ marginTop: 20 }}>
+            {kpis.map((kpi) => (
+              <Box key={kpi.label} className="border border-border bg-muted rounded-md" style={{ width: '47%', padding: 18 }}>
+                <Text weight="medium" size="sm" muted style={{ fontSize: 13.5 }}>{kpi.label}</Text>
+                <Text weight="extrabold" style={{ fontSize: 24, marginTop: 6 }}>{kpi.value}</Text>
+                <DeltaText current={kpi.current} previous={kpi.previous} format={kpi.format} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
       </ScrollView>
 
       <SimpleBottomSheet visible={rangeSheetVisible} onClose={() => setRangeSheetVisible(false)}>
-        <View style={s.sheetContent}>
-          {RANGE_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.key}
-              style={s.rangeOptionRow}
-              onPress={() => {
-                setRange(opt);
-                setRangeSheetVisible(false);
-              }}
-            >
-              <Text style={[s.rangeOptionText, opt.key === range.key && s.rangeOptionTextActive]}>{opt.label}</Text>
-              {opt.key === range.key ? <Ionicons name="checkmark" size={18} color={C.accentBlack} /> : null}
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Box style={{ padding: 24 }}>
+          {RANGE_OPTIONS.map((opt) => {
+            const active = opt.key === range.key;
+            return (
+              <Pressable
+                key={opt.key}
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 14 }}
+                onPress={() => {
+                  setRange(opt);
+                  setRangeSheetVisible(false);
+                }}
+              >
+                <Text size="sm" weight={active ? 'bold' : 'medium'}>{opt.label}</Text>
+                {active ? <Icon name="checkmark" size={18} className="text-foreground" /> : null}
+              </Pressable>
+            );
+          })}
+        </Box>
       </SimpleBottomSheet>
 
       <SimpleBottomSheet visible={helpSheetVisible} onClose={() => setHelpSheetVisible(false)}>
-        <View style={s.sheetContent}>
-          <Text style={s.sheetTitle}>¿Qué muestra este gráfico?</Text>
-          <Text style={s.sheetText}>
+        <Box style={{ padding: 24 }}>
+          <Heading size="sm" style={{ marginBottom: 10 }}>¿Qué muestra este gráfico?</Heading>
+          <Text muted style={{ lineHeight: 20 }}>
             Compara el volumen entrenado en cada gran zona muscular durante el periodo seleccionado (Actual) frente
             al mismo número de días inmediatamente anterior (Anterior), para ver si tu reparto de entrenamiento se
             mantiene equilibrado.
           </Text>
-        </View>
+        </Box>
       </SimpleBottomSheet>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  appBarTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary, marginHorizontal: 4 },
-  appBarRightIcons: { flexDirection: 'row', gap: 8 },
-  smallIconBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center', ...SHADOW.card },
-  helpBtnText: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  rangePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: C.surface,
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginTop: 12,
-    gap: 8,
-    ...SHADOW.card,
-  },
-  rangePillText: { fontFamily: FONT.semiBold, fontSize: 14, color: C.textPrimary },
-  radarCard: { backgroundColor: C.surface, borderRadius: 20, marginTop: 16, paddingVertical: 20, ...SHADOW.card },
-  legendRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 12, paddingHorizontal: 20 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontFamily: FONT.medium, fontSize: 13, color: C.textSecondary },
-  grid2x2: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 20 },
-  kpiCard: { width: '47%', borderWidth: 1, borderColor: C.border, backgroundColor: C.gray5, borderRadius: 20, padding: 18 },
-  kpiLabel: { fontFamily: FONT.medium, fontSize: 13.5, color: C.textSecondary },
-  kpiValue: { fontFamily: FONT.extraBold, fontSize: 24, color: C.textPrimary, marginTop: 6 },
-  deltaUp: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.success60, marginTop: 4 },
-  deltaDown: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.destructive60, marginTop: 4 },
-  deltaNeutral: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.textSecondary, marginTop: 4 },
-  sheetContent: { padding: 24 },
-  sheetTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary, marginBottom: 10 },
-  sheetText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, lineHeight: 20 },
-  rangeOptionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
-  rangeOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textPrimary },
-  rangeOptionTextActive: { fontFamily: FONT.bold, color: C.accentBlack },
-});

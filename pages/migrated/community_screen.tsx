@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, RefreshControl, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import { SafeAreaView, FlatList, Image, RefreshControl, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { HStack } from '@components/ui/hstack';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import { postsApi } from '../../api/posts';
 import logger from '@helper/logger';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface PostData {
   id: number;
@@ -178,88 +181,119 @@ export default function CommunityScreen(props: any) {
     ]);
   };
 
-  const renderPostItem = ({ item, index }: { item: PostData; index: number }) => {
+  const renderPostItem = ({ item }: { item: PostData; index: number }) => {
     return (
-      <TouchableOpacity
-        activeOpacity={0.85}
-        style={[localStyles.postCard, { marginHorizontal: 10, marginVertical: 6 }]}
+      <Pressable
+        className="bg-card rounded-md p-3"
+        style={{ marginHorizontal: 10, marginVertical: 6 }}
         onPress={() => openPostDetail(item)}
       >
-        <View style={localStyles.postHeader}>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} activeOpacity={0.7} onPress={() => openUserProfile(item)}>
+        <HStack className="items-center">
+          <Pressable className="flex-1 flex-row items-center" onPress={() => openUserProfile(item)}>
             {item.users?.profileImage ? (
-              <Image source={{ uri: item.users.profileImage }} style={localStyles.avatar} />
+              <Image source={{ uri: item.users.profileImage }} style={{ width: 40, height: 40, borderRadius: 20 }} />
             ) : (
-              <View style={[localStyles.avatar, localStyles.avatarPlaceholder]}>
-                <Ionicons name="person" size={18} color={C.gray30} />
-              </View>
+              <Box className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
+                <Icon name="person" size={18} className="text-muted-foreground" />
+              </Box>
             )}
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={localStyles.userName}>{item.users?.displayName || 'User'}</Text>
-              <Text style={localStyles.postTime}>{item.createdAt || ''}</Text>
-            </View>
-          </TouchableOpacity>
+            <Box className="flex-1" style={{ marginLeft: 10 }}>
+              <Text weight="semibold" size="sm">{item.users?.displayName || 'User'}</Text>
+              <Text size="xs" muted>{item.createdAt || ''}</Text>
+            </Box>
+          </Pressable>
           {item.canEdit && (
-            <TouchableOpacity onPress={() => showPostOptions(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="ellipsis-vertical" size={18} color={C.gray30} />
-            </TouchableOpacity>
+            <Pressable onPress={() => showPostOptions(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Icon name="ellipsis-vertical" size={18} className="text-muted-foreground" />
+            </Pressable>
           )}
-        </View>
+        </HStack>
         {item.content ? (
-          <Text style={localStyles.postContent}>{item.content}</Text>
+          <Text size="sm" style={{ marginTop: 10 }}>{item.content}</Text>
         ) : null}
         {item.postImage ? (
-          <Image source={{ uri: item.postImage }} style={localStyles.postImage} resizeMode="cover" />
+          <Image
+            source={{ uri: item.postImage }}
+            style={{ width: '100%', height: 200, borderRadius: 10, marginTop: 10 }}
+            resizeMode="cover"
+          />
         ) : null}
-        <View style={localStyles.postActions}>
-          <TouchableOpacity style={localStyles.actionBtn} onPress={() => toggleLike(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={item.isLiked ? 'heart' : 'heart-outline'} size={20} color={item.isLiked ? C.destructive : C.gray30} />
-            <Text style={localStyles.actionText}>{item.likesCount || 0}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={localStyles.actionBtn} onPress={() => openPostDetail(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name="chatbubble-outline" size={20} color={C.gray30} />
-            <Text style={localStyles.actionText}>{item.commentsCount || 0}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={localStyles.actionBtn} onPress={() => toggleBookmark(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={item.isBookmark ? 'bookmark' : 'bookmark-outline'} size={20} color={item.isBookmark ? C.orange : C.gray30} />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
+        <HStack
+          className="items-center"
+          style={{ marginTop: 12, borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 10 }}
+        >
+          <Pressable
+            className="flex-row items-center"
+            style={{ marginRight: 20 }}
+            onPress={() => toggleLike(item)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon
+              name={item.isLiked ? 'heart' : 'heart-outline'}
+              size={20}
+              className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
+            />
+            <Text size="sm" muted style={{ marginLeft: 4 }}>{item.likesCount || 0}</Text>
+          </Pressable>
+          <Pressable
+            className="flex-row items-center"
+            style={{ marginRight: 20 }}
+            onPress={() => openPostDetail(item)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon name="chatbubble-outline" size={20} className="text-muted-foreground" />
+            <Text size="sm" muted style={{ marginLeft: 4 }}>{item.commentsCount || 0}</Text>
+          </Pressable>
+          <Pressable
+            className="flex-row items-center"
+            onPress={() => toggleBookmark(item)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon
+              name={item.isBookmark ? 'bookmark' : 'bookmark-outline'}
+              size={20}
+              className={item.isBookmark ? 'text-warning' : 'text-muted-foreground'}
+              style={item.isBookmark ? { color: C.orange } : undefined}
+            />
+          </Pressable>
+        </HStack>
+      </Pressable>
     );
   };
 
   const renderEmptyList = () => {
     if (isLoading) return null;
     return (
-      <View style={localStyles.emptyContainer}>
-        <Ionicons name="alert-circle-outline" size={80} color={C.gray50} />
-        <Text style={localStyles.emptyText}>No posts found</Text>
-      </View>
+      <Box className="flex-1 items-center justify-center gap-3" style={{ paddingTop: 80 }}>
+        <Icon name="alert-circle-outline" size={80} className="text-muted-foreground" />
+        <Text weight="bold">No posts found</Text>
+      </Box>
     );
   };
 
   return (
-    <SafeAreaView style={localStyles.container}>
-      <View style={localStyles.appBar}>
-        <Text style={localStyles.appBarTitle}>Community</Text>
-        <View style={localStyles.appBarActions}>
-          <TouchableOpacity
-            style={localStyles.bookmarkButton}
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <HStack className="items-center justify-between px-4 py-3">
+        <Heading size="md">Community</Heading>
+        <HStack space="md" className="items-center">
+          <Button
+            variant="ghost"
+            size="icon"
             onPress={() => props.navigation.navigate('MigratedBookmark')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="bookmark-outline" size={22} color={C.white} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={localStyles.postButton}
+            <Icon name="bookmark-outline" size={22} className="text-foreground" />
+          </Button>
+          <Pressable
+            className="flex-row items-center rounded-pill"
+            style={{ backgroundColor: C.orange, paddingHorizontal: 12, paddingVertical: 6 }}
             onPress={handlePostPress}
           >
-            <Ionicons name="add-circle-outline" size={18} color={C.white} />
-            <Text style={localStyles.postButtonText}>Post</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={localStyles.body}>
+            <Icon name="add-circle-outline" size={18} color="#FFFFFF" />
+            <Text weight="bold" style={{ color: '#FFFFFF', marginLeft: 4 }}>Post</Text>
+          </Pressable>
+        </HStack>
+      </HStack>
+      <Box className="flex-1" style={{ backgroundColor: 'rgba(128,128,128,0.1)' }}>
         {mPostList.length > 0 ? (
           <FlatList
             ref={scrollController}
@@ -277,130 +311,11 @@ export default function CommunityScreen(props: any) {
           renderEmptyList()
         )}
         {isLoading && (
-          <View style={localStyles.loaderContainer}>
+          <Box className="items-center justify-center" style={StyleSheet.absoluteFill}>
             <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          </Box>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const localStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: C.bg,
-  },
-  appBarTitle: {
-    fontFamily: FONT.bold,
-    fontSize: 20,
-    color: C.white,
-  },
-  postButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.orange,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  postButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: FONT.bold,
-    marginLeft: 4,
-  },
-  appBarActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  bookmarkButton: {
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  body: { flex: 1, backgroundColor: 'rgba(128,128,128,0.1)' },
-  postCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 12,
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: C.gray70,
-  },
-  avatarPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userName: {
-    fontFamily: FONT.semiBold,
-    fontSize: 14,
-    color: C.white,
-  },
-  postTime: {
-    fontFamily: FONT.regular,
-    fontSize: 12,
-    color: C.gray30,
-  },
-  postContent: {
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    color: C.white,
-    marginTop: 10,
-  },
-  postImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  postActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginTop: 12,
-    borderTopWidth: 0.5,
-    borderTopColor: C.border,
-    paddingTop: 10,
-  },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  actionText: {
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.gray30,
-    marginLeft: 4,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: FONT.bold,
-    fontSize: 16,
-    color: C.white,
-    marginTop: 16,
-  },
-  loaderContainer: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

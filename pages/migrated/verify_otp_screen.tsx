@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { Box } from '@components/ui/box';
+import { VStack } from '@components/ui/vstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField } from '@components/ui/input';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import { authApi } from '@api/auth';
 import { useAuth } from '@store/AuthContext';
 
@@ -90,87 +96,47 @@ export default function VerifyOTPScreen(props: any) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
-        <View style={styles.appBar}>
-          <TouchableOpacity onPress={() => props.navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={C.white} />
-          </TouchableOpacity>
-        </View>
+      <Box className="flex-1 bg-background">
+        <Box style={{ paddingTop: 50, paddingBottom: 12 }} className="flex-row items-center px-4">
+          <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+            <Icon name="arrow-back" size={24} className="text-foreground" />
+          </Button>
+        </Box>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Verify OTP</Text>
-          <Text style={styles.subtitle}>Code sent to {phoneNumber}</Text>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+          <VStack space="2xl">
+            <VStack space="xs">
+              <Heading size="lg">Verify OTP</Heading>
+              <Text muted>Code sent to {phoneNumber}</Text>
+            </VStack>
 
-          <View style={styles.otpRow}>
-            {otpDigits.map((digit, index) => (
-              <TextInput
-                key={index}
-                style={styles.otpInput}
-                value={digit}
-                onChangeText={(text) => handleDigitChange(text, index)}
-                keyboardType="number-pad"
-                maxLength={1}
-                selectTextOnFocus
-              />
-            ))}
-          </View>
+            <Box className="flex-row justify-center gap-2.5">
+              {otpDigits.map((digit, index) => (
+                <Input key={index} className="w-12 h-[50px] rounded-sm" size="lg">
+                  <InputField
+                    value={digit}
+                    onChangeText={(text) => handleDigitChange(text, index)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    selectTextOnFocus
+                    className="text-center px-0"
+                  />
+                </Input>
+              ))}
+            </Box>
 
-          <TouchableOpacity style={styles.verifyButton} onPress={submit}>
-            <Text style={styles.verifyButtonText}>Verify & Proceed</Text>
-          </TouchableOpacity>
+            <Button onPress={submit} radius="pill" className="w-full">
+              <ButtonText>Verify & Proceed</ButtonText>
+            </Button>
+          </VStack>
         </ScrollView>
 
         {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={StyleSheet.absoluteFill} className="bg-black/30 items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-  },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 32 },
-  title: { fontSize: 22, fontFamily: FONT.bold, color: C.white, marginBottom: 8 },
-  subtitle: { fontSize: 14, color: C.gray30, fontFamily: FONT.regular, marginBottom: 30 },
-  otpRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 30,
-  },
-  otpInput: {
-    width: 48,
-    height: 50,
-    borderWidth: 1,
-    borderColor: C.gray50,
-    borderRadius: 8,
-    textAlign: 'center',
-    fontSize: 20,
-    fontFamily: FONT.regular,
-    color: C.white,
-    backgroundColor: C.surface,
-  },
-  verifyButton: {
-    backgroundColor: C.brand5,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  verifyButtonText: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

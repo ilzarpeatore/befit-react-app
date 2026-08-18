@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { ScrollView, SafeAreaView, Alert, StyleSheet } from 'react-native';
+import { Box } from '@components/ui/box';
+import { HStack } from '@components/ui/hstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField } from '@components/ui/input';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Pressable } from '@components/ui/pressable';
 import { useAuth } from '@store/AuthContext';
-import { C, FONT } from './theme';
+import { C } from './theme';
 
 interface Props {
   showBack?: boolean;
 }
-
-const sandowBlack = C.gray80;
-const sandowDark = C.gray70;
-const sandowGray = C.gray30;
-const sandowOrange = C.orange;
-const sandowWhite = C.white;
 
 export default function SignInScreenSandow(props: any) {
   const showBack = props.route?.params?.showBack ?? true;
@@ -23,7 +24,6 @@ export default function SignInScreenSandow(props: any) {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const styles = useStyle();
 
   useEffect(() => {
     initRemembered();
@@ -83,187 +83,119 @@ export default function SignInScreenSandow(props: any) {
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.body}>
-        <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
+    <SafeAreaView className="flex-1 bg-background">
+      <Box className="flex-1">
+        <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 8, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
           {showBack && (
-            <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-              <Ionicons name="chevron-back" size={20} color={sandowGray} />
-            </TouchableOpacity>
+            <Pressable onPress={() => props.navigation.goBack()} style={{ padding: 10, marginBottom: 24 }}>
+              <Icon name="chevron-back" size={20} className="text-muted-foreground" />
+            </Pressable>
           )}
 
-          <Text style={[s.welcomeTitle, styles.fontBold]}>
+          <Heading size="2xl" style={{ lineHeight: 40 }}>
             {'Welcome to\nBe Stronger!'}
-          </Text>
-          <Text style={[s.welcomeSubtitle, styles.fontRegular]}>
+          </Heading>
+          <Text muted style={{ marginTop: 12 }}>
             Sign in to continue your fitness journey
           </Text>
 
           {/* Email */}
-          <Text style={[s.label, styles.fontMedium]}>Email</Text>
-          <View style={s.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color={sandowGray} style={s.inputIcon} />
-            <TextInput
-              style={[s.input, styles.fontRegular]}
-              placeholder="Enter your email"
-              placeholderTextColor={sandowGray}
+          <Text weight="medium" style={{ marginTop: 32, marginBottom: 8 }}>Email</Text>
+          <Input size="lg" className="rounded-sm">
+            <Icon name="mail-outline" size={20} className="text-muted-foreground" style={{ marginLeft: 16 }} />
+            <InputField
               value={email}
               onChangeText={setEmail}
+              placeholder="Enter your email"
               keyboardType="email-address"
               autoCapitalize="none"
             />
-          </View>
+          </Input>
 
           {/* Password */}
-          <Text style={[s.label, styles.fontMedium]}>Password</Text>
-          <View style={s.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color={sandowGray} style={s.inputIcon} />
-            <TextInput
-              style={[s.input, styles.fontRegular]}
-              placeholder="Enter your password"
-              placeholderTextColor={sandowGray}
+          <Text weight="medium" style={{ marginTop: 32, marginBottom: 8 }}>Password</Text>
+          <Input size="lg" className="rounded-sm">
+            <Icon name="lock-closed-outline" size={20} className="text-muted-foreground" style={{ marginLeft: 16 }} />
+            <InputField
               value={password}
               onChangeText={setPassword}
+              placeholder="Enter your password"
               secureTextEntry={obscurePassword}
             />
-            <TouchableOpacity onPress={() => setObscurePassword((p) => !p)} style={s.eyeBtn}>
-              <Ionicons
+            <Pressable onPress={() => setObscurePassword((p) => !p)} style={{ padding: 12 }}>
+              <Icon
                 name={obscurePassword ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
-                color={sandowGray}
+                className="text-muted-foreground"
               />
-            </TouchableOpacity>
-          </View>
+            </Pressable>
+          </Input>
 
           {/* Remember Me / Forgot Password */}
-          <View style={s.rememberRow}>
-            <TouchableOpacity
-              style={s.rememberCheck}
-              onPress={() => setRememberMe((p) => !p)}
-            >
-              <View style={[s.checkbox, rememberMe && s.checkboxActive]}>
-                {rememberMe && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
-              </View>
-              <Text style={[s.rememberText, styles.fontRegular]}>Remember me</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => props.navigation.navigate('MigratedForgotPwd')}>
-              <Text style={[s.forgotText, styles.fontMedium]}>Forgot Password?</Text>
-            </TouchableOpacity>
-          </View>
+          <Box className="flex-row justify-between items-center" style={{ marginTop: 16 }}>
+            <Pressable className="flex-row items-center" onPress={() => setRememberMe((p) => !p)}>
+              <Box className={`w-5 h-5 rounded items-center justify-center border ${rememberMe ? 'bg-primary border-primary' : 'border-border'}`}>
+                {rememberMe && <Icon name="checkmark" size={12} className="text-primary-foreground" />}
+              </Box>
+              <Text muted size="sm" style={{ marginLeft: 8 }}>Remember me</Text>
+            </Pressable>
+            <Pressable onPress={() => props.navigation.navigate('MigratedForgotPwd')}>
+              <Text weight="medium" size="sm" className="text-primary">Forgot Password?</Text>
+            </Pressable>
+          </Box>
 
           {/* Sign In Button */}
-          <TouchableOpacity style={s.signInBtn} onPress={save}>
-            <Text style={[s.signInBtnText, styles.fontSemiBold]}>Sign In</Text>
-          </TouchableOpacity>
+          <Button onPress={save} radius="pill" className="w-full" style={{ marginTop: 32 }}>
+            <ButtonText>Sign In</ButtonText>
+          </Button>
 
           {/* Or Divider */}
-          <View style={s.orDivider}>
-            <View style={s.dividerLine} />
-            <Text style={[s.orText, styles.fontRegular]}>or</Text>
-            <View style={s.dividerLine} />
-          </View>
+          <Box className="flex-row items-center" style={{ marginTop: 24 }}>
+            <Box className="flex-1 h-px bg-border" />
+            <Text muted size="sm" className="mx-4">or</Text>
+            <Box className="flex-1 h-px bg-border" />
+          </Box>
 
           {/* Social Buttons */}
-          <View style={s.socialRow}>
-            <TouchableOpacity style={s.socialBtn} onPress={() => props.navigation.navigate('MigratedOTP')}>
-              <Ionicons name="phone-portrait-outline" size={28} color={sandowWhite} />
-            </TouchableOpacity>
-            <TouchableOpacity style={s.socialBtn} onPress={googleLogin}>
-              <Ionicons name="logo-google" size={28} color={sandowWhite} />
-            </TouchableOpacity>
-            <TouchableOpacity style={s.socialBtn} onPress={appleLogin}>
-              <Ionicons name="logo-apple" size={28} color={sandowWhite} />
-            </TouchableOpacity>
-          </View>
+          <HStack space="lg" className="justify-center" style={{ marginTop: 24 }}>
+            <Pressable
+              className="rounded-md bg-secondary items-center justify-center"
+              style={{ width: 52, height: 52 }}
+              onPress={() => props.navigation.navigate('MigratedOTP')}
+            >
+              <Icon name="phone-portrait-outline" size={28} className="text-foreground" />
+            </Pressable>
+            <Pressable
+              className="rounded-md bg-secondary items-center justify-center"
+              style={{ width: 52, height: 52 }}
+              onPress={googleLogin}
+            >
+              <Icon name="logo-google" size={28} className="text-foreground" />
+            </Pressable>
+            <Pressable
+              className="rounded-md bg-secondary items-center justify-center"
+              style={{ width: 52, height: 52 }}
+              onPress={appleLogin}
+            >
+              <Icon name="logo-apple" size={28} className="text-foreground" />
+            </Pressable>
+          </HStack>
 
           {/* Sign Up */}
-          <View style={s.signUpRow}>
-            <Text style={[s.signUpText, styles.fontRegular]}>New user?</Text>
-            <TouchableOpacity onPress={() => props.navigation.navigate('MigratedSignUpSandow')}>
-              <Text style={[s.signUpLink, styles.fontSemiBold]}> Sign Up</Text>
-            </TouchableOpacity>
-          </View>
+          <Box className="flex-row justify-center" style={{ marginTop: 32 }}>
+            <Text muted size="sm">New user?</Text>
+            <Pressable onPress={() => props.navigation.navigate('MigratedSignUpSandow')}>
+              <Text weight="semibold" size="sm" className="text-primary"> Sign Up</Text>
+            </Pressable>
+          </Box>
         </ScrollView>
 
         {isLoading && (
-          <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={sandowOrange} />
-          </View>
+          <Box style={StyleSheet.absoluteFill} className="bg-black/50 items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
-}
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: sandowBlack },
-  body: { flex: 1 },
-  scrollContent: { padding: 24, paddingTop: 8, paddingBottom: 24 },
-  backBtn: { padding: 10, marginBottom: 24 },
-  welcomeTitle: { fontSize: 32, fontWeight: '700', color: sandowWhite, lineHeight: 40 },
-  welcomeSubtitle: { fontSize: 15, color: sandowGray, marginTop: 12 },
-  label: { fontSize: 14, fontWeight: '500', color: sandowWhite, marginTop: 32, marginBottom: 8 },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: sandowDark,
-    borderRadius: 12,
-  },
-  inputIcon: { marginLeft: 16 },
-  input: { flex: 1, color: sandowWhite, fontSize: 15, paddingHorizontal: 12, paddingVertical: 14 },
-  eyeBtn: { padding: 12 },
-  rememberRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 },
-  rememberCheck: { flexDirection: 'row', alignItems: 'center' },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: sandowOrange,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxActive: { backgroundColor: sandowOrange },
-  rememberText: { fontSize: 13, color: sandowGray, marginLeft: 8 },
-  forgotText: { fontSize: 13, color: sandowOrange, fontWeight: '500' },
-  signInBtn: {
-    backgroundColor: sandowOrange,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 32,
-    height: 52,
-    justifyContent: 'center',
-  },
-  signInBtnText: { fontSize: 16, color: '#FFFFFF', fontWeight: '600' },
-  orDivider: { flexDirection: 'row', alignItems: 'center', marginTop: 24 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: sandowDark },
-  orText: { fontSize: 13, color: sandowGray, marginHorizontal: 16 },
-  socialRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 24, gap: 16 },
-  socialBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: sandowDark,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  signUpRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 32 },
-  signUpText: { fontSize: 14, color: sandowGray },
-  signUpLink: { fontSize: 14, color: sandowOrange, fontWeight: '600' },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontRegular: { fontFamily: FONT.regular },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
 }

@@ -1,26 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import { dietApi } from '../../api/diet';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
 function DietCategoryComponent({ item, onCall }: { item: any; onCall?: () => void }) {
   return (
-    <TouchableOpacity style={styles.categoryCard} activeOpacity={0.8} onPress={onCall}>
+    <Pressable
+      className="rounded-sm overflow-hidden"
+      style={{ width: '100%', height: 140 }}
+      onPress={onCall}
+    >
       <Image
         source={{ uri: item.image || '' }}
-        style={styles.categoryImage}
+        style={{ width: '100%', height: '100%' }}
         resizeMode="cover"
       />
-      <View style={styles.categoryOverlay}>
-        <Text style={styles.categoryTitle}>{item.title || 'Category'}</Text>
-        <Text style={styles.categoryCount}>{item.count || 0} items</Text>
-      </View>
-    </TouchableOpacity>
+      <Box
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
+        className="flex-row items-center justify-between bg-black/50 px-3.5 py-2.5"
+      >
+        <Text weight="semibold" className="text-white">{item.title || 'Category'}</Text>
+        <Text size="xs" className="text-muted-foreground">{item.count || 0} items</Text>
+      </Box>
+    </Pressable>
   );
 }
 
@@ -76,22 +84,22 @@ export default function ViewDietCategoryScreen(props: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Diet Categories</Text>
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 50, paddingBottom: 12 }} className="flex-row items-center px-4 gap-3">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="arrow-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="md">Diet Categories</Heading>
+      </Box>
 
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 }}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View style={styles.grid}>
+        <Box className="gap-4">
           {dietCategoryList.map((item, index) => (
             <DietCategoryComponent
               key={item.id || index}
@@ -99,58 +107,17 @@ export default function ViewDietCategoryScreen(props: any) {
               onCall={() => handleCategoryPress(item)}
             />
           ))}
-        </View>
+        </Box>
       </ScrollView>
 
       {isLoading && (
-        <View style={styles.loadingOverlay}>
+        <Box
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          className="items-center justify-center bg-black/30"
+        >
           <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.textPrimary },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 },
-  grid: {
-    gap: 16,
-  },
-  categoryCard: {
-    width: '100%',
-    height: 140,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  categoryImage: { width: '100%', height: '100%' },
-  categoryOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  categoryTitle: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-  categoryCount: { fontSize: 12, color: C.gray40, fontFamily: FONT.regular },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

@@ -1,12 +1,13 @@
-﻿import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Animated, StyleSheet } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { HStack } from "@components/ui/hstack";
+import { VStack } from "@components/ui/vstack";
+import { Icon } from "@components/ui/icon";
 
 export default function EmparejandoScreen({ navigation }: any) {
-  const styles = useStyle();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
@@ -45,67 +46,26 @@ export default function EmparejandoScreen({ navigation }: any) {
   }, []);
 
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <Animated.View style={[styles.spinner, { transform: [{ scale: pulseAnim }] }]}>
-            <Ionicons name="bluetooth-outline" size={48} color={C.textPrimary} />
-          </Animated.View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <VStack className="flex-1 items-center justify-center" space="xl">
+        <Animated.View
+          className="items-center justify-center rounded-pill bg-primary"
+          style={{ width: 120, height: 120, transform: [{ scale: pulseAnim }] }}
+        >
+          <Icon name="bluetooth-outline" size={48} className="text-primary-foreground" />
+        </Animated.View>
 
-          <Text style={styles.title}>Emparejando...</Text>
-          <Text style={styles.subtitle}>Buscando dispositivos cercanos...</Text>
+        <VStack space="xs" className="items-center">
+          <Heading size="lg">Emparejando...</Heading>
+          <Text muted size="sm">Buscando dispositivos cercanos...</Text>
+        </VStack>
 
-          <View style={styles.dotsRow}>
-            <Animated.View style={[styles.dot, { opacity: dot1 }]} />
-            <Animated.View style={[styles.dot, { opacity: dot2 }]} />
-            <Animated.View style={[styles.dot, { opacity: dot3 }]} />
-          </View>
-        </View>
-      </SafeAreaView>
-    </View>
+        <HStack space="md">
+          <Animated.View className="w-3 h-3 rounded-pill bg-primary" style={{ opacity: dot1 }} />
+          <Animated.View className="w-3 h-3 rounded-pill bg-primary" style={{ opacity: dot2 }} />
+          <Animated.View className="w-3 h-3 rounded-pill bg-primary" style={{ opacity: dot3 }} />
+        </HStack>
+      </VStack>
+    </SafeAreaView>
   );
-}
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    root: { flex: 1, backgroundColor: C.bg },
-    container: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    spinner: {
-      width: 120,
-      height: 120,
-      borderRadius: 60,
-      backgroundColor: C.brand10,
-      borderWidth: 2,
-      borderColor: C.brand50,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 32,
-    },
-    title: {
-      fontSize: 22,
-      fontFamily: FONT.bold,
-      color: C.white,
-      marginBottom: 8,
-    },
-    subtitle: {
-      fontSize: 14,
-      fontFamily: FONT.regular,
-      color: C.gray50,
-      marginBottom: 32,
-    },
-    dotsRow: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    dot: {
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: C.brand50,
-    },
-  });
 }

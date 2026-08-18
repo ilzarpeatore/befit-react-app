@@ -1,8 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator, Dimensions, Modal, Pressable, TextInput } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { SafeAreaView, ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { Spinner } from '@components/ui/spinner';
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from '@components/ui/actionsheet';
+import { C } from './theme';
 import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -58,7 +72,6 @@ export default function RecipeListScreenV2(props: any) {
   const [calMinDraft, setCalMinDraft] = useState('');
   const [calMaxDraft, setCalMaxDraft] = useState('');
   const scrollRef = useRef<ScrollView>(null);
-  const styles = useStyle();
 
   useEffect(() => {
     loadRecipes();
@@ -133,143 +146,162 @@ export default function RecipeListScreenV2(props: any) {
   const columnWidth = (SCREEN_WIDTH - 48) / 2;
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, styles.fontBold]}>{title}</Text>
-        <View style={s.headerActions}>
-          <TouchableOpacity onPress={toggleFavourite} style={s.iconBtn}>
-            <Ionicons
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <HStack className="items-center justify-between p-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center">{title}</Heading>
+        <HStack className="items-center">
+          <Button variant="ghost" size="icon" onPress={toggleFavourite}>
+            <Icon
               name={filter.isFavourite === 1 ? 'heart' : 'heart-outline'}
               size={24}
-              color={filter.isFavourite === 1 ? C.red : C.white}
+              className={filter.isFavourite === 1 ? 'text-destructive' : 'text-foreground'}
             />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowFilterSheet(true)} style={s.iconBtn}>
-            <Ionicons name="filter-outline" size={24} color={C.white} />
-          </TouchableOpacity>
-        </View>
-      </View>
+          </Button>
+          <Button variant="ghost" size="icon" onPress={() => setShowFilterSheet(true)}>
+            <Icon name="filter-outline" size={24} className="text-foreground" />
+          </Button>
+        </HStack>
+      </HStack>
 
-      <View style={s.body}>
+      <Box className="flex-1">
         {isLoading && page === 1 ? (
-          <View style={s.center}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         ) : !isLoading && recipeList.length === 0 ? (
-          <View style={s.center}>
-            <Text style={[s.emptyText, styles.fontMedium]}>No recipes found</Text>
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Text weight="medium" muted>No recipes found</Text>
+          </Box>
         ) : (
           <ScrollView
             ref={scrollRef}
             onScroll={handleScroll}
             scrollEventThrottle={16}
-            contentContainerStyle={s.scrollContent}
+            contentContainerStyle={{ padding: 16 }}
           >
-            <View style={s.grid}>
+            <Box className="flex-row flex-wrap justify-between">
               {recipeList.map((item) => (
-                <TouchableOpacity
+                <Pressable
                   key={item.id}
-                  style={[s.recipeCard, { width: columnWidth }]}
-                  activeOpacity={0.7}
+                  style={{ width: columnWidth, marginBottom: 16 }}
                   onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id, recipeImage: item.recipeImage })}
                 >
                   {item.recipeImage ? (
                     <Image
                       source={{ uri: item.recipeImage }}
-                      style={[s.recipeImage, { width: columnWidth, height: 140 }]}
+                      style={{ width: columnWidth, height: 140, borderRadius: 12 }}
                       resizeMode="cover"
                     />
                   ) : (
-                    <View style={[s.recipeImage, { width: columnWidth, height: 140, backgroundColor: C.surfaceLight }]} />
+                    <Box className="bg-card" style={{ width: columnWidth, height: 140, borderRadius: 12 }} />
                   )}
                   {item.isPremium && !item.isAccessible && (
-                    <View style={s.lockBadge}>
-                      <Ionicons name="lock-closed" size={12} color={C.white} />
-                      <Text style={[s.lockBadgeText, styles.fontSemiBold]}>Exclusive</Text>
-                    </View>
+                    <HStack
+                      className="items-center rounded-pill"
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        gap: 4,
+                      }}
+                    >
+                      <Icon name="lock-closed" size={12} color="#FFFFFF" />
+                      <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>Exclusive</Text>
+                    </HStack>
                   )}
-                  <Text style={[s.recipeTitle, styles.fontBold]} numberOfLines={1}>
+                  <Text weight="bold" size="sm" numberOfLines={1} style={{ marginTop: 8 }}>
                     {item.title}
                   </Text>
                   {item.calories != null && (
-                    <Text style={[s.recipeCalories, styles.fontRegular]}>
+                    <Text size="xs" muted style={{ marginTop: 4 }}>
                       {item.calories} kcal
                     </Text>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               ))}
-            </View>
+            </Box>
             {isLoading && page > 1 && (
               <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
             )}
           </ScrollView>
         )}
-      </View>
+      </Box>
 
-      <Modal
-        visible={showFilterSheet}
-        transparent
-        animationType="slide"
-        onShow={() => {
+      <Actionsheet
+        isOpen={showFilterSheet}
+        onClose={() => setShowFilterSheet(false)}
+        onOpen={() => {
           setMealTypeDraft(filter.mealTypes ?? []);
           setCalMinDraft(filter.startCalories != null ? String(filter.startCalories) : '');
           setCalMaxDraft(filter.endCalories != null ? String(filter.endCalories) : '');
         }}
       >
-        <Pressable style={s.modalOverlay} onPress={() => setShowFilterSheet(false)}>
-          <Pressable style={s.filterSheet} onPress={(e) => e.stopPropagation()}>
-            <View style={s.filterHandle} />
-            <Text style={[s.filterTitle, styles.fontBold]}>Filters</Text>
+        <ActionsheetBackdrop />
+        <ActionsheetContent className="items-stretch bg-background rounded-t-lg p-6">
+          <ActionsheetDragIndicatorWrapper>
+            <ActionsheetDragIndicator />
+          </ActionsheetDragIndicatorWrapper>
+            <Heading size="lg" style={{ marginBottom: 16 }}>Filters</Heading>
 
-            <Text style={[s.filterLabel, styles.fontSemiBold]}>Meal Type</Text>
-            <View style={s.chipsRow}>
+            <Text weight="semibold" muted size="sm" style={{ marginTop: 16, marginBottom: 10 }}>Meal Type</Text>
+            <Box className="flex-row flex-wrap gap-2">
               {MEAL_TYPE_OPTIONS.map((mt) => {
                 const selected = mealTypeDraft.includes(mt);
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={mt}
-                    style={[s.chip, selected && s.chipSelected]}
+                    className="rounded-pill"
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderWidth: 1,
+                      borderColor: selected ? C.brand5 : C.gray60,
+                      backgroundColor: selected ? C.brand5 : 'transparent',
+                    }}
                     onPress={() =>
                       setMealTypeDraft((prev) =>
                         prev.includes(mt) ? prev.filter((v) => v !== mt) : [...prev, mt]
                       )
                     }
                   >
-                    <Text style={[s.chipText, selected && s.chipTextSelected, styles.fontMedium]}>
+                    <Text size="sm" weight="medium" style={{ color: selected ? C.white : C.gray30 }}>
                       {mt.charAt(0).toUpperCase() + mt.slice(1)}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
-            </View>
+            </Box>
 
-            <Text style={[s.filterLabel, styles.fontSemiBold]}>Calories (kcal)</Text>
-            <View style={s.rangeRow}>
-              <TextInput
-                style={s.rangeInput}
-                placeholder="Min"
-                placeholderTextColor={C.gray40}
-                keyboardType="numeric"
-                value={calMinDraft}
-                onChangeText={setCalMinDraft}
-              />
-              <Text style={[s.rangeSeparator, styles.fontRegular]}>-</Text>
-              <TextInput
-                style={s.rangeInput}
-                placeholder="Max"
-                placeholderTextColor={C.gray40}
-                keyboardType="numeric"
-                value={calMaxDraft}
-                onChangeText={setCalMaxDraft}
-              />
-            </View>
+            <Text weight="semibold" muted size="sm" style={{ marginTop: 16, marginBottom: 10 }}>Calories (kcal)</Text>
+            <HStack className="items-center">
+              <Input className="flex-1">
+                <InputField
+                  placeholder="Min"
+                  keyboardType="numeric"
+                  value={calMinDraft}
+                  onChangeText={setCalMinDraft}
+                />
+              </Input>
+              <Text muted style={{ marginHorizontal: 12 }}>-</Text>
+              <Input className="flex-1">
+                <InputField
+                  placeholder="Max"
+                  keyboardType="numeric"
+                  value={calMaxDraft}
+                  onChangeText={setCalMaxDraft}
+                />
+              </Input>
+            </HStack>
 
-            <TouchableOpacity
-              style={s.applyBtn}
+            <Button
+              size="lg"
+              style={{ marginTop: 24 }}
               onPress={() => {
                 setFilter((prev) => ({
                   ...prev,
@@ -282,82 +314,10 @@ export default function RecipeListScreenV2(props: any) {
                 setRecipeList([]);
               }}
             >
-              <Text style={[s.applyBtnText, styles.fontSemiBold]}>Apply Filters</Text>
-            </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
+              <ButtonText>Apply Filters</ButtonText>
+            </Button>
+        </ActionsheetContent>
+      </Actionsheet>
     </SafeAreaView>
   );
-}
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: { fontSize: 18, color: C.white, flex: 1, textAlign: 'center' },
-  headerActions: { flexDirection: 'row', alignItems: 'center' },
-  iconBtn: { padding: 8 },
-  body: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: C.gray30 },
-  scrollContent: { padding: 16 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  recipeCard: { marginBottom: 16 },
-  recipeImage: { borderRadius: 12 },
-  lockBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  lockBadgeText: { fontSize: 11, color: '#FFFFFF' },
-  recipeTitle: { fontSize: 14, color: '#FFFFFF', marginTop: 8 },
-  recipeCalories: { fontSize: 12, color: C.gray30, marginTop: 4 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  filterSheet: { backgroundColor: C.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
-  filterHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: C.gray60, alignSelf: 'center', marginBottom: 16 },
-  filterTitle: { fontSize: 20, color: C.white, marginBottom: 16 },
-  filterLabel: { fontSize: 14, color: C.gray30, marginTop: 16, marginBottom: 10 },
-  chipsRow: { flexDirection: 'row', flexWrap: 'wrap' },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: C.gray60,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipSelected: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  chipText: { fontSize: 13, color: C.gray30 },
-  chipTextSelected: { color: C.white },
-  rangeRow: { flexDirection: 'row', alignItems: 'center' },
-  rangeInput: {
-    flex: 1,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: C.white,
-    fontSize: 14,
-  },
-  rangeSeparator: { color: C.gray30, marginHorizontal: 12 },
-  applyBtn: { backgroundColor: C.brand5, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
-  applyBtnText: { fontSize: 16, color: C.white },
-});
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontRegular: { fontFamily: FONT.regular },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
 }

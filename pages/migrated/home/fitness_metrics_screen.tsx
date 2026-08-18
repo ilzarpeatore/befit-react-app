@@ -1,9 +1,15 @@
-﻿import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React from "react";
+import { View, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { Pressable } from "@components/ui/pressable";
+import { Icon } from "@components/ui/icon";
+import { Card } from "@components/ui/card";
+import { HStack } from "@components/ui/hstack";
+import { VStack } from "@components/ui/vstack";
+import { C } from "../theme";
 
 const METRICS = [
   { id: "heart_rate", name: "Heart Rate", value: "72", unit: "bpm", status: "Normal", statusColor: C.success50, icon: "heart", iconBg: C.destructive5, iconColor: C.destructive50, chart: [65, 68, 72, 70, 74, 72] },
@@ -49,78 +55,47 @@ const miniStyles = StyleSheet.create({
 });
 
 export default function FitnessMetricsScreen({ navigation }: any) {
-  const styles = useStyle();
-
   const handlePress = (metric: (typeof METRICS)[number]) => {
     navigation.navigate("MigratedHealthMetricInsight", { metricType: metric.id });
   };
 
   return (
-    <View style={styles.root}>
+    <Box className="flex-1 bg-background">
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Fitness Metrics</Text>
-        </View>
+        <Box className="px-5" style={{ paddingTop: 12, paddingBottom: 8 }}>
+          <Heading size="xl">Fitness Metrics</Heading>
+        </Box>
         <ScrollView contentContainerStyle={styles.list}>
           {METRICS.map((m) => (
-            <TouchableOpacity
-              key={m.id}
-              style={styles.card}
-              activeOpacity={0.7}
-              onPress={() => handlePress(m)}
-            >
-              <View style={[styles.iconCircle, { backgroundColor: m.iconBg }]}>
-                <Ionicons name={m.icon as any} size={22} color={m.iconColor} />
-              </View>
-              <View style={styles.cardBody}>
-                <Text style={styles.cardName}>{m.name}</Text>
-                <View style={styles.cardValueRow}>
-                  <Text style={styles.cardValue}>{m.value}</Text>
-                  {m.unit ? <Text style={styles.cardUnit}>{m.unit}</Text> : null}
-                  <View style={[styles.badge, { backgroundColor: m.statusColor + "20" }]}>
-                    <Text style={[styles.badgeText, { color: m.statusColor }]}>{m.status}</Text>
-                  </View>
-                </View>
-              </View>
-              <MiniChart data={m.chart} color={m.iconColor} />
-              <Ionicons name="chevron-forward" size={16} color={C.gray50} />
-            </TouchableOpacity>
+            <Pressable key={m.id} onPress={() => handlePress(m)}>
+              <Card variant="outline" className="flex-row items-center p-4 gap-3">
+                <Box
+                  className="w-11 h-11 rounded-pill items-center justify-center"
+                  style={{ backgroundColor: m.iconBg }}
+                >
+                  <Icon name={m.icon as any} size={22} color={m.iconColor} />
+                </Box>
+                <VStack className="flex-1">
+                  <Text size="sm" weight="medium" muted>{m.name}</Text>
+                  <HStack space="xs" className="items-center" style={{ marginTop: 4 }}>
+                    <Text size="xl" weight="bold">{m.value}</Text>
+                    {m.unit ? <Text size="sm" muted style={{ marginRight: 8 }}>{m.unit}</Text> : null}
+                    <Box className="rounded-sm px-2 py-0.5" style={{ backgroundColor: m.statusColor + "20" }}>
+                      <Text size="xs" weight="semibold" style={{ color: m.statusColor }}>{m.status}</Text>
+                    </Box>
+                  </HStack>
+                </VStack>
+                <MiniChart data={m.chart} color={m.iconColor} />
+                <Icon name="chevron-forward" size={16} className="text-muted-foreground" />
+              </Card>
+            </Pressable>
           ))}
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </Box>
   );
 }
 
-function useStyle() {
-  return useResponsiveStyleSheet({
-    root: { flex: 1, backgroundColor: C.bg },
-    header: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-    headerTitle: { fontSize: 28, fontFamily: FONT.bold, color: C.white },
-    list: { paddingHorizontal: 16, paddingBottom: 32, gap: 12 },
-    card: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: C.surface,
-      borderRadius: 16,
-      padding: 16,
-      borderWidth: 1,
-      borderColor: C.border,
-      gap: 12,
-    },
-    iconCircle: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    cardBody: { flex: 1 },
-    cardName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50 },
-    cardValueRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-    cardValue: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-    cardUnit: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, marginRight: 8 },
-    badge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
-    badgeText: { fontSize: 11, fontFamily: FONT.semiBold },
-  });
-}
+const styles = StyleSheet.create({
+  list: { paddingHorizontal: 16, paddingBottom: 32, gap: 12 },
+});

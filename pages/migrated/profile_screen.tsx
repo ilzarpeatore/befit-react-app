@@ -1,9 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { ScrollView, Image, Alert } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 import { Ionicons } from '@expo/vector-icons';
 import AppIcon from '@components/AppIcon';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { C } from './theme';
 import { useAuth } from '../../store/AuthContext';
 
 interface MenuItem {
@@ -49,11 +54,11 @@ interface StatTileProps {
 
 function StatTile({ label, value, icon }: StatTileProps) {
   return (
-    <View style={s.statTile}>
+    <Box className="flex-1 items-center rounded-sm py-4" style={{ backgroundColor: C.gray80 }}>
       <AppIcon name={icon} size={20} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={40} style={{ marginBottom: 8 }} />
-      <Text style={s.statValue}>{value}</Text>
-      <Text style={s.statLabel}>{label}</Text>
-    </View>
+      <Text weight="bold" size="lg">{value}</Text>
+      <Text size="xs" muted style={{ marginTop: 4 }}>{label}</Text>
+    </Box>
   );
 }
 
@@ -83,37 +88,46 @@ export default function ProfileScreen(props: any) {
   };
 
   return (
-    <View style={s.container}>
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.header}>
-          <View style={s.headerRow}>
-            <Text style={s.headerTitle}>Profile</Text>
-          </View>
-          <View style={s.avatarSection}>
-            <View style={s.avatarContainer}>
+    <Box className="flex-1 bg-background">
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <Box className="rounded-b-lg px-5 items-center" style={{ backgroundColor: C.gray80, paddingTop: 60, paddingBottom: 24 }}>
+          <HStack className="items-center w-full" style={{ marginBottom: 24 }}>
+            <Heading size="md">Profile</Heading>
+          </HStack>
+          <Box className="relative" style={{ marginBottom: 16 }}>
+            <Box className="rounded-pill bg-card items-center justify-center overflow-hidden" style={{ width: 96, height: 96 }}>
               {profileImage ? (
-                <Image source={{ uri: profileImage }} style={s.avatarImage} />
+                <Image source={{ uri: profileImage }} style={{ width: 96, height: 96, borderRadius: 48 }} />
               ) : (
-                <Ionicons name="person" size={40} color={C.gray30} />
+                <Icon name="person" size={40} color={C.gray30} />
               )}
-            </View>
-            <TouchableOpacity style={s.editAvatarBtn} onPress={() => props.navigation?.navigate('MigratedEditProfile')}>
-              <Ionicons name="pencil" size={14} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-          <Text style={s.profileName}>{userName}</Text>
-          <Text style={s.profileEmail}>{userEmail}</Text>
-        </View>
+            </Box>
+            <Pressable
+              className="absolute rounded-pill items-center justify-center"
+              style={{ bottom: 0, right: 0, width: 32, height: 32, backgroundColor: C.orange, borderWidth: 2, borderColor: C.gray80 }}
+              onPress={() => props.navigation?.navigate('MigratedEditProfile')}
+            >
+              <Icon name="pencil" size={14} color="#FFFFFF" />
+            </Pressable>
+          </Box>
+          <Text weight="bold" size="xl">{userName}</Text>
+          <Text size="sm" muted style={{ marginTop: 4 }}>{userEmail}</Text>
+        </Box>
 
-        <View style={s.statsRow}>
+        <Box className="flex-row px-5 gap-2" style={{ marginTop: 24 }}>
           <StatTile label="Weight" value={`${userWeight} kg`} icon="scale-outline" />
           <StatTile label="Height" value={`${userHeight} cm`} icon="resize-outline" />
           <StatTile label="Age" value={userAge} icon="calendar-outline" />
-        </View>
+        </Box>
 
-        <View style={s.menuSection}>
+        <Box className="px-5 gap-2" style={{ marginTop: 24 }}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={s.menuItem} onPress={() => handleMenuItemPress(item)}>
+            <Pressable
+              key={index}
+              className="flex-row items-center rounded-sm px-4"
+              style={{ backgroundColor: C.gray80, paddingVertical: 14 }}
+              onPress={() => handleMenuItemPress(item)}
+            >
               <AppIcon
                 name={item.icon}
                 size={22}
@@ -122,33 +136,18 @@ export default function ProfileScreen(props: any) {
                 containerSize={40}
                 borderRadius={12}
               />
-              <Text style={[s.menuLabel, item.textColor ? { color: item.textColor } : null]}>{item.title}</Text>
-              <Ionicons name="chevron-forward" size={20} color={C.gray50} />
-            </TouchableOpacity>
+              <Text
+                weight="medium"
+                className="flex-1"
+                style={[{ marginLeft: 16 }, item.textColor ? { color: item.textColor } : null]}
+              >
+                {item.title}
+              </Text>
+              <Icon name="chevron-forward" size={20} color={C.gray50} />
+            </Pressable>
           ))}
-        </View>
+        </Box>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  scrollContent: { paddingBottom: 32 },
-  header: { backgroundColor: C.gray80, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingHorizontal: 20, paddingTop: 60, paddingBottom: 24, alignItems: 'center' },
-  headerRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 24 },
-  headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
-  avatarSection: { position: 'relative', marginBottom: 16 },
-  avatarContainer: { width: 96, height: 96, borderRadius: 48, backgroundColor: C.surfaceLight, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarImage: { width: 96, height: 96, borderRadius: 48 },
-  editAvatarBtn: { position: 'absolute', bottom: 0, right: 0, width: 32, height: 32, borderRadius: 16, backgroundColor: C.orange, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: C.gray80 },
-  profileName: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-  profileEmail: { fontSize: 14, color: C.gray30, marginTop: 4 },
-  statsRow: { flexDirection: 'row', paddingHorizontal: 20, marginTop: 24 },
-  statTile: { flex: 1, alignItems: 'center', backgroundColor: C.gray80, borderRadius: 14, paddingVertical: 16, marginHorizontal: 4 },
-  statValue: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  statLabel: { fontSize: 12, color: C.gray30, marginTop: 4 },
-  menuSection: { paddingHorizontal: 20, marginTop: 24 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.gray80, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 8 },
-  menuLabel: { flex: 1, fontSize: 15, fontFamily: FONT.medium, color: C.white, marginLeft: 16 },
-});

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, Dimensions } from 'react-native';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Image, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Spinner } from '@components/ui/spinner';
 // @ts-ignore - expo-av removed; fallback to View
-const Video = (props: any) => <View style={[props.style, { backgroundColor: '#000' }]} />;
+const Video = (props: any) => <Box style={props.style} className="bg-black" />;
 const ResizeMode = { CONTAIN: 'contain' };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -56,72 +57,38 @@ export default function ChewieScreen({ route }: any) {
 
   if (isInitialized && url) {
     return (
-      <View style={styles_local.container}>
+      <Box style={{ width: SCREEN_WIDTH, aspectRatio: ASPECT_RATIO, overflow: 'hidden' }} className="bg-background">
         <Video
           ref={videoRef}
           source={{ uri: url }}
-          style={styles_local.video}
+          style={{ width: '100%', height: '100%' }}
           resizeMode={ResizeMode.CONTAIN}
           shouldPlay={autoPlay}
           isLooping
           onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
           useNativeControls
         />
-      </View>
+      </Box>
     );
   }
 
   return (
-    <View style={styles_local.container}>
+    <Box style={{ width: SCREEN_WIDTH, aspectRatio: ASPECT_RATIO, overflow: 'hidden' }} className="bg-background">
       {isLoading ? (
-        <View style={styles_local.loadingWrap}>
-          <ActivityIndicator size="large" color={C.gray50} />
-        </View>
+        <Box className="flex-1 items-center justify-center bg-background">
+          <Spinner size="large" />
+        </Box>
       ) : image ? (
         <Image
           source={{ uri: image }}
-          style={styles_local.fallbackImage}
+          style={{ width: '100%', height: '100%' }}
           resizeMode="cover"
         />
       ) : (
-        <View style={styles_local.placeholderWrap}>
-          <Text style={styles_local.placeholderText}>No media available</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center bg-background">
+          <Text size="sm" muted>No media available</Text>
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: {
-    width: SCREEN_WIDTH,
-    aspectRatio: ASPECT_RATIO,
-    backgroundColor: C.bg,
-    overflow: 'hidden',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-  },
-  loadingWrap: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: C.bg,
-  },
-  fallbackImage: {
-    width: '100%',
-    height: '100%',
-  },
-  placeholderWrap: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: C.bg,
-  },
-  placeholderText: {
-    fontSize: 14,
-    fontFamily: FONT.regular,
-    color: C.gray40,
-  },
-});

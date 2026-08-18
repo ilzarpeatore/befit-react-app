@@ -1,16 +1,13 @@
-﻿import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import React, { useState } from "react";
+import { ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-
-import { C, FONT } from "../theme";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { Pressable } from "@components/ui/pressable";
+import { Icon } from "@components/ui/icon";
+import { Button, ButtonText } from "@components/ui/button";
+import { C } from "../theme";
 
 interface Metric {
   id: string;
@@ -63,91 +60,44 @@ export default function ManageHealthMetricsScreen({ navigation }: any) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Gestionar mÃ©tricas</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+      <ScrollView contentContainerStyle={{ padding: 20 }}>
+        <Heading size="lg" style={{ marginBottom: 24 }}>Gestionar mÃ©tricas</Heading>
 
         {metrics.map((metric, index) => (
-          <View key={metric.id} style={styles.metricItem}>
-            <View style={styles.metricLeft}>
-              <Ionicons name="reorder-three-outline" size={20} color={C.gray} />
-              <Ionicons
+          <Box
+            key={metric.id}
+            className="flex-row items-center justify-between bg-card rounded-sm p-4"
+            style={{ marginBottom: 10 }}
+          >
+            <Box className="flex-row items-center">
+              <Icon name="reorder-three-outline" size={20} className="text-muted-foreground" />
+              <Icon
                 name={metric.icon as any}
                 size={20}
-                color={C.textPrimary}
+                className="text-foreground"
                 style={{ marginHorizontal: 12 }}
               />
-              <Text style={styles.metricName}>{metric.name}</Text>
-            </View>
-            <View style={styles.metricRight}>
-              <TouchableOpacity onPress={() => moveUp(index)}>
-                <Ionicons name="chevron-up" size={18} color={C.gray} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => moveDown(index)}>
-                <Ionicons name="chevron-down" size={18} color={C.gray} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(metric.id)}>
-                <Ionicons name="trash-outline" size={18} color="#F44336" />
-              </TouchableOpacity>
-            </View>
-          </View>
+              <Text size="md" weight="medium">{metric.name}</Text>
+            </Box>
+            <Box className="flex-row items-center gap-4">
+              <Pressable onPress={() => moveUp(index)}>
+                <Icon name="chevron-up" size={18} className="text-muted-foreground" />
+              </Pressable>
+              <Pressable onPress={() => moveDown(index)}>
+                <Icon name="chevron-down" size={18} className="text-muted-foreground" />
+              </Pressable>
+              <Pressable onPress={() => handleDelete(metric.id)}>
+                <Icon name="trash-outline" size={18} color="#F44336" />
+              </Pressable>
+            </Box>
+          </Box>
         ))}
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Guardar</Text>
-        </TouchableOpacity>
+        <Button style={{ marginTop: 24 }} onPress={handleSave}>
+          <ButtonText>Guardar</ButtonText>
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: C.bg,
-  },
-  content: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: FONT.bold,
-    color: C.text,
-    marginBottom: 24,
-  },
-  metricItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: C.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
-  },
-  metricLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  metricRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  metricName: {
-    fontSize: 16,
-    fontFamily: FONT.medium,
-    color: C.text,
-  },
-  saveButton: {
-    backgroundColor: C.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 24,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontFamily: FONT.bold,
-    color: C.white,
-  },
-});

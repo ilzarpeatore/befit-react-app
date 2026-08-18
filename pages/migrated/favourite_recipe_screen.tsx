@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Image, FlatList, SafeAreaView, StyleSheet } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import { recipesApi } from '../../api/recipes';
 import logger from '@helper/logger';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RecipeItem {
   id: number;
@@ -80,48 +83,48 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
       .join(', ') || '';
 
     return (
-      <TouchableOpacity
-        style={localStyles.recipeCard}
+      <Pressable
+        className="bg-secondary rounded-md p-3"
         onPress={() => _showRecipeDetailBottomSheet(item)}
-        activeOpacity={0.7}
       >
-        <View style={localStyles.recipeRow}>
+        <Box className="flex-row items-center">
           <Image
             source={{ uri: item.recipeImage || '' }}
-            style={localStyles.recipeImage}
+            className="rounded-md bg-card"
+            style={{ width: 60, height: 60 }}
           />
-          <View style={localStyles.recipeInfo}>
-            <Text style={localStyles.recipeTitle} numberOfLines={1}>
+          <Box className="flex-1" style={{ marginLeft: 12 }}>
+            <Text weight="bold" size="sm" numberOfLines={1}>
               {item.title}
             </Text>
             {subtitle.length > 0 && (
-              <Text style={localStyles.recipeSubtitle} numberOfLines={1}>
+              <Text muted size="xs" numberOfLines={1} style={{ marginTop: 4 }}>
                 {subtitle}
               </Text>
             )}
-          </View>
-          <View style={localStyles.recipeNutrition}>
-            <Text style={localStyles.recipeCalories}>{item.calories} kcal</Text>
+          </Box>
+          <Box className="items-end" style={{ marginLeft: 8 }}>
+            <Text muted size="xs">{item.calories} kcal</Text>
             {item.preparationTime ? (
-              <Text style={localStyles.recipeTime}>{item.preparationTime} min</Text>
+              <Text muted size="xs" style={{ marginTop: 4 }}>{item.preparationTime} min</Text>
             ) : null}
-          </View>
-        </View>
-      </TouchableOpacity>
+          </Box>
+        </Box>
+      </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={localStyles.container}>
-      <View style={localStyles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={localStyles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={localStyles.appBarTitle}>Favourite Recipe</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <SafeAreaView className="flex-1 bg-background">
+      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center px-2 bg-background">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center">Favourite Recipe</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <View style={localStyles.body}>
+      <Box className="flex-1">
         <FlatList
           ref={_scrollController}
           data={recipeList}
@@ -129,103 +132,21 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
           keyExtractor={(item, index) => `${item.id}-${index}`}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={{ padding: 16, gap: 16 }}
           ListEmptyComponent={
             !isLoading ? (
-              <View style={localStyles.emptyContainer}>
-                <Text style={localStyles.emptyText}>No favourite recipes found</Text>
-              </View>
+              <Box style={{ paddingVertical: 60 }} className="flex-1 items-center justify-center">
+                <Text muted size="sm">No favourite recipes found</Text>
+              </Box>
             ) : null
           }
         />
         {isLoading && (
-          <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={StyleSheet.absoluteFill} className="items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const localStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-    backgroundColor: C.bg,
-  },
-  backBtn: { padding: 8 },
-  appBarTitle: {
-    flex: 1,
-    fontFamily: FONT.bold,
-    fontSize: 18,
-    color: C.white,
-    textAlign: 'center',
-  },
-  body: { flex: 1 },
-  recipeCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-  },
-  recipeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recipeImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-    backgroundColor: C.gray70,
-  },
-  recipeInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  recipeTitle: {
-    fontFamily: FONT.bold,
-    fontSize: 14,
-    color: C.white,
-  },
-  recipeSubtitle: {
-    fontFamily: FONT.regular,
-    fontSize: 12,
-    color: C.gray30,
-    marginTop: 4,
-  },
-  recipeNutrition: {
-    alignItems: 'flex-end',
-    marginLeft: 8,
-  },
-  recipeCalories: {
-    fontFamily: FONT.regular,
-    fontSize: 12,
-    color: C.gray30,
-  },
-  recipeTime: {
-    fontFamily: FONT.regular,
-    fontSize: 12,
-    color: C.gray30,
-    marginTop: 4,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    color: C.gray30,
-  },
-  loaderContainer: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
