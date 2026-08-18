@@ -10,6 +10,22 @@ export interface DashboardData {
   steps: StepsSummary;
   water: WaterSummary;
   weekly_activity: WeeklyActivity[];
+  // Ya lo devolvia el backend (DashboardController::dashboard) sin que el
+  // frontend lo leyera -- ver banner condicional de la cabecera Home v2
+  // (docs/Nueva_Cabecera_Home_Helix.md, seccion 2, Estado B).
+  banner_slider?: BannerSliderItem[];
+}
+
+export interface BannerSliderItem {
+  id: number;
+  title: string;
+  slug: string;
+  type: 'url' | 'workout';
+  workout_id: number | null;
+  url: string | null;
+  bannerslider_image: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface WorkoutSummary {
