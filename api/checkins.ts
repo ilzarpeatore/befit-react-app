@@ -56,6 +56,9 @@ export interface CheckInAssignment {
   submitted_at: string | null;
   latest_submission_id: number | null;
   is_due: boolean;
+  // Fecha fija puesta por el coach (Y-m-d), o null si es la asignación
+  // recurrente normal gobernada por form.recurrence.
+  scheduled_date: string | null;
 }
 
 export interface CheckInAnswerInput {
@@ -79,6 +82,11 @@ export const checkinsApi = {
     apiClient.get<{ data: CheckInAssignment[] }>('form-assigned-list', { params: kind ? { kind } : undefined }),
 
   getFormDetail: (id: number) => apiClient.get<{ data: CheckInForm }>('form-detail', { params: { id } }),
+
+  // Asignaciones con fecha fija (scheduled_date) dentro de un mes/año --
+  // para proyectarlas en el calendario (my_program_calendar_screen.tsx).
+  getAssignedCalendar: (month: number, year: number) =>
+    apiClient.get<{ data: CheckInAssignment[] }>('form-assigned-calendar', { params: { month, year } }),
 
   submit: (formAssignmentId: number, answers: CheckInAnswerInput[]) =>
     apiClient.post<ApiMessageResponse>('form-submit', { form_assignment_id: formAssignmentId, answers }),

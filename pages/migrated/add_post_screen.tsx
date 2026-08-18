@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, Image, Alert, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Textarea, TextareaInput } from '@components/ui/textarea';
+import { VStack } from '@components/ui/vstack';
+import { Text } from '@components/ui/text';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import ScreenHeader from '@components/ScreenHeader';
+import { C } from './theme';
 import { postsApi, PickedPostMedia } from '../../api/posts';
 import logger from '@helper/logger';
 
@@ -127,140 +134,80 @@ export default function AddPostScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>{flow === 'EditFlow' ? 'Edit Post' : 'New Post'}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 40 }}>
+        <ScreenHeader title={flow === 'EditFlow' ? 'Edit Post' : 'New Post'} onBack={() => navigation.goBack()} />
+      </Box>
 
-      <ScrollView style={styles_local.body} showsVerticalScrollIndicator={false}>
-        {/* Description field */}
-        <TextInput
-          style={styles_local.descriptionInput}
-          placeholder="What's on your mind?"
-          placeholderTextColor={C.gray50}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-        />
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+        <VStack space="lg" style={{ paddingTop: 16, paddingBottom: 32 }}>
+          {/* Description field */}
+          <Textarea className="bg-card rounded-sm border-border h-auto" style={{ minHeight: 140 }}>
+            <TextareaInput
+              className="p-3.5 font-gilroy-regular text-sm"
+              placeholder="What's on your mind?"
+              placeholderTextColor="rgb(var(--muted-foreground))"
+              value={description}
+              onChangeText={setDescription}
+              numberOfLines={6}
+            />
+          </Textarea>
 
-        {/* Existing images (edit mode) */}
-        {existingImages.length > 0 && (
-          <View style={styles_local.imageGrid}>
-            {existingImages.map((uri, index) => (
-              <View key={index} style={styles_local.imageWrap}>
-                <Image source={{ uri }} style={styles_local.image} />
-                <TouchableOpacity
-                  style={styles_local.removeBtn}
-                  onPress={() => removeExistingImage(index)}
-                >
-                  <Ionicons name="close-circle" size={24} color={C.destructive} />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
+          {/* Existing images (edit mode) */}
+          {existingImages.length > 0 && (
+            <Box className="flex-row flex-wrap gap-2">
+              {existingImages.map((uri, index) => (
+                <Box key={index} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
+                  <Image source={{ uri }} className="w-full h-full rounded-sm bg-secondary" />
+                  <Pressable
+                    style={{ position: 'absolute', top: -6, right: -6 }}
+                    onPress={() => removeExistingImage(index)}
+                  >
+                    <Icon name="close-circle" size={24} className="text-destructive" />
+                  </Pressable>
+                </Box>
+              ))}
+            </Box>
+          )}
 
-        {/* Selected new images */}
-        {selectedImages.length > 0 && (
-          <View style={styles_local.imageGrid}>
-            {selectedImages.map((img, index) => (
-              <View key={index} style={styles_local.imageWrap}>
-                <Image source={{ uri: img.uri }} style={styles_local.image} />
-                <TouchableOpacity
-                  style={styles_local.removeBtn}
-                  onPress={() => setSelectedImages((prev) => prev.filter((_, i) => i !== index))}
-                >
-                  <Ionicons name="close-circle" size={24} color={C.destructive} />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
+          {/* Selected new images */}
+          {selectedImages.length > 0 && (
+            <Box className="flex-row flex-wrap gap-2">
+              {selectedImages.map((img, index) => (
+                <Box key={index} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
+                  <Image source={{ uri: img.uri }} className="w-full h-full rounded-sm bg-secondary" />
+                  <Pressable
+                    style={{ position: 'absolute', top: -6, right: -6 }}
+                    onPress={() => setSelectedImages((prev) => prev.filter((_, i) => i !== index))}
+                  >
+                    <Icon name="close-circle" size={24} className="text-destructive" />
+                  </Pressable>
+                </Box>
+              ))}
+            </Box>
+          )}
 
-        {/* Upload button */}
-        <TouchableOpacity style={styles_local.uploadBtn} onPress={pickMedia} activeOpacity={0.7}>
-          <Ionicons name="camera-outline" size={28} color={C.gray30} />
-          <Text style={styles_local.uploadText}>Add Photos/Videos</Text>
-        </TouchableOpacity>
+          {/* Upload button */}
+          <Pressable
+            className="flex-row items-center justify-center bg-card rounded-sm border border-border border-dashed py-4 gap-2"
+            onPress={pickMedia}
+          >
+            <Icon name="camera-outline" size={28} className="text-muted-foreground" />
+            <Text weight="medium" size="sm" className="text-muted-foreground">Add Photos/Videos</Text>
+          </Pressable>
 
-        {/* Submit button */}
-        <TouchableOpacity style={styles_local.submitBtn} onPress={flow === 'EditFlow' ? editPost : submitPost} activeOpacity={0.8}>
-          <Text style={styles_local.submitText}>{flow === 'EditFlow' ? 'Edit Post' : 'Share Post'}</Text>
-        </TouchableOpacity>
+          {/* Submit button */}
+          <Button onPress={flow === 'EditFlow' ? editPost : submitPost} radius="pill" className="w-full">
+            <ButtonText>{flow === 'EditFlow' ? 'Edit Post' : 'Share Post'}</ButtonText>
+          </Button>
+        </VStack>
       </ScrollView>
 
       {loading && (
-        <View style={styles_local.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        <Box style={StyleSheet.absoluteFill} className="bg-black/50 items-center justify-center">
+          <Spinner size="large" color={C.orange} />
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  body: { flex: 1, paddingHorizontal: 16 },
-  descriptionInput: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 14,
-    color: C.white,
-    fontFamily: FONT.regular,
-    fontSize: 15,
-    minHeight: 140,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  imageGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 16, gap: 8 },
-  imageWrap: { position: 'relative', width: '48%', aspectRatio: 1 },
-  image: { width: '100%', height: '100%', borderRadius: 12, backgroundColor: C.surfaceLight },
-  removeBtn: { position: 'absolute', top: -6, right: -6 },
-  uploadBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    paddingVertical: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: C.border,
-    borderStyle: 'dashed',
-    gap: 8,
-  },
-  uploadText: { fontSize: 14, fontFamily: FONT.medium, color: C.gray30 },
-  submitBtn: {
-    backgroundColor: C.brand5,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 32,
-  },
-  submitText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { FlatList, ActivityIndicator, Image } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField, InputSlot } from '@components/ui/input';
+import ScreenHeader from '@components/ScreenHeader';
+import { C } from './theme';
 import { blogApi, BlogListItem, BlogCategory } from '../../api/blog';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import logger from '@helper/logger';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface SortOption {
   key: string;
@@ -125,107 +130,111 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   };
 
   const renderCard = ({ item }: { item: BlogListItem }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.8}
+    <Pressable
+      className="bg-card rounded-md overflow-hidden"
+      style={{ marginBottom: 16 }}
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
-        <Image source={{ uri: item.post_image }} style={styles.cardImage} resizeMode="cover" />
+        <Image source={{ uri: item.post_image }} style={{ width: '100%', height: 160 }} resizeMode="cover" />
       ) : (
-        <View style={[styles.cardImage, { backgroundColor: C.surfaceLight }]} />
+        <Box className="bg-secondary" style={{ width: '100%', height: 160 }} />
       )}
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardTitle} numberOfLines={2}>
+      <Box style={{ padding: 14 }}>
+        <Text weight="semibold" numberOfLines={2} style={{ marginBottom: 8, lineHeight: 22 }}>
           {truncateTitle(item.title || '', 15)}
         </Text>
         {item.blog_category && (
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>{item.blog_category.title}</Text>
-          </View>
+          <Box
+            className="self-start rounded-sm"
+            style={{ backgroundColor: C.brand5, paddingHorizontal: 8, paddingVertical: 3, marginBottom: 8 }}
+          >
+            <Text size="xs" weight="semibold" style={{ color: C.white }}>{item.blog_category.title}</Text>
+          </Box>
         )}
-        <View style={styles.cardMeta}>
-          <Ionicons name="time-outline" size={13} color={C.gray40} />
-          <Text style={styles.cardDate}>{formatDate(item.datetime)}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+        <HStack space="xs" className="items-center">
+          <Icon name="time-outline" size={13} className="text-muted-foreground" />
+          <Text size="xs" muted>{formatDate(item.datetime)}</Text>
+        </HStack>
+      </Box>
+    </Pressable>
   );
 
   const renderFooter = () => {
     if (!loadingMore) return null;
     return (
-      <View style={styles.footerLoader}>
+      <Box className="items-center" style={{ paddingVertical: 20 }}>
         <ActivityIndicator size="small" color={C.orange} />
-      </View>
+      </Box>
     );
   };
 
   const renderEmpty = () => {
     if (loading) {
       return (
-        <View style={styles.emptyWrap}>
+        <Box className="items-center justify-center" style={{ paddingVertical: 80 }}>
           <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        </Box>
       );
     }
     return (
-      <View style={styles.emptyWrap}>
-        <Ionicons name="document-text-outline" size={48} color={C.gray60} />
-        <Text style={styles.emptyText}>{isSearching ? 'Sin resultados' : 'No hay artículos disponibles'}</Text>
-      </View>
+      <Box className="items-center justify-center gap-3" style={{ paddingVertical: 80 }}>
+        <Icon name="document-text-outline" size={48} className="text-muted-foreground" />
+        <Text size="md" muted>{isSearching ? 'Sin resultados' : 'No hay artículos disponibles'}</Text>
+      </Box>
     );
   };
 
   const listData = isSearching ? searchResults : posts;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {categoryTitle || 'Todos los artículos'}
-        </Text>
-      </View>
+    <Box className="flex-1 bg-background">
+      <ScreenHeader title={categoryTitle || 'Todos los artículos'} onBack={() => navigation.goBack()} />
 
-      <View style={styles.searchWrap}>
-        <Ionicons name="search-outline" size={18} color={C.gray40} />
-        <TextInput
-          style={styles.searchInput}
+      <Input className="mx-4" style={{ marginTop: 12 }}>
+        <InputSlot className="px-3">
+          <Icon name="search-outline" size={18} className="text-muted-foreground" />
+        </InputSlot>
+        <InputField
           placeholder="Buscar artículos..."
-          placeholderTextColor={C.gray50}
           value={searchText}
           onChangeText={handleSearch}
         />
         {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => handleSearch('')}>
-            <Ionicons name="close-circle" size={18} color={C.gray40} />
-          </TouchableOpacity>
+          <InputSlot className="px-3" onPress={() => handleSearch('')}>
+            <Icon name="close-circle" size={18} className="text-muted-foreground" />
+          </InputSlot>
         )}
-      </View>
+      </Input>
 
       {!isSearching && (
-        <View style={styles.filterRow}>
-          <TouchableOpacity style={styles.filterPill} onPress={() => setSortSheetVisible(true)} activeOpacity={0.75}>
-            <Ionicons name="swap-vertical-outline" size={15} color={C.white} />
-            <Text style={styles.filterPillText} numberOfLines={1}>
+        <HStack space="sm" className="mx-4" style={{ marginTop: 12 }}>
+          <Pressable
+            className="flex-row items-center rounded-pill bg-secondary"
+            style={{ paddingHorizontal: 14, paddingVertical: 8, gap: 6 }}
+            onPress={() => setSortSheetVisible(true)}
+          >
+            <Icon name="swap-vertical-outline" size={15} className="text-foreground" />
+            <Text size="sm" weight="medium" numberOfLines={1} style={{ maxWidth: 120 }}>
               {SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.orderDir === orderDir)?.label ?? 'Ordenar'}
             </Text>
-            <Ionicons name="chevron-down" size={14} color={C.gray40} />
-          </TouchableOpacity>
+            <Icon name="chevron-down" size={14} className="text-muted-foreground" />
+          </Pressable>
 
           {categories.length > 0 && (
-            <TouchableOpacity style={styles.filterPill} onPress={() => setCategorySheetVisible(true)} activeOpacity={0.75}>
-              <Ionicons name="pricetag-outline" size={15} color={C.white} />
-              <Text style={styles.filterPillText} numberOfLines={1}>
+            <Pressable
+              className="flex-row items-center rounded-pill bg-secondary"
+              style={{ paddingHorizontal: 14, paddingVertical: 8, gap: 6 }}
+              onPress={() => setCategorySheetVisible(true)}
+            >
+              <Icon name="pricetag-outline" size={15} className="text-foreground" />
+              <Text size="sm" weight="medium" numberOfLines={1} style={{ maxWidth: 120 }}>
                 {selectedCategory ? categories.find((c) => c.id === selectedCategory)?.title ?? 'Todos' : 'Todos'}
               </Text>
-              <Ionicons name="chevron-down" size={14} color={C.gray40} />
-            </TouchableOpacity>
+              <Icon name="chevron-down" size={14} className="text-muted-foreground" />
+            </Pressable>
           )}
-        </View>
+        </HStack>
       )}
 
       <FlatList
@@ -233,7 +242,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
         data={listData}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderCard}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.3}
@@ -242,146 +251,70 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       />
 
       <SimpleBottomSheet visible={sortSheetVisible} onClose={() => setSortSheetVisible(false)}>
-        <View style={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>Ordenar por</Text>
+        <Box style={{ padding: 24 }}>
+          <Heading size="sm" style={{ marginBottom: 8 }}>Ordenar por</Heading>
           {SORT_OPTIONS.map((opt) => {
             const active = opt.sortBy === sortBy && opt.orderDir === orderDir;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={opt.key}
-                style={styles.sheetOptionRow}
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 14, borderTopWidth: 1, borderTopColor: C.border }}
                 onPress={() => {
                   setSortBy(opt.sortBy);
                   setOrderDir(opt.orderDir);
                   setSortSheetVisible(false);
                 }}
               >
-                <Text style={[styles.sheetOptionText, active && styles.sheetOptionTextActive]}>{opt.label}</Text>
-                {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-              </TouchableOpacity>
+                <Text weight={active ? 'bold' : 'medium'} style={{ color: active ? C.textPrimary : C.textSecondary }}>
+                  {opt.label}
+                </Text>
+                {active ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+              </Pressable>
             );
           })}
-        </View>
+        </Box>
       </SimpleBottomSheet>
 
       <SimpleBottomSheet visible={categorySheetVisible} onClose={() => setCategorySheetVisible(false)}>
-        <View style={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>Categoría</Text>
-          <View>
-            <TouchableOpacity
-              style={styles.sheetOptionRow}
+        <Box style={{ padding: 24 }}>
+          <Heading size="sm" style={{ marginBottom: 8 }}>Categoría</Heading>
+          <Box>
+            <Pressable
+              className="flex-row items-center justify-between"
+              style={{ paddingVertical: 14, borderTopWidth: 1, borderTopColor: C.border }}
               onPress={() => {
                 setSelectedCategory(null);
                 setCategorySheetVisible(false);
               }}
             >
-              <Text style={[styles.sheetOptionText, !selectedCategory && styles.sheetOptionTextActive]}>Todos</Text>
-              {!selectedCategory ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-            </TouchableOpacity>
+              <Text weight={!selectedCategory ? 'bold' : 'medium'} style={{ color: !selectedCategory ? C.textPrimary : C.textSecondary }}>
+                Todos
+              </Text>
+              {!selectedCategory ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+            </Pressable>
             {categories.map((cat) => {
               const active = selectedCategory === cat.id;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={cat.id}
-                  style={styles.sheetOptionRow}
+                  className="flex-row items-center justify-between"
+                  style={{ paddingVertical: 14, borderTopWidth: 1, borderTopColor: C.border }}
                   onPress={() => {
                     setSelectedCategory(active ? null : cat.id);
                     setCategorySheetVisible(false);
                   }}
                 >
-                  <Text style={[styles.sheetOptionText, active && styles.sheetOptionTextActive]}>{cat.title}</Text>
-                  {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-                </TouchableOpacity>
+                  <Text weight={active ? 'bold' : 'medium'} style={{ color: active ? C.textPrimary : C.textSecondary }}>
+                    {cat.title}
+                  </Text>
+                  {active ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+                </Pressable>
               );
             })}
-          </View>
-        </View>
+          </Box>
+        </Box>
       </SimpleBottomSheet>
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-    gap: 12,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white, flex: 1 },
-  searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    height: 44,
-    gap: 8,
-  },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white },
-  filterRow: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 12,
-    gap: 8,
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: C.surfaceLight,
-  },
-  filterPillText: { fontSize: 13, fontFamily: FONT.medium, color: C.white, maxWidth: 120 },
-  sheetContent: { padding: 24 },
-  sheetTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginBottom: 8 },
-  sheetOptionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
-  sheetOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textSecondary },
-  sheetOptionTextActive: { fontFamily: FONT.bold, color: C.textPrimary },
-  listContent: { paddingHorizontal: 16, paddingVertical: 16 },
-  card: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  cardImage: { width: '100%', height: 160 },
-  cardInfo: { padding: 14 },
-  cardTitle: {
-    fontSize: 16,
-    fontFamily: FONT.semiBold,
-    color: C.white,
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  categoryBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: C.brand5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginBottom: 8,
-  },
-  categoryBadgeText: { fontSize: 11, fontFamily: FONT.semiBold, color: C.white },
-  cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  cardDate: { fontSize: 12, fontFamily: FONT.regular, color: C.gray40 },
-  footerLoader: { paddingVertical: 20, alignItems: 'center' },
-  emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingVertical: 80, gap: 12 },
-  emptyText: { fontSize: 15, fontFamily: FONT.medium, color: C.gray40 },
-});

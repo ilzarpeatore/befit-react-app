@@ -1,34 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import ScreenHeader from '@components/ScreenHeader';
 
 export default function PrivacyPolicyScreen(props: any) {
 
   const privacyPolicy = props.route?.params?.privacyPolicy ?? 'Privacy policy content will be loaded here.';
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Privacy Policy</Text>
-        <View style={{ width: 24 }} />
-      </View>
-      <ScrollView contentContainerStyle={s.content}>
-        <Text style={s.policyText}>{privacyPolicy}</Text>
+    <Box className="flex-1 bg-background">
+      <ScreenHeader title="Privacy Policy" onBack={() => props.navigation?.goBack()} />
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        <Text muted className="leading-6">{privacyPolicy}</Text>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  backBtn: { padding: 4 },
-  appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  content: { padding: 16, paddingBottom: 40 },
-  policyText: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, lineHeight: 24 },
-});

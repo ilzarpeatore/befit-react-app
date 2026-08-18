@@ -1,8 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { C, FONT } from './theme';
 import { statisticsApi, PeriodStats, MonthlySessionItem, MonthlyPrEvent } from '../../api/statistics';
 import { muscleVolumeApi, MuscleVolumeGroup, MuscleVolumeByDate } from '../../api/muscleVolume';
 import { toLocalISODate } from '../../components/DaySelectorStrip';
@@ -177,96 +184,96 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
 
   return (
     <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
+      <HStack className="items-center justify-between px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
         <Text style={s.appBarTitle} numberOfLines={1}>
           Informe mensual
         </Text>
-        <View style={s.iconBtn} />
-      </View>
+        <Box style={s.iconBtn} />
+      </HStack>
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.monthNav}>
-          <TouchableOpacity onPress={goPrevMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-back" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
+        <HStack space="lg" className="items-center justify-center" style={{ marginTop: 8, marginBottom: 8 }}>
+          <Pressable onPress={goPrevMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="chevron-back" size={18} className="text-muted-foreground" />
+          </Pressable>
           <Text style={s.monthNavLabel}>
             {MONTHS_ES[monthAnchor.getMonth()]} {monthAnchor.getFullYear()}
           </Text>
-          <TouchableOpacity onPress={goNextMonth} disabled={isCurrentMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-forward" size={18} color={isCurrentMonth ? C.border : C.textSecondary} />
-          </TouchableOpacity>
-        </View>
+          <Pressable onPress={goNextMonth} disabled={isCurrentMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="chevron-forward" size={18} color={isCurrentMonth ? C.border : C.textSecondary} />
+          </Pressable>
+        </HStack>
 
         {isLoading ? (
           <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
         ) : (
           <>
             {/* KPIs con comparativa vs mes anterior */}
-            <View style={s.grid2x2}>
-              <View style={s.kpiCard}>
+            <HStack space="md" className="flex-wrap" style={{ marginTop: 12 }}>
+              <Card variant="outline" className="bg-muted p-4" style={{ width: '47%' }}>
                 <Text style={s.kpiLabel}>Entrenamientos</Text>
                 <Text style={s.kpiValue}>{stats.sessionsCount}</Text>
                 <DeltaText current={stats.sessionsCount} previous={prevStats.sessionsCount} format={(n) => String(Math.round(n))} />
-              </View>
-              <View style={s.kpiCard}>
+              </Card>
+              <Card variant="outline" className="bg-muted p-4" style={{ width: '47%' }}>
                 <Text style={s.kpiLabel}>Duración</Text>
                 <Text style={s.kpiValue}>{formatDuration(stats.durationSeconds)}</Text>
                 <DeltaText current={stats.durationSeconds} previous={prevStats.durationSeconds} format={formatDuration} />
-              </View>
-              <View style={s.kpiCard}>
+              </Card>
+              <Card variant="outline" className="bg-muted p-4" style={{ width: '47%' }}>
                 <Text style={s.kpiLabel}>Volumen</Text>
                 <Text style={s.kpiValue}>{formatVolume(stats.volumeKg)}</Text>
                 <DeltaText current={stats.volumeKg} previous={prevStats.volumeKg} format={formatVolume} />
-              </View>
-              <View style={s.kpiCard}>
+              </Card>
+              <Card variant="outline" className="bg-muted p-4" style={{ width: '47%' }}>
                 <Text style={s.kpiLabel}>Series</Text>
                 <Text style={s.kpiValue}>{totalSeries}</Text>
                 <DeltaText current={totalSeries} previous={prevTotalSeries} format={(n) => String(Math.round(n))} />
-              </View>
-            </View>
+              </Card>
+            </HStack>
 
             {/* Desglose semanal */}
             {weeklyBreakdown.length > 0 && (
-              <View style={s.card}>
+              <Card variant="elevated" style={{ marginTop: 16 }}>
                 <Text style={s.cardTitle}>Desglose semanal</Text>
-                <View style={s.weekRow}>
+                <HStack className="items-end justify-around" style={{ height: 120 }}>
                   {weeklyBreakdown.map((w) => {
                     const heightPct = maxWeekVolume > 0 ? Math.max(w.volume > 0 ? 6 : 2, (w.volume / maxWeekVolume) * 100) : 2;
                     return (
-                      <View key={w.label} style={s.weekCol}>
-                        <View style={s.weekBarTrack}>
-                          <View style={[s.weekBarFill, { height: `${heightPct}%` }]} />
-                        </View>
+                      <VStack key={w.label} className="flex-1 items-center justify-end" style={{ height: '100%' }}>
+                        <VStack className="flex-1 justify-end" style={{ width: 22 }}>
+                          <Box style={[s.weekBarFill, { height: `${heightPct}%` }]} />
+                        </VStack>
                         <Text style={s.weekLabel}>{w.label}</Text>
-                      </View>
+                      </VStack>
                     );
                   })}
-                </View>
-              </View>
+                </HStack>
+              </Card>
             )}
 
             {/* PRs y progreso */}
-            <View style={s.card}>
+            <Card variant="elevated" style={{ marginTop: 16 }}>
               <Text style={s.cardTitle}>Progreso y marcas</Text>
-              <View style={s.progressStatsRow}>
-                <View style={s.progressStat}>
+              <HStack space="md" style={{ marginBottom: 8 }}>
+                <Card variant="ghost" className="flex-1 items-center bg-muted rounded-2xl p-3.5">
                   <Text style={s.progressStatValue}>{exercisesWithProgress}</Text>
                   <Text style={s.progressStatLabel}>ejercicios con progreso</Text>
-                </View>
-                <View style={s.progressStat}>
+                </Card>
+                <Card variant="ghost" className="flex-1 items-center bg-muted rounded-2xl p-3.5">
                   <Text style={s.progressStatValue}>{prEvents.length}</Text>
                   <Text style={s.progressStatLabel}>marcas personales batidas</Text>
-                </View>
-              </View>
+                </Card>
+              </HStack>
               {prEvents.length > 0 && (
                 <>
                   {visiblePrs.map((p, idx) => (
-                    <View key={idx} style={s.prRow}>
-                      <Ionicons name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
-                      <View style={{ flex: 1 }}>
+                    <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+                      <Icon name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
+                      <Box style={{ flex: 1 }}>
                         <Text style={s.prTitle} numberOfLines={1}>
                           {p.title}
                         </Text>
@@ -274,93 +281,93 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
                           {RECORD_TYPE_LABEL[p.record_type] || p.record_type}: {p.value} kg
                           {p.achieved_at ? ` · ${formatDate(p.achieved_at)}` : ''}
                         </Text>
-                      </View>
-                    </View>
+                      </Box>
+                    </HStack>
                   ))}
                   {prEvents.length > 4 && (
-                    <TouchableOpacity onPress={() => setPrsModalVisible(true)} style={s.expandBtn}>
-                      <Text style={s.expandBtnText}>{`Ver las ${prEvents.length}`}</Text>
-                    </TouchableOpacity>
+                    <Button variant="link" className="p-0" style={{ paddingTop: 12 }} onPress={() => setPrsModalVisible(true)}>
+                      <ButtonText style={s.expandBtnText}>{`Ver las ${prEvents.length}`}</ButtonText>
+                    </Button>
                   )}
                 </>
               )}
-            </View>
+            </Card>
 
             {/* Músculos que suben / bajan */}
             {(musclesUp.length > 0 || musclesDown.length > 0) && (
-              <View style={s.card}>
+              <Card variant="elevated" style={{ marginTop: 16 }}>
                 <Text style={s.cardTitle}>Cambios de volumen por músculo</Text>
                 {musclesUp.length > 0 && (
-                  <View style={s.muscleDeltaGroup}>
+                  <Box style={s.muscleDeltaGroup}>
                     <Text style={s.muscleDeltaGroupLabel}>Suben</Text>
                     {musclesUp.map((m) => (
-                      <View key={m.group} style={s.muscleDeltaRow}>
+                      <HStack key={m.group} className="items-center justify-between py-1.5">
                         <Text style={s.muscleDeltaName} numberOfLines={1}>
                           {m.group}
                         </Text>
                         <Text style={s.deltaUp}>↑ {formatVolume(m.delta)}</Text>
-                      </View>
+                      </HStack>
                     ))}
-                  </View>
+                  </Box>
                 )}
                 {musclesDown.length > 0 && (
-                  <View style={s.muscleDeltaGroup}>
+                  <Box style={s.muscleDeltaGroup}>
                     <Text style={s.muscleDeltaGroupLabel}>Bajan</Text>
                     {musclesDown.map((m) => (
-                      <View key={m.group} style={s.muscleDeltaRow}>
+                      <HStack key={m.group} className="items-center justify-between py-1.5">
                         <Text style={s.muscleDeltaName} numberOfLines={1}>
                           {m.group}
                         </Text>
                         <Text style={s.deltaDown}>↓ {formatVolume(Math.abs(m.delta))}</Text>
-                      </View>
+                      </HStack>
                     ))}
-                  </View>
+                  </Box>
                 )}
-              </View>
+              </Card>
             )}
 
             {/* Lista de entrenamientos */}
-            <View style={s.card}>
+            <Card variant="elevated" style={{ marginTop: 16 }}>
               <Text style={s.cardTitle}>Entrenamientos del mes</Text>
               {sortedSessions.length === 0 ? (
                 <Text style={s.emptyText}>Sin entrenamientos registrados este mes.</Text>
               ) : (
                 <>
                   {visibleSessions.map((sess, idx) => (
-                    <View key={idx} style={s.sessionRow}>
-                      <View style={s.sessionDateWrap}>
+                    <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+                      <Box style={s.sessionDateWrap}>
                         <Text style={s.sessionDate}>{formatDate(sess.date)}</Text>
-                      </View>
-                      <View style={{ flex: 1 }}>
+                      </Box>
+                      <Box style={{ flex: 1 }}>
                         <Text style={s.sessionTitle} numberOfLines={1}>
                           {sess.title}
                         </Text>
                         <Text style={s.sessionSubtitle}>
                           {formatDuration(sess.duration_seconds)} · {formatVolume(sess.volume_kg)}
                         </Text>
-                      </View>
-                    </View>
+                      </Box>
+                    </HStack>
                   ))}
                   {sortedSessions.length > 4 && (
-                    <TouchableOpacity onPress={() => setSessionsModalVisible(true)} style={s.expandBtn}>
-                      <Text style={s.expandBtnText}>{`Ver los ${sortedSessions.length}`}</Text>
-                    </TouchableOpacity>
+                    <Button variant="link" className="p-0" style={{ paddingTop: 12 }} onPress={() => setSessionsModalVisible(true)}>
+                      <ButtonText style={s.expandBtnText}>{`Ver los ${sortedSessions.length}`}</ButtonText>
+                    </Button>
                   )}
                 </>
               )}
-            </View>
+            </Card>
           </>
         )}
       </ScrollView>
 
       <SimpleBottomSheet visible={prsModalVisible} onClose={() => setPrsModalVisible(false)}>
-        <View style={s.modalHandle} />
+        <Box style={s.modalHandle} />
         <Text style={s.modalTitle}>Progreso y marcas ({prEvents.length})</Text>
         <ScrollView style={s.modalScroll} contentContainerStyle={s.modalScrollContent}>
           {prEvents.map((p, idx) => (
-            <View key={idx} style={s.prRow}>
-              <Ionicons name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
-              <View style={{ flex: 1 }}>
+            <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+              <Icon name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
+              <Box style={{ flex: 1 }}>
                 <Text style={s.prTitle} numberOfLines={1}>
                   {p.title}
                 </Text>
@@ -368,30 +375,30 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
                   {RECORD_TYPE_LABEL[p.record_type] || p.record_type}: {p.value} kg
                   {p.achieved_at ? ` · ${formatDate(p.achieved_at)}` : ''}
                 </Text>
-              </View>
-            </View>
+              </Box>
+            </HStack>
           ))}
         </ScrollView>
       </SimpleBottomSheet>
 
       <SimpleBottomSheet visible={sessionsModalVisible} onClose={() => setSessionsModalVisible(false)}>
-        <View style={s.modalHandle} />
+        <Box style={s.modalHandle} />
         <Text style={s.modalTitle}>Entrenamientos del mes ({sortedSessions.length})</Text>
         <ScrollView style={s.modalScroll} contentContainerStyle={s.modalScrollContent}>
           {sortedSessions.map((sess, idx) => (
-            <View key={idx} style={s.sessionRow}>
-              <View style={s.sessionDateWrap}>
+            <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+              <Box style={s.sessionDateWrap}>
                 <Text style={s.sessionDate}>{formatDate(sess.date)}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
+              </Box>
+              <Box style={{ flex: 1 }}>
                 <Text style={s.sessionTitle} numberOfLines={1}>
                   {sess.title}
                 </Text>
                 <Text style={s.sessionSubtitle}>
                   {formatDuration(sess.duration_seconds)} · {formatVolume(sess.volume_kg)}
                 </Text>
-              </View>
-            </View>
+              </Box>
+            </HStack>
           ))}
         </ScrollView>
       </SimpleBottomSheet>
@@ -401,49 +408,35 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
   iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   appBarTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary, marginHorizontal: 4 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8, marginBottom: 8 },
   monthNavLabel: { fontFamily: FONT.semiBold, fontSize: 16, color: C.textPrimary, minWidth: 150, textAlign: 'center' },
-  grid2x2: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 12 },
-  kpiCard: { width: '47%', borderWidth: 1, borderColor: C.border, backgroundColor: C.gray5, borderRadius: 20, padding: 16 },
   kpiLabel: { fontFamily: FONT.medium, fontSize: 13, color: C.textSecondary },
   kpiValue: { fontFamily: FONT.extraBold, fontSize: 20, color: C.textPrimary, marginTop: 5 },
   deltaUp: { fontFamily: FONT.semiBold, fontSize: 11, color: C.success60, marginTop: 4 },
   deltaDown: { fontFamily: FONT.semiBold, fontSize: 11, color: C.destructive60, marginTop: 4 },
   deltaNeutral: { fontFamily: FONT.semiBold, fontSize: 11, color: C.textSecondary, marginTop: 4 },
-  card: { backgroundColor: C.surface, borderRadius: 20, marginTop: 16, padding: 20, ...SHADOW.card },
   cardTitle: { fontFamily: FONT.bold, fontSize: 14, color: C.textPrimary, marginBottom: 16 },
   emptyText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, textAlign: 'center', paddingVertical: 12 },
 
-  weekRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', height: 120 },
-  weekCol: { alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' },
-  weekBarTrack: { width: 22, flex: 1, justifyContent: 'flex-end' },
   weekBarFill: { width: 22, backgroundColor: C.orange, borderRadius: 6 },
   weekLabel: { fontFamily: FONT.medium, fontSize: 11, color: C.textSecondary, marginTop: 8 },
 
-  progressStatsRow: { flexDirection: 'row', gap: 12, marginBottom: 8 },
-  progressStat: { flex: 1, backgroundColor: C.gray5, borderRadius: 16, padding: 14, alignItems: 'center' },
   progressStatValue: { fontFamily: FONT.extraBold, fontSize: 22, color: C.textPrimary },
   progressStatLabel: { fontFamily: FONT.regular, fontSize: 11, color: C.textSecondary, marginTop: 3, textAlign: 'center' },
-  prRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 },
   prTitle: { fontFamily: FONT.semiBold, fontSize: 13.5, color: C.textPrimary },
   prSubtitle: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary, marginTop: 2 },
 
   muscleDeltaGroup: { marginTop: 8 },
   muscleDeltaGroupLabel: { fontFamily: FONT.semiBold, fontSize: 11, color: C.textSecondary, letterSpacing: 0.4, marginBottom: 8 },
-  muscleDeltaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
   muscleDeltaName: { flex: 1, fontFamily: FONT.medium, fontSize: 13, color: C.textPrimary, marginRight: 8 },
 
-  sessionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 },
   sessionDateWrap: { width: 56 },
   sessionDate: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.textSecondary, textTransform: 'capitalize' },
   sessionTitle: { fontFamily: FONT.semiBold, fontSize: 14, color: C.textPrimary },
   sessionSubtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 2 },
 
-  expandBtn: { alignItems: 'center', paddingTop: 12 },
   expandBtnText: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.accentBlack },
 
   modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: C.gray60, alignSelf: 'center', marginTop: 10, marginBottom: 12 },

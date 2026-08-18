@@ -1,18 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, ScrollView, Image, TextInput, SafeAreaView, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Button } from '@components/ui/button';
+import { Badge, BadgeText } from '@components/ui/badge';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { recipesApi, RecipeListItem } from '../../api/recipes';
 import logger from '@helper/logger';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// Rediseño (2026-08-18, opción B elegida por el usuario entre 3 propuestas):
+// de una pila de carruseles (Favoritos/Categorías/Tags/Explorar por tipo de
+// comida, cuatro secciones compitiendo por la atención) a un hub de
+// exploración por categoría — la navegación principal ahora son mosaicos
+// grandes tocables, con buscador siempre visible arriba. Favoritos pasa a
+// ser un atajo en la cabecera hacia MigratedFavouriteRecipe (ya existe, no
+// hace falta duplicar esa lista aquí). Etiquetas se conserva como un enlace
+// discreto para no perder el único camino real hacia MigratedRecipeTagList,
+// sin ocupar una sección entera.
 
-interface RecipeTag {
-  id: number;
-  title: string;
-  recipeTagImage?: string;
-}
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const GRID_GAP = 12;
+const CATEGORY_TILE_WIDTH = (SCREEN_WIDTH - 32 - GRID_GAP) / 2;
 
 interface RecipeCategory {
   id: number;
@@ -32,16 +47,6 @@ interface RecipeCardItem {
   isAccessible?: boolean;
 }
 
-type MealTypeKey = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
-
-const MEAL_TYPE_FILTERS: { key: MealTypeKey | null; label: string; icon?: keyof typeof Ionicons.glyphMap }[] = [
-  { key: null, label: 'All' },
-  { key: 'breakfast', label: 'Breakfast', icon: 'sunny-outline' },
-  { key: 'lunch', label: 'Lunch', icon: 'restaurant-outline' },
-  { key: 'dinner', label: 'Dinner', icon: 'moon-outline' },
-  { key: 'snacks', label: 'Snacks', icon: 'nutrition-outline' },
-];
-
 function mapRecipe(r: RecipeListItem): RecipeCardItem {
   return {
     id: r.id,
@@ -57,16 +62,9 @@ function mapRecipe(r: RecipeListItem): RecipeCardItem {
 }
 
 export default function RecipeMainScreen(props: any) {
-  const [tags, setTags] = useState<RecipeTag[]>([]);
-  const [isTagsLoading, setIsTagsLoading] = useState(false);
   const [categories, setCategories] = useState<RecipeCategory[]>([]);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
   const [totalCategoryItems, setTotalCategoryItems] = useState(0);
-  const [favourites, setFavourites] = useState<RecipeCardItem[]>([]);
-  const [isFavouritesLoading, setIsFavouritesLoading] = useState(false);
-  const [recipes, setRecipes] = useState<RecipeCardItem[]>([]);
-  const [isRecipesLoading, setIsRecipesLoading] = useState(false);
-  const [selectedMealType, setSelectedMealType] = useState<MealTypeKey | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<RecipeCardItem[]>([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -75,35 +73,7 @@ export default function RecipeMainScreen(props: any) {
   const isSearching = searchQuery.trim().length > 0;
 
   useEffect(() => {
-    fetchAllTags();
     fetchAllCategories();
-    fetchFavourites();
-  }, []);
-
-  const fetchAllTags = useCallback(async () => {
-    setIsTagsLoading(true);
-    try {
-      let page = 1;
-      let totalPages = 1;
-      const allTags: RecipeTag[] = [];
-      while (page <= totalPages) {
-        const res = await recipesApi.getTags(page);
-        totalPages = res.data.pagination?.totalPages ?? 1;
-        allTags.push(
-          ...(res.data.data ?? []).map((t) => ({
-            id: t.id,
-            title: t.title,
-            recipeTagImage: t.recipe_tag_image ?? undefined,
-          }))
-        );
-        page++;
-      }
-      setTags(allTags);
-    } catch (e) {
-      logger.error(e);
-    } finally {
-      setIsTagsLoading(false);
-    }
   }, []);
 
   const fetchAllCategories = useCallback(async () => {
@@ -123,7 +93,7 @@ export default function RecipeMainScreen(props: any) {
             recipeCategoryImage: c.recipe_category_image ?? undefined,
           }))
         );
-        if (allCategories.length >= 9) break;
+        if (allCategories.length >= 8) break;
         page++;
       }
       setCategories(allCategories);
@@ -133,37 +103,6 @@ export default function RecipeMainScreen(props: any) {
       setIsCategoriesLoading(false);
     }
   }, []);
-
-  const fetchFavourites = useCallback(async () => {
-    setIsFavouritesLoading(true);
-    try {
-      const res = await recipesApi.getFavourite(1);
-      setFavourites((res.data.data ?? []).map(mapRecipe));
-    } catch (e) {
-      logger.error(e);
-    } finally {
-      setIsFavouritesLoading(false);
-    }
-  }, []);
-
-  const fetchRecipes = useCallback(async (mealType: MealTypeKey | null) => {
-    setIsRecipesLoading(true);
-    try {
-      const res = await recipesApi.getFilteredList({
-        page: 1,
-        meal_type: mealType ? [mealType] : undefined,
-      });
-      setRecipes((res.data.data ?? []).map(mapRecipe));
-    } catch (e) {
-      logger.error(e);
-    } finally {
-      setIsRecipesLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchRecipes(selectedMealType);
-  }, [selectedMealType, fetchRecipes]);
 
   // Búsqueda por título en el catálogo completo (soportada por el backend
   // vía el parámetro `title` de recipe-filter-list), con debounce.
@@ -188,71 +127,49 @@ export default function RecipeMainScreen(props: any) {
     return () => clearTimeout(handle);
   }, [searchQuery]);
 
-  const handleToggleFavourite = useCallback(
-    async (item: RecipeCardItem) => {
-      const nextFavourite = !item.isFavourite;
-      const applyToggle = (list: RecipeCardItem[]) =>
-        list.map((r) => (r.id === item.id ? { ...r, isFavourite: nextFavourite } : r));
-      setRecipes(applyToggle);
-      setSearchResults(applyToggle);
-      if (!nextFavourite) {
-        setFavourites((prev) => prev.filter((r) => r.id !== item.id));
-      }
-      try {
-        await recipesApi.setFavourite(item.id);
-        if (nextFavourite) {
-          fetchFavourites();
-        }
-      } catch (e) {
-        logger.error(e);
-        const revert = (list: RecipeCardItem[]) =>
-          list.map((r) => (r.id === item.id ? { ...r, isFavourite: item.isFavourite } : r));
-        setRecipes(revert);
-        setSearchResults(revert);
-        fetchFavourites();
-      }
-    },
-    [fetchFavourites]
-  );
+  const handleToggleFavourite = useCallback(async (item: RecipeCardItem) => {
+    const nextFavourite = !item.isFavourite;
+    setSearchResults((prev) =>
+      prev.map((r) => (r.id === item.id ? { ...r, isFavourite: nextFavourite } : r))
+    );
+    try {
+      await recipesApi.setFavourite(item.id);
+    } catch (e) {
+      logger.error(e);
+      setSearchResults((prev) =>
+        prev.map((r) => (r.id === item.id ? { ...r, isFavourite: item.isFavourite } : r))
+      );
+    }
+  }, []);
 
   const showViewMore = totalCategoryItems > 8 || categories.length > 8;
-  const displayCategories = showViewMore ? categories.slice(0, 8) : categories;
-  const categoryWidth = (SCREEN_WIDTH - 48) / 3;
-  const gridColumnWidth = (SCREEN_WIDTH - 48) / 2;
+  const displayCategories = showViewMore ? categories.slice(0, 7) : categories;
 
-  const navigateToTagList = () => {
-    props.navigation.navigate('MigratedRecipeTagList');
-  };
-  const navigateToCategoryList = () => {
-    props.navigation.navigate('MigratedRecipeCategoryList');
-  };
-  const navigateToRecipeList = () => {
-    props.navigation.navigate('MigratedRecipeListV2', { title: 'Recipes' });
-  };
+  const navigateToTagList = () => props.navigation.navigate('MigratedRecipeTagList');
+  const navigateToCategoryList = () => props.navigation.navigate('MigratedRecipeCategoryList');
+  const navigateToFavourites = () => props.navigation.navigate('MigratedFavouriteRecipe');
   const navigateToRecipeDetail = (item: RecipeCardItem) => {
     props.navigation.navigate('MigratedDietDetail', { recipeId: item.id, recipeImage: item.image });
   };
+  const navigateToCategory = (category: RecipeCategory) => {
+    props.navigation.navigate('MigratedRecipeListV2', { categoryId: category.id, title: category.title });
+  };
 
   const renderRecipeCard = (item: RecipeCardItem, containerStyle: any) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[s.recipeCard, containerStyle]}
-      activeOpacity={0.7}
-      onPress={() => navigateToRecipeDetail(item)}
-    >
-      <View style={s.recipeImageWrap}>
+    <Pressable key={item.id} style={[s.recipeCard, containerStyle]} onPress={() => navigateToRecipeDetail(item)}>
+      <Box style={s.recipeImageWrap}>
         {item.image ? (
           <Image source={{ uri: item.image }} style={s.recipeImage} resizeMode="cover" />
         ) : (
-          <View style={[s.recipeImage, { backgroundColor: C.surfaceLight }]} />
+          <Box style={[s.recipeImage, { backgroundColor: C.surfaceLight }]} />
         )}
         {item.isPremium && !item.isAccessible && (
-          <View style={s.lockBadge}>
-            <Ionicons name="lock-closed" size={11} color="#FFFFFF" />
-            <Text style={[s.lockBadgeText, styles.fontSemiBold]}>Exclusive</Text>
-          </View>
+          <Badge action="muted" className="bg-black/60" style={{ position: 'absolute', top: 8, left: 8 }}>
+            <Icon name="lock-closed" size={11} className="text-white" />
+            <BadgeText className="text-white" style={{ fontSize: 11 }}>Exclusive</BadgeText>
+          </Badge>
         )}
-        <TouchableOpacity
+        <Pressable
           style={s.favBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           onPress={(e: any) => {
@@ -260,243 +177,112 @@ export default function RecipeMainScreen(props: any) {
             handleToggleFavourite(item);
           }}
         >
-          <Ionicons
-            name={item.isFavourite ? 'heart' : 'heart-outline'}
-            size={16}
-            color={item.isFavourite ? C.red : '#FFFFFF'}
-          />
-        </TouchableOpacity>
-      </View>
+          <Icon name={item.isFavourite ? 'heart' : 'heart-outline'} size={16} color={item.isFavourite ? C.red : '#FFFFFF'} />
+        </Pressable>
+      </Box>
       <Text style={[s.recipeTitle, styles.fontBold]} numberOfLines={1}>
         {item.title}
       </Text>
       {(item.calories != null || item.preparationTime != null) && (
-        <View style={s.recipeMetaRow}>
-          {item.calories != null && (
-            <Text style={[s.recipeMeta, styles.fontRegular]}>{item.calories} kcal</Text>
-          )}
+        <HStack style={s.recipeMetaRow}>
+          {item.calories != null && <Text style={[s.recipeMeta, styles.fontRegular]}>{item.calories} kcal</Text>}
           {item.calories != null && item.preparationTime != null && (
             <Text style={[s.recipeMeta, styles.fontRegular]}> · </Text>
           )}
-          {item.preparationTime != null && (
-            <Text style={[s.recipeMeta, styles.fontRegular]}>{item.preparationTime} min</Text>
-          )}
-        </View>
+          {item.preparationTime != null && <Text style={[s.recipeMeta, styles.fontRegular]}>{item.preparationTime} min</Text>}
+        </HStack>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
     <SafeAreaView style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, styles.fontBold]}>Recipes</Text>
-        <View style={s.backBtn} />
-      </View>
+      <HStack className="items-center justify-between p-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Recetas</Heading>
+        <Button variant="ghost" size="icon" onPress={navigateToFavourites}>
+          <Icon name="heart-outline" size={22} className="text-foreground" />
+        </Button>
+      </HStack>
 
-      <ScrollView
-        contentContainerStyle={s.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Search */}
-        <View style={s.searchWrap}>
-          <Ionicons name="search-outline" size={18} color={C.gray40} />
+      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <HStack space="sm" style={s.searchWrap}>
+          <Icon name="search-outline" size={18} color={C.gray40} />
           <TextInput
             style={[s.searchInput, styles.fontRegular]}
-            placeholder="Search recipes..."
+            placeholder="Buscar recetas..."
             placeholderTextColor={C.gray40}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color={C.gray40} />
-            </TouchableOpacity>
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Icon name="close-circle" size={18} color={C.gray40} />
+            </Pressable>
           )}
-        </View>
+        </HStack>
 
         {isSearching ? (
-          <View style={s.section}>
+          <Box style={s.section}>
             <Text style={[s.sectionTitle, styles.fontBold]}>
-              {isSearchLoading ? 'Searching…' : `Results (${searchResults.length})`}
+              {isSearchLoading ? 'Buscando…' : `Resultados (${searchResults.length})`}
             </Text>
             {isSearchLoading ? (
-              <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 24 }} />
+              <Spinner size="small" color={C.orange} style={{ paddingVertical: 24 }} />
             ) : searchResults.length === 0 ? (
-              <View style={s.emptyBox}>
-                <Ionicons name="search-outline" size={40} color={C.gray30} />
-                <Text style={[s.emptyText, styles.fontMedium]}>
-                  No recipes found for "{searchQuery.trim()}"
-                </Text>
-              </View>
+              <VStack space="sm" style={s.emptyBox}>
+                <Icon name="search-outline" size={40} color={C.gray30} />
+                <Text style={[s.emptyText, styles.fontMedium]}>Sin resultados para "{searchQuery.trim()}"</Text>
+              </VStack>
             ) : (
-              <View style={s.grid}>
-                {searchResults.map((item) => renderRecipeCard(item, { width: gridColumnWidth }))}
-              </View>
+              <HStack style={s.grid}>
+                {searchResults.map((item) => renderRecipeCard(item, { width: CATEGORY_TILE_WIDTH }))}
+              </HStack>
             )}
-          </View>
+          </Box>
+        ) : isCategoriesLoading ? (
+          <Spinner size="large" color={C.orange} style={{ paddingVertical: 60 }} />
         ) : (
           <>
-            {/* Favourites */}
-            {(isFavouritesLoading || favourites.length > 0) && (
-              <View style={s.section}>
-                <View style={s.sectionTitleRow}>
-                  <Ionicons name="heart" size={16} color={C.red} />
-                  <Text style={[s.sectionTitle, styles.fontBold, { marginLeft: 6 }]}>Favourites</Text>
-                </View>
-                {isFavouritesLoading ? (
-                  <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
-                ) : (
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
-                    {favourites.map((item) => renderRecipeCard(item, { width: 170, marginRight: 12 }))}
-                  </ScrollView>
-                )}
-              </View>
+            <HStack style={s.categoryGrid}>
+              {displayCategories.map((item) => (
+                <Pressable key={item.id} style={s.categoryTile} onPress={() => navigateToCategory(item)}>
+                  {item.recipeCategoryImage ? (
+                    <Image source={{ uri: item.recipeCategoryImage }} style={s.categoryImage} resizeMode="cover" />
+                  ) : (
+                    <Box style={[s.categoryImage, { backgroundColor: C.surfaceLight }]} />
+                  )}
+                  <Box style={s.categoryOverlay} />
+                  <Text style={[s.categoryTileTitle, styles.fontBold]} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                </Pressable>
+              ))}
+              {showViewMore && (
+                <Pressable style={s.categoryTile} onPress={navigateToCategoryList}>
+                  <Box style={[s.categoryImage, s.viewMoreBox]}>
+                    <Icon name="grid-outline" size={28} color={C.textPrimary} />
+                    <Text style={[s.viewMoreText, styles.fontSemiBold]}>Ver todas</Text>
+                  </Box>
+                </Pressable>
+              )}
+            </HStack>
+
+            {categories.length === 0 && (
+              <VStack space="sm" style={s.emptyBox}>
+                <Icon name="restaurant-outline" size={36} color={C.gray30} />
+                <Text style={[s.emptyText, styles.fontMedium]}>No hay categorías todavía</Text>
+              </VStack>
             )}
 
-            {/* Categories */}
-            <View style={s.section}>
-              <TouchableOpacity style={s.sectionHeaderRow} onPress={navigateToCategoryList} activeOpacity={0.7}>
-                <Text style={[s.sectionTitle, styles.fontBold]}>Categories</Text>
-                <View style={s.viewAllRow}>
-                  <Text style={[s.viewAllText, styles.fontSemiBold]}>View all</Text>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-                </View>
-              </TouchableOpacity>
-              {isCategoriesLoading ? (
-                <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
-              ) : categories.length === 0 ? null : (
-                <View style={s.categoryGrid}>
-                  {displayCategories.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[s.categoryCard, { width: categoryWidth }]}
-                      onPress={() =>
-                        props.navigation.navigate('MigratedRecipeListV2', {
-                          categoryId: item.id,
-                          title: item.title,
-                        })
-                      }
-                      activeOpacity={0.7}
-                    >
-                      {item.recipeCategoryImage ? (
-                        <Image
-                          source={{ uri: item.recipeCategoryImage }}
-                          style={[s.categoryImage, { width: categoryWidth, height: 96 }]}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View style={[s.categoryImage, { width: categoryWidth, height: 96, backgroundColor: C.surfaceLight }]} />
-                      )}
-                      <Text style={[s.categoryTitle, styles.fontSemiBold]} numberOfLines={1}>
-                        {item.title}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                  {showViewMore && (
-                    <TouchableOpacity
-                      style={[s.categoryCard, { width: categoryWidth }]}
-                      onPress={navigateToCategoryList}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[s.viewMoreBox, { width: categoryWidth, height: 96 }]}>
-                        <Ionicons name="add" size={26} color={C.textPrimary} />
-                      </View>
-                      <Text style={[s.categoryTitle, styles.fontSemiBold]}>View More</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-            </View>
-
-            {/* Tags */}
-            <View style={s.section}>
-              <TouchableOpacity style={s.sectionHeaderRow} onPress={navigateToTagList} activeOpacity={0.7}>
-                <Text style={[s.sectionTitle, styles.fontBold]}>Tags</Text>
-                <View style={s.viewAllRow}>
-                  <Text style={[s.viewAllText, styles.fontSemiBold]}>View all</Text>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-                </View>
-              </TouchableOpacity>
-              {isTagsLoading ? (
-                <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
-              ) : tags.length === 0 ? null : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
-                  {tags.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={s.tagChip}
-                      onPress={() =>
-                        props.navigation.navigate('MigratedRecipeListV2', {
-                          tagId: item.id,
-                          title: item.title,
-                        })
-                      }
-                      activeOpacity={0.7}
-                    >
-                      {item.recipeTagImage ? (
-                        <Image source={{ uri: item.recipeTagImage }} style={s.tagImage} />
-                      ) : null}
-                      <Text style={[s.tagText, styles.fontMedium]}>{item.title}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-
-            {/* Browse recipes by meal time */}
-            <View style={[s.section, { marginBottom: 8 }]}>
-              <TouchableOpacity style={s.sectionHeaderRow} onPress={navigateToRecipeList} activeOpacity={0.7}>
-                <Text style={[s.sectionTitle, styles.fontBold]}>Browse Recipes</Text>
-                <View style={s.viewAllRow}>
-                  <Text style={[s.viewAllText, styles.fontSemiBold]}>View all</Text>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-                </View>
-              </TouchableOpacity>
-
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
-                {MEAL_TYPE_FILTERS.map((mt) => {
-                  const selected = mt.key === selectedMealType;
-                  return (
-                    <TouchableOpacity
-                      key={mt.key ?? 'all'}
-                      style={[s.mealChip, selected && s.mealChipSelected]}
-                      onPress={() => setSelectedMealType(mt.key)}
-                      activeOpacity={0.7}
-                    >
-                      {mt.icon && (
-                        <Ionicons
-                          name={mt.icon}
-                          size={14}
-                          color={selected ? C.textPrimary : C.gray40}
-                          style={{ marginRight: 6 }}
-                        />
-                      )}
-                      <Text style={[s.mealChipText, selected && s.mealChipTextSelected, styles.fontMedium]}>
-                        {mt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {isRecipesLoading ? (
-                <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
-              ) : recipes.length === 0 ? (
-                <View style={s.emptyBox}>
-                  <Ionicons name="restaurant-outline" size={36} color={C.gray30} />
-                  <Text style={[s.emptyText, styles.fontMedium]}>No recipes in this category yet</Text>
-                </View>
-              ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
-                  {recipes.map((item) => renderRecipeCard(item, { width: 180, marginRight: 14 }))}
-                </ScrollView>
-              )}
-            </View>
+            <Pressable style={s.tagsLink} onPress={navigateToTagList}>
+              <Icon name="pricetag-outline" size={16} color={C.textSecondary} />
+              <Text style={[s.tagsLinkText, styles.fontSemiBold]}>Ver por etiquetas</Text>
+              <Icon name="chevron-forward" size={16} color={C.gray40} />
+            </Pressable>
           </>
         )}
       </ScrollView>
@@ -506,12 +292,8 @@ export default function RecipeMainScreen(props: any) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: { fontSize: 18, color: C.white, flex: 1, textAlign: 'center' },
   scrollContent: { padding: 16, paddingBottom: 32 },
   searchWrap: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: C.surfaceLight,
     borderRadius: 12,
@@ -519,73 +301,59 @@ const s = StyleSheet.create({
     borderColor: C.border,
     paddingHorizontal: 12,
     height: 44,
-    gap: 8,
     marginBottom: 20,
   },
   searchInput: { flex: 1, fontSize: 14, color: C.textPrimary },
   section: { marginBottom: 24 },
-  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
-  sectionTitle: { fontSize: 18, color: C.textPrimary },
-  viewAllRow: { flexDirection: 'row', alignItems: 'center' },
-  viewAllText: { fontSize: 13, color: C.textSecondary, marginRight: 2 },
-  horizontalList: { paddingRight: 8 },
-  emptyBox: { alignItems: 'center', justifyContent: 'center', paddingVertical: 28, gap: 8 },
+  sectionTitle: { fontSize: 18, color: C.textPrimary, marginBottom: 14 },
+  emptyBox: { alignItems: 'center', justifyContent: 'center', paddingVertical: 28 },
   emptyText: { fontSize: 13, color: C.gray40, textAlign: 'center' },
-  tagChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: `${C.brand5}80`,
-    backgroundColor: C.surfaceLight,
-    marginRight: 12,
+  categoryGrid: { flexWrap: 'wrap', justifyContent: 'space-between' },
+  categoryTile: {
+    width: CATEGORY_TILE_WIDTH,
+    height: 130,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: GRID_GAP,
+    position: 'relative',
   },
-  tagText: { fontSize: 14, color: C.textPrimary },
-  tagImage: { width: 20, height: 20, borderRadius: 10, marginRight: 8 },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  categoryCard: { marginBottom: 16 },
-  categoryImage: { borderRadius: 12 },
-  categoryTitle: { fontSize: 13, color: C.textPrimary, marginTop: 8 },
+  categoryImage: { width: '100%', height: '100%' },
+  categoryOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '55%',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  categoryTileTitle: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 12,
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
   viewMoreBox: {
-    borderRadius: 12,
-    backgroundColor: `${C.brand5}1A`,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: `${C.brand5}1A`,
   },
-  mealChip: {
+  viewMoreText: { fontSize: 13, color: C.textPrimary },
+  tagsLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: C.border,
-    backgroundColor: C.surfaceLight,
-    marginRight: 8,
+    gap: 8,
+    alignSelf: 'flex-start',
+    paddingVertical: 10,
+    marginTop: 4,
   },
-  mealChipSelected: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  mealChipText: { fontSize: 13, color: C.gray40 },
-  mealChipTextSelected: { color: C.textPrimary, fontWeight: '600' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  tagsLinkText: { flex: 1, fontSize: 13.5, color: C.textSecondary },
+  grid: { flexWrap: 'wrap', justifyContent: 'space-between' },
   recipeCard: { marginBottom: 16 },
   recipeImageWrap: { position: 'relative' },
   recipeImage: { width: '100%', height: 130, borderRadius: 12 },
-  lockBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  lockBadgeText: { fontSize: 11, color: '#FFFFFF' },
   favBtn: {
     position: 'absolute',
     top: 8,
@@ -598,7 +366,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   recipeTitle: { fontSize: 14, color: C.textPrimary, marginTop: 8 },
-  recipeMetaRow: { flexDirection: 'row', marginTop: 4 },
+  recipeMetaRow: { marginTop: 4 },
   recipeMeta: { fontSize: 12, color: C.textSecondary },
 });
 

@@ -1,20 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
   Image,
-  TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
   LayoutAnimation,
   Platform,
   UIManager,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { Divider } from '@components/ui/divider';
 import { C, FONT } from './theme';
 import { ExerciseMediaHeaderMem, ExerciseHeaderFloatingIcons, HEADER_HEIGHT_RATIO } from '../../components/ExerciseMediaHeader';
 import { MuscleIsolateIconMem } from '../../components/MuscleIsolateIcon';
@@ -188,9 +191,9 @@ export default function ExerciseInfoScreen(props: Props) {
           isFavourite={false}
           onToggleFavourite={() => {}}
         />
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
@@ -203,9 +206,9 @@ export default function ExerciseInfoScreen(props: Props) {
           isFavourite={false}
           onToggleFavourite={() => {}}
         />
-        <View style={styles.loader}>
+        <Box style={styles.loader}>
           <ErrorRetryMem message="No se pudo cargar el ejercicio." onRetry={loadDetail} />
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -239,56 +242,56 @@ export default function ExerciseInfoScreen(props: Props) {
           }
         />
 
-        <View style={styles.panel}>
+        <Box style={styles.panel}>
           {/* Badges */}
-          <View style={styles.badgeRow}>
+          <HStack space="sm" className="flex-wrap" style={{ marginBottom: 12 }}>
             {detail.muscle?.primary ? (
-              <View style={styles.muscleBadge}>
+              <Box style={styles.muscleBadge}>
                 <Text style={styles.muscleBadgeText}>{detail.muscle.primary.name.toUpperCase()}</Text>
-              </View>
+              </Box>
             ) : null}
             {detail.is_popular ? (
-              <View style={styles.popularBadge}>
+              <Box style={styles.popularBadge}>
                 <Text style={styles.popularBadgeText}>MUY POPULAR</Text>
-              </View>
+              </Box>
             ) : null}
-          </View>
+          </HStack>
 
           <Text style={styles.title}>{detail.title}</Text>
 
           {/* Feedback row */}
-          <View style={styles.feedbackRow}>
+          <HStack className="items-center" style={{ marginBottom: 20 }}>
             <Text style={styles.feedbackText}>
               ¿Cómo te gustaría que te recomendemos este ejercicio?
             </Text>
-            <View style={styles.feedbackBtns}>
-              <TouchableOpacity
+            <HStack style={{ gap: 10 }}>
+              <Pressable
                 style={[styles.feedbackBtn, detail.user_feedback === 'like' && styles.feedbackBtnActive]}
                 onPress={() => onFeedback('like')}
               >
-                <Ionicons
+                <Icon
                   name="thumbs-up"
                   size={20}
                   color={detail.user_feedback === 'like' ? '#FFFFFF' : C.textSecondary}
                 />
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 style={[styles.feedbackBtn, detail.user_feedback === 'dislike' && styles.feedbackBtnActiveNegative]}
                 onPress={() => onFeedback('dislike')}
               >
-                <Ionicons
+                <Icon
                   name="thumbs-down"
                   size={20}
                   color={detail.user_feedback === 'dislike' ? '#FFFFFF' : C.textSecondary}
                 />
-              </TouchableOpacity>
-            </View>
-          </View>
+              </Pressable>
+            </HStack>
+          </HStack>
 
           {/* Tab bar */}
-          <View style={styles.tabBar}>
+          <Box style={styles.tabBar}>
             {TABS.map((t) => (
-              <TouchableOpacity
+              <Pressable
                 key={t.key}
                 style={[styles.tabPill, activeTab === t.key && styles.tabPillActive]}
                 onPress={() => onSelectTab(t.key)}
@@ -296,12 +299,12 @@ export default function ExerciseInfoScreen(props: Props) {
                 <Text style={[styles.tabPillText, activeTab === t.key && styles.tabPillTextActive]}>
                   {t.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
-          </View>
+          </Box>
 
           {/* Tab content */}
-          <View style={styles.tabContent}>
+          <Box style={styles.tabContent}>
             {activeTab === 'muscle' && (
               <MuscleTab primary={detail.muscle?.primary ?? null} secondary={detail.muscle?.secondary ?? []} />
             )}
@@ -322,8 +325,8 @@ export default function ExerciseInfoScreen(props: Props) {
                 onRetry={loadAnalysis}
               />
             )}
-          </View>
-        </View>
+          </Box>
+        </Box>
       </ScrollView>
     </SafeAreaView>
   );
@@ -337,39 +340,39 @@ function MuscleTab({
   secondary: ExerciseDetailData['muscle']['secondary'];
 }) {
   return (
-    <View>
+    <Box>
       {primary ? (
-        <View style={styles.muscleSection}>
+        <Box style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>PRINCIPAL</Text>
           <MuscleRow name={primary.name} />
-        </View>
+        </Box>
       ) : (
         <Text style={styles.emptyText}>No hay información muscular disponible.</Text>
       )}
 
       {secondary.length > 0 && (
-        <View style={styles.muscleSection}>
+        <Box style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>SECUNDARIA</Text>
           {secondary.map((m, idx) => (
-            <View key={`${m.name}-${idx}`}>
+            <Box key={`${m.name}-${idx}`}>
               <MuscleRow name={m.name} />
-              {idx < secondary.length - 1 && <View style={styles.rowSeparator} />}
-            </View>
+              {idx < secondary.length - 1 && <Divider />}
+            </Box>
           ))}
-        </View>
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
 
 function MuscleRow({ name }: { name: string }) {
   return (
-    <View style={styles.muscleRow}>
-      <View style={styles.muscleIconWrap}>
+    <HStack className="items-center py-2.5">
+      <Box style={styles.muscleIconWrap}>
         <MuscleIsolateIconMem muscleName={name} size={56} />
-      </View>
+      </Box>
       <Text style={styles.muscleRowText}>{name}</Text>
-    </View>
+    </HStack>
   );
 }
 
@@ -385,45 +388,45 @@ function InstructionsTab({
   onToggleTips: () => void;
 }) {
   return (
-    <View>
+    <Box>
       {steps.length === 0 ? (
         <Text style={styles.emptyText}>Aún no hay instrucciones disponibles para este ejercicio.</Text>
       ) : (
         steps.map((step, idx) => (
-          <View key={idx}>
-            <View style={styles.stepRow}>
+          <Box key={idx}>
+            <HStack className="py-3">
               <Text style={styles.stepNumber}>{idx + 1}</Text>
               <Text style={styles.stepText}>{step}</Text>
-            </View>
-            {idx < steps.length - 1 && <View style={styles.rowSeparator} />}
-          </View>
+            </HStack>
+            {idx < steps.length - 1 && <Divider />}
+          </Box>
         ))
       )}
 
       {tips.length > 0 && (
-        <View style={styles.tipsSection}>
-          <TouchableOpacity style={styles.tipsHeader} onPress={onToggleTips} activeOpacity={0.7}>
+        <Card variant="ghost" className="rounded-2xl p-3.5" style={{ marginTop: 16 }}>
+          <Pressable style={styles.tipsHeader} onPress={onToggleTips}>
             <Text style={styles.tipsHeaderText}>CONSEJOS IMPORTANTES</Text>
-            <Ionicons
+            <Icon
               name="chevron-down"
               size={18}
               color={C.textSecondary}
               style={{ transform: [{ rotate: tipsExpanded ? '180deg' : '0deg' }] }}
             />
-          </TouchableOpacity>
+          </Pressable>
           {tipsExpanded && (
-            <View style={styles.tipsBody}>
+            <Box style={styles.tipsBody}>
               {tips.map((tip, idx) => (
-                <View key={idx} style={styles.tipRow}>
+                <HStack key={idx} style={{ marginBottom: 8 }}>
                   <Text style={styles.tipBullet}>{'•'}</Text>
                   <Text style={styles.tipText}>{tip}</Text>
-                </View>
+                </HStack>
               ))}
-            </View>
+            </Box>
           )}
-        </View>
+        </Card>
       )}
-    </View>
+    </Box>
   );
 }
 
@@ -432,16 +435,16 @@ function EquipmentTab({ equipment }: { equipment: ExerciseDetailData['equipment'
     return <Text style={styles.emptyText}>Este ejercicio no requiere equipamiento.</Text>;
   }
   return (
-    <View style={styles.equipmentRow}>
+    <HStack className="items-center py-3">
       {equipment.image_url ? (
         <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} resizeMode="cover" />
       ) : (
-        <View style={[styles.equipmentImage, styles.equipmentImageFallback]}>
-          <Ionicons name="barbell-outline" size={32} color={C.gray30} />
-        </View>
+        <Box style={[styles.equipmentImage, styles.equipmentImageFallback]}>
+          <Icon name="barbell-outline" size={32} color={C.gray30} />
+        </Box>
       )}
       <Text style={styles.equipmentName}>{equipment.name}</Text>
-    </View>
+    </HStack>
   );
 }
 
@@ -520,53 +523,52 @@ function ProgressChartSection({ sessions }: { sessions: ExerciseAnalysisSession[
   }));
 
   return (
-    <View style={styles.chartSection}>
+    <Card variant="ghost" className="rounded-2xl p-4" style={{ marginBottom: 16 }}>
       <Text style={styles.chartSectionTitle}>Evolución</Text>
 
-      <View style={styles.metricChipRow}>
+      <HStack space="sm" className="flex-wrap" style={{ marginBottom: 14 }}>
         {numericMetricKeys.map((key) => {
           const meta = metricMeta(key);
           const active = selectedMetrics.includes(key);
           return (
-            <TouchableOpacity
+            <Pressable
               key={key}
               style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
               onPress={() => toggleMetric(key)}
-              activeOpacity={0.75}
             >
               <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
-      </View>
+      </HStack>
 
       {chronoSessions.length < 2 ? (
         <Text style={styles.emptyText}>Necesitas al menos 2 sesiones registradas para ver la evolución.</Text>
       ) : (
         <>
           <MetricLineChart series={chartSeries} pointCount={chronoSessions.length} width={SCREEN_WIDTH - 72} height={170} />
-          <View style={styles.chartDateRow}>
+          <HStack className="justify-between" style={{ marginTop: 6 }}>
             <Text style={styles.chartDateText}>{formatShortDate(chronoSessions[0].date)}</Text>
             <Text style={styles.chartDateText}>{formatShortDate(chronoSessions[chronoSessions.length - 1].date)}</Text>
-          </View>
-          <View style={styles.legendWrap}>
+          </HStack>
+          <HStack space="md" className="flex-wrap" style={{ marginTop: 14 }}>
             {selectedMetrics.map((key) => {
               const meta = metricMeta(key);
               const values = valuesByMetric[key].filter((v): v is number => v !== null);
               const latest = values.length > 0 ? values[values.length - 1] : null;
               return (
-                <View key={key} style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: meta.color }]} />
+                <HStack key={key} className="items-center" style={{ gap: 6 }}>
+                  <Box style={[styles.legendDot, { backgroundColor: meta.color }]} />
                   <Text style={styles.legendText}>
                     {meta.label}: {latest !== null ? `${latest}${meta.unit ? ` ${meta.unit}` : ''}` : '—'}
                   </Text>
-                </View>
+                </HStack>
               );
             })}
-          </View>
+          </HStack>
         </>
       )}
-    </View>
+    </Card>
   );
 }
 
@@ -583,9 +585,9 @@ function AnalysisTab({
 }) {
   if (loading) {
     return (
-      <View style={{ paddingVertical: 30 }}>
-        <ActivityIndicator size="small" color={C.textPrimary} />
-      </View>
+      <Box style={{ paddingVertical: 30 }}>
+        <Spinner size="small" color={C.textPrimary} />
+      </Box>
     );
   }
   if (error) {
@@ -595,12 +597,12 @@ function AnalysisTab({
     return <Text style={styles.emptyText}>Aún no hay datos.</Text>;
   }
   return (
-    <View>
+    <Box>
       <ProgressChartSection sessions={data.sessions} />
       {data.sessions.map((session, idx) => (
         <AnalysisHistoryCardMem key={`${session.date}-${idx}`} session={session} />
       ))}
-    </View>
+    </Box>
   );
 }
 
@@ -610,12 +612,6 @@ const styles = StyleSheet.create({
   panel: {
     paddingHorizontal: 20,
     paddingTop: 20,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
   },
   muscleBadge: {
     backgroundColor: C.brand20,
@@ -647,21 +643,12 @@ const styles = StyleSheet.create({
     color: C.white,
     marginBottom: 18,
   },
-  feedbackRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
   feedbackText: {
     flex: 1,
     fontFamily: FONT.regular,
     fontSize: 13,
     color: C.textSecondary,
     marginRight: 12,
-  },
-  feedbackBtns: {
-    flexDirection: 'row',
-    gap: 10,
   },
   feedbackBtn: {
     width: 48,
@@ -722,11 +709,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 10,
   },
-  muscleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
   muscleIconWrap: {
     width: 64,
     height: 64,
@@ -736,23 +718,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  muscleIcon: {
-    width: 64,
-    height: 64,
-  },
   muscleRowText: {
     marginLeft: 14,
     fontFamily: FONT.semiBold,
     fontSize: 15,
     color: C.white,
-  },
-  rowSeparator: {
-    height: 1,
-    backgroundColor: C.border,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
   },
   stepNumber: {
     width: 28,
@@ -766,12 +736,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: C.white,
     lineHeight: 21,
-  },
-  tipsSection: {
-    marginTop: 16,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 14,
-    padding: 14,
   },
   tipsHeader: {
     flexDirection: 'row',
@@ -787,10 +751,6 @@ const styles = StyleSheet.create({
   tipsBody: {
     marginTop: 12,
   },
-  tipRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
   tipBullet: {
     width: 16,
     fontFamily: FONT.bold,
@@ -803,11 +763,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: C.textSecondary,
     lineHeight: 20,
-  },
-  equipmentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
   },
   equipmentImage: {
     width: 96,
@@ -827,24 +782,12 @@ const styles = StyleSheet.create({
     color: C.white,
     flex: 1,
   },
-  chartSection: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-  },
   chartSectionTitle: {
     fontFamily: FONT.bold,
     fontSize: 13,
     color: C.white,
     letterSpacing: 0.3,
     marginBottom: 12,
-  },
-  metricChipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 14,
   },
   metricChip: {
     paddingHorizontal: 12,
@@ -861,26 +804,10 @@ const styles = StyleSheet.create({
   metricChipTextActive: {
     color: '#FFFFFF',
   },
-  chartDateRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 6,
-  },
   chartDateText: {
     fontFamily: FONT.regular,
     fontSize: 11,
     color: C.textSecondary,
-  },
-  legendWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 14,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
   legendDot: {
     width: 8,

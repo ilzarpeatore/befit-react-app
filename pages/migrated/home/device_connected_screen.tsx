@@ -1,85 +1,39 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
-import { C, FONT } from "../theme";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { VStack } from "@components/ui/vstack";
+import { Button, ButtonText } from "@components/ui/button";
+import { Icon } from "@components/ui/icon";
 
 export default function DeviceConnectedScreen({ navigation, route }: any) {
-  const styles = useStyle();
-  const isHealthSource = route?.params?.source === 'health';
+  const isHealthSource = route?.params?.source === "health";
 
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.checkCircle}>
-            <Ionicons name="checkmark" size={56} color={C.success50} />
-          </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <VStack className="flex-1 items-center justify-center px-8" space="2xl">
+        <Box className="items-center justify-center rounded-pill bg-success" style={{ width: 96, height: 96 }}>
+          <Icon name="checkmark" size={56} className="text-success-foreground" />
+        </Box>
 
-          <Text style={styles.title}>{"\u00A1Conectado!"}</Text>
-          <Text style={styles.subtitle}>
+        <VStack space="sm" className="items-center">
+          <Heading size="xl" className="text-center">{"¡Conectado!"}</Heading>
+          <Text muted className="text-center">
             {isHealthSource
-              ? "Tus datos de salud ya se est\u00E1n sincronizando."
-              : "Tu wearable est\u00E1 sincronizado correctamente."}
+              ? "Tus datos de salud ya se están sincronizando."
+              : "Tu wearable está sincronizado correctamente."}
           </Text>
+        </VStack>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('Home', { screen: 'HomePage' })}
-          >
-            <Text style={styles.buttonText}>Volver al inicio</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </View>
+        <Button
+          size="lg"
+          className="px-12"
+          onPress={() => navigation.navigate("Home", { screen: "HomePage" })}
+        >
+          <ButtonText>Volver al inicio</ButtonText>
+        </Button>
+      </VStack>
+    </SafeAreaView>
   );
-}
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    root: { flex: 1, backgroundColor: C.bg },
-    container: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 32,
-    },
-    checkCircle: {
-      width: 96,
-      height: 96,
-      borderRadius: 48,
-      backgroundColor: C.success5,
-      borderWidth: 2,
-      borderColor: C.success50,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 32,
-    },
-    title: {
-      fontSize: 24,
-      fontFamily: FONT.bold,
-      color: C.white,
-      textAlign: "center",
-      marginBottom: 12,
-    },
-    subtitle: {
-      fontSize: 15,
-      fontFamily: FONT.regular,
-      color: C.gray50,
-      textAlign: "center",
-      marginBottom: 48,
-    },
-    button: {
-      backgroundColor: C.brand50,
-      borderRadius: 16,
-      paddingVertical: 16,
-      paddingHorizontal: 48,
-    },
-    buttonText: {
-      fontSize: 16,
-      fontFamily: FONT.semiBold,
-      color: C.white,
-    },
-  });
 }

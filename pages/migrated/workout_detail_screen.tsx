@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Image,
   SafeAreaView,
-  ActivityIndicator,
   Dimensions,
   Platform,
   StatusBar,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Divider } from '@components/ui/divider';
 import { C, FONT } from './theme';
 import { workoutsApi } from '../../api/workouts';
 
@@ -134,10 +137,10 @@ export default function WorkoutDetailScreen(props: any) {
   };
 
   const renderDataItem = (img: string, title: string, value: string) => (
-    <View style={styles.dataItem}>
+    <Box style={styles.dataItem}>
       <Text style={styles.dataTitle}>{title}</Text>
       <Text style={styles.dataValue}>{value}</Text>
-    </View>
+    </Box>
   );
 
   const renderSets = (exercise: DayExerciseModel) => {
@@ -157,38 +160,40 @@ export default function WorkoutDetailScreen(props: any) {
   const renderExerciseItem = (item: DayExerciseModel, index: number) => {
     const sets = renderSets(item);
     return (
-      <TouchableOpacity
+      <Pressable
         key={item.id?.toString() || index.toString()}
-        style={styles.exerciseItem}
-        activeOpacity={0.7}
         onPress={() => {
           props.navigation?.navigate('MigratedExerciseInfo', {
             mExerciseId: item.exercise?.id,
           });
         }}
       >
-        {item.exercise?.exercise_image ? (
-          <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} resizeMode="cover" />
-        ) : null}
-        <View style={styles.exerciseContent}>
-          <Text style={styles.exerciseTitle} numberOfLines={1}>
-            {item.exercise?.title || 'Exercise'}
-          </Text>
-          {sets.length > 0 && (
-            <Text style={styles.exerciseSets}>{sets.join(' / ')}</Text>
-          )}
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={C.gray30} />
-      </TouchableOpacity>
+        <Card variant="ghost" className="p-3" style={{ marginHorizontal: 16, marginBottom: 12 }}>
+          <HStack space="md" className="items-center">
+            {item.exercise?.exercise_image ? (
+              <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} resizeMode="cover" />
+            ) : null}
+            <VStack className="flex-1">
+              <Text style={styles.exerciseTitle} numberOfLines={1}>
+                {item.exercise?.title || 'Exercise'}
+              </Text>
+              {sets.length > 0 && (
+                <Text style={styles.exerciseSets}>{sets.join(' / ')}</Text>
+              )}
+            </VStack>
+            <Icon name="chevron-forward" size={20} color={C.gray30} />
+          </HStack>
+        </Card>
+      </Pressable>
     );
   };
 
   if (!workoutDetail && !isDetailLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.emptyContainer}>
+        <Box style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No data available</Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -197,7 +202,7 @@ export default function WorkoutDetailScreen(props: any) {
     <SafeAreaView style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
-      <View style={styles.heroSection}>
+      <Box style={styles.heroSection}>
         {workoutDetail?.workout_image ? (
           <Image
             source={{ uri: workoutDetail.workout_image }}
@@ -205,7 +210,7 @@ export default function WorkoutDetailScreen(props: any) {
             resizeMode="cover"
           />
         ) : (
-          <View style={[styles.heroImage, { backgroundColor: C.surface }]} />
+          <Box style={[styles.heroImage, { backgroundColor: C.surface }]} />
         )}
         <LinearGradient
           colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)']}
@@ -213,34 +218,34 @@ export default function WorkoutDetailScreen(props: any) {
         />
 
         {/* Back Button */}
-        <TouchableOpacity style={styles.backBtn} onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        <Pressable style={styles.backBtn} onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} color="#FFFFFF" />
+        </Pressable>
 
         {/* Premium Badge */}
         {workoutDetail?.is_premium === 1 && (
-          <View style={styles.proBadge}>
+          <Box style={styles.proBadge}>
             <Text style={styles.proText}>PRO</Text>
-          </View>
+          </Box>
         )}
 
         {/* Favorite Button */}
-        <TouchableOpacity
+        <Pressable
           style={styles.favBtn}
           onPress={() => setWorkoutFav(workoutDetail?.id)}
         >
-          <Ionicons
+          <Icon
             name={workoutDetail?.is_favourite === 1 ? 'heart' : 'heart-outline'}
             size={22}
             color={workoutDetail?.is_favourite === 1 ? C.pink : '#FFFFFF'}
           />
-        </TouchableOpacity>
+        </Pressable>
 
         {/* Title */}
         <Text style={styles.heroTitle}>
           {workoutDetail?.title?.charAt(0).toUpperCase() + (workoutDetail?.title?.slice(1) || '')}
         </Text>
-      </View>
+      </Box>
 
       {/* Content Sheet */}
       <ScrollView
@@ -249,18 +254,18 @@ export default function WorkoutDetailScreen(props: any) {
         contentContainerStyle={styles.contentSheetInner}
       >
         {/* Data Row */}
-        <View style={styles.dataRow}>
+        <HStack className="justify-around px-8 py-2.5">
           {renderDataItem('', 'Workout Type', workoutDetail?.workout_type_title || '-')}
           {renderDataItem('', 'Level', workoutDetail?.level_title || '-')}
-        </View>
+        </HStack>
 
-        <View style={styles.divider} />
+        <Divider className="mx-4" style={{ marginVertical: 10 }} />
 
         {/* Description */}
         {workoutDetail?.description && !isDetailLoading && (
-          <View style={styles.descriptionSection}>
+          <Box style={styles.descriptionSection}>
             <Text style={styles.descriptionText}>{workoutDetail.description}</Text>
-          </View>
+          </Box>
         )}
 
         {/* Day Tabs */}
@@ -273,7 +278,7 @@ export default function WorkoutDetailScreen(props: any) {
               contentContainerStyle={styles.tabBarContent}
             >
               {workoutDayList.map((day, index) => (
-                <TouchableOpacity
+                <Pressable
                   key={day.id?.toString() || index.toString()}
                   style={[styles.tab, currentTabIndex === index && styles.tabActive]}
                   onPress={() => onTabTap(index)}
@@ -283,10 +288,10 @@ export default function WorkoutDetailScreen(props: any) {
                   >
                     Day {index + 1}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </ScrollView>
-            <View style={styles.divider} />
+            <Divider className="mx-4" style={{ marginVertical: 10 }} />
           </>
         )}
 
@@ -296,29 +301,29 @@ export default function WorkoutDetailScreen(props: any) {
         ) : (
           !isLoading &&
           workoutDayList.length > 0 && (
-            <View style={styles.emptyExerciseContainer}>
+            <Box style={styles.emptyExerciseContainer}>
               <Text style={styles.emptyExerciseText}>
                 {workoutDayList[currentTabIndex]?.is_rest === 1
                   ? 'Rest Day'
                   : 'No exercises found'}
               </Text>
-            </View>
+            </Box>
           )
         )}
 
         {isLoading && (
-          <View style={styles.exerciseLoader}>
-            <ActivityIndicator size="large" color={C.textPrimary} />
-          </View>
+          <Box style={styles.exerciseLoader}>
+            <Spinner size="large" color={C.textPrimary} />
+          </Box>
         )}
 
-        <View style={{ height: 30 }} />
+        <Box style={{ height: 30 }} />
       </ScrollView>
 
       {isDetailLoading && (
-        <View style={styles.loaderOverlay}>
-          <ActivityIndicator size="large" color="#FFFFFF" />
-        </View>
+        <Box style={styles.loaderOverlay}>
+          <Spinner size="large" color="#FFFFFF" />
+        </Box>
       )}
     </SafeAreaView>
   );
@@ -404,12 +409,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
   },
-  dataRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 32,
-    paddingVertical: 10,
-  },
   dataItem: {
     alignItems: 'center',
   },
@@ -423,12 +422,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: C.textSecondary,
     marginTop: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: C.border,
-    marginHorizontal: 16,
-    marginVertical: 10,
   },
   descriptionSection: {
     paddingHorizontal: 8,
@@ -464,23 +457,10 @@ const styles = StyleSheet.create({
     fontFamily: FONT.bold,
     color: C.textPrimary,
   },
-  exerciseItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 12,
-  },
   exerciseImage: {
     width: 55,
     height: 55,
     borderRadius: 10,
-  },
-  exerciseContent: {
-    flex: 1,
-    marginLeft: 12,
   },
   exerciseTitle: {
     fontFamily: FONT.semiBold,

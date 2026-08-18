@@ -84,8 +84,15 @@ export const exercisesApi = {
   // combinacion) para el buscador de "Anadir ejercicio" de la sesion, que
   // antes solo pedia la pagina 1 con per_page por defecto (10) sin scroll
   // infinito ni filtro de grupo muscular.
-  getFilteredList: (params: { title?: string; bodypart_id?: number; exercise_type?: string; page?: number; per_page?: number }) =>
-    apiClient.get<ExerciseListResponse>('exercise-list', { params }),
+  getFilteredList: (params: {
+    title?: string;
+    bodypart_id?: number;
+    equipment_id?: number;
+    level_ids?: number;
+    exercise_type?: string;
+    page?: number;
+    per_page?: number;
+  }) => apiClient.get<ExerciseListResponse>('exercise-list', { params }),
 
   getDetail: (id: number) =>
     apiClient.get<{ data: ExerciseItem & { equipment_image: string; seconds_per_rep: number } }>(`exercise-detail?id=${id}`),

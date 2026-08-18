@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import ScreenHeader from '@components/ScreenHeader';
 import { postsApi } from '../../api/posts';
 import logger from '@helper/logger';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface BookmarkPost {
   id: number;
@@ -102,67 +102,73 @@ export default function BookmarkScreen({ navigation }: any) {
 
   const renderPostCard = (item: BookmarkPost, index: number) => {
     return (
-      <TouchableOpacity key={index} style={styles_local.postCard} activeOpacity={0.85} onPress={() => openDetail(item)}>
+      <Pressable key={index} className="bg-card rounded-md overflow-hidden mx-4 my-1.5" onPress={() => openDetail(item)}>
         {/* User header */}
-        <View style={styles_local.postHeader}>
+        <Box className="flex-row items-center gap-2.5 p-3">
           {item.users?.profileImage ? (
-            <Image source={{ uri: item.users.profileImage }} style={styles_local.avatar} />
+            <Image source={{ uri: item.users.profileImage }} style={{ width: 36, height: 36, borderRadius: 18 }} />
           ) : (
-            <View style={styles_local.avatar}>
-              <Ionicons name="person" size={20} color={C.gray40} />
-            </View>
+            <Box className="w-9 h-9 rounded-full bg-secondary items-center justify-center">
+              <Icon name="person" size={20} className="text-muted-foreground" />
+            </Box>
           )}
-          <View style={styles_local.postHeaderInfo}>
-            <Text style={styles_local.postUserName}>{item.users?.displayName ?? 'User'}</Text>
-            <Text style={styles_local.postTime}>{item.createdAt ?? ''}</Text>
-          </View>
-        </View>
+          <Box className="flex-1">
+            <Text weight="semibold" size="sm">{item.users?.displayName ?? 'User'}</Text>
+            <Text muted size="xs">{item.createdAt ?? ''}</Text>
+          </Box>
+        </Box>
 
         {/* Description */}
         {item.content ? (
-          <Text style={styles_local.postDescription}>{item.content}</Text>
+          <Text size="sm" muted className="px-3" style={{ paddingBottom: 8, lineHeight: 20 }}>
+            {item.content}
+          </Text>
         ) : null}
 
         {/* Image */}
         {item.postImage ? (
-          <View style={styles_local.postImageWrap}>
-            <Image source={{ uri: item.postImage }} style={styles_local.postImagePlaceholder} resizeMode="cover" />
-          </View>
+          <Box className="mx-3" style={{ marginBottom: 8 }}>
+            <Image
+              source={{ uri: item.postImage }}
+              style={{ width: '100%', height: 200, borderRadius: 8 }}
+              resizeMode="cover"
+            />
+          </Box>
         ) : null}
 
         {/* Actions */}
-        <View style={styles_local.postActions}>
-          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7} onPress={() => toggleLike(item)}>
-            <Ionicons name={item.isLiked ? 'heart' : 'heart-outline'} size={22} color={item.isLiked ? C.destructive : C.gray30} />
-            <Text style={styles_local.actionCount}>{item.likesCount ?? 0}</Text>
+        <Box className="flex-row items-center gap-6 px-3 py-2.5 border-t border-border">
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => toggleLike(item)}>
+            <Icon
+              name={item.isLiked ? 'heart' : 'heart-outline'}
+              size={22}
+              className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
+            />
+            <Text size="sm" muted>{item.likesCount ?? 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7} onPress={() => openDetail(item)}>
-            <Ionicons name="chatbubble-outline" size={22} color={C.gray30} />
-            <Text style={styles_local.actionCount}>{item.commentsCount ?? 0}</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => openDetail(item)}>
+            <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
+            <Text size="sm" muted>{item.commentsCount ?? 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles_local.actionBtn} activeOpacity={0.7} onPress={() => unbookmark(item)}>
-            <Ionicons name="bookmark" size={22} color={C.textPrimary} />
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => unbookmark(item)}>
+            <Icon name="bookmark" size={22} className="text-foreground" />
           </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
+        </Box>
+      </Pressable>
     );
   };
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>Bookmarks</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 40 }}>
+        <ScreenHeader title="Bookmarks" onBack={() => navigation.goBack()} />
+      </Box>
 
-      <View style={styles_local.body}>
+      <Box className="flex-1">
         {loading ? (
-          <View style={styles_local.centerWrap}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box className="flex-1 items-center justify-center gap-3">
+            <ActivityIndicator size="large" color="#000000" />
+          </Box>
         ) : postList.length > 0 ? (
           <ScrollView
             ref={scrollRef}
@@ -172,82 +178,12 @@ export default function BookmarkScreen({ navigation }: any) {
             {postList.map((item, index) => renderPostCard(item, index))}
           </ScrollView>
         ) : (
-          <View style={styles_local.centerWrap}>
-            <Ionicons name="bookmark-outline" size={56} color={C.gray60} />
-            <Text style={styles_local.emptyText}>No bookmarked posts</Text>
-          </View>
+          <Box className="flex-1 items-center justify-center gap-3">
+            <Icon name="bookmark-outline" size={56} className="text-muted-foreground" />
+            <Text weight="medium" muted>No bookmarked posts</Text>
+          </Box>
         )}
-      </View>
-    </View>
+      </Box>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  body: { flex: 1 },
-  centerWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.gray40 },
-  postCard: {
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginVertical: 6,
-    overflow: 'hidden',
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    gap: 10,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: C.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  postHeaderInfo: { flex: 1 },
-  postUserName: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-  postTime: { fontSize: 11, fontFamily: FONT.regular, color: C.gray40 },
-  postDescription: {
-    fontSize: 14,
-    fontFamily: FONT.regular,
-    color: C.gray50,
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-    lineHeight: 20,
-  },
-  postImageWrap: { marginHorizontal: 12, marginBottom: 8 },
-  postImagePlaceholder: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    backgroundColor: C.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  postActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-    gap: 24,
-  },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  actionCount: { fontSize: 13, fontFamily: FONT.regular, color: C.gray30 },
-});

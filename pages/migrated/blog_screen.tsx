@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, Image, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, ScrollView, TextInput, Dimensions, Image, Alert } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Divider } from '@components/ui/divider';
+import { Button, ButtonText } from '@components/ui/button';
+import ScreenHeader from '@components/ScreenHeader';
 import { C, FONT } from './theme';
 import { blogApi, BlogListItem, BlogCategory } from '../../api/blog';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
@@ -134,72 +144,71 @@ export default function BlogScreen({ navigation }: any) {
   };
 
   const renderPostCard = (item: BlogListItem) => (
-    <TouchableOpacity
-      key={item.id}
-      style={styles_local.blogCard}
-      activeOpacity={0.7}
-      onPress={() => navigateToDetail(item)}
-    >
-      {item.post_image ? (
-        <Image source={{ uri: item.post_image }} style={styles_local.blogImage} resizeMode="cover" />
-      ) : (
-        <View style={[styles_local.blogImage, { backgroundColor: C.surfaceLight }]} />
-      )}
-      <View style={styles_local.blogInfo}>
-        <Text style={styles_local.blogTitle} numberOfLines={2}>{item.title || ''}</Text>
-        <Text style={styles_local.blogExcerpt} numberOfLines={2}>
-          {truncateText(item.description || item.content || '', 15)}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <Pressable key={item.id} onPress={() => navigateToDetail(item)}>
+      <Card variant="ghost" className="flex-row overflow-hidden rounded-sm p-0 mx-4" style={{ marginBottom: 12 }}>
+        {item.post_image ? (
+          <Image source={{ uri: item.post_image }} style={styles_local.blogImage} resizeMode="cover" />
+        ) : (
+          <Box style={[styles_local.blogImage, { backgroundColor: C.surfaceLight }]} />
+        )}
+        <Box style={styles_local.blogInfo}>
+          <Text style={styles_local.blogTitle} numberOfLines={2}>{item.title || ''}</Text>
+          <Text style={styles_local.blogExcerpt} numberOfLines={2}>
+            {truncateText(item.description || item.content || '', 15)}
+          </Text>
+        </Box>
+      </Card>
+    </Pressable>
   );
 
   const renderFeaturedCard = (item: BlogListItem, index: number) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id}
       style={[styles_local.featuredCard, index === 0 && styles_local.featuredCardLarge]}
-      activeOpacity={0.7}
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
         <Image source={{ uri: item.post_image }} style={styles_local.featuredImage} resizeMode="cover" />
       ) : (
-        <View style={[styles_local.featuredImage, { backgroundColor: C.surfaceLight }]} />
+        <Box style={[styles_local.featuredImage, { backgroundColor: C.surfaceLight }]} />
       )}
-      <View style={styles_local.featuredOverlay} />
+      <Box style={styles_local.featuredOverlay} />
       {item.blog_category && (
-        <View style={styles_local.featuredBadge}>
+        <Box style={styles_local.featuredBadge}>
           <Text style={styles_local.featuredBadgeText}>{item.blog_category.title}</Text>
-        </View>
+        </Box>
       )}
-      <View style={styles_local.featuredInfo}>
+      <Box style={styles_local.featuredInfo}>
         <Text style={styles_local.featuredTitle} numberOfLines={2}>{item.title ?? ''}</Text>
-      </View>
-    </TouchableOpacity>
+      </Box>
+    </Pressable>
   );
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>Blog</Text>
-        <TouchableOpacity
-          style={styles_local.viewAllBtn}
-          onPress={() => navigateToViewAll()}
-        >
-          <Text style={styles_local.viewAllText}>Ver todo</Text>
-        </TouchableOpacity>
-      </View>
+    <Box style={styles_local.container}>
+      <Box style={{ paddingTop: 40 }}>
+        <ScreenHeader
+          title="Blog"
+          onBack={() => navigation.goBack()}
+          rightAction={
+            <Button
+              variant="ghost"
+              onPress={() => navigateToViewAll()}
+              style={{ backgroundColor: C.brand5, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}
+            >
+              <ButtonText style={{ fontFamily: FONT.semiBold, fontSize: 13, color: C.white }}>Ver todo</ButtonText>
+            </Button>
+          }
+        />
+      </Box>
 
       <ScrollView
         style={styles_local.body}
         showsVerticalScrollIndicator={false}
         bounces
       >
-        <View style={styles_local.searchWrap}>
-          <Ionicons name="search-outline" size={18} color={C.gray40} />
+        <HStack space="sm" className="items-center mx-4 px-3 rounded-sm bg-card h-11" style={{ marginTop: 12 }}>
+          <Icon name="search-outline" size={18} color={C.gray40} />
           <TextInput
             style={styles_local.searchInput}
             placeholder="Buscar artículos..."
@@ -208,113 +217,124 @@ export default function BlogScreen({ navigation }: any) {
             onChangeText={handleSearch}
           />
           {searchText.length > 0 && (
-            <TouchableOpacity onPress={() => handleSearch('')}>
-              <Ionicons name="close-circle" size={18} color={C.gray40} />
-            </TouchableOpacity>
+            <Pressable onPress={() => handleSearch('')}>
+              <Icon name="close-circle" size={18} color={C.gray40} />
+            </Pressable>
           )}
-        </View>
+        </HStack>
 
         {!isSearching && (
-          <View style={styles_local.filterRow}>
-            <TouchableOpacity style={styles_local.filterPill} onPress={() => setSortSheetVisible(true)} activeOpacity={0.75}>
-              <Ionicons name="swap-vertical-outline" size={15} color={C.white} />
-              <Text style={styles_local.filterPillText} numberOfLines={1}>
+          <HStack space="sm" className="mx-4" style={{ marginTop: 12 }}>
+            <Button
+              variant="ghost"
+              onPress={() => setSortSheetVisible(true)}
+              style={{ backgroundColor: C.surfaceLight, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 }}
+            >
+              <Icon name="swap-vertical-outline" size={15} color={C.white} />
+              <ButtonText numberOfLines={1} style={{ fontFamily: FONT.medium, fontSize: 13, color: C.white, maxWidth: 120 }}>
                 {SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.orderDir === orderDir)?.label ?? 'Ordenar'}
-              </Text>
-              <Ionicons name="chevron-down" size={14} color={C.gray40} />
-            </TouchableOpacity>
+              </ButtonText>
+              <Icon name="chevron-down" size={14} color={C.gray40} />
+            </Button>
 
             {categories.length > 0 && (
-              <TouchableOpacity style={styles_local.filterPill} onPress={() => setCategorySheetVisible(true)} activeOpacity={0.75}>
-                <Ionicons name="pricetag-outline" size={15} color={C.white} />
-                <Text style={styles_local.filterPillText} numberOfLines={1}>
+              <Button
+                variant="ghost"
+                onPress={() => setCategorySheetVisible(true)}
+                style={{ backgroundColor: C.surfaceLight, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 }}
+              >
+                <Icon name="pricetag-outline" size={15} color={C.white} />
+                <ButtonText numberOfLines={1} style={{ fontFamily: FONT.medium, fontSize: 13, color: C.white, maxWidth: 120 }}>
                   {selectedCategory ? categories.find((c) => c.id === selectedCategory)?.title ?? 'Todos' : 'Todos'}
-                </Text>
-                <Ionicons name="chevron-down" size={14} color={C.gray40} />
-              </TouchableOpacity>
+                </ButtonText>
+                <Icon name="chevron-down" size={14} color={C.gray40} />
+              </Button>
             )}
-          </View>
+          </HStack>
         )}
 
         {loading ? (
-          <View style={styles_local.loadingWrap}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={styles_local.loadingWrap}>
+            <Spinner size="large" color={C.orange} />
+          </Box>
         ) : isSearching ? (
-          <View style={styles_local.section}>
+          <Box style={styles_local.section}>
             <Text style={styles_local.sectionTitle}>Resultados ({searchResults.length})</Text>
             {searchResults.length > 0 ? (
               searchResults.map((item) => renderPostCard(item))
             ) : (
-              <View style={styles_local.emptyWrap}>
-                <Ionicons name="search-outline" size={48} color={C.gray60} />
+              <VStack space="md" className="items-center justify-center" style={{ paddingVertical: 60 }}>
+                <Icon name="search-outline" size={48} color={C.gray60} />
                 <Text style={styles_local.emptyText}>Sin resultados</Text>
-              </View>
+              </VStack>
             )}
-          </View>
+          </Box>
         ) : (
           <>
             {featuredPosts.length > 0 && !selectedCategory && (
-              <View style={styles_local.section}>
-                <View style={styles_local.sectionHeader}>
+              <Box style={styles_local.section}>
+                <HStack className="justify-between items-center px-4" style={{ marginBottom: 12 }}>
                   <Text style={styles_local.sectionTitle}>Destacados</Text>
-                </View>
+                </HStack>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles_local.featuredScroll}>
                   {featuredPosts.map((item, index) => renderFeaturedCard(item, index))}
                 </ScrollView>
-              </View>
+              </Box>
             )}
 
             {sections.map((section) => (
-              <View key={section.category.id || section.category.title} style={styles_local.section}>
-                <View style={styles_local.sectionHeader}>
+              <Box key={section.category.id || section.category.title} style={styles_local.section}>
+                <HStack className="justify-between items-center px-4" style={{ marginBottom: 12 }}>
                   <Text style={styles_local.sectionTitle}>{section.category.title}</Text>
-                  <TouchableOpacity onPress={() => navigateToViewAll(section.category.title, section.category.id)}>
+                  <Pressable onPress={() => navigateToViewAll(section.category.title, section.category.id)}>
                     <Text style={styles_local.viewMoreText}>Ver más</Text>
-                  </TouchableOpacity>
-                </View>
+                  </Pressable>
+                </HStack>
                 {section.posts.map((item) => renderPostCard(item))}
-              </View>
+              </Box>
             ))}
 
             {sections.length === 0 && featuredPosts.length === 0 && (
-              <View style={styles_local.emptyWrap}>
-                <Ionicons name="document-text-outline" size={48} color={C.gray60} />
+              <VStack space="md" className="items-center justify-center" style={{ paddingVertical: 60 }}>
+                <Icon name="document-text-outline" size={48} color={C.gray60} />
                 <Text style={styles_local.emptyText}>No hay artículos disponibles</Text>
-              </View>
+              </VStack>
             )}
           </>
         )}
       </ScrollView>
 
       <SimpleBottomSheet visible={sortSheetVisible} onClose={() => setSortSheetVisible(false)}>
-        <View style={styles_local.sheetContent}>
+        <Box style={styles_local.sheetContent}>
           <Text style={styles_local.sheetTitle}>Ordenar por</Text>
           {SORT_OPTIONS.map((opt) => {
             const active = opt.sortBy === sortBy && opt.orderDir === orderDir;
             return (
-              <TouchableOpacity
-                key={opt.key}
-                style={styles_local.sheetOptionRow}
-                onPress={() => {
-                  setSortBy(opt.sortBy);
-                  setOrderDir(opt.orderDir);
-                  setSortSheetVisible(false);
-                }}
-              >
-                <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{opt.label}</Text>
-                {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-              </TouchableOpacity>
+              <React.Fragment key={opt.key}>
+                <Divider />
+                <Pressable
+                  style={styles_local.sheetOptionRow}
+                  onPress={() => {
+                    setSortBy(opt.sortBy);
+                    setOrderDir(opt.orderDir);
+                    setSortSheetVisible(false);
+                  }}
+                >
+                  <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{opt.label}</Text>
+                  {active ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+                </Pressable>
+              </React.Fragment>
             );
           })}
-        </View>
+        </Box>
       </SimpleBottomSheet>
 
       <SimpleBottomSheet visible={categorySheetVisible} onClose={() => setCategorySheetVisible(false)}>
-        <View style={styles_local.sheetContent}>
+        <Box style={styles_local.sheetContent}>
           <Text style={styles_local.sheetTitle}>Categoría</Text>
           <ScrollView style={{ maxHeight: 340 }}>
-            <TouchableOpacity
+            <Divider />
+            <Pressable
               style={styles_local.sheetOptionRow}
               onPress={() => {
                 setSelectedCategory(null);
@@ -322,75 +342,39 @@ export default function BlogScreen({ navigation }: any) {
               }}
             >
               <Text style={[styles_local.sheetOptionText, !selectedCategory && styles_local.sheetOptionTextActive]}>Todos</Text>
-              {!selectedCategory ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-            </TouchableOpacity>
+              {!selectedCategory ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+            </Pressable>
             {categories.map((cat) => {
               const active = selectedCategory === cat.id;
               return (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={styles_local.sheetOptionRow}
-                  onPress={() => {
-                    setSelectedCategory(active ? null : cat.id);
-                    setCategorySheetVisible(false);
-                  }}
-                >
-                  <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{cat.title}</Text>
-                  {active ? <Ionicons name="checkmark" size={18} color={C.textPrimary} /> : null}
-                </TouchableOpacity>
+                <React.Fragment key={cat.id}>
+                  <Divider />
+                  <Pressable
+                    style={styles_local.sheetOptionRow}
+                    onPress={() => {
+                      setSelectedCategory(active ? null : cat.id);
+                      setCategorySheetVisible(false);
+                    }}
+                  >
+                    <Text style={[styles_local.sheetOptionText, active && styles_local.sheetOptionTextActive]}>{cat.title}</Text>
+                    {active ? <Icon name="checkmark" size={18} color={C.textPrimary} /> : null}
+                  </Pressable>
+                </React.Fragment>
               );
             })}
           </ScrollView>
-        </View>
+        </Box>
       </SimpleBottomSheet>
-    </View>
+    </Box>
   );
 }
 
 const styles_local = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  viewAllBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: C.brand5 },
-  viewAllText: { fontSize: 13, fontFamily: FONT.semiBold, color: C.white },
   body: { flex: 1 },
-  searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    height: 44,
-    gap: 8,
-  },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white },
-  filterRow: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 12,
-    gap: 8,
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: C.surfaceLight,
-  },
-  filterPillText: { fontSize: 13, fontFamily: FONT.medium, color: C.white, maxWidth: 120 },
+  searchInput: { flex: 1, fontSize: 14, lineHeight: 18, fontFamily: FONT.regular, color: C.white },
   sheetContent: { padding: 24 },
   sheetTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginBottom: 8 },
   sheetOptionRow: {
@@ -398,19 +382,10 @@ const styles_local = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
   },
   sheetOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textSecondary },
   sheetOptionTextActive: { fontFamily: FONT.bold, color: C.textPrimary },
   section: { marginTop: 16, marginBottom: 8 },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
   sectionTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   viewMoreText: { fontSize: 13, fontFamily: FONT.medium, color: C.textPrimary },
   featuredScroll: { paddingLeft: 8 },
@@ -442,19 +417,10 @@ const styles_local = StyleSheet.create({
     right: 16,
   },
   featuredTitle: { fontSize: 16, fontFamily: FONT.bold, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
-  blogCard: {
-    flexDirection: 'row',
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
   blogImage: { width: 100, height: 100 },
   blogInfo: { flex: 1, padding: 12, justifyContent: 'center' },
   blogTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white, marginBottom: 4 },
   blogExcerpt: { fontSize: 12, fontFamily: FONT.regular, color: C.gray40, lineHeight: 18 },
-  emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, gap: 12 },
   emptyText: { fontSize: 15, fontFamily: FONT.medium, color: C.gray40 },
   loadingWrap: { paddingVertical: 60, alignItems: 'center' },
 });

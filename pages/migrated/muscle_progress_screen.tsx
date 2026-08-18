@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { C } from './theme';
 import MuscleBodyMap, { MuscleVolumeGroup } from '../../components/MuscleBodyMap';
 import { muscleVolumeApi, MuscleVolumeData } from '../../api/muscleVolume';
 
@@ -22,13 +27,17 @@ const EMPTY: MuscleVolumeData = { volumeByMuscle: [], seriesByMuscle: [], volume
 function MuscleVolumeBar({ item, maxVolume }: { item: MuscleVolumeGroup; maxVolume: number }) {
   const pct = maxVolume > 0 ? Math.max(4, (item.volume / maxVolume) * 100) : 0;
   return (
-    <View style={s.barRow}>
-      <Text style={s.barLabel} numberOfLines={1}>{item.group}</Text>
-      <View style={s.barTrack}>
-        <View style={[s.barFill, { width: `${pct}%` }]} />
-      </View>
-      <Text style={s.barValue}>{Math.round(item.volume)} kg</Text>
-    </View>
+    <Box className="flex-row items-center" style={{ marginBottom: 12 }}>
+      <Text weight="medium" size="xs" numberOfLines={1} style={{ width: 90 }}>
+        {item.group}
+      </Text>
+      <Box className="flex-1 bg-border overflow-hidden" style={{ height: 10, marginHorizontal: 8, borderRadius: 5 }}>
+        <Box className="bg-primary" style={{ height: 10, width: `${pct}%`, borderRadius: 5 }} />
+      </Box>
+      <Text weight="medium" size="xs" className="text-muted-foreground text-right" style={{ width: 60 }}>
+        {Math.round(item.volume)} kg
+      </Text>
+    </Box>
   );
 }
 
@@ -67,113 +76,61 @@ export default function MuscleProgressScreen(props: Props) {
   const isEmpty = !isLoading && sortedMuscles.length === 0;
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Progreso muscular</Text>
-        <View style={{ width: 32 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <Box className="flex-row items-center justify-between px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Progreso muscular</Heading>
+        <Box style={{ width: 32 }} />
+      </Box>
 
-      <View style={s.rangeRow}>
+      <Box
+        className="flex-row self-center bg-card shadow-card"
+        style={{ borderRadius: 12, padding: 4, gap: 4, marginBottom: 12 }}
+      >
         {RANGES.map((r) => (
-          <TouchableOpacity
+          <Pressable
             key={r.key}
-            style={[s.rangeBtn, range === r.key && s.rangeBtnActive]}
+            style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 8 }}
+            className={range === r.key ? 'bg-primary' : ''}
             onPress={() => setRange(r.key)}
-            activeOpacity={0.75}
           >
-            <Text style={[s.rangeText, range === r.key && s.rangeTextActive]}>{r.label}</Text>
-          </TouchableOpacity>
+            <Text
+              weight="semibold"
+              size="sm"
+              className={range === r.key ? 'text-primary-foreground' : 'text-muted-foreground'}
+            >
+              {r.label}
+            </Text>
+          </Pressable>
         ))}
-      </View>
+      </Box>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.mapCard}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <Box className="bg-card rounded-md items-center justify-center shadow-card" style={{ paddingVertical: 16, minHeight: 200 }}>
           {isLoading ? (
             <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
           ) : isEmpty ? (
-            <Text style={s.emptyText}>Todavía no hay entrenamientos registrados en este periodo.</Text>
+            <Text size="xs" muted className="text-center" style={{ paddingVertical: 60, paddingHorizontal: 24 }}>
+              Todavía no hay entrenamientos registrados en este periodo.
+            </Text>
           ) : (
             <MuscleBodyMap data={sortedMuscles} height={320} />
           )}
-        </View>
+        </Box>
 
         {!isLoading && sortedMuscles.length > 0 && (
-          <View style={s.listCard}>
-            <Text style={s.listTitle}>Distribución del volumen</Text>
+          <Box className="bg-card rounded-md shadow-card" style={{ padding: 18, marginTop: 16 }}>
+            <Text weight="bold" size="xs" muted className="uppercase" style={{ letterSpacing: 0.5, marginBottom: 14 }}>
+              Distribución del volumen
+            </Text>
             {sortedMuscles.map((m) => (
               <MuscleVolumeBar key={m.group} item={m} maxVolume={maxVolume} />
             ))}
-          </View>
+          </Box>
         )}
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  backBtn: { padding: 4 },
-  appBarTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
-  rangeRow: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    padding: 4,
-    gap: 4,
-    marginBottom: 12,
-    ...SHADOW.card,
-  },
-  rangeBtn: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 8 },
-  rangeBtnActive: { backgroundColor: C.accentBlack },
-  rangeText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.textSecondary },
-  rangeTextActive: { color: '#FFFFFF' },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  mapCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 200,
-    ...SHADOW.card,
-  },
-  emptyText: {
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.textSecondary,
-    textAlign: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 24,
-  },
-  listCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    padding: 18,
-    marginTop: 16,
-    ...SHADOW.card,
-  },
-  listTitle: {
-    fontFamily: FONT.bold,
-    fontSize: 13,
-    color: C.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 14,
-  },
-  barRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  barLabel: { width: 90, fontFamily: FONT.medium, fontSize: 12, color: C.textPrimary },
-  barTrack: { flex: 1, height: 10, backgroundColor: C.border, borderRadius: 5, overflow: 'hidden', marginHorizontal: 8 },
-  barFill: { height: 10, backgroundColor: C.accentBlack, borderRadius: 5 },
-  barValue: { width: 60, fontFamily: FONT.medium, fontSize: 11, color: C.textSecondary, textAlign: 'right' },
-});

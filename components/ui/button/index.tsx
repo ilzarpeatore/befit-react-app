@@ -43,6 +43,10 @@ const buttonStyle = tva({
       lg: 'min-h-10 rounded-md px-8',
       icon: 'min-h-9 min-w-9',
     },
+    radius: {
+      md: '',
+      pill: 'rounded-pill',
+    },
   },
 });
 const buttonTextStyle = tva({
@@ -50,7 +54,7 @@ const buttonTextStyle = tva({
   parentVariants: {
     variant: {
       default: 'text-primary-foreground',
-      destructive: 'text-white',
+      destructive: 'text-destructive-foreground',
       outline: 'text-foreground data-[hover=true]:text-accent-foreground data-[active=true]:text-accent-foreground',
       secondary: 'text-secondary-foreground',
       ghost: 'text-foreground ',
@@ -82,7 +86,7 @@ const buttonIconStyle = tva({
   parentVariants: {
     variant: {
       default: 'text-primary-foreground',
-      destructive: 'text-white',
+      destructive: 'text-destructive-foreground',
       outline:
         'text-foreground data-[hover=true]:text-accent-foreground data-[active=true]:text-accent-foreground',
       secondary: 'text-secondary-foreground',
@@ -130,12 +134,12 @@ type IButtonProps = Omit<
 const Button = React.forwardRef<
   React.ElementRef<typeof UIButton>,
   IButtonProps
->(({ className, variant = 'default', size = 'default', ...props }, ref) => {
+>(({ className, variant = 'default', size = 'default', radius = 'md', ...props }, ref) => {
   return (
     <UIButton
       ref={ref}
       {...props}
-      className={buttonStyle({ variant, size, class: className })}
+      className={buttonStyle({ variant, size, radius, class: className })}
       context={{ variant, size }}
     />
   );

@@ -1,8 +1,11 @@
-﻿import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import React, { useState } from 'react';
+import { ScrollView, Image, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { VStack } from '@components/ui/vstack';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import ScreenHeader from '@components/ScreenHeader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -19,136 +22,73 @@ export default function TipsScreen(props: any) {
   const isYouTube = mExerciseVideo?.includes('https://youtu');
 
   return (
-    <View style={styles.container}>
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Tips & Instructions</Text>
-      </View>
+    <Box className="flex-1 bg-background">
+      <ScreenHeader title="Tips & Instructions" onBack={() => props.navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
         {isYouTube ? (
-          <View style={styles.videoContainer}>
+          <Box style={{ width: SCREEN_WIDTH, aspectRatio: 12 / 7 }}>
             {mExerciseImage ? (
               <Image
                 source={{ uri: mExerciseImage }}
-                style={styles.videoThumbnail}
+                style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />
             ) : (
-              <View style={[styles.videoThumbnail, styles.videoPlaceholder]}>
-                <Ionicons name="logo-youtube" size={48} color={C.red} />
-              </View>
+              <Box style={{ width: '100%', height: '100%' }} className="bg-card items-center justify-center">
+                <Icon name="logo-youtube" size={48} className="text-destructive" />
+              </Box>
             )}
-          </View>
+          </Box>
         ) : mExerciseVideo ? (
-          <View style={styles.videoContainer}>
+          <Box style={{ width: SCREEN_WIDTH, aspectRatio: 12 / 7 }}>
             {mExerciseImage ? (
               <Image
                 source={{ uri: mExerciseImage }}
-                style={styles.videoThumbnail}
+                style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />
             ) : (
-              <View style={[styles.videoThumbnail, styles.videoPlaceholder]}>
-                <Ionicons name="play-circle" size={48} color={C.orange} />
-              </View>
+              <Box style={{ width: '100%', height: '100%' }} className="bg-card items-center justify-center">
+                <Icon name="play-circle" size={48} className="text-warning" />
+              </Box>
             )}
-          </View>
+          </Box>
         ) : null}
 
-        <View style={styles.tipsSection}>
-          <TouchableOpacity
-            style={styles.tipsCard}
-            activeOpacity={0.8}
+        <VStack space="lg" className="p-4">
+          <Pressable
+            className="bg-card rounded-sm p-4"
             onPress={() => setSelect(!select)}
           >
-            <View style={styles.tipsHeader}>
-              <View style={styles.tipsTitleRow}>
-                <Ionicons name="information-circle-outline" size={25} color={C.textPrimary} />
-                <Text style={styles.tipsTitle}>Tips</Text>
-              </View>
-              <Ionicons
-                name={select ? 'chevron-down' : 'chevron-up'}
-                size={30}
-                color={C.textPrimary}
-              />
-            </View>
-            {!select && mTips ? (
-              <Text style={styles.tipsContent}>{mTips}</Text>
-            ) : null}
-          </TouchableOpacity>
+            <VStack space="sm">
+              <Box className="flex-row justify-between items-center">
+                <Box className="flex-row items-center gap-2.5 flex-1">
+                  <Icon name="information-circle-outline" size={25} className="text-foreground" />
+                  <Text size="lg" className="text-foreground">Tips</Text>
+                </Box>
+                <Icon
+                  name={select ? 'chevron-down' : 'chevron-up'}
+                  size={30}
+                  className="text-foreground"
+                />
+              </Box>
+              {!select && mTips ? (
+                <Text size="sm" muted className="leading-[22px]">{mTips}</Text>
+              ) : null}
+            </VStack>
+          </Pressable>
 
           {mExerciseInstruction ? (
-            <>
-              <Text style={styles.instructionTitle}>Instructions</Text>
-              <View style={styles.instructionCard}>
-                <Text style={styles.instructionContent}>{mExerciseInstruction}</Text>
-              </View>
-            </>
+            <VStack space="sm">
+              <Text weight="bold">Instructions</Text>
+              <Box className="bg-card rounded-sm p-4">
+                <Text size="sm" muted className="leading-[22px]">{mExerciseInstruction}</Text>
+              </Box>
+            </VStack>
           ) : null}
-        </View>
+        </VStack>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-  scrollContent: { paddingBottom: 32 },
-  videoContainer: { width: SCREEN_WIDTH, aspectRatio: 12 / 7 },
-  videoThumbnail: { width: '100%', height: '100%' },
-  videoPlaceholder: {
-    backgroundColor: C.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tipsSection: { padding: 16 },
-  tipsCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  tipsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  tipsTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  tipsTitle: { fontSize: 18, fontFamily: FONT.regular, color: C.white },
-  tipsContent: {
-    fontSize: 14,
-    fontFamily: FONT.regular,
-    color: C.gray50,
-    marginTop: 8,
-    lineHeight: 22,
-  },
-  instructionTitle: {
-    fontSize: 16,
-    fontFamily: FONT.bold,
-    color: C.white,
-    marginBottom: 12,
-  },
-  instructionCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 16,
-  },
-  instructionContent: {
-    fontSize: 14,
-    fontFamily: FONT.regular,
-    color: C.gray50,
-    lineHeight: 22,
-  },
-});

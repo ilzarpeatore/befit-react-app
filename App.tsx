@@ -8,6 +8,8 @@ import { DefaultTheme, NavigationContainer, createNavigationContainerRef } from 
 // Herramienta temporal de desarrollo (ver components/ScreenReviewFab.tsx) —
 // borrar este import + el ref + el mount del FAB mas abajo cuando ya no haga falta.
 import ScreenReviewFab from "@components/ScreenReviewFab";
+import WorkoutMinimizedBar from "@components/WorkoutMinimizedBar";
+import { hydratePersistedWorkoutSession } from "@helper/workoutSessionBus";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { enableScreens } from "react-native-screens";
@@ -25,7 +27,6 @@ import '@/global.css';
 const screenReviewNavigationRef = createNavigationContainerRef(); // registra el handler de notificaciones locales al arrancar, sin depender de visitar las pantallas de recordatorios
 
 const Home = React.lazy(() => import('@pages/Home'));
-const Profile = React.lazy(() => import('@pages/Profile'));
 
 const WelcomeAuthScreen = React.lazy(() => import('@pages/auth/WelcomeAuthScreen'));
 const LoginScreen = React.lazy(() => import('@pages/auth/LoginScreen'));
@@ -40,16 +41,11 @@ const WorkoutList = React.lazy(() => import('@pages/WorkoutList'));
 const WorkoutDetail = React.lazy(() => import('@pages/WorkoutDetail'));
 const WorkoutDayExercises = React.lazy(() => import('@pages/WorkoutDayExercises'));
 const WorkoutSessionScreen = React.lazy(() => import('@pages/WorkoutSessionScreen'));
-const WorkoutSummary = React.lazy(() => import('@pages/WorkoutSummary'));
-const ExerciseList = React.lazy(() => import('@pages/ExerciseList'));
 const ExerciseDetail = React.lazy(() => import('@pages/ExerciseDetail'));
 const DietDashboard = React.lazy(() => import('@pages/DietDashboard'));
 const DietList = React.lazy(() => import('@pages/DietList'));
 const CommunityFeed = React.lazy(() => import('@pages/CommunityFeed'));
 const PostDetail = React.lazy(() => import('@pages/PostDetail'));
-const ProfileStats = React.lazy(() => import('@pages/ProfileStats'));
-const SettingsScreen = React.lazy(() => import('@pages/SettingsScreen'));
-const FavouriteWorkouts = React.lazy(() => import('@pages/FavouriteWorkouts'));
 const ScreenExplorer = React.lazy(() => import('@pages/ScreenExplorer'));
 
 const AboutAppScreen = React.lazy(() => import('@pages/migrated/about_app_screen'));
@@ -57,7 +53,6 @@ const AboutUsScreen = React.lazy(() => import('@pages/migrated/about_us_screen')
 const ActivityTrackerScreen = React.lazy(() => import('@pages/migrated/activity_tracker_screen'));
 const AddPostScreen = React.lazy(() => import('@pages/migrated/add_post_screen'));
 const AddShoppingListScreen = React.lazy(() => import('@pages/migrated/add_shopping_list_screen'));
-const AssignScreen = React.lazy(() => import('@pages/migrated/assign_screen'));
 const BlogDetailScreen = React.lazy(() => import('@pages/migrated/blog_detail_screen'));
 const BlogScreen = React.lazy(() => import('@pages/migrated/blog_screen'));
 const BodyMetricsScreen = React.lazy(() => import('@pages/migrated/body_metrics_screen'));
@@ -74,13 +69,8 @@ const DietDetailScreen = React.lazy(() => import('@pages/migrated/diet_detail_sc
 const AssignedMealsScreen = React.lazy(() => import('@pages/migrated/assigned_meals_screen'));
 const EditProfileScreen = React.lazy(() => import('@pages/migrated/edit_profile_screen'));
 const ExerciseInfoScreen = React.lazy(() => import('@pages/migrated/exercise_info_screen'));
-const ExerciseDurationScreen = React.lazy(() => import('@pages/migrated/exercise_duration_screen'));
-const ExerciseDurationScreencast = React.lazy(() => import('@pages/migrated/exercise_duration_screencast'));
-const ExerciseHistoryScreen = React.lazy(() => import('@pages/migrated/exercise_history_screen'));
 const FavouriteRecipeScreen = React.lazy(() => import('@pages/migrated/favourite_recipe_screen'));
 const FavouriteScreen = React.lazy(() => import('@pages/migrated/favourite_screen'));
-const FilterWorkoutScreen = React.lazy(() => import('@pages/migrated/filter_workout_screen'));
-const ForgotPwdScreen = React.lazy(() => import('@pages/migrated/forgot_pwd_screen'));
 
 const HomeScreenModern = React.lazy(() => import('@pages/migrated/home_screen_modern'));
 const HabitsListScreen = React.lazy(() => import('@pages/migrated/habits_list_screen'));
@@ -92,17 +82,13 @@ const MealsRemindersScreen = React.lazy(() => import('@pages/migrated/meals_remi
 const MealsWaterReminderScreen = React.lazy(() => import('@pages/migrated/meals_water_reminder_screen'));
 const MuscleProgressScreen = React.lazy(() => import('@pages/migrated/muscle_progress_screen'));
 const MyProgramCalendarScreen = React.lazy(() => import('@pages/migrated/my_program_calendar_screen'));
-const NoDataScreen = React.lazy(() => import('@pages/migrated/no_data_screen'));
-const NoInternetScreen = React.lazy(() => import('@pages/migrated/no_internet_screen'));
 const NotificationScreen = React.lazy(() => import('@pages/migrated/notification_screen'));
 const OnboardingScreen = React.lazy(() => import('@pages/migrated/onboarding_screen'));
 const OtherUserProfileScreen = React.lazy(() => import('@pages/migrated/other_user_profile_screen'));
-const OTPScreen = React.lazy(() => import('@pages/migrated/otp_screen'));
 const PlanScreen = React.lazy(() => import('@pages/migrated/plan_screen'));
 const PostDetailsScreen = React.lazy(() => import('@pages/migrated/post_details_screen'));
 const PrivacyPolicyScreen = React.lazy(() => import('@pages/migrated/privacy_policy_screen'));
 const ProfileScreenMigrated = React.lazy(() => import('@pages/migrated/profile_screen'));
-const ProgressDetailScreen = React.lazy(() => import('@pages/migrated/progress_detail_screen'));
 const ProgressScreen = React.lazy(() => import('@pages/migrated/progress_screen'));
 const StatisticsScreen = React.lazy(() => import('@pages/migrated/statistics_screen'));
 const StatisticsMuscleDistributionScreen = React.lazy(() => import('@pages/migrated/statistics_muscle_distribution_screen'));
@@ -120,32 +106,22 @@ const RecipeTagListScreen = React.lazy(() => import('@pages/migrated/recipe_tag_
 const ReminderScreen = React.lazy(() => import('@pages/migrated/reminder_screen'));
 const ResourceDetailScreen = React.lazy(() => import('@pages/migrated/resource_detail_screen'));
 const ResourcesListScreen = React.lazy(() => import('@pages/migrated/resources_list_screen'));
-const ScheduleScreen = React.lazy(() => import('@pages/migrated/schedule_screen'));
 const SearchScreen = React.lazy(() => import('@pages/migrated/search_screen'));
 const SessionHistoryDetailScreen = React.lazy(() => import('@pages/migrated/session_history_detail_screen'));
 const SetReminderScreen = React.lazy(() => import('@pages/migrated/set_reminder_screen'));
 const ShoppingListDetailScreen = React.lazy(() => import('@pages/migrated/shopping_list_detail_screen'));
 const ShoppingListScreen = React.lazy(() => import('@pages/migrated/shopping_list_screen'));
-const SignInScreenSandow = React.lazy(() => import('@pages/migrated/sign_in_screen_sandow'));
-const SignUpScreenSandow = React.lazy(() => import('@pages/migrated/sign_up_screen_sandow'));
 
 const SleepMonitoringScreen = React.lazy(() => import('@pages/migrated/sleep_monitoring_screen'));
 const SplashScreenMigrated = React.lazy(() => import('@pages/migrated/splash_screen'));
 const StepsCountScreen = React.lazy(() => import('@pages/migrated/steps_count_screen'));
-const SubscriptionDetailScreen = React.lazy(() => import('@pages/migrated/subscription_detail_screen'));
 const TermsAndConditionsScreen = React.lazy(() => import('@pages/migrated/terms_and_conditions_screen'));
 const TipsScreen = React.lazy(() => import('@pages/migrated/tips_screen'));
-const VerifyOtpScreen = React.lazy(() => import('@pages/migrated/verify_otp_screen'));
 const VideoDetailScreen = React.lazy(() => import('@pages/migrated/video_detail_screen'));
 const VideoScreen = React.lazy(() => import('@pages/migrated/video_screen'));
 const ViewAllBlogScreen = React.lazy(() => import('@pages/migrated/view_all_blog_screen'));
-const ViewAllDiet = React.lazy(() => import('@pages/migrated/view_all_diet'));
 const ViewBodyPartScreen = React.lazy(() => import('@pages/migrated/view_body_part_screen'));
-const ViewDietCategoryScreen = React.lazy(() => import('@pages/migrated/view_diet_category_screen'));
 const ViewEquipmentScreen = React.lazy(() => import('@pages/migrated/view_equipment_screen'));
-const ViewLevelScreen = React.lazy(() => import('@pages/migrated/view_level_screen'));
-const ViewWorkoutsScreen = React.lazy(() => import('@pages/migrated/view_workouts_screen'));
-const WalkThroughScreen = React.lazy(() => import('@pages/migrated/walk_through_screen'));
 const WaterRemindersScreen = React.lazy(() => import('@pages/migrated/water_reminders_screen'));
 const WaterTrackerScreen = React.lazy(() => import('@pages/migrated/water_tracker_screen'));
 const WebViewScreen = React.lazy(() => import('@pages/migrated/web_view_screen'));
@@ -168,7 +144,6 @@ const HeartRateHistoryScreen = React.lazy(() => import('@pages/migrated/home/hea
 const HeartRateInsightScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_insight_screen'));
 const HeartRateScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_screen'));
 const HeartRateZoneScreen = React.lazy(() => import('@pages/migrated/home/heart_rate_zones_screen'));
-const HomeEmptyScreen = React.lazy(() => import('@pages/migrated/home/home_empty_screen'));
 const LinkDeviceChoiceScreen = React.lazy(() => import('@pages/migrated/home/link_device_choice_screen'));
 const LinkDeviceListScreen = React.lazy(() => import('@pages/migrated/home/link_device_list_screen'));
 const LogStepsFormScreen = React.lazy(() => import('@pages/migrated/home/log_steps_form_screen'));
@@ -180,6 +155,7 @@ const StepsHistoryScreen = React.lazy(() => import('@pages/migrated/home/steps_h
 const StepsInsightScreenHome = React.lazy(() => import('@pages/migrated/home/steps_insight_screen'));
 const StepsLoggedScreen = React.lazy(() => import('@pages/migrated/home/steps_logged_screen'));
 const StepsScreen = React.lazy(() => import('@pages/migrated/home/steps_screen'));
+
 const ArticlesScreen = React.lazy(() => import('@pages/migrated/onboarding/articles_screen'));
 const AssessmentResultScreen = React.lazy(() => import('@pages/migrated/onboarding/assessment_result_screen'));
 const AvatarSetupScreen = React.lazy(() => import('@pages/migrated/onboarding/avatar_setup_screen'));
@@ -230,7 +206,6 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedActivityTracker" component={ActivityTrackerScreen} />
       <MStack.Screen name="MigratedAddPost" component={AddPostScreen} />
       <MStack.Screen name="MigratedAddShoppingList" component={AddShoppingListScreen} />
-      <MStack.Screen name="MigratedAssign" component={AssignScreen} />
       <MStack.Screen name="MigratedBlogDetail" component={BlogDetailScreen} />
       <MStack.Screen name="MigratedBlog" component={BlogScreen} />
       <MStack.Screen name="MigratedBodyMetrics" component={BodyMetricsScreen} />
@@ -249,13 +224,8 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedAssignedMeals" component={AssignedMealsScreen} />
       <MStack.Screen name="MigratedEditProfile" component={EditProfileScreen} />
       <MStack.Screen name="MigratedExerciseInfo" component={ExerciseInfoScreen} />
-      <MStack.Screen name="MigratedExerciseDuration" component={ExerciseDurationScreen as any} />
-      <MStack.Screen name="MigratedExerciseDurationCast" component={ExerciseDurationScreencast as any} />
-      <MStack.Screen name="MigratedExerciseHistory" component={ExerciseHistoryScreen} />
       <MStack.Screen name="MigratedFavouriteRecipe" component={FavouriteRecipeScreen} />
       <MStack.Screen name="MigratedFavourite" component={FavouriteScreen as any} />
-      <MStack.Screen name="MigratedFilterWorkout" component={FilterWorkoutScreen} />
-      <MStack.Screen name="MigratedForgotPwd" component={ForgotPwdScreen} />
       <MStack.Screen name="MigratedHomeModern" component={HomeScreenModern} />
       <MStack.Screen name="MigratedLanguage" component={LanguageScreen} />
       <MStack.Screen name="MigratedMainGoal" component={MainGoalScreen} />
@@ -263,17 +233,13 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedMealsWaterReminder" component={MealsWaterReminderScreen} />
       <MStack.Screen name="MigratedMuscleProgress" component={MuscleProgressScreen} />
       <MStack.Screen name="MigratedMyProgramCalendar" component={MyProgramCalendarScreen} />
-      <MStack.Screen name="MigratedNoData" component={NoDataScreen} />
-      <MStack.Screen name="MigratedNoInternet" component={NoInternetScreen} />
       <MStack.Screen name="MigratedNotification" component={NotificationScreen} />
       <MStack.Screen name="MigratedOnboarding" component={OnboardingScreen} />
       <MStack.Screen name="MigratedOtherUserProfile" component={OtherUserProfileScreen} />
-      <MStack.Screen name="MigratedOTP" component={OTPScreen} />
       <MStack.Screen name="MigratedPlan" component={PlanScreen} />
       <MStack.Screen name="MigratedPostDetails" component={PostDetailsScreen} />
       <MStack.Screen name="MigratedPrivacyPolicy" component={PrivacyPolicyScreen} />
       <MStack.Screen name="MigratedProfile" component={ProfileScreenMigrated as any} />
-      <MStack.Screen name="MigratedProgressDetail" component={ProgressDetailScreen} />
       <MStack.Screen name="MigratedProgress" component={ProgressScreen} />
       <MStack.Screen name="MigratedStatistics" component={StatisticsScreen} />
       <MStack.Screen name="MigratedStatisticsMuscles" component={StatisticsMuscleDistributionScreen} />
@@ -290,31 +256,21 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedReminder" component={ReminderScreen} />
       <MStack.Screen name="MigratedResourceDetail" component={ResourceDetailScreen} />
       <MStack.Screen name="MigratedResourcesList" component={ResourcesListScreen} />
-      <MStack.Screen name="MigratedSchedule" component={ScheduleScreen} />
       <MStack.Screen name="MigratedSearch" component={SearchScreen} />
       <MStack.Screen name="MigratedSessionHistoryDetail" component={SessionHistoryDetailScreen} />
       <MStack.Screen name="MigratedSetReminder" component={SetReminderScreen} />
       <MStack.Screen name="MigratedShoppingListDetail" component={ShoppingListDetailScreen} />
       <MStack.Screen name="MigratedShoppingList" component={ShoppingListScreen} />
-      <MStack.Screen name="MigratedSignInSandow" component={SignInScreenSandow} />
-      <MStack.Screen name="MigratedSignUpSandow" component={SignUpScreenSandow} />
       <MStack.Screen name="MigratedSleepMonitoring" component={SleepMonitoringScreen} />
       <MStack.Screen name="MigratedSplash" component={SplashScreenMigrated} />
       <MStack.Screen name="MigratedStepsCount" component={StepsCountScreen} />
-      <MStack.Screen name="MigratedSubscriptionDetail" component={SubscriptionDetailScreen} />
       <MStack.Screen name="MigratedTermsAndConditions" component={TermsAndConditionsScreen} />
       <MStack.Screen name="MigratedTips" component={TipsScreen} />
-      <MStack.Screen name="MigratedVerifyOtp" component={VerifyOtpScreen} />
       <MStack.Screen name="MigratedVideoDetail" component={VideoDetailScreen} />
       <MStack.Screen name="MigratedVideo" component={VideoScreen} />
       <MStack.Screen name="MigratedViewAllBlog" component={ViewAllBlogScreen} />
-      <MStack.Screen name="MigratedViewAllDiet" component={ViewAllDiet} />
       <MStack.Screen name="MigratedViewBodyPart" component={ViewBodyPartScreen} />
-      <MStack.Screen name="MigratedViewDietCategory" component={ViewDietCategoryScreen} />
       <MStack.Screen name="MigratedViewEquipment" component={ViewEquipmentScreen} />
-      <MStack.Screen name="MigratedViewLevel" component={ViewLevelScreen} />
-      <MStack.Screen name="MigratedViewWorkouts" component={ViewWorkoutsScreen} />
-      <MStack.Screen name="MigratedWalkThrough" component={WalkThroughScreen} />
       <MStack.Screen name="MigratedWaterReminders" component={WaterRemindersScreen} />
       <MStack.Screen name="MigratedWaterTracker" component={WaterTrackerScreen} />
       <MStack.Screen name="MigratedWebView" component={WebViewScreen} />
@@ -335,7 +291,6 @@ function MigratedNavigator() {
       <MStack.Screen name="MigratedHeartRateInsight" component={HeartRateInsightScreen} />
       <MStack.Screen name="MigratedHeartRate" component={HeartRateScreen} />
       <MStack.Screen name="MigratedHeartRateZones" component={HeartRateZoneScreen} />
-      <MStack.Screen name="MigratedHomeEmpty" component={HomeEmptyScreen} />
       <MStack.Screen name="MigratedLinkDeviceChoice" component={LinkDeviceChoiceScreen} />
       <MStack.Screen name="MigratedLinkDeviceList" component={LinkDeviceListScreen} />
       <MStack.Screen name="MigratedLogStepsForm" component={LogStepsFormScreen} />
@@ -399,17 +354,14 @@ function RootNavigator() {
       ) : (
         <>
           <Stack.Screen name="Home" component={Homenavigator} />
-          <Stack.Screen name="Profile" component={Profile} />
 
           {/* Workout flow */}
           <Stack.Screen name="WorkoutList" component={WorkoutList} />
           <Stack.Screen name="WorkoutDetail" component={WorkoutDetail} />
           <Stack.Screen name="WorkoutDayExercises" component={WorkoutDayExercises} />
           <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
-          <Stack.Screen name="WorkoutSummary" component={WorkoutSummary} />
 
           {/* Exercise */}
-          <Stack.Screen name="ExerciseList" component={ExerciseList} />
           <Stack.Screen name="ExerciseDetail" component={ExerciseDetail} />
           <Stack.Screen name="ExerciseInfo" component={ExerciseInfoScreen} />
 
@@ -424,9 +376,6 @@ function RootNavigator() {
           {/* Profile */}
           <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-          <Stack.Screen name="ProfileStats" component={ProfileStats} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-          <Stack.Screen name="FavouriteWorkouts" component={FavouriteWorkouts} />
 
           {/* Migrated screens (nested navigator) */}
           <Stack.Screen name="Migrated" component={MigratedNavigator} />
@@ -443,6 +392,13 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
+
+  // Si quedo una sesion de entrenamiento sin finalizar de un cierre en frio
+  // anterior, rehidrata la barra flotante global (WorkoutMinimizedBar) sin
+  // esperar a que el cliente vuelva a entrar manualmente a esa pantalla.
+  useEffect(() => {
+    hydratePersistedWorkoutSession();
+  }, []);
 
   useEffect(() => {
     async function prepare() {
@@ -513,6 +469,7 @@ export default function App() {
               <RootNavigator />
             </NavigationContainer>
             <ScreenReviewFab navigationRef={screenReviewNavigationRef} />
+            <WorkoutMinimizedBar navigationRef={screenReviewNavigationRef} />
           </AuthProvider>
         </SafeAreaProvider>
       </GluestackUIProvider>

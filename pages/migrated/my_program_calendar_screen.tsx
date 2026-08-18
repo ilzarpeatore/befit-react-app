@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   SafeAreaView,
-  ActivityIndicator,
   Image,
   Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Button, ButtonText } from '@components/ui/button';
 import { C, FONT } from './theme';
 import { workoutHistoryApi, CompletedSessionItem } from '../../api/workoutHistory';
 import { adaptiveWeekPlansApi } from '../../api/adaptiveWeekPlans';
@@ -114,6 +118,11 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const [loadedYm, setLoadedYm] = useState<string | null>(null);
   const [completedSessions, setCompletedSessions] = useState<CompletedSessionItem[]>([]);
   const [pendingCheckins, setPendingCheckins] = useState<CheckInAssignment[]>([]);
+  // Check-ins/formularios con fecha fija (scheduled_date) puesta por el
+  // coach, agrupados por dateKey -- a diferencia de pendingCheckins (solo
+  // recurrentes/cuestionarios, solo válidos para "hoy"), estos sí se
+  // proyectan sobre cualquier día del calendario. Ver getAssignedCalendar.
+  const [scheduledTasksByDate, setScheduledTasksByDate] = useState<Record<string, CheckInAssignment[]>>({});
 
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [periodMode, setPeriodMode] = useState<'week' | 'month'>('month');
@@ -155,6 +164,21 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     } finally {
       setIsLoading(false);
     }
+
+    // Best-effort, independiente del calendario de workouts -- si falla no
+    // debe tumbar la carga del calendario en sí.
+    checkinsApi
+      .getAssignedCalendar(month, year)
+      .then((res) => {
+        const grouped: Record<string, CheckInAssignment[]> = {};
+        (res.data?.data ?? []).forEach((a) => {
+          const key = (a.scheduled_date || '').slice(0, 10);
+          if (!key) return;
+          (grouped[key] ||= []).push(a);
+        });
+        setScheduledTasksByDate(grouped);
+      })
+      .catch(() => setScheduledTasksByDate({}));
   }, []);
 
   useEffect(() => {
@@ -193,7 +217,11 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   useEffect(() => {
     checkinsApi
       .getAssignedList()
-      .then((res) => setPendingCheckins((res.data?.data ?? []).filter((a) => a.is_due)))
+      // Las de fecha fija (scheduled_date) se resuelven vía
+      // scheduledTasksByDate/getAssignedCalendar más arriba, sea o no hoy su
+      // fecha -- si se dejaran aquí también, un scheduled_date de hoy
+      // aparecería duplicado (una vez por cada fuente).
+      .then((res) => setPendingCheckins((res.data?.data ?? []).filter((a) => a.is_due && !a.scheduled_date)))
       .catch(() => setPendingCheckins([]));
   }, []);
 
@@ -242,12 +270,19 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const monthWeeks = periodMode === 'month' ? chunkIntoWeeks(mDays) : [];
   const selectedDay = visibleDays.find((d) => d.date === selectedDayKey) || null;
 
-  // Hoy puede tener tareas de coach (check-ins) sin tener ningún workout
+  // Cualquier día puede tener tareas de coach (check-ins recurrentes solo si
+  // es HOY, o de fecha fija en cualquier día) sin tener ningún workout
   // programado — no debe tratarse como "día de descanso" ni desaparecer del
   // listado en ese caso.
-  const todayHasPendingCheckins = pendingCheckins.length > 0;
+  const checkinsForDay = useCallback(
+    (dateKey: string): CheckInAssignment[] => [
+      ...(dateKey === todayKey ? pendingCheckins : []),
+      ...(scheduledTasksByDate[dateKey] ?? []),
+    ],
+    [pendingCheckins, scheduledTasksByDate, todayKey]
+  );
   const daysWithWorkouts = visibleDays.filter(
-    (d) => (d.workouts.length > 0 || (d.date === todayKey && todayHasPendingCheckins)) && (periodMode === 'week' || d.inMonth)
+    (d) => (d.workouts.length > 0 || checkinsForDay(d.date).length > 0) && (periodMode === 'week' || d.inMonth)
   );
 
   const goToWorkout = (w: CalendarWorkout, dateKey: string) => {
@@ -278,43 +313,44 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const renderWorkoutCard = (w: CalendarWorkout, dateKey: string, key: string | number) => {
     const completed = isWorkoutCompleted(w, dateKey);
     return (
-      <TouchableOpacity
-        key={key}
-        style={[styles.workoutCard, completed && styles.workoutCardCompleted]}
-        activeOpacity={0.7}
-        onPress={() => goToWorkout(w, dateKey)}
-      >
-        <Image source={{ uri: getWorkoutImage(w.title || '') }} style={styles.workoutImage} />
-        <View style={{ flex: 1, marginLeft: 14 }}>
-          <Text style={styles.workoutTitle} numberOfLines={1}>{w.title || ''}</Text>
-          {completed && (
-            <View style={styles.completedBadge}>
-              <Ionicons name="checkmark-circle" size={13} color={C.success} />
-              <Text style={styles.completedBadgeText}>Completado</Text>
-            </View>
-          )}
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-      </TouchableOpacity>
+      <Pressable key={key} onPress={() => goToWorkout(w, dateKey)}>
+        <Card
+          variant="elevated"
+          className="flex-row items-center p-3"
+          style={completed ? styles.workoutCardCompleted : { marginTop: 8 }}
+        >
+          <Image source={{ uri: getWorkoutImage(w.title || '') }} style={styles.workoutImage} />
+          <VStack style={{ flex: 1, marginLeft: 14 }}>
+            <Text style={styles.workoutTitle} numberOfLines={2}>{w.title || ''}</Text>
+            {completed && (
+              <HStack space="xs" style={{ marginTop: 4 }}>
+                <Icon name="checkmark-circle" size={13} color={C.success} />
+                <Text style={styles.completedBadgeText}>Completado</Text>
+              </HStack>
+            )}
+          </VStack>
+          <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+        </Card>
+      </Pressable>
     );
   };
 
   const renderCheckinCard = (a: CheckInAssignment) => (
-    <TouchableOpacity
+    <Pressable
       key={`checkin-${a.id}`}
-      style={styles.workoutCard}
-      activeOpacity={0.7}
       onPress={() => navigation?.navigate('MigratedCheckInFill', { formAssignmentId: a.id, formId: a.form_id, title: a.form.title })}
     >
-      <View style={styles.checkinIconWrap}>
-        <Ionicons name="clipboard-outline" size={26} color={C.warning60} />
-      </View>
-      <View style={{ flex: 1, marginLeft: 14 }}>
-        <Text style={styles.workoutTitle} numberOfLines={1}>{a.form.title}</Text>
-        <Text style={styles.checkinSubtitle}>{checkinTypeLabel(a)}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color={C.textSecondary} />
-    </TouchableOpacity>
+      <Card variant="elevated" className="flex-row items-center p-3" style={{ marginTop: 8 }}>
+        <Box style={styles.checkinIconWrap}>
+          <Icon name="clipboard-outline" size={26} color={C.warning60} />
+        </Box>
+        <VStack style={{ flex: 1, marginLeft: 14 }}>
+          <Text style={styles.workoutTitle} numberOfLines={2}>{a.form.title}</Text>
+          <Text style={styles.checkinSubtitle}>{checkinTypeLabel(a)}</Text>
+        </VStack>
+        <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+      </Card>
+    </Pressable>
   );
 
   const toggleDaySelection = (day: CalendarDayModel) => {
@@ -383,11 +419,11 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     // Hoy puede tener check-ins/formularios pendientes sin ningún workout —
     // igual que en el panel del día seleccionado, se refleja con un punto
     // propio (color warning) para que la celda no se vea como día libre.
-    const hasTodayCheckin = day.date === todayKey && todayHasPendingCheckins;
+    const hasCheckinTasks = checkinsForDay(day.date).length > 0;
     const isMarkedUnavailable = selectionMode && selectedDates.has(day.date);
     const dateObj = new Date(`${day.date}T00:00:00`);
     return (
-      <TouchableOpacity
+      <Pressable
         key={`${keyPrefix}-${day.date}`}
         style={[
           styles.dayCell,
@@ -396,7 +432,6 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           isToday && !isSelected && styles.dayCellToday,
           isMarkedUnavailable && styles.dayCellUnavailable,
         ]}
-        activeOpacity={0.7}
         disabled={selectionMode && !hasWorkout}
         onPress={() => (selectionMode ? toggleDaySelection(day) : setSelectedDayKey(day.date))}
       >
@@ -415,62 +450,62 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           {dateObj.getDate()}
         </Text>
         {isMarkedUnavailable ? (
-          <Ionicons name="close-circle" size={12} color={C.destructive} />
+          <Icon name="close-circle" size={12} color={C.destructive} />
         ) : (
-          (hasWorkout || hasTodayCheckin) && (
-            <View
+          (hasWorkout || hasCheckinTasks) && (
+            <Box
               style={[
                 styles.dayDot,
                 hasCompletedWorkout && styles.dayDotCompleted,
-                !hasWorkout && hasTodayCheckin && styles.dayDotCheckin,
+                !hasWorkout && hasCheckinTasks && styles.dayDotCheckin,
                 isSelected && !big && styles.dayDotSelected,
               ]}
             />
           )
         )}
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
+      <HStack style={styles.headerRow}>
         <Text style={styles.header}>{selectionMode ? 'Marca los días' : 'Mi programa'}</Text>
         {selectionMode ? (
-          <TouchableOpacity onPress={cancelSelectionMode}>
+          <Pressable onPress={cancelSelectionMode}>
             <Text style={styles.unavailableCancelText}>Cancelar</Text>
-          </TouchableOpacity>
+          </Pressable>
         ) : (
-          <View style={styles.viewToggle}>
-            <TouchableOpacity
+          <HStack style={styles.viewToggle}>
+            <Pressable
               style={styles.viewToggleBtn}
               onPress={() => setSelectionMode(true)}
             >
-              <Ionicons name="close-circle-outline" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
-            <TouchableOpacity
+              <Icon name="close-circle-outline" size={18} color={C.textSecondary} />
+            </Pressable>
+            <Pressable
               style={[styles.viewToggleBtn, viewMode === 'calendar' && styles.viewToggleBtnActive]}
               onPress={() => setViewMode('calendar')}
             >
-              <Ionicons name="calendar-outline" size={18} color={viewMode === 'calendar' ? '#FFFFFF' : C.textSecondary} />
-            </TouchableOpacity>
-            <TouchableOpacity
+              <Icon name="calendar-outline" size={18} color={viewMode === 'calendar' ? '#FFFFFF' : C.textSecondary} />
+            </Pressable>
+            <Pressable
               style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]}
               onPress={() => setViewMode('list')}
             >
-              <Ionicons name="list-outline" size={18} color={viewMode === 'list' ? '#FFFFFF' : C.textSecondary} />
-            </TouchableOpacity>
-          </View>
+              <Icon name="list-outline" size={18} color={viewMode === 'list' ? '#FFFFFF' : C.textSecondary} />
+            </Pressable>
+          </HStack>
         )}
-      </View>
+      </HStack>
       {selectionMode && (
         <Text style={styles.unavailableHint}>
           Toca los días con entrenamiento que no vas a poder hacer. Tu entrenador revisará la solicitud antes de aplicarla.
         </Text>
       )}
 
-      <View style={styles.periodToggleRow}>
-        <TouchableOpacity
+      <HStack space="sm" style={styles.periodToggleRow}>
+        <Pressable
           style={[styles.periodChip, periodMode === 'week' && styles.periodChipActive]}
           onPress={() => {
             setPeriodMode('week');
@@ -479,8 +514,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           }}
         >
           <Text style={[styles.periodChipText, periodMode === 'week' && styles.periodChipTextActive]}>Semana</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.periodChip, periodMode === 'month' && styles.periodChipActive]}
           onPress={() => {
             setPeriodMode('month');
@@ -489,106 +524,106 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           }}
         >
           <Text style={[styles.periodChipText, periodMode === 'month' && styles.periodChipTextActive]}>Mes</Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </HStack>
 
-      <View style={styles.monthRow}>
-        <TouchableOpacity style={styles.monthBtn} onPress={goPrev}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
+      <HStack style={styles.monthRow}>
+        <Pressable style={styles.monthBtn} onPress={goPrev}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
         <Text style={styles.monthText}>
           {periodMode === 'month' ? formatMonthYear(selectedMonth) : formatWeekRange(weekAnchor)}
         </Text>
-        <TouchableOpacity style={styles.monthBtn} onPress={goNext}>
-          <Ionicons name="chevron-forward" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-      </View>
+        <Pressable style={styles.monthBtn} onPress={goNext}>
+          <Icon name="chevron-forward" size={22} color={C.textPrimary} />
+        </Pressable>
+      </HStack>
 
       {isLoading ? (
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       ) : errorMessage ? (
-        <View style={styles.emptyContainer}>
+        <Box style={styles.emptyContainer}>
           <Text style={styles.emptyText}>{errorMessage}</Text>
-        </View>
+        </Box>
       ) : viewMode === 'calendar' ? (
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {periodMode === 'month' && (
-            <View style={styles.weekdayHeaderRow}>
+            <HStack style={styles.weekdayHeaderRow}>
               {WEEKDAY_LABELS.map((l, i) => (
                 <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
               ))}
-            </View>
+            </HStack>
           )}
 
           {periodMode === 'month' ? (
             monthWeeks.map((week, wi) => (
-              <View key={wi} style={styles.weekRow}>
+              <HStack key={wi} style={styles.weekRow}>
                 {week.map((day) => renderDayCell(day, `m${wi}`, false))}
-              </View>
+              </HStack>
             ))
           ) : (
-            <View style={styles.weekRow}>
+            <HStack style={styles.weekRow}>
               {weekDays.map((day) => renderDayCell(day, 'w', true))}
-            </View>
+            </HStack>
           )}
 
-          <View style={styles.selectedDaySection}>
+          <Box style={styles.selectedDaySection}>
             <Text style={styles.selectedDayTitle}>
               {selectedDayKey ? formatDayLabel(selectedDayKey) : 'Selecciona un día'}
             </Text>
-            {selectedDayKey === todayKey && pendingCheckins.map(renderCheckinCard)}
+            {selectedDayKey && checkinsForDay(selectedDayKey).map(renderCheckinCard)}
             {selectedDay && selectedDay.workouts.length > 0 ? (
               selectedDay.workouts.map((w, wi) => renderWorkoutCard(w, selectedDay.date, wi))
-            ) : selectedDayKey && !(selectedDayKey === todayKey && todayHasPendingCheckins) ? (
-              <View style={styles.restDayCard}>
-                <Ionicons name="moon-outline" size={18} color={C.textSecondary} />
+            ) : selectedDayKey && checkinsForDay(selectedDayKey).length === 0 ? (
+              <Card variant="ghost" className="flex-row items-center gap-2 p-3.5 rounded-sm" style={{ marginTop: 8 }}>
+                <Icon name="moon-outline" size={18} color={C.textSecondary} />
                 <Text style={styles.restDayText}>Día de descanso</Text>
-              </View>
+              </Card>
             ) : null}
-          </View>
+          </Box>
         </ScrollView>
       ) : daysWithWorkouts.length === 0 && periodMode === 'month' ? (
-        <View style={styles.emptyContainer}>
+        <Box style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No tienes entrenamientos programados este mes.</Text>
-        </View>
+        </Box>
       ) : (
         <ScrollView contentContainerStyle={{ paddingVertical: 16 }}>
           {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day, dayIdx) => (
-            <View key={dayIdx} style={styles.daySection}>
+            <Box key={dayIdx} style={styles.daySection}>
               <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
-              {day.date === todayKey && pendingCheckins.map(renderCheckinCard)}
+              {checkinsForDay(day.date).map(renderCheckinCard)}
               {day.workouts.length > 0 ? (
                 day.workouts.map((w, wIdx) => renderWorkoutCard(w, day.date, wIdx))
-              ) : !(day.date === todayKey && todayHasPendingCheckins) ? (
-                <View style={styles.restDayCard}>
-                  <Ionicons name="moon-outline" size={16} color={C.textSecondary} />
+              ) : checkinsForDay(day.date).length === 0 ? (
+                <Card variant="ghost" className="flex-row items-center gap-2 p-3.5 rounded-sm" style={{ marginTop: 8 }}>
+                  <Icon name="moon-outline" size={16} color={C.textSecondary} />
                   <Text style={styles.restDayText}>Día de descanso</Text>
-                </View>
+                </Card>
               ) : null}
-            </View>
+            </Box>
           ))}
         </ScrollView>
       )}
 
       {selectionMode && selectedDates.size > 0 && (
-        <View style={styles.unavailableBar}>
+        <HStack style={styles.unavailableBar}>
           <Text style={styles.unavailableBarText}>
             {selectedDates.size} día{selectedDates.size !== 1 ? 's' : ''} seleccionado{selectedDates.size !== 1 ? 's' : ''}
           </Text>
-          <TouchableOpacity
-            style={[styles.unavailableSubmitBtn, submittingSelection && { opacity: 0.6 }]}
+          <Button
+            style={[styles.unavailableSubmitBtn, submittingSelection && { opacity: 0.6 }] as any}
             onPress={submitUnavailableSelection}
             disabled={submittingSelection}
           >
             {submittingSelection ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <Spinner size="small" color="#FFFFFF" />
             ) : (
-              <Text style={styles.unavailableSubmitText}>Enviar solicitud</Text>
+              <ButtonText style={styles.unavailableSubmitText}>Enviar solicitud</ButtonText>
             )}
-          </TouchableOpacity>
-        </View>
+          </Button>
+        </HStack>
       )}
     </SafeAreaView>
   );
@@ -623,7 +658,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     marginTop: 12,
-    gap: 8,
   },
   periodChip: {
     paddingHorizontal: 16,
@@ -736,19 +770,6 @@ const styles = StyleSheet.create({
   },
   daySection: { marginBottom: 16 },
   dayDate: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, paddingHorizontal: 16 },
-  workoutCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    padding: 12,
-    marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: C.gray80,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
-  },
   workoutImage: { width: 72, height: 72, borderRadius: 16 },
   checkinIconWrap: {
     width: 72,
@@ -760,22 +781,13 @@ const styles = StyleSheet.create({
   },
   checkinSubtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 2 },
   workoutCardCompleted: {
+    marginTop: 8,
     backgroundColor: C.success10,
     borderWidth: 1,
     borderColor: C.success50,
   },
   workoutTitle: { flex: 1, fontSize: 15, fontFamily: FONT.bold, color: C.textPrimary },
-  completedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   completedBadgeText: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.success },
-  restDayCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 8,
-  },
   restDayText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 32 },
   emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.textSecondary, textAlign: 'center' },

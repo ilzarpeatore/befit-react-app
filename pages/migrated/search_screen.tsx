@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, SafeAreaView, ActivityIndicator, Dimensions, Modal, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Image, SafeAreaView, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField, InputSlot } from '@components/ui/input';
+import { Spinner } from '@components/ui/spinner';
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from '@components/ui/actionsheet';
+import { C } from './theme';
 import { exercisesApi, EXERCISE_TYPES } from '../../api/exercises';
 import MuscleFilterSheet from '../../components/MuscleFilterSheet';
 
@@ -63,9 +75,11 @@ export default function SearchScreen(props: any) {
   const [muscleId, setMuscleId] = useState<number | null>(incoming.isBodyPart && incoming.id ? Number(incoming.id) : null);
   const [muscleName, setMuscleName] = useState<string>(incoming.isBodyPart ? (incoming.mTitle ?? '') : '');
   const [headerTitle, setHeaderTitle] = useState<string>(incoming.mTitle ?? '');
-  const searchRef = useRef<TextInput>(null);
+  // Tipado del wrapper de InputField no expone los métodos imperativos del
+  // TextInput nativo que envuelve (blur) — any es el escape pragmático ya
+  // usado en otras pantallas migradas para este mismo caso.
+  const searchRef = useRef<any>(null);
   const scrollRef = useRef<ScrollView>(null);
-  const styles = useStyle();
 
   useEffect(() => {
     initList(incoming);
@@ -91,7 +105,14 @@ export default function SearchScreen(props: any) {
     if (searchValue.length > 0) {
       setIsSearch(true);
       setExerciseList([]);
-      getExerciseData({ isFilter: true, ids: selectedId, isEquipment: selectedFilterList === 1, isLevel: selectedFilterList === 2 });
+      getExerciseData({
+        isFilter: true,
+        ids: selectedId,
+        isEquipment: selectedFilterList === 1,
+        isLevel: selectedFilterList === 2,
+        isBodyPart: selectedFilterList === 3,
+        isExerciseType: selectedFilterList === 4,
+      });
     }
   }, [searchValue]);
 
@@ -116,8 +137,20 @@ export default function SearchScreen(props: any) {
     setIsLoading(true);
     try {
       let res;
+      // Bug real: antes, en cuanto había texto de búsqueda, se ignoraba
+      // cualquier filtro de músculo/equipo/nivel/tipo activo (buscaba en
+      // todo el catálogo). Ahora se combinan en la misma llamada —
+      // getFilteredList es el mismo endpoint exercise-list, solo con más
+      // query params a la vez.
       if (searchValue.length > 0) {
-        res = await exercisesApi.search(searchValue, page);
+        res = await exercisesApi.getFilteredList({
+          title: searchValue,
+          page,
+          bodypart_id: params.isFilter && params.isBodyPart && params.ids ? Number(params.ids) : undefined,
+          equipment_id: params.isFilter && params.isEquipment && params.ids ? Number(params.ids) : undefined,
+          level_ids: params.isFilter && params.isLevel && params.ids ? Number(params.ids) : undefined,
+          exercise_type: params.isFilter && params.isExerciseType && params.ids ? params.ids : undefined,
+        });
       } else if (params.isFilter && params.isEquipment && params.ids) {
         res = await exercisesApi.getByEquipment(Number(params.ids), page);
       } else if (params.isFilter && params.isLevel && params.ids) {
@@ -311,20 +344,18 @@ export default function SearchScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.body}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Box className="flex-1 bg-background">
         <ScrollView ref={scrollRef} onScroll={handleScroll} scrollEventThrottle={16}>
           {/* Search Bar */}
-          <View style={s.searchRow}>
-            <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-              <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
-            </TouchableOpacity>
-            <View style={s.searchInputContainer}>
-              <TextInput
+          <Box className="flex-row items-center gap-2" style={{ padding: 16, paddingTop: 30 }}>
+            <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+              <Icon name="chevron-back" size={28} className="text-foreground" />
+            </Button>
+            <Input className="flex-1 rounded-md bg-card border border-border px-3.5 gap-2" size="md">
+              <InputField
                 ref={searchRef}
-                style={[s.searchInput, styles.fontRegular]}
                 placeholder="Buscar ejercicio"
-                placeholderTextColor={C.gray40}
                 value={searchValue}
                 onChangeText={(v) => {
                   setSearchValue(v);
@@ -332,50 +363,54 @@ export default function SearchScreen(props: any) {
                 }}
               />
               {showClearButton ? (
-                <TouchableOpacity onPress={handleClear} style={s.clearBtn}>
-                  <Ionicons name="close-circle" size={20} color={C.gray40} />
-                </TouchableOpacity>
+                <InputSlot onPress={handleClear}>
+                  <Icon name="close-circle" size={20} className="text-muted-foreground" />
+                </InputSlot>
               ) : (
-                <Ionicons name="search" size={20} color={C.gray40} style={s.searchIcon} />
+                <Icon name="search" size={20} className="text-muted-foreground" />
               )}
-            </View>
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate('MigratedViewBodyPart')}
-              style={s.bodyBtn}
-            >
-              <Ionicons name="body-outline" size={24} color={C.textPrimary} />
-            </TouchableOpacity>
-          </View>
+            </Input>
+            <Button variant="ghost" size="icon" onPress={() => props.navigation.navigate('MigratedViewBodyPart')}>
+              <Icon name="body-outline" size={24} className="text-foreground" />
+            </Button>
+          </Box>
 
           {headerTitle ? (
-            <Text style={[s.headerTitle, styles.fontMedium]} numberOfLines={1}>
+            <Text weight="medium" className="text-foreground" style={{ paddingHorizontal: 16, marginTop: -4, marginBottom: 8 }} numberOfLines={1}>
               {headerTitle}
             </Text>
           ) : null}
 
           {/* Filter Chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterChips}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
             {list.map((item, index) => (
-              <TouchableOpacity
+              <Pressable
                 key={item.id}
-                style={[s.filterChip, item.select && s.filterChipSelected]}
+                className="rounded-pill border"
+                style={{
+                  paddingHorizontal: 18,
+                  paddingVertical: 8,
+                  marginRight: 8,
+                  backgroundColor: item.select ? C.brand5 : C.bg,
+                  borderColor: item.select ? C.brand5 : C.border,
+                }}
                 onPress={() => handleFilterPress(index)}
               >
-                <Text style={[s.filterChipText, item.select && s.filterChipTextSelected, styles.fontRegular]}>
+                <Text size="sm" style={{ color: item.select ? C.white : C.gray30 }}>
                   {item.id === 3 && muscleName ? muscleName : item.title}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </ScrollView>
 
           {/* Exercise List */}
-          <View style={s.exerciseListContainer}>
+          <Box className="px-4">
             {exerciseList.length > 0 ? (
               exerciseList.map((item) => (
-                <TouchableOpacity
+                <Pressable
                   key={item.id}
-                  style={s.exerciseCard}
-                  activeOpacity={0.7}
+                  className="flex-row items-center rounded-md"
+                  style={{ backgroundColor: C.surfaceLight, padding: 12, marginBottom: 12 }}
                   onPress={() =>
                     props.navigation.navigate('MigratedExerciseInfo', {
                       mExerciseId: item.id,
@@ -384,53 +419,61 @@ export default function SearchScreen(props: any) {
                   }
                 >
                   {item.exerciseImage ? (
-                    <Image source={{ uri: item.exerciseImage }} style={s.exerciseImage} resizeMode="cover" />
+                    <Image source={{ uri: item.exerciseImage }} style={{ width: 64, height: 64, borderRadius: 12 }} resizeMode="cover" />
                   ) : (
-                    <View style={[s.exerciseImage, { backgroundColor: C.surfaceLight }]} />
+                    <Box style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: C.surfaceLight }} />
                   )}
-                  <Text style={[s.exerciseTitle, styles.fontMedium]}>{item.title}</Text>
-                </TouchableOpacity>
+                  <Text weight="medium" className="flex-1 text-foreground" style={{ marginLeft: 12 }}>{item.title}</Text>
+                </Pressable>
               ))
             ) : (
               !isLoading && (
-                <View style={s.emptyContainer}>
-                  <Ionicons name="search-outline" size={64} color={C.gray50} />
-                  <Text style={[s.emptyText, styles.fontMedium]}>No se encontraron ejercicios</Text>
-                </View>
+                <Box className="items-center" style={{ paddingVertical: 60 }}>
+                  <Icon name="search-outline" size={64} color={C.gray50} />
+                  <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No se encontraron ejercicios</Text>
+                </Box>
               )
             )}
-          </View>
+          </Box>
         </ScrollView>
 
         {isLoading && (
-          <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box
+            className="items-center justify-center"
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)' }}
+          >
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
 
-      {/* Bottom Sheet Modal for Filter */}
-      <Modal visible={showBottomSheet} transparent animationType="slide">
-        <Pressable style={s.modalOverlay} onPress={() => setShowBottomSheet(false)}>
-          <Pressable style={s.bottomSheet} onPress={(e) => e.stopPropagation()}>
-            <View style={s.sheetHandle} />
-            <Text style={[s.sheetTitle, styles.fontBold]}>
-              {bottomSheetListId === 1 ? 'Equipamiento' : bottomSheetListId === 4 ? 'Tipo de ejercicio' : 'Niveles'}
-            </Text>
-            <ScrollView style={s.sheetScroll}>
-              {(bottomSheetListId === 1 ? equipmentList : bottomSheetListId === 4 ? EXERCISE_TYPES : levelList).map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={s.sheetOption}
-                  onPress={() => handleBottomSheetApply([item.id])}
-                >
-                  <Text style={[s.sheetOptionText, styles.fontRegular]}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      {/* Bottom Sheet para filtros */}
+      <Actionsheet isOpen={showBottomSheet} onClose={() => setShowBottomSheet(false)}>
+        <ActionsheetBackdrop />
+        <ActionsheetContent
+          className="items-stretch bg-card"
+          style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 24, maxHeight: '60%' }}
+        >
+          <ActionsheetDragIndicatorWrapper>
+            <ActionsheetDragIndicator />
+          </ActionsheetDragIndicatorWrapper>
+          <Text weight="bold" size="xl" className="text-foreground" style={{ marginBottom: 16 }}>
+            {bottomSheetListId === 1 ? 'Equipamiento' : bottomSheetListId === 4 ? 'Tipo de ejercicio' : 'Niveles'}
+          </Text>
+          <ScrollView style={{ maxHeight: 400 }}>
+            {(bottomSheetListId === 1 ? equipmentList : bottomSheetListId === 4 ? EXERCISE_TYPES : levelList).map((item) => (
+              <Pressable
+                key={item.id}
+                className="border-b border-border"
+                style={{ paddingVertical: 14 }}
+                onPress={() => handleBottomSheetApply([item.id])}
+              >
+                <Text className="text-foreground">{item.title}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </ActionsheetContent>
+      </Actionsheet>
 
       <MuscleFilterSheet
         visible={showMuscleSheet}
@@ -442,78 +485,3 @@ export default function SearchScreen(props: any) {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  body: { flex: 1 },
-  searchRow: { flexDirection: 'row', alignItems: 'center', padding: 16, paddingTop: 30 },
-  backBtn: { padding: 8 },
-  bodyBtn: { padding: 8, marginLeft: 4 },
-  headerTitle: { fontSize: 15, color: C.white, paddingHorizontal: 16, marginTop: -4, marginBottom: 8 },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: C.border,
-    marginLeft: 8,
-  },
-  searchInput: { flex: 1, color: C.white, fontSize: 15, paddingHorizontal: 16, paddingVertical: 12 },
-  searchIcon: { paddingRight: 12 },
-  clearBtn: { paddingRight: 12 },
-  filterChips: { paddingHorizontal: 16, paddingBottom: 16 },
-  filterChip: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: C.border,
-    backgroundColor: C.bg,
-    marginRight: 8,
-  },
-  filterChipSelected: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  filterChipText: { fontSize: 14, color: C.gray30 },
-  filterChipTextSelected: { color: C.white },
-  exerciseListContainer: { paddingHorizontal: 16 },
-  exerciseCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-  },
-  exerciseImage: { width: 64, height: 64, borderRadius: 12 },
-  exerciseTitle: { fontSize: 15, color: C.white, marginLeft: 12, flex: 1 },
-  emptyContainer: { alignItems: 'center', paddingVertical: 60 },
-  emptyText: { fontSize: 16, color: C.gray30, marginTop: 12 },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  bottomSheet: {
-    backgroundColor: C.surfaceLight,
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    padding: 24,
-    maxHeight: '60%',
-  },
-  sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: C.gray60, alignSelf: 'center', marginBottom: 16 },
-  sheetTitle: { fontSize: 20, color: C.white, marginBottom: 16 },
-  sheetScroll: { maxHeight: 400 },
-  sheetOption: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: C.border },
-  sheetOptionText: { fontSize: 16, color: C.white },
-});
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontRegular: { fontFamily: FONT.regular },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
-}
