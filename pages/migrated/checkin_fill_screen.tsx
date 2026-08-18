@@ -1,19 +1,16 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { Textarea, TextareaInput } from '@components/ui/textarea';
+import { Card } from '@components/ui/card';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import {
   checkinsApi,
   CheckInForm,
@@ -38,22 +35,25 @@ function ChoiceRow({
   icon?: boolean;
 }) {
   return (
-    <View style={s.scaleRow}>
-      {Array.from({ length: count }, (_, i) => i + 1).map((n) => (
-        <TouchableOpacity
-          key={n}
-          style={[s.scaleChip, value !== null && n <= value && s.scaleChipActive]}
-          onPress={() => onChange(n)}
-          activeOpacity={0.75}
-        >
-          {icon ? (
-            <Ionicons name="star" size={16} color={value !== null && n <= value ? '#FFFFFF' : C.textSecondary} />
-          ) : (
-            <Text style={[s.scaleChipText, value !== null && n <= value && s.scaleChipTextActive]}>{n}</Text>
-          )}
-        </TouchableOpacity>
-      ))}
-    </View>
+    <Box className="flex-row flex-wrap gap-2">
+      {Array.from({ length: count }, (_, i) => i + 1).map((n) => {
+        const active = value !== null && n <= value;
+        return (
+          <Pressable
+            key={n}
+            className="items-center justify-center rounded-pill"
+            style={{ width: 34, height: 34, backgroundColor: active ? C.accentBlack : C.bg }}
+            onPress={() => onChange(n)}
+          >
+            {icon ? (
+              <Icon name="star" size={16} color={active ? '#FFFFFF' : C.textSecondary} />
+            ) : (
+              <Text weight="bold" size="sm" style={{ color: active ? '#FFFFFF' : C.textSecondary }}>{n}</Text>
+            )}
+          </Pressable>
+        );
+      })}
+    </Box>
   );
 }
 
@@ -69,88 +69,92 @@ function QuestionCard({
   const unsupported = UNSUPPORTED_QUESTION_TYPES.includes(question.type);
 
   return (
-    <View style={s.card}>
-      <Text style={s.question}>
+    <Card variant="elevated" style={{ marginBottom: 12 }}>
+      <Text weight="bold" size="sm" style={{ marginBottom: 10 }}>
         {question.question_text}
-        {question.is_required && <Text style={s.required}> *</Text>}
+        {question.is_required && <Text style={{ color: C.destructive }}> *</Text>}
       </Text>
 
       {unsupported ? (
-        <View style={s.unsupportedBox}>
-          <Ionicons name="information-circle-outline" size={16} color={C.warning60} />
-          <Text style={s.unsupportedText}>
+        <Box className="flex-row items-start rounded-sm" style={{ gap: 8, backgroundColor: C.warning5, padding: 10 }}>
+          <Icon name="information-circle-outline" size={16} color={C.warning60} />
+          <Text size="xs" style={{ flex: 1, color: C.warning60, lineHeight: 17 }}>
             Este tipo de pregunta (foto/firma) aún no se puede responder desde la app. Pídele a tu coach que te ayude a completarlo por otro medio.
           </Text>
-        </View>
+        </Box>
       ) : question.type === 'text' ? (
-        <TextInput
-          style={s.input}
-          placeholder={question.placeholder || 'Tu respuesta'}
-          placeholderTextColor={C.textTertiary}
-          value={(value as string) || ''}
-          onChangeText={(t) => onChange(t)}
-        />
+        <Input>
+          <InputField
+            placeholder={question.placeholder || 'Tu respuesta'}
+            value={(value as string) || ''}
+            onChangeText={(t) => onChange(t)}
+          />
+        </Input>
       ) : question.type === 'textarea' ? (
-        <TextInput
-          style={[s.input, s.inputMultiline]}
-          placeholder={question.placeholder || 'Tu respuesta'}
-          placeholderTextColor={C.textTertiary}
-          value={(value as string) || ''}
-          onChangeText={(t) => onChange(t)}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
+        <Textarea className="h-auto" style={{ minHeight: 90 }}>
+          <TextareaInput
+            placeholder={question.placeholder || 'Tu respuesta'}
+            value={(value as string) || ''}
+            onChangeText={(t) => onChange(t)}
+            numberOfLines={4}
+            style={{ paddingTop: 12 }}
+          />
+        </Textarea>
       ) : question.type === 'number' || question.type === 'metric' ? (
         <>
-          <TextInput
-            style={s.input}
-            placeholder={question.placeholder || '0'}
-            placeholderTextColor={C.textTertiary}
-            value={(value as string) || ''}
-            onChangeText={(t) => onChange(t.replace(/[^0-9.\-]/g, ''))}
-            keyboardType="decimal-pad"
-          />
+          <Input>
+            <InputField
+              placeholder={question.placeholder || '0'}
+              value={(value as string) || ''}
+              onChangeText={(t) => onChange(t.replace(/[^0-9.\-]/g, ''))}
+              keyboardType="decimal-pad"
+            />
+          </Input>
           {question.type === 'metric' && question.metric && (
-            <Text style={s.hint}>Se sincroniza con {question.metric.label}{question.metric.unit ? ` (${question.metric.unit})` : ''}</Text>
+            <Text size="xs" muted style={{ marginTop: 6 }}>
+              Se sincroniza con {question.metric.label}{question.metric.unit ? ` (${question.metric.unit})` : ''}
+            </Text>
           )}
         </>
       ) : question.type === 'date' ? (
-        <TextInput
-          style={s.input}
-          placeholder="AAAA-MM-DD"
-          placeholderTextColor={C.textTertiary}
-          value={(value as string) || ''}
-          onChangeText={(t) => onChange(t)}
-        />
+        <Input>
+          <InputField
+            placeholder="AAAA-MM-DD"
+            value={(value as string) || ''}
+            onChangeText={(t) => onChange(t)}
+          />
+        </Input>
       ) : question.type === 'scale' ? (
         <ChoiceRow count={question.scale_max || 10} value={value ? Number(value) : null} onChange={(n) => onChange(String(n))} />
       ) : question.type === 'star_rating' ? (
         <ChoiceRow count={question.star_max || 5} value={value ? Number(value) : null} onChange={(n) => onChange(String(n))} icon />
       ) : question.type === 'yes_no' ? (
-        <View style={s.yesNoRow}>
-          {(['yes', 'no'] as const).map((opt) => (
-            <TouchableOpacity
-              key={opt}
-              style={[s.yesNoChip, value === opt && s.yesNoChipActive]}
-              onPress={() => onChange(opt)}
-              activeOpacity={0.75}
-            >
-              <Text style={[s.yesNoChipText, value === opt && s.yesNoChipTextActive]}>{opt === 'yes' ? 'Sí' : 'No'}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Box className="flex-row" style={{ gap: 10 }}>
+          {(['yes', 'no'] as const).map((opt) => {
+            const active = value === opt;
+            return (
+              <Pressable
+                key={opt}
+                className="flex-1 items-center rounded-sm"
+                style={{ paddingVertical: 12, backgroundColor: active ? C.accentBlack : C.bg }}
+                onPress={() => onChange(opt)}
+              >
+                <Text weight="bold" style={{ color: active ? '#FFFFFF' : C.textSecondary }}>{opt === 'yes' ? 'Sí' : 'No'}</Text>
+              </Pressable>
+            );
+          })}
+        </Box>
       ) : question.type === 'multiple_choice' ? (
-        <View style={s.chipsWrap}>
+        <Box className="flex-row flex-wrap gap-2">
           {(question.options || []).map((opt) => {
             const selected = question.allow_multiple
               ? Array.isArray(value) && value.includes(opt)
               : value === opt;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={opt}
-                style={[s.optionChip, selected && s.optionChipActive]}
-                activeOpacity={0.75}
+                className="rounded-pill"
+                style={{ paddingHorizontal: 14, paddingVertical: 9, backgroundColor: selected ? C.accentBlack : C.bg }}
                 onPress={() => {
                   if (question.allow_multiple) {
                     const current = Array.isArray(value) ? value : [];
@@ -160,13 +164,13 @@ function QuestionCard({
                   }
                 }}
               >
-                <Text style={[s.optionChipText, selected && s.optionChipTextActive]}>{opt}</Text>
-              </TouchableOpacity>
+                <Text weight="semibold" size="xs" style={{ color: selected ? '#FFFFFF' : C.textSecondary }}>{opt}</Text>
+              </Pressable>
             );
           })}
-        </View>
+        </Box>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
@@ -242,32 +246,36 @@ export default function CheckInFillScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={s.container} edges={['bottom']}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.headerTitle} numberOfLines={1}>{form?.title || fallbackTitle || 'Formulario'}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
+      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Text weight="bold" numberOfLines={1} className="flex-1 text-center" style={{ marginHorizontal: 8 }}>
+          {form?.title || fallbackTitle || 'Formulario'}
+        </Text>
+        <Box className="w-6" />
+      </Box>
 
       {isLoading ? (
-        <View style={s.center}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box className="flex-1 items-center justify-center px-8" style={{ paddingTop: 60 }}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       ) : error || !form ? (
-        <View style={s.center}>
-          <Text style={s.emptyText}>No se pudo cargar el formulario.</Text>
-        </View>
+        <Box className="flex-1 items-center justify-center px-8" style={{ paddingTop: 60 }}>
+          <Text muted className="text-center">No se pudo cargar el formulario.</Text>
+        </Box>
       ) : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {form.description && <Text style={s.description}>{form.description}</Text>}
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {form.description && (
+              <Text muted style={{ fontSize: 13.5, lineHeight: 19, marginBottom: 16 }}>{form.description}</Text>
+            )}
 
             {questions.length === 0 ? (
-              <View style={s.center}>
-                <Text style={s.emptyText}>Este formulario todavía no tiene preguntas.</Text>
-              </View>
+              <Box className="items-center justify-center px-8" style={{ paddingTop: 60 }}>
+                <Text muted className="text-center">Este formulario todavía no tiene preguntas.</Text>
+              </Box>
             ) : (
               questions.map((q) => (
                 <QuestionCard
@@ -280,120 +288,21 @@ export default function CheckInFillScreen(props: Props) {
             )}
           </ScrollView>
 
-          <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
+          <Box
+            className="border-t border-border"
+            style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: Math.max(insets.bottom, 12) + 6 }}
+          >
             {blockingQuestions.length > 0 && (
-              <Text style={s.blockedHint}>Hay preguntas obligatorias que requieren completarse por otro medio.</Text>
+              <Text weight="medium" size="xs" className="text-center" style={{ color: C.warning60, marginBottom: 8 }}>
+                Hay preguntas obligatorias que requieren completarse por otro medio.
+              </Text>
             )}
-            <TouchableOpacity
-              style={[s.submitBtn, !canSubmit && s.submitBtnDisabled]}
-              activeOpacity={0.85}
-              onPress={handleSubmit}
-              disabled={!canSubmit || submitting}
-            >
-              {submitting ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Text style={s.submitBtnText}>ENVIAR</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+            <Button size="lg" radius="pill" onPress={handleSubmit} disabled={!canSubmit || submitting}>
+              {submitting ? <Spinner size="small" color="#FFFFFF" /> : <ButtonText>ENVIAR</ButtonText>}
+            </Button>
+          </Box>
         </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  headerTitle: { flex: 1, textAlign: 'center', fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginHorizontal: 8 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60, paddingHorizontal: 32 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, textAlign: 'center' },
-  scroll: { paddingHorizontal: 20, paddingBottom: 24 },
-  description: { fontFamily: FONT.regular, fontSize: 13.5, color: C.textSecondary, marginBottom: 16, lineHeight: 19 },
-  card: {
-    backgroundColor: C.surface,
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 12,
-    ...SHADOW.card,
-  },
-  question: { fontFamily: FONT.bold, fontSize: 14.5, color: C.textPrimary, marginBottom: 10 },
-  required: { color: C.destructive },
-  input: {
-    backgroundColor: C.bg,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: FONT.medium,
-    fontSize: 14,
-    color: C.textPrimary,
-  },
-  inputMultiline: { minHeight: 90, paddingTop: 12 },
-  hint: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary, marginTop: 6 },
-  scaleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  scaleChip: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: C.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scaleChipActive: { backgroundColor: C.accentBlack },
-  scaleChipText: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary },
-  scaleChipTextActive: { color: '#FFFFFF' },
-  yesNoRow: { flexDirection: 'row', gap: 10 },
-  yesNoChip: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: C.bg,
-    alignItems: 'center',
-  },
-  yesNoChipActive: { backgroundColor: C.accentBlack },
-  yesNoChipText: { fontFamily: FONT.bold, fontSize: 14, color: C.textSecondary },
-  yesNoChipTextActive: { color: '#FFFFFF' },
-  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  optionChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 20,
-    backgroundColor: C.bg,
-  },
-  optionChipActive: { backgroundColor: C.accentBlack },
-  optionChipText: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.textSecondary },
-  optionChipTextActive: { color: '#FFFFFF' },
-  unsupportedBox: {
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: C.warning5,
-    borderRadius: 12,
-    padding: 10,
-    alignItems: 'flex-start',
-  },
-  unsupportedText: { flex: 1, fontFamily: FONT.regular, fontSize: 12, color: C.warning60, lineHeight: 17 },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    backgroundColor: C.bg,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
-  blockedHint: { fontFamily: FONT.medium, fontSize: 12, color: C.warning60, textAlign: 'center', marginBottom: 8 },
-  submitBtn: {
-    backgroundColor: C.accentBlack,
-    borderRadius: 30,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  submitBtnDisabled: { opacity: 0.35 },
-  submitBtnText: { fontFamily: FONT.bold, fontSize: 15, color: '#FFFFFF', letterSpacing: 0.5 },
-});

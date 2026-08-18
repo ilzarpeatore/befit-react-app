@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { ScrollView, SafeAreaView, Alert, StyleSheet } from 'react-native';
+import { Box } from '@components/ui/box';
+import { VStack } from '@components/ui/vstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField } from '@components/ui/input';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Pressable } from '@components/ui/pressable';
 import { useAuth } from '@store/AuthContext';
-import { C, FONT } from './theme';
-
-const sandowBlack = C.gray80;
-const sandowDark = C.gray70;
-const sandowGray = C.gray30;
-const sandowOrange = C.orange;
-const sandowWhite = C.white;
+import { C } from './theme';
 
 export default function SignUpScreenSandow(props: any) {
   const [firstName, setFirstName] = useState('');
@@ -19,7 +20,6 @@ export default function SignUpScreenSandow(props: any) {
   const [obscurePassword, setObscurePassword] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
-  const styles = useStyle();
 
   const registerUser = async () => {
     if (!firstName.trim()) {
@@ -58,144 +58,104 @@ export default function SignUpScreenSandow(props: any) {
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.body}>
-        <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
-          <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color={sandowGray} />
-          </TouchableOpacity>
+    <SafeAreaView className="flex-1 bg-background">
+      <Box className="flex-1">
+        <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 8, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
+          <Pressable onPress={() => props.navigation.goBack()} style={{ padding: 10, marginBottom: 16 }}>
+            <Icon name="chevron-back" size={20} className="text-muted-foreground" />
+          </Pressable>
 
-          <Text style={[s.title, styles.fontBold]}>Create Account</Text>
-          <Text style={s.subtitle}>Start your fitness transformation</Text>
+          <VStack space="2xl">
+            <VStack space="xs">
+              <Heading size="xl">Create Account</Heading>
+              <Text muted>Start your fitness transformation</Text>
+            </VStack>
 
-          {/* First Name */}
-          <Text style={[s.label, styles.fontMedium]}>First Name</Text>
-          <View style={s.inputContainer}>
-            <Ionicons name="person-outline" size={20} color={sandowGray} style={s.inputIcon} />
-            <TextInput
-              style={[s.input, styles.fontRegular]}
-              placeholder="John"
-              placeholderTextColor={sandowGray}
-              value={firstName}
-              onChangeText={setFirstName}
-            />
-          </View>
+            <VStack space="md">
+              {/* First Name */}
+              <VStack space="xs">
+                <Text weight="medium">First Name</Text>
+                <Input size="lg" className="rounded-sm">
+                  <Icon name="person-outline" size={20} className="text-muted-foreground" style={{ marginLeft: 16 }} />
+                  <InputField
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    placeholder="John"
+                  />
+                </Input>
+              </VStack>
 
-          {/* Last Name */}
-          <Text style={[s.label, styles.fontMedium]}>Last Name</Text>
-          <View style={s.inputContainer}>
-            <Ionicons name="person-outline" size={20} color={sandowGray} style={s.inputIcon} />
-            <TextInput
-              style={[s.input, styles.fontRegular]}
-              placeholder="Doe"
-              placeholderTextColor={sandowGray}
-              value={lastName}
-              onChangeText={setLastName}
-            />
-          </View>
+              {/* Last Name */}
+              <VStack space="xs">
+                <Text weight="medium">Last Name</Text>
+                <Input size="lg" className="rounded-sm">
+                  <Icon name="person-outline" size={20} className="text-muted-foreground" style={{ marginLeft: 16 }} />
+                  <InputField
+                    value={lastName}
+                    onChangeText={setLastName}
+                    placeholder="Doe"
+                  />
+                </Input>
+              </VStack>
 
-          {/* Email */}
-          <Text style={[s.label, styles.fontMedium]}>Email</Text>
-          <View style={s.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color={sandowGray} style={s.inputIcon} />
-            <TextInput
-              style={[s.input, styles.fontRegular]}
-              placeholder="john@example.com"
-              placeholderTextColor={sandowGray}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+              {/* Email */}
+              <VStack space="xs">
+                <Text weight="medium">Email</Text>
+                <Input size="lg" className="rounded-sm">
+                  <Icon name="mail-outline" size={20} className="text-muted-foreground" style={{ marginLeft: 16 }} />
+                  <InputField
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="john@example.com"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </Input>
+              </VStack>
 
-          {/* Password */}
-          <Text style={[s.label, styles.fontMedium]}>Password</Text>
-          <View style={s.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color={sandowGray} style={s.inputIcon} />
-            <TextInput
-              style={[s.input, styles.fontRegular]}
-              placeholder="Min. 8 characters"
-              placeholderTextColor={sandowGray}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={obscurePassword}
-            />
-            <TouchableOpacity onPress={() => setObscurePassword((p) => !p)} style={s.eyeBtn}>
-              <Ionicons
-                name={obscurePassword ? 'eye-off-outline' : 'eye-outline'}
-                size={20}
-                color={sandowGray}
-              />
-            </TouchableOpacity>
-          </View>
+              {/* Password */}
+              <VStack space="xs">
+                <Text weight="medium">Password</Text>
+                <Input size="lg" className="rounded-sm">
+                  <Icon name="lock-closed-outline" size={20} className="text-muted-foreground" style={{ marginLeft: 16 }} />
+                  <InputField
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Min. 8 characters"
+                    secureTextEntry={obscurePassword}
+                  />
+                  <Pressable onPress={() => setObscurePassword((p) => !p)} style={{ padding: 12 }}>
+                    <Icon
+                      name={obscurePassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      className="text-muted-foreground"
+                    />
+                  </Pressable>
+                </Input>
+              </VStack>
+            </VStack>
 
-          {/* Create Account Button */}
-          <TouchableOpacity style={s.createBtn} onPress={registerUser}>
-            <Text style={[s.createBtnText, styles.fontSemiBold]}>Create Account</Text>
-          </TouchableOpacity>
+            {/* Create Account Button */}
+            <Button onPress={registerUser} radius="pill" className="w-full">
+              <ButtonText>Create Account</ButtonText>
+            </Button>
 
-          {/* Sign In */}
-          <View style={s.signInRow}>
-            <Text style={[s.signInText, styles.fontRegular]}>Already have an account?</Text>
-            <TouchableOpacity onPress={() => props.navigation.goBack()}>
-              <Text style={[s.signInLink, styles.fontSemiBold]}> Sign In</Text>
-            </TouchableOpacity>
-          </View>
+            {/* Sign In */}
+            <Box className="flex-row justify-center">
+              <Text muted size="sm">Already have an account?</Text>
+              <Pressable onPress={() => props.navigation.goBack()}>
+                <Text weight="semibold" size="sm" className="text-primary"> Sign In</Text>
+              </Pressable>
+            </Box>
+          </VStack>
         </ScrollView>
 
         {isLoading && (
-          <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color={sandowOrange} />
-          </View>
+          <Box style={StyleSheet.absoluteFill} className="bg-black/50 items-center justify-center">
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
-}
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: sandowBlack },
-  body: { flex: 1 },
-  scrollContent: { padding: 24, paddingTop: 8, paddingBottom: 24 },
-  backBtn: { padding: 10, marginBottom: 16 },
-  title: { fontSize: 30, fontWeight: '700', color: sandowWhite },
-  subtitle: { fontSize: 15, color: sandowGray, marginTop: 8, marginBottom: 24 },
-  label: { fontSize: 14, fontWeight: '500', color: sandowWhite, marginTop: 16, marginBottom: 8 },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: sandowDark,
-    borderRadius: 12,
-  },
-  inputIcon: { marginLeft: 16 },
-  input: { flex: 1, color: sandowWhite, fontSize: 15, paddingHorizontal: 12, paddingVertical: 14 },
-  eyeBtn: { padding: 12 },
-  createBtn: {
-    backgroundColor: sandowOrange,
-    borderRadius: 14,
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 32,
-  },
-  createBtnText: { fontSize: 16, color: '#FFFFFF', fontWeight: '600' },
-  signInRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
-  signInText: { fontSize: 14, color: sandowGray },
-  signInLink: { fontSize: 14, color: sandowOrange, fontWeight: '600' },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontRegular: { fontFamily: FONT.regular },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
 }

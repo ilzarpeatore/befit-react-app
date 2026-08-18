@@ -1,0 +1,244 @@
+'use client';
+import { createModal } from '@gluestack-ui/core/modal/creator';
+import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { tva, useStyleContext, withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
+import { styled } from 'nativewind';
+import React from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  ZoomIn
+} from 'react-native-reanimated';
+import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+// Content combina la animación de entrada/salida de Reanimated con el
+// material real (Liquid Glass en iOS 26+, <View> normal en cualquier otro
+// caso — ver components/ui/glass-view) en una sola capa.
+const AnimatedGlassView = Animated.createAnimatedComponent(GlassView);
+const SCOPE = 'MODAL';
+
+// @ts-ignore — límite de complejidad estructural de TS al envolver un componente
+// animado de Reanimated con styled() (TS2589/2590), no afecta al runtime.
+const StyledAnimatedPressable = styled(AnimatedPressable, { className: 'style' });
+// @ts-ignore — mismo límite de complejidad estructural que la línea de arriba.
+const StyledAnimatedGlassView = styled(AnimatedGlassView, { className: 'style' });
+const UIModal = createModal({
+  Root: withStyleContext(View as any, SCOPE),
+  Backdrop: StyledAnimatedPressable,
+  Content: StyledAnimatedGlassView,
+  Body: ScrollView,
+  CloseButton: Pressable,
+  Footer: View,
+  Header: View,
+});
+
+
+const modalStyle = tva({
+  base: 'group/modal w-full h-full justify-center items-center web:pointer-events-none',
+  variants: {
+    size: {
+      xs: '',
+      sm: '',
+      md: '',
+      lg: '',
+      full: '',
+    },
+  },
+});
+
+const modalBackdropStyle = tva({
+  base: 'absolute left-0 top-0 right-0 bottom-0 bg-[#000]/50 web:cursor-default',
+});
+
+const modalContentStyle = tva({
+  base: 'rounded-md overflow-hidden border border-border/80 shadow-hard-2 p-6',
+  parentVariants: {
+    size: {
+      xs: 'w-[60%] max-w-[360px]',
+      sm: 'w-[70%] max-w-[420px]',
+      md: 'w-[80%] max-w-[510px]',
+      lg: 'w-[90%] max-w-[640px]',
+      full: 'w-full',
+    },
+  },
+  variants: {
+    // bg-background solo hace falta como fondo de reserva cuando NO hay
+    // Liquid Glass real (Android, iOS<26) — con glass real el material
+    // translúcido ya lo pinta el propio GlassView (ver Content, arriba).
+    hasGlass: {
+      true: '',
+      false: 'bg-background',
+    },
+  },
+});
+
+const modalBodyStyle = tva({
+  base: 'mt-2 mb-6',
+});
+
+const modalCloseButtonStyle = tva({
+  base: 'group/modal-close-button z-10 rounded data-[focus-visible=true]:web:bg-background/90 web:outline-0 cursor-pointer',
+});
+
+const modalHeaderStyle = tva({
+  base: 'justify-between items-center flex-row',
+});
+
+const modalFooterStyle = tva({
+  base: 'flex-row justify-end items-center gap-2',
+});
+
+type IModalProps = React.ComponentProps<typeof UIModal> &
+  VariantProps<typeof modalStyle> & { className?: string };
+
+type IModalBackdropProps = React.ComponentProps<typeof UIModal.Backdrop> &
+  VariantProps<typeof modalBackdropStyle> & { className?: string };
+
+type IModalContentProps = React.ComponentProps<typeof UIModal.Content> &
+  VariantProps<typeof modalContentStyle> & { className?: string };
+
+type IModalHeaderProps = React.ComponentProps<typeof UIModal.Header> &
+  VariantProps<typeof modalHeaderStyle> & { className?: string };
+
+type IModalBodyProps = React.ComponentProps<typeof UIModal.Body> &
+  VariantProps<typeof modalBodyStyle> & { className?: string };
+
+type IModalFooterProps = React.ComponentProps<typeof UIModal.Footer> &
+  VariantProps<typeof modalFooterStyle> & { className?: string };
+
+type IModalCloseButtonProps = React.ComponentProps<typeof UIModal.CloseButton> &
+  VariantProps<typeof modalCloseButtonStyle> & { className?: string };
+
+const Modal = React.forwardRef<React.ComponentRef<typeof UIModal>, IModalProps>(
+  ({ className, size = 'md', ...props }, ref) => (
+    <UIModal
+      ref={ref}
+      {...props}
+      pointerEvents="box-none"
+      className={modalStyle({ size, class: className })}
+      context={{ size }}
+    />
+  )
+);
+
+const ModalBackdrop = React.forwardRef<
+  React.ComponentRef<typeof UIModal.Backdrop>,
+  IModalBackdropProps
+>(function ModalBackdrop({ className, ...props }, ref) {
+  return (
+    <UIModal.Backdrop
+      ref={ref}
+      entering={FadeIn.duration(200).easing(Easing.linear)}
+      exiting={FadeOut.duration(200).easing(Easing.linear)}
+      {...props}
+      className={modalBackdropStyle({
+        class: className,
+      })}
+    />
+  );
+});
+
+const ModalContent = React.forwardRef<
+  React.ComponentRef<typeof UIModal.Content>,
+  IModalContentProps
+>(function ModalContent({ className, size, ...props }, ref) {
+  const { size: parentSize } = useStyleContext(SCOPE);
+
+  return (
+    <UIModal.Content
+      ref={ref}
+      glassEffectStyle="regular"
+      entering={ZoomIn.duration(200).withInitialValues({
+        transform: [{ scale: 0.9 }],
+      })}
+      exiting={FadeOut.duration(200)}
+      {...props}
+      className={modalContentStyle({
+        parentVariants: {
+          size: parentSize,
+        },
+        size,
+        hasGlass: isGlassEffectAPIAvailable(),
+        class: className,
+      })}
+      pointerEvents="auto"
+    />
+  );
+});
+
+const ModalHeader = React.forwardRef<
+  React.ComponentRef<typeof UIModal.Header>,
+  IModalHeaderProps
+>(function ModalHeader({ className, ...props }, ref) {
+  return (
+    <UIModal.Header
+      ref={ref}
+      {...props}
+      className={modalHeaderStyle({
+        class: className,
+      })}
+    />
+  );
+});
+
+const ModalBody = React.forwardRef<
+  React.ComponentRef<typeof UIModal.Body>,
+  IModalBodyProps
+>(function ModalBody({ className, ...props }, ref) {
+  return (
+    <UIModal.Body
+      scrollEnabled={false}
+      ref={ref}
+      {...props}
+      className={modalBodyStyle({
+        class: className,
+      })}
+    />
+  );
+});
+
+const ModalFooter = React.forwardRef<
+  React.ComponentRef<typeof UIModal.Footer>,
+  IModalFooterProps
+>(function ModalFooter({ className, ...props }, ref) {
+  return (
+    <UIModal.Footer
+      ref={ref}
+      {...props}
+      className={modalFooterStyle({
+        class: className,
+      })}
+    />
+  );
+});
+
+const ModalCloseButton = React.forwardRef<
+  React.ComponentRef<typeof UIModal.CloseButton>,
+  IModalCloseButtonProps
+>(function ModalCloseButton({ className, ...props }, ref) {
+  return (
+    <UIModal.CloseButton
+      ref={ref}
+      {...props}
+      className={modalCloseButtonStyle({
+        class: className,
+      })}
+    />
+  );
+});
+
+Modal.displayName = 'Modal';
+ModalBackdrop.displayName = 'ModalBackdrop';
+ModalContent.displayName = 'ModalContent';
+ModalHeader.displayName = 'ModalHeader';
+ModalBody.displayName = 'ModalBody';
+ModalFooter.displayName = 'ModalFooter';
+ModalCloseButton.displayName = 'ModalCloseButton';
+
+export {
+  Modal,
+  ModalBackdrop, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader
+};

@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, Image, TextInput, SafeAreaView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Button, ButtonText } from '@components/ui/button';
+import { Badge, BadgeText } from '@components/ui/badge';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { recipesApi, RecipeListItem } from '../../api/recipes';
@@ -234,25 +244,24 @@ export default function RecipeMainScreen(props: any) {
   };
 
   const renderRecipeCard = (item: RecipeCardItem, containerStyle: any) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id}
       style={[s.recipeCard, containerStyle]}
-      activeOpacity={0.7}
       onPress={() => navigateToRecipeDetail(item)}
     >
-      <View style={s.recipeImageWrap}>
+      <Box style={s.recipeImageWrap}>
         {item.image ? (
           <Image source={{ uri: item.image }} style={s.recipeImage} resizeMode="cover" />
         ) : (
-          <View style={[s.recipeImage, { backgroundColor: C.surfaceLight }]} />
+          <Box style={[s.recipeImage, { backgroundColor: C.surfaceLight }]} />
         )}
         {item.isPremium && !item.isAccessible && (
-          <View style={s.lockBadge}>
-            <Ionicons name="lock-closed" size={11} color="#FFFFFF" />
-            <Text style={[s.lockBadgeText, styles.fontSemiBold]}>Exclusive</Text>
-          </View>
+          <Badge action="muted" className="bg-black/60" style={{ position: 'absolute', top: 8, left: 8 }}>
+            <Icon name="lock-closed" size={11} className="text-white" />
+            <BadgeText className="text-white" style={{ fontSize: 11 }}>Exclusive</BadgeText>
+          </Badge>
         )}
-        <TouchableOpacity
+        <Pressable
           style={s.favBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           onPress={(e: any) => {
@@ -260,18 +269,18 @@ export default function RecipeMainScreen(props: any) {
             handleToggleFavourite(item);
           }}
         >
-          <Ionicons
+          <Icon
             name={item.isFavourite ? 'heart' : 'heart-outline'}
             size={16}
             color={item.isFavourite ? C.red : '#FFFFFF'}
           />
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
       <Text style={[s.recipeTitle, styles.fontBold]} numberOfLines={1}>
         {item.title}
       </Text>
       {(item.calories != null || item.preparationTime != null) && (
-        <View style={s.recipeMetaRow}>
+        <HStack style={s.recipeMetaRow}>
           {item.calories != null && (
             <Text style={[s.recipeMeta, styles.fontRegular]}>{item.calories} kcal</Text>
           )}
@@ -281,20 +290,20 @@ export default function RecipeMainScreen(props: any) {
           {item.preparationTime != null && (
             <Text style={[s.recipeMeta, styles.fontRegular]}>{item.preparationTime} min</Text>
           )}
-        </View>
+        </HStack>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
     <SafeAreaView style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, styles.fontBold]}>Recipes</Text>
-        <View style={s.backBtn} />
-      </View>
+      <HStack className="items-center justify-between p-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Recipes</Heading>
+        <Box className="w-10" />
+      </HStack>
 
       <ScrollView
         contentContainerStyle={s.scrollContent}
@@ -302,8 +311,8 @@ export default function RecipeMainScreen(props: any) {
         keyboardShouldPersistTaps="handled"
       >
         {/* Search */}
-        <View style={s.searchWrap}>
-          <Ionicons name="search-outline" size={18} color={C.gray40} />
+        <HStack space="sm" style={s.searchWrap}>
+          <Icon name="search-outline" size={18} color={C.gray40} />
           <TextInput
             style={[s.searchInput, styles.fontRegular]}
             placeholder="Search recipes..."
@@ -313,66 +322,66 @@ export default function RecipeMainScreen(props: any) {
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color={C.gray40} />
-            </TouchableOpacity>
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Icon name="close-circle" size={18} color={C.gray40} />
+            </Pressable>
           )}
-        </View>
+        </HStack>
 
         {isSearching ? (
-          <View style={s.section}>
+          <Box style={s.section}>
             <Text style={[s.sectionTitle, styles.fontBold]}>
               {isSearchLoading ? 'Searching…' : `Results (${searchResults.length})`}
             </Text>
             {isSearchLoading ? (
-              <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 24 }} />
+              <Spinner size="small" color={C.orange} style={{ paddingVertical: 24 }} />
             ) : searchResults.length === 0 ? (
-              <View style={s.emptyBox}>
-                <Ionicons name="search-outline" size={40} color={C.gray30} />
+              <VStack space="sm" style={s.emptyBox}>
+                <Icon name="search-outline" size={40} color={C.gray30} />
                 <Text style={[s.emptyText, styles.fontMedium]}>
                   No recipes found for "{searchQuery.trim()}"
                 </Text>
-              </View>
+              </VStack>
             ) : (
-              <View style={s.grid}>
+              <HStack style={s.grid}>
                 {searchResults.map((item) => renderRecipeCard(item, { width: gridColumnWidth }))}
-              </View>
+              </HStack>
             )}
-          </View>
+          </Box>
         ) : (
           <>
             {/* Favourites */}
             {(isFavouritesLoading || favourites.length > 0) && (
-              <View style={s.section}>
-                <View style={s.sectionTitleRow}>
-                  <Ionicons name="heart" size={16} color={C.red} />
+              <Box style={s.section}>
+                <HStack style={s.sectionTitleRow}>
+                  <Icon name="heart" size={16} color={C.red} />
                   <Text style={[s.sectionTitle, styles.fontBold, { marginLeft: 6 }]}>Favourites</Text>
-                </View>
+                </HStack>
                 {isFavouritesLoading ? (
-                  <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
+                  <Spinner size="small" color={C.orange} style={{ paddingVertical: 16 }} />
                 ) : (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
                     {favourites.map((item) => renderRecipeCard(item, { width: 170, marginRight: 12 }))}
                   </ScrollView>
                 )}
-              </View>
+              </Box>
             )}
 
             {/* Categories */}
-            <View style={s.section}>
-              <TouchableOpacity style={s.sectionHeaderRow} onPress={navigateToCategoryList} activeOpacity={0.7}>
+            <Box style={s.section}>
+              <Pressable style={s.sectionHeaderRow} onPress={navigateToCategoryList}>
                 <Text style={[s.sectionTitle, styles.fontBold]}>Categories</Text>
-                <View style={s.viewAllRow}>
+                <HStack style={s.viewAllRow}>
                   <Text style={[s.viewAllText, styles.fontSemiBold]}>View all</Text>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-                </View>
-              </TouchableOpacity>
+                  <Icon name="chevron-forward" size={18} color={C.gray40} />
+                </HStack>
+              </Pressable>
               {isCategoriesLoading ? (
-                <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
+                <Spinner size="small" color={C.orange} style={{ paddingVertical: 16 }} />
               ) : categories.length === 0 ? null : (
-                <View style={s.categoryGrid}>
+                <HStack style={s.categoryGrid}>
                   {displayCategories.map((item) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={item.id}
                       style={[s.categoryCard, { width: categoryWidth }]}
                       onPress={() =>
@@ -381,7 +390,6 @@ export default function RecipeMainScreen(props: any) {
                           title: item.title,
                         })
                       }
-                      activeOpacity={0.7}
                     >
                       {item.recipeCategoryImage ? (
                         <Image
@@ -390,44 +398,43 @@ export default function RecipeMainScreen(props: any) {
                           resizeMode="cover"
                         />
                       ) : (
-                        <View style={[s.categoryImage, { width: categoryWidth, height: 96, backgroundColor: C.surfaceLight }]} />
+                        <Box style={[s.categoryImage, { width: categoryWidth, height: 96, backgroundColor: C.surfaceLight }]} />
                       )}
                       <Text style={[s.categoryTitle, styles.fontSemiBold]} numberOfLines={1}>
                         {item.title}
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                   {showViewMore && (
-                    <TouchableOpacity
+                    <Pressable
                       style={[s.categoryCard, { width: categoryWidth }]}
                       onPress={navigateToCategoryList}
-                      activeOpacity={0.7}
                     >
-                      <View style={[s.viewMoreBox, { width: categoryWidth, height: 96 }]}>
-                        <Ionicons name="add" size={26} color={C.textPrimary} />
-                      </View>
+                      <Box style={[s.viewMoreBox, { width: categoryWidth, height: 96 }]}>
+                        <Icon name="add" size={26} color={C.textPrimary} />
+                      </Box>
                       <Text style={[s.categoryTitle, styles.fontSemiBold]}>View More</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
-                </View>
+                </HStack>
               )}
-            </View>
+            </Box>
 
             {/* Tags */}
-            <View style={s.section}>
-              <TouchableOpacity style={s.sectionHeaderRow} onPress={navigateToTagList} activeOpacity={0.7}>
+            <Box style={s.section}>
+              <Pressable style={s.sectionHeaderRow} onPress={navigateToTagList}>
                 <Text style={[s.sectionTitle, styles.fontBold]}>Tags</Text>
-                <View style={s.viewAllRow}>
+                <HStack style={s.viewAllRow}>
                   <Text style={[s.viewAllText, styles.fontSemiBold]}>View all</Text>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-                </View>
-              </TouchableOpacity>
+                  <Icon name="chevron-forward" size={18} color={C.gray40} />
+                </HStack>
+              </Pressable>
               {isTagsLoading ? (
-                <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
+                <Spinner size="small" color={C.orange} style={{ paddingVertical: 16 }} />
               ) : tags.length === 0 ? null : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
                   {tags.map((item) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={item.id}
                       style={s.tagChip}
                       onPress={() =>
@@ -436,67 +443,75 @@ export default function RecipeMainScreen(props: any) {
                           title: item.title,
                         })
                       }
-                      activeOpacity={0.7}
                     >
                       {item.recipeTagImage ? (
                         <Image source={{ uri: item.recipeTagImage }} style={s.tagImage} />
                       ) : null}
                       <Text style={[s.tagText, styles.fontMedium]}>{item.title}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </ScrollView>
               )}
-            </View>
+            </Box>
 
             {/* Browse recipes by meal time */}
-            <View style={[s.section, { marginBottom: 8 }]}>
-              <TouchableOpacity style={s.sectionHeaderRow} onPress={navigateToRecipeList} activeOpacity={0.7}>
+            <Box style={[s.section, { marginBottom: 8 }]}>
+              <Pressable style={s.sectionHeaderRow} onPress={navigateToRecipeList}>
                 <Text style={[s.sectionTitle, styles.fontBold]}>Browse Recipes</Text>
-                <View style={s.viewAllRow}>
+                <HStack style={s.viewAllRow}>
                   <Text style={[s.viewAllText, styles.fontSemiBold]}>View all</Text>
-                  <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-                </View>
-              </TouchableOpacity>
+                  <Icon name="chevron-forward" size={18} color={C.gray40} />
+                </HStack>
+              </Pressable>
 
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
                 {MEAL_TYPE_FILTERS.map((mt) => {
                   const selected = mt.key === selectedMealType;
                   return (
-                    <TouchableOpacity
+                    <Button
                       key={mt.key ?? 'all'}
-                      style={[s.mealChip, selected && s.mealChipSelected]}
+                      variant="ghost"
                       onPress={() => setSelectedMealType(mt.key)}
-                      activeOpacity={0.7}
+                      style={{
+                        paddingHorizontal: 14,
+                        paddingVertical: 8,
+                        borderRadius: 20,
+                        borderWidth: 1,
+                        borderColor: selected ? C.brand5 : C.border,
+                        backgroundColor: selected ? C.brand5 : C.surfaceLight,
+                        marginRight: 8,
+                      }}
                     >
                       {mt.icon && (
-                        <Ionicons
-                          name={mt.icon}
-                          size={14}
-                          color={selected ? C.textPrimary : C.gray40}
-                          style={{ marginRight: 6 }}
-                        />
+                        <Icon name={mt.icon} size={14} color={selected ? C.textPrimary : C.gray40} />
                       )}
-                      <Text style={[s.mealChipText, selected && s.mealChipTextSelected, styles.fontMedium]}>
+                      <ButtonText
+                        style={{
+                          fontFamily: FONT.medium,
+                          fontSize: 13,
+                          color: selected ? C.textPrimary : C.gray40,
+                        }}
+                      >
                         {mt.label}
-                      </Text>
-                    </TouchableOpacity>
+                      </ButtonText>
+                    </Button>
                   );
                 })}
               </ScrollView>
 
               {isRecipesLoading ? (
-                <ActivityIndicator size="small" color={C.orange} style={{ paddingVertical: 16 }} />
+                <Spinner size="small" color={C.orange} style={{ paddingVertical: 16 }} />
               ) : recipes.length === 0 ? (
-                <View style={s.emptyBox}>
-                  <Ionicons name="restaurant-outline" size={36} color={C.gray30} />
+                <VStack space="sm" style={s.emptyBox}>
+                  <Icon name="restaurant-outline" size={36} color={C.gray30} />
                   <Text style={[s.emptyText, styles.fontMedium]}>No recipes in this category yet</Text>
-                </View>
+                </VStack>
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.horizontalList}>
                   {recipes.map((item) => renderRecipeCard(item, { width: 180, marginRight: 14 }))}
                 </ScrollView>
               )}
-            </View>
+            </Box>
           </>
         )}
       </ScrollView>
@@ -506,12 +521,8 @@ export default function RecipeMainScreen(props: any) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: { fontSize: 18, color: C.white, flex: 1, textAlign: 'center' },
   scrollContent: { padding: 16, paddingBottom: 32 },
   searchWrap: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: C.surfaceLight,
     borderRadius: 12,
@@ -519,18 +530,17 @@ const s = StyleSheet.create({
     borderColor: C.border,
     paddingHorizontal: 12,
     height: 44,
-    gap: 8,
     marginBottom: 20,
   },
   searchInput: { flex: 1, fontSize: 14, color: C.textPrimary },
   section: { marginBottom: 24 },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  sectionTitleRow: { alignItems: 'center', marginBottom: 14 },
   sectionTitle: { fontSize: 18, color: C.textPrimary },
-  viewAllRow: { flexDirection: 'row', alignItems: 'center' },
+  viewAllRow: { alignItems: 'center' },
   viewAllText: { fontSize: 13, color: C.textSecondary, marginRight: 2 },
   horizontalList: { paddingRight: 8 },
-  emptyBox: { alignItems: 'center', justifyContent: 'center', paddingVertical: 28, gap: 8 },
+  emptyBox: { alignItems: 'center', justifyContent: 'center', paddingVertical: 28 },
   emptyText: { fontSize: 13, color: C.gray40, textAlign: 'center' },
   tagChip: {
     flexDirection: 'row',
@@ -545,7 +555,7 @@ const s = StyleSheet.create({
   },
   tagText: { fontSize: 14, color: C.textPrimary },
   tagImage: { width: 20, height: 20, borderRadius: 10, marginRight: 8 },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  categoryGrid: { flexWrap: 'wrap', justifyContent: 'space-between' },
   categoryCard: { marginBottom: 16 },
   categoryImage: { borderRadius: 12 },
   categoryTitle: { fontSize: 13, color: C.textPrimary, marginTop: 8 },
@@ -555,37 +565,10 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  mealChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: C.border,
-    backgroundColor: C.surfaceLight,
-    marginRight: 8,
-  },
-  mealChipSelected: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  mealChipText: { fontSize: 13, color: C.gray40 },
-  mealChipTextSelected: { color: C.textPrimary, fontWeight: '600' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  grid: { flexWrap: 'wrap', justifyContent: 'space-between' },
   recipeCard: { marginBottom: 16 },
   recipeImageWrap: { position: 'relative' },
   recipeImage: { width: '100%', height: 130, borderRadius: 12 },
-  lockBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  lockBadgeText: { fontSize: 11, color: '#FFFFFF' },
   favBtn: {
     position: 'absolute',
     top: 8,
@@ -598,7 +581,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   recipeTitle: { fontSize: 14, color: C.textPrimary, marginTop: 8 },
-  recipeMetaRow: { flexDirection: 'row', marginTop: 4 },
+  recipeMetaRow: { marginTop: 4 },
   recipeMeta: { fontSize: 12, color: C.textSecondary },
 });
 

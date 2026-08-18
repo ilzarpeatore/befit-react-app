@@ -1,10 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import MuscleBodyMap, { MuscleVolumeGroup } from '../../components/MuscleBodyMap';
 import { ViewSide } from '../../constants/bodyMusclesPaths';
 import DaySelectorStrip, { buildWeekRange, DaySelectorItem, toLocalISODate } from '../../components/DaySelectorStrip';
@@ -139,119 +146,95 @@ export default function StatisticsBodyDistributionScreen(props: Props) {
     );
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle} numberOfLines={1}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <HStack className="items-center justify-between px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center mx-1" numberOfLines={1}>
           Distribución del cuerpo
-        </Text>
-        <View style={s.appBarRightIcons}>
-          <TouchableOpacity style={s.smallIconBtn} onPress={onHelp}>
-            <Text style={s.helpBtnText}>?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.smallIconBtn} onPress={onShare} disabled={isSharing}>
+        </Heading>
+        <HStack space="sm">
+          <Pressable
+            className="rounded-pill bg-card items-center justify-center shadow-card"
+            style={{ width: 32, height: 32 }}
+            onPress={onHelp}
+          >
+            <Text weight="bold" size="xs" muted>?</Text>
+          </Pressable>
+          <Pressable
+            className="rounded-pill bg-card items-center justify-center shadow-card"
+            style={{ width: 32, height: 32 }}
+            onPress={onShare}
+            disabled={isSharing}
+          >
             {isSharing ? (
-              <ActivityIndicator size="small" color={C.textSecondary} />
+              <Spinner size="small" color={C.textSecondary} />
             ) : (
-              <Ionicons name="share-outline" size={16} color={C.textSecondary} />
+              <Icon name="share-outline" size={16} className="text-muted-foreground" />
             )}
-          </TouchableOpacity>
-        </View>
-      </View>
+          </Pressable>
+        </HStack>
+      </HStack>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.weekNav}>
-          <TouchableOpacity onPress={goPrevWeek} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-back" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
-          <Text style={s.weekNavLabel}>{weekLabel(weekDays)}</Text>
-          <TouchableOpacity onPress={goNextWeek} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
-        </View>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <HStack className="items-center justify-center" style={{ gap: 16, marginTop: 8 }}>
+          <Pressable onPress={goPrevWeek} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="chevron-back" size={18} className="text-muted-foreground" />
+          </Pressable>
+          <Text weight="semibold" size="md">{weekLabel(weekDays)}</Text>
+          <Pressable onPress={goNextWeek} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+          </Pressable>
+        </HStack>
 
-        <View style={s.daySelectorWrap}>
+        <Box style={{ marginTop: 18 }}>
           <DaySelectorStrip days={weekDays} selectedDate={selectedDate} onSelect={setSelectedDate} />
-        </View>
+        </Box>
 
-        <View ref={shareRef} collapsable={false} style={s.heatmapCard}>
+        <Box
+          ref={shareRef}
+          collapsable={false}
+          className="bg-card rounded-lg justify-center shadow-card"
+          style={{ marginTop: 16, paddingVertical: 12, minHeight: 180 }}
+        >
           {isLoading ? (
-            <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
+            <Spinner size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
           ) : (
-            <View style={s.heatmapRow}>
+            <HStack className="justify-around">
               <MuscleBodyMap data={volumeByMuscle} height={190} showToggle={false} forcedView={ViewSide.FRONT} />
               <MuscleBodyMap data={volumeByMuscle} height={190} showToggle={false} forcedView={ViewSide.BACK} />
-            </View>
+            </HStack>
           )}
-        </View>
+        </Box>
 
-        <View style={s.tableCard}>
-          <View style={s.tableHeaderRow}>
-            <Text style={s.tableHeaderLabel}>MÚSCULO</Text>
-            <Text style={s.tableHeaderValue}>SERIES</Text>
-          </View>
-          <View style={[s.tableRow, s.tableTotalRow]}>
-            <Text style={s.tableTotalLabel}>Total</Text>
-            <Text style={s.tableTotalValue}>{totalSeries}</Text>
-          </View>
+        <Box className="bg-card rounded-lg shadow-card" style={{ marginTop: 16, overflow: 'hidden' }}>
+          <HStack className="justify-between bg-muted" style={{ paddingHorizontal: 18, paddingVertical: 10 }}>
+            <Text weight="semibold" size="xs" muted style={{ letterSpacing: 0.4 }}>MÚSCULO</Text>
+            <Text weight="semibold" size="xs" muted style={{ letterSpacing: 0.4 }}>SERIES</Text>
+          </HStack>
+          <HStack className="justify-between border-b border-border" style={{ paddingHorizontal: 18, paddingVertical: 14 }}>
+            <Text weight="bold" size="md" style={{ fontSize: 15.5 }}>Total</Text>
+            <Text weight="bold" size="md" style={{ fontSize: 15.5 }}>{totalSeries}</Text>
+          </HStack>
           {trainedMuscles.length === 0 ? (
-            <View style={s.tableRow}>
-              <Text style={s.tableEmptyText}>Sin series registradas en estos 7 días.</Text>
-            </View>
+            <Box style={{ paddingHorizontal: 18, paddingVertical: 14 }}>
+              <Text size="xs" muted className="flex-1 text-center">Sin series registradas en estos 7 días.</Text>
+            </Box>
           ) : (
             trainedMuscles.map((m, idx) => (
-              <View key={m.group} style={[s.tableRow, idx < trainedMuscles.length - 1 && s.tableRowDivider]}>
-                <Text style={s.tableRowLabel}>{m.group}</Text>
-                <Text style={s.tableRowValue}>{seriesByGroup.get(m.group) ?? 0}</Text>
-              </View>
+              <HStack
+                key={m.group}
+                className={`justify-between${idx < trainedMuscles.length - 1 ? ' border-b border-border' : ''}`}
+                style={{ paddingHorizontal: 18, paddingVertical: 14 }}
+              >
+                <Text size="sm" style={{ fontSize: 14.5 }}>{m.group}</Text>
+                <Text size="sm" style={{ fontSize: 14.5 }}>{seriesByGroup.get(m.group) ?? 0}</Text>
+              </HStack>
             ))
           )}
-        </View>
+        </Box>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  appBarTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary, marginHorizontal: 4 },
-  appBarRightIcons: { flexDirection: 'row', gap: 8 },
-  smallIconBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center', ...SHADOW.card },
-  helpBtnText: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  weekNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 },
-  weekNavLabel: { fontFamily: FONT.semiBold, fontSize: 15, color: C.textPrimary },
-  daySelectorWrap: { marginTop: 18 },
-  heatmapCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    marginTop: 16,
-    paddingVertical: 12,
-    minHeight: 180,
-    justifyContent: 'center',
-    ...SHADOW.card,
-  },
-  heatmapRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  tableCard: { backgroundColor: C.surface, borderRadius: 20, marginTop: 16, overflow: 'hidden', ...SHADOW.card },
-  tableHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: C.gray5,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-  },
-  tableHeaderLabel: { fontFamily: FONT.semiBold, fontSize: 12, color: C.textSecondary, letterSpacing: 0.4 },
-  tableHeaderValue: { fontFamily: FONT.semiBold, fontSize: 12, color: C.textSecondary, letterSpacing: 0.4 },
-  tableRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 14 },
-  tableRowDivider: { borderBottomWidth: 1, borderBottomColor: C.border },
-  tableTotalRow: { borderBottomWidth: 1, borderBottomColor: C.border },
-  tableTotalLabel: { fontFamily: FONT.bold, fontSize: 15.5, color: C.textPrimary },
-  tableTotalValue: { fontFamily: FONT.bold, fontSize: 15.5, color: C.textPrimary },
-  tableRowLabel: { fontFamily: FONT.regular, fontSize: 14.5, color: C.textPrimary },
-  tableRowValue: { fontFamily: FONT.regular, fontSize: 14.5, color: C.textPrimary },
-  tableEmptyText: { flex: 1, fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, textAlign: 'center' },
-});

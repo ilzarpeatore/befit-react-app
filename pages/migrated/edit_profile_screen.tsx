@@ -1,7 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Dimensions, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, Image, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField } from '@components/ui/input';
 import { useAuth } from '@store/AuthContext';
 import { authApi } from '@api/auth';
 import { C, FONT } from './theme';
@@ -134,32 +141,33 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
   const renderProfileImage = () => {
     if (imageUri) {
       return (
-        <View style={localStyles.profileImageContainer}>
+        <Box style={localStyles.profileImageContainer}>
           <Image source={{ uri: imageUri }} style={localStyles.profileImage} />
-        </View>
+        </Box>
       );
     }
     if (profileImage) {
       return (
-        <View style={localStyles.profileImageContainer}>
+        <Box style={localStyles.profileImageContainer}>
           <Image source={{ uri: profileImage }} style={localStyles.profileImage} />
-        </View>
+        </Box>
       );
     }
     return (
-      <View style={localStyles.profileImageContainer}>
-        <View style={localStyles.profileImagePlaceholder}>
-          <Ionicons name="person" size={40} color={C.gray40} />
-        </View>
-      </View>
+      <Box style={localStyles.profileImageContainer}>
+        <Box style={localStyles.profileImagePlaceholder}>
+          <Icon name="person" size={40} color={C.gray40} />
+        </Box>
+      </Box>
     );
   };
 
   const renderHeightOption = (label: string, index: number) => {
     const isActive = mHeight === index;
     return (
-      <TouchableOpacity
-        style={[localStyles.unitBtn, isActive && localStyles.unitBtnActive]}
+      <Button
+        variant="outline"
+        style={[localStyles.unitBtn, isActive && localStyles.unitBtnActive] as any}
         onPress={() => {
           setMHeight(index);
           if (index === 1) {
@@ -169,18 +177,19 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
           }
         }}
       >
-        <Text style={[localStyles.unitBtnText, isActive && localStyles.unitBtnTextActive]}>
+        <ButtonText style={[localStyles.unitBtnText, isActive && localStyles.unitBtnTextActive] as any}>
           {label}
-        </Text>
-      </TouchableOpacity>
+        </ButtonText>
+      </Button>
     );
   };
 
   const renderWeightOption = (label: string, index: number) => {
     const isActive = mWeight === index;
     return (
-      <TouchableOpacity
-        style={[localStyles.unitBtn, isActive && localStyles.unitBtnActive]}
+      <Button
+        variant="outline"
+        style={[localStyles.unitBtn, isActive && localStyles.unitBtnActive] as any}
         onPress={() => {
           setMWeight(index);
           if (index === 0) {
@@ -190,10 +199,10 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
           }
         }}
       >
-        <Text style={[localStyles.unitBtnText, isActive && localStyles.unitBtnTextActive]}>
+        <ButtonText style={[localStyles.unitBtnText, isActive && localStyles.unitBtnTextActive] as any}>
           {label}
-        </Text>
-      </TouchableOpacity>
+        </ButtonText>
+      </Button>
     );
   };
 
@@ -202,162 +211,188 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={localStyles.container}>
+      <Box style={localStyles.container}>
         {/* Header Background */}
-        <View style={localStyles.headerBg} />
+        <Box style={localStyles.headerBg} />
 
         {/* Back Button */}
-        <TouchableOpacity style={localStyles.backBtn} onPress={() => props.navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+        <Pressable style={localStyles.backBtn} onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} color={C.white} />
+        </Pressable>
 
         <ScrollView contentContainerStyle={localStyles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Profile Image */}
-          <View style={localStyles.imageSection}>
+          <Box style={localStyles.imageSection}>
             {renderProfileImage()}
-            <TouchableOpacity style={localStyles.cameraBtn} onPress={pickImage}>
-              <Ionicons name="camera" size={20} color={C.textPrimary} />
-            </TouchableOpacity>
-          </View>
+            <Pressable style={localStyles.cameraBtn} onPress={pickImage}>
+              <Icon name="camera" size={20} color={C.textPrimary} />
+            </Pressable>
+          </Box>
 
           {/* Form Fields */}
-          <View style={localStyles.formContainer}>
+          <Box style={localStyles.formContainer}>
             {/* First Name */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>First Name</Text>
-              <TextInput
-                style={localStyles.input}
-                value={fName}
-                onChangeText={setFName}
-                placeholder="First Name"
-                placeholderTextColor={C.gray40}
-              />
-            </View>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={fName}
+                  onChangeText={setFName}
+                  placeholder="First Name"
+                  placeholderTextColor={C.gray40}
+                />
+              </Input>
+            </VStack>
 
             {/* Last Name */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Last Name</Text>
-              <TextInput
-                style={localStyles.input}
-                value={lName}
-                onChangeText={setLName}
-                placeholder="Last Name"
-                placeholderTextColor={C.gray40}
-              />
-            </View>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={lName}
+                  onChangeText={setLName}
+                  placeholder="Last Name"
+                  placeholderTextColor={C.gray40}
+                />
+              </Input>
+            </VStack>
 
             {/* Email */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Email</Text>
-              <TextInput
-                style={localStyles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Email"
-                placeholderTextColor={C.gray40}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Email"
+                  placeholderTextColor={C.gray40}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </Input>
+            </VStack>
 
             {/* Gender */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Gender</Text>
-              <View style={localStyles.genderRow}>
+              <HStack className="gap-2.5">
                 {genderList.map((g) => (
-                  <TouchableOpacity
+                  <Button
                     key={g.id}
-                    style={[localStyles.genderBtn, selectGender === g.id && localStyles.genderBtnActive]}
+                    variant="outline"
+                    style={[localStyles.genderBtn, selectGender === g.id && localStyles.genderBtnActive] as any}
                     onPress={() => {
                       setSelectGender(g.id);
                       setGender(g.key);
                     }}
                   >
-                    <Text style={[localStyles.genderText, selectGender === g.id && localStyles.genderTextActive]}>
+                    <ButtonText style={[localStyles.genderText, selectGender === g.id && localStyles.genderTextActive] as any}>
                       {g.label}
-                    </Text>
-                  </TouchableOpacity>
+                    </ButtonText>
+                  </Button>
                 ))}
-              </View>
-            </View>
+              </HStack>
+            </VStack>
 
             {/* Phone Number */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Phone Number</Text>
-              <TextInput
-                style={localStyles.input}
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                placeholder="Phone Number"
-                placeholderTextColor={C.gray40}
-                keyboardType="phone-pad"
-              />
-            </View>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  placeholder="Phone Number"
+                  placeholderTextColor={C.gray40}
+                  keyboardType="phone-pad"
+                />
+              </Input>
+            </VStack>
 
             {/* Age */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Age</Text>
-              <TextInput
-                style={localStyles.input}
-                value={age}
-                onChangeText={setAge}
-                placeholder="Age"
-                placeholderTextColor={C.gray40}
-                keyboardType="number-pad"
-              />
-            </View>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={age}
+                  onChangeText={setAge}
+                  placeholder="Age"
+                  placeholderTextColor={C.gray40}
+                  keyboardType="number-pad"
+                />
+              </Input>
+            </VStack>
 
             {/* Weight */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Weight</Text>
-              <TextInput
-                style={localStyles.input}
-                value={weight}
-                onChangeText={setWeight}
-                placeholder="Weight"
-                placeholderTextColor={C.gray40}
-                keyboardType="decimal-pad"
-              />
-              <View style={localStyles.unitRow}>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={weight}
+                  onChangeText={setWeight}
+                  placeholder="Weight"
+                  placeholderTextColor={C.gray40}
+                  keyboardType="decimal-pad"
+                />
+              </Input>
+              <HStack space="sm" style={{ marginTop: 8 }}>
                 {renderWeightOption('lbs', 0)}
                 {renderWeightOption('kg', 1)}
-              </View>
-            </View>
+              </HStack>
+            </VStack>
 
             {/* Height */}
-            <View style={localStyles.fieldGroup}>
+            <VStack className="gap-1.5" style={localStyles.fieldGroup}>
               <Text style={localStyles.label}>Height</Text>
-              <TextInput
-                style={localStyles.input}
-                value={heightVal}
-                onChangeText={setHeightVal}
-                placeholder="Height"
-                placeholderTextColor={C.gray40}
-                keyboardType="decimal-pad"
-              />
-              <View style={localStyles.unitRow}>
+              <Input style={{ borderRadius: 8 }}>
+                <InputField
+                  className="text-sm px-3.5"
+                  style={{ color: C.white }}
+                  value={heightVal}
+                  onChangeText={setHeightVal}
+                  placeholder="Height"
+                  placeholderTextColor={C.gray40}
+                  keyboardType="decimal-pad"
+                />
+              </Input>
+              <HStack space="sm" style={{ marginTop: 8 }}>
                 {renderHeightOption('feet', 0)}
                 {renderHeightOption('cm', 1)}
-              </View>
-            </View>
+              </HStack>
+            </VStack>
 
             {/* Save Button */}
-            <TouchableOpacity style={localStyles.saveBtn} onPress={save} disabled={isLoading}>
+            <Button
+              style={localStyles.saveBtn}
+              onPress={save}
+              disabled={isLoading}
+            >
               {isLoading ? (
-                <ActivityIndicator color={C.white} />
+                <Spinner color={C.white} />
               ) : (
-                <Text style={localStyles.saveBtnText}>Save</Text>
+                <ButtonText style={localStyles.saveBtnText}>Save</ButtonText>
               )}
-            </TouchableOpacity>
-          </View>
+            </Button>
+          </Box>
         </ScrollView>
 
         {isLoading && (
-          <View style={localStyles.loaderContainer}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box style={localStyles.loaderContainer}>
+            <Spinner size="large" color={C.orange} />
+          </Box>
         )}
-      </View>
+      </Box>
     </KeyboardAvoidingView>
   );
 }
@@ -434,21 +469,6 @@ const localStyles = StyleSheet.create({
     color: C.gray30,
     marginBottom: 6,
   },
-  input: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: C.border,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    color: C.white,
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
   genderBtn: {
     flex: 1,
     paddingVertical: 10,
@@ -466,11 +486,6 @@ const localStyles = StyleSheet.create({
   },
   genderTextActive: {
     color: C.white,
-  },
-  unitRow: {
-    flexDirection: 'row',
-    marginTop: 8,
-    gap: 8,
   },
   unitBtn: {
     paddingHorizontal: 12,

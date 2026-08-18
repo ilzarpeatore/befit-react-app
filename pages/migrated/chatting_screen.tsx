@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { FlatList, Alert, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback, Platform } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import { chatApi, ChatMessage } from '../../api/chat';
 
 interface DisplayMessage {
@@ -91,40 +98,61 @@ export default function ChattingScreen({ navigation }: any) {
   };
 
   const renderMessage = ({ item }: { item: DisplayMessage }) => (
-    <View style={styles_local.messageWrap}>
-      <View style={styles_local.userMessage}>
-        <Text style={styles_local.userMessageText}>{item.question}</Text>
-      </View>
+    <Box className="px-4">
+      <Box
+        className="flex-row items-start rounded-md"
+        style={{
+          backgroundColor: C.brand60,
+          borderBottomRightRadius: 4,
+          padding: 12,
+          marginLeft: 48,
+          marginBottom: 4,
+        }}
+      >
+        <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
+      </Box>
 
-      <View style={styles_local.botMessage}>
-        <Ionicons name="hardware-chip-outline" size={18} color={C.textPrimary} />
+      <Box
+        className="flex-row items-start rounded-md"
+        style={{
+          backgroundColor: C.surfaceLight,
+          borderBottomLeftRadius: 4,
+          padding: 12,
+          marginRight: 48,
+          gap: 8,
+        }}
+      >
+        <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
         {item.isLoading ? (
-          <View style={styles_local.loadingRow}>
-            <ActivityIndicator size="small" color={C.orange} />
-            <Text style={styles_local.botLoadingText}>Pensando...</Text>
-          </View>
+          <Box className="flex-row items-center" style={{ gap: 8 }}>
+            <Spinner size="small" color={C.orange} />
+            <Text size="sm" muted>Pensando...</Text>
+          </Box>
         ) : (
-          <Text style={styles_local.botMessageText}>{item.answer}</Text>
+          <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
         )}
-      </View>
-    </View>
+      </Box>
+    </Box>
   );
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>FitBot</Text>
+    <Box className="flex-1 bg-background">
+      <Box
+        className="flex-row items-center justify-between bg-card"
+        style={{ paddingHorizontal: 16, paddingTop: 50, paddingBottom: 14 }}
+      >
+        <Button variant="ghost" size="icon" onPress={() => navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">FitBot</Heading>
         {messages.length > 0 ? (
-          <TouchableOpacity style={styles_local.backBtn} onPress={showClearDialog}>
-            <Ionicons name="refresh-outline" size={22} color={C.white} />
-          </TouchableOpacity>
+          <Button variant="ghost" size="icon" onPress={showClearDialog}>
+            <Icon name="refresh-outline" size={22} className="text-foreground" />
+          </Button>
         ) : (
-          <View style={{ width: 40 }} />
+          <Box className="w-10" />
         )}
-      </View>
+      </Box>
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -132,11 +160,11 @@ export default function ChattingScreen({ navigation }: any) {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles_local.body}>
+          <Box className="flex-1">
             {isLoadingHistory ? (
-              <View style={styles_local.emptyWrap}>
-                <ActivityIndicator size="large" color={C.orange} />
-              </View>
+              <Box className="flex-1 items-center justify-center" style={{ gap: 12 }}>
+                <Spinner size="large" color={C.orange} />
+              </Box>
             ) : messages.length > 0 ? (
               <FlatList
                 ref={flatListRef}
@@ -145,116 +173,45 @@ export default function ChattingScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 inverted
                 contentContainerStyle={{ paddingVertical: 16 }}
-                ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+                ItemSeparatorComponent={() => <Box style={{ height: 12 }} />}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="interactive"
               />
             ) : (
-              <View style={styles_local.emptyWrap}>
-                <Ionicons name="chatbubbles-outline" size={48} color={C.gray60} />
-                <Text style={styles_local.emptyTitle}>FitBot</Text>
-                <Text style={styles_local.emptySubtext}>Pregúntame sobre fitness y nutrición</Text>
-              </View>
+              <Box className="flex-1 items-center justify-center" style={{ gap: 12 }}>
+                <Icon name="chatbubbles-outline" size={48} className="text-muted-foreground" />
+                <Text size="lg" weight="semibold" muted>FitBot</Text>
+                <Text size="sm" muted>Pregúntame sobre fitness y nutrición</Text>
+              </Box>
             )}
-          </View>
+          </Box>
         </TouchableWithoutFeedback>
 
-        <View style={styles_local.inputBar}>
-          <TextInput
-            style={styles_local.textInput}
-            placeholder="Escribe un mensaje..."
-            placeholderTextColor={C.gray50}
-            value={msgController}
-            onChangeText={setMsgController}
-            onSubmitEditing={sendMessage}
-            blurOnSubmit={false}
-            returnKeyType="send"
-            multiline
-          />
-          <TouchableOpacity
-            style={[styles_local.sendBtn, !msgController.trim() && { opacity: 0.5 }]}
+        <Box
+          className="flex-row items-end bg-card"
+          style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28, gap: 10 }}
+        >
+          <Input className="flex-1 rounded-sm" size="md" style={{ height: undefined, minHeight: 44, maxHeight: 100 }}>
+            <InputField
+              placeholder="Escribe un mensaje..."
+              value={msgController}
+              onChangeText={setMsgController}
+              onSubmitEditing={sendMessage}
+              blurOnSubmit={false}
+              returnKeyType="send"
+              multiline
+            />
+          </Input>
+          <Pressable
+            className="w-10 h-10 rounded-sm items-center justify-center"
+            style={{ backgroundColor: C.brand5 }}
             onPress={sendMessage}
             disabled={!msgController.trim()}
-            activeOpacity={0.7}
           >
-            <Ionicons name="send" size={16} color={C.white} />
-          </TouchableOpacity>
-        </View>
+            <Icon name="send" size={16} className="text-foreground" />
+          </Pressable>
+        </Box>
       </KeyboardAvoidingView>
-    </View>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  body: { flex: 1 },
-  emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  emptyTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.gray30 },
-  emptySubtext: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50 },
-  messageWrap: { paddingHorizontal: 16 },
-  userMessage: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: C.brand60,
-    borderRadius: 16,
-    borderBottomRightRadius: 4,
-    padding: 12,
-    marginLeft: 48,
-    marginBottom: 4,
-  },
-  userMessageText: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.white, lineHeight: 20 },
-  botMessage: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    padding: 12,
-    marginRight: 48,
-    gap: 8,
-  },
-  botMessageText: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.gray50, lineHeight: 20 },
-  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  botLoadingText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray40 },
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 28,
-    backgroundColor: C.surface,
-    gap: 10,
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: C.white,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    maxHeight: 100,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: C.brand5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
   TextInput,
-  ActivityIndicator,
   Platform,
   Modal,
   FlatList,
@@ -17,7 +12,16 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
+import { Box } from '@components/ui/box';
+import { HStack } from '@components/ui/hstack';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Card } from '@components/ui/card';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Divider } from '@components/ui/divider';
 import { C, FONT } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { ConfirmDialogMem } from '../../components/ConfirmDialog';
@@ -664,25 +668,30 @@ export default function WorkoutSessionScreen(props: Props) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        <Box className="flex-1 items-center justify-center">
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
 
   if (error || blocks.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <Ionicons name="close" size={26} color={C.textPrimary} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.loader}>
-          <Text style={styles.emptyText}>No se pudo cargar el entrenamiento.</Text>
-        </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        <Box
+          className="flex-row items-center justify-between px-5"
+          style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+        >
+          <Pressable onPress={() => navigation?.goBack()}>
+            <Icon name="close" size={26} color={C.textPrimary} />
+          </Pressable>
+        </Box>
+        <Box className="flex-1 items-center justify-center">
+          <Text muted className="text-center px-6" style={{ fontSize: 15 }}>
+            No se pudo cargar el entrenamiento.
+          </Text>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -697,48 +706,56 @@ export default function WorkoutSessionScreen(props: Props) {
       >
         {block.exercises.map((ex, exIdx) =>
           exIdx === activeExIdx ? (
-            <View key={ex.id} style={styles.activeCard}>
-              <View style={styles.activeHeaderRow}>
-                <TouchableOpacity
-                  style={styles.activeHeaderTapArea}
-                  activeOpacity={0.7}
+            <Card key={ex.id} variant="filled" className="mx-4" style={{ marginBottom: 10 }}>
+              <HStack className="items-center">
+                <Pressable
+                  className="flex-1 flex-row items-center"
                   onPress={() => openExerciseInfo(ex)}
                 >
                   <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={56} />
-                  <View style={styles.activeInfo}>
-                    <Text style={styles.activeTitle} numberOfLines={2}>
+                  <Box className="flex-1" style={{ marginLeft: 12 }}>
+                    <Text weight="bold" className="text-foreground" style={{ fontSize: 16 }} numberOfLines={2}>
                       {ex.title}
                     </Text>
-                    <Text style={styles.activeSubtitle}>
+                    <Text muted style={{ fontSize: 13, marginTop: 4 }}>
                       {formatPrescribedSubtitle(ex.prescribed)}
                     </Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.painReportBtn}
+                  </Box>
+                </Pressable>
+                <Pressable
+                  className="p-1"
+                  style={{ marginLeft: 8 }}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   onPress={() => setPainReportTarget(ex)}
                 >
-                  <Ionicons name="medkit-outline" size={20} color={C.textSecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.collapseBtn}
+                  <Icon name="medkit-outline" size={20} className="text-muted-foreground" />
+                </Pressable>
+                <Pressable
+                  className="p-1"
+                  style={{ marginLeft: 8 }}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   onPress={() => setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: -1 }))}
                 >
-                  <Ionicons name="chevron-up" size={20} color={C.textSecondary} />
-                </TouchableOpacity>
-              </View>
+                  <Icon name="chevron-up" size={20} className="text-muted-foreground" />
+                </Pressable>
+              </HStack>
 
               {ex.coachNotes ? (
-                <View style={styles.coachNoteBanner}>
-                  <Ionicons name="chatbubble-ellipses-outline" size={14} color={C.warning60} />
-                  <Text style={styles.coachNoteText}>{ex.coachNotes}</Text>
-                </View>
+                <HStack
+                  space="sm"
+                  className="items-start rounded-md p-2.5"
+                  style={{ marginTop: 14, backgroundColor: C.warning5 }}
+                >
+                  <Icon name="chatbubble-ellipses-outline" size={14} color={C.warning60} />
+                  <Text muted className="flex-1" style={{ fontSize: 12.5, lineHeight: 18 }}>
+                    {ex.coachNotes}
+                  </Text>
+                </HStack>
               ) : null}
 
               <TextInput
-                style={styles.noteInput}
+                className="bg-card rounded-md px-3 py-2.5 text-foreground"
+                style={{ marginTop: 14, fontFamily: FONT.regular, fontSize: 13 }}
                 placeholder="Añadir nota..."
                 placeholderTextColor={C.textSecondary}
                 value={ex.note}
@@ -753,20 +770,35 @@ export default function WorkoutSessionScreen(props: Props) {
                   como una única fila horizontalmente scrolleable (en vez de
                   comprimir texto) mantiene # / métricas / ✓ siempre alineados. */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.table}>
-                  <View style={styles.tableHeaderRow}>
-                    <Text style={[styles.tableHeaderCell, styles.serieCol]}>#</Text>
+                <Box style={{ marginTop: 16 }}>
+                  <HStack className="items-center" style={{ marginBottom: 8 }}>
+                    <Text weight="semibold" muted className="text-center" style={{ fontSize: 11, width: 26 }}>
+                      #
+                    </Text>
                     {ex.enabledMetrics.map((key) => (
-                      <Text key={key} style={[styles.tableHeaderCell, styles.metricCol]} numberOfLines={1}>
+                      <Text
+                        key={key}
+                        weight="semibold"
+                        muted
+                        className="text-center"
+                        style={{ fontSize: 11, width: 72, marginHorizontal: 2 }}
+                        numberOfLines={1}
+                      >
                         {metricLabel(key)}
                       </Text>
                     ))}
-                    <View style={styles.checkCol} />
-                  </View>
+                    <Box style={{ width: 34 }} />
+                  </HStack>
 
                   {ex.rows.map((row, rowIdx) => (
-                    <View key={rowIdx} style={styles.tableRow}>
-                      <Text style={[styles.tableCellText, styles.serieCol]}>{rowIdx + 1}</Text>
+                    <HStack key={rowIdx} className="items-center" style={{ marginBottom: 8 }}>
+                      <Text
+                        weight="medium"
+                        className="text-center text-foreground"
+                        style={{ fontSize: 13, width: 26 }}
+                      >
+                        {rowIdx + 1}
+                      </Text>
                       {ex.enabledMetrics.map((key) => {
                         // Punto 1 (Motor de Auto-Regulacion de Carga): si hay una
                         // sugerencia PENDIENTE del motor para este ejercicio, esa
@@ -779,9 +811,10 @@ export default function WorkoutSessionScreen(props: Props) {
                         const hasSuggestion = suggestedValue != null;
                         const target = hasSuggestion ? suggestedValue : ex.prescribed?.[key];
                         return (
-                          <View key={key} style={styles.metricCol}>
+                          <Box key={key} style={{ width: 72, marginHorizontal: 2 }}>
                             <TextInput
-                              style={styles.tableInput}
+                              className="bg-card rounded-sm text-center text-foreground"
+                              style={{ paddingVertical: 8, fontFamily: FONT.regular, fontSize: 13 }}
                               value={row.values[key] ?? ''}
                               onChangeText={(t) => setCellValue(blockIdx, exIdx, rowIdx, key, t)}
                               keyboardType={metricInputType(key) === 'number' ? 'numeric' : 'default'}
@@ -790,69 +823,81 @@ export default function WorkoutSessionScreen(props: Props) {
                             />
                             {target != null && target !== '' ? (
                               <Text
-                                style={[styles.targetHint, hasSuggestion && styles.targetHintSuggested]}
+                                className="text-center"
+                                style={{
+                                  fontSize: 9.5,
+                                  marginTop: 2,
+                                  fontFamily: hasSuggestion ? FONT.semiBold : FONT.regular,
+                                  color: hasSuggestion ? C.warning60 : C.textSecondary,
+                                }}
                                 numberOfLines={1}
                               >
                                 {hasSuggestion ? `Sugerido: ${target}` : `Obj: ${target}`}
                               </Text>
                             ) : null}
-                          </View>
+                          </Box>
                         );
                       })}
-                      <TouchableOpacity
-                        style={styles.checkCol}
+                      <Pressable
+                        className="items-center"
+                        style={{ width: 34 }}
                         onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
                       >
-                        <Ionicons
+                        <Icon
                           name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
                           size={26}
                           color={row.completed ? C.success : C.textSecondary}
                         />
-                      </TouchableOpacity>
-                    </View>
+                      </Pressable>
+                    </HStack>
                   ))}
-                </View>
+                </Box>
               </ScrollView>
 
-              <View style={styles.rowActions}>
-                <TouchableOpacity onPress={() => addRow(blockIdx, exIdx)}>
-                  <Text style={styles.rowActionText}>+ AÑADIR SERIE</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.rowActionRight}
+              <HStack className="items-center justify-between" style={{ marginTop: 14 }}>
+                <Pressable onPress={() => addRow(blockIdx, exIdx)}>
+                  <Text weight="semibold" className="text-foreground" style={{ fontSize: 12 }}>
+                    + AÑADIR SERIE
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className="flex-row items-center"
+                  style={{ gap: 6 }}
                   onPress={() => markAllRows(blockIdx, exIdx)}
                 >
-                  <Ionicons name="checkmark-done" size={16} color={C.textPrimary} />
-                  <Text style={styles.rowActionText}>MARCAR TODAS LAS SERIES</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                  <Icon name="checkmark-done" size={16} className="text-foreground" />
+                  <Text weight="semibold" className="text-foreground" style={{ fontSize: 12 }}>
+                    MARCAR TODAS LAS SERIES
+                  </Text>
+                </Pressable>
+              </HStack>
+            </Card>
           ) : (
-            <TouchableOpacity
+            <Pressable
               key={ex.id}
-              style={styles.collapsedRow}
-              activeOpacity={0.7}
+              className="flex-row items-center mx-4 p-3 rounded-lg bg-card"
+              style={{ marginBottom: 10 }}
               onPress={() => {
                 setActiveIndexByBlock((prev) => ({ ...prev, [blockIdx]: exIdx }));
                 fetchLoadSuggestion(ex);
               }}
             >
-              <TouchableOpacity activeOpacity={0.7} onPress={() => openExerciseInfo(ex)}>
+              <Pressable onPress={() => openExerciseInfo(ex)}>
                 <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} size={48} />
-              </TouchableOpacity>
-              <View style={styles.collapsedInfo}>
-                <Text style={styles.collapsedTitle} numberOfLines={2}>
+              </Pressable>
+              <Box className="flex-1" style={{ marginLeft: 12 }}>
+                <Text weight="semibold" className="text-foreground" style={{ fontSize: 14 }} numberOfLines={2}>
                   {ex.title}
                 </Text>
-                <Text style={styles.collapsedSubtitle}>
+                <Text muted style={{ fontSize: 12, marginTop: 3 }}>
                   {formatPrescribedSubtitle(ex.prescribed)}
                 </Text>
-              </View>
+              </Box>
               {/* Punto 2: el boton de reportar dolor solo se ve con el
                   acordeon del ejercicio abierto (tarjeta activa, arriba) --
                   aqui, en fila colapsada, se quita. */}
-              <Ionicons name="chevron-down" size={18} color={C.textSecondary} />
-            </TouchableOpacity>
+              <Icon name="chevron-down" size={18} className="text-muted-foreground" />
+            </Pressable>
           )
         )}
       </ScrollView>
@@ -860,64 +905,88 @@ export default function WorkoutSessionScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onClose}>
-          <Ionicons name="close" size={26} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
+      <Box
+        className="flex-row items-center justify-between px-5"
+        style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+      >
+        <Pressable onPress={onClose}>
+          <Icon name="close" size={26} className="text-foreground" />
+        </Pressable>
+        <Heading size="sm" className="flex-1 text-center mx-3" numberOfLines={1}>
           {mTitle || 'Entrenamiento'}
-        </Text>
-        <TouchableOpacity
+        </Heading>
+        <Pressable
           onPress={onMinimize}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Minimizar entrenamiento"
         >
-          <Ionicons name="chevron-down-circle-outline" size={24} color={C.textSecondary} />
-        </TouchableOpacity>
-      </View>
+          <Icon name="chevron-down-circle-outline" size={24} className="text-muted-foreground" />
+        </Pressable>
+      </Box>
 
       {/* Live stats */}
-      <View style={styles.statsRow}>
-        <View style={styles.statItem}>
-          <View style={styles.statTop}>
-            <View style={styles.liveDot} />
-            <Text style={styles.statValue}>{formatTimer(elapsedSeconds)}</Text>
-          </View>
-          <Text style={styles.statLabel}>Duración</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{liveCalories}</Text>
-          <Text style={styles.statLabel}>Calorías (est.)</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{volumeKg}</Text>
-          <Text style={styles.statLabel}>Volumen (kg)</Text>
-        </View>
-      </View>
+      <HStack className="px-5 py-4">
+        <Box className="flex-1 items-center">
+          <HStack space="xs" className="items-center">
+            <Box className="w-2 h-2 rounded-pill bg-success" />
+            <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+              {formatTimer(elapsedSeconds)}
+            </Text>
+          </HStack>
+          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+            Duración
+          </Text>
+        </Box>
+        <Box className="flex-1 items-center">
+          <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+            {liveCalories}
+          </Text>
+          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+            Calorías (est.)
+          </Text>
+        </Box>
+        <Box className="flex-1 items-center">
+          <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+            {volumeKg}
+          </Text>
+          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+            Volumen (kg)
+          </Text>
+        </Box>
+      </HStack>
 
       {/* Block progress dots + count/add row */}
       {blocks.length > 1 && (
-        <View style={styles.dotsRow}>
+        <HStack space="sm" className="justify-center items-center" style={{ marginBottom: 8 }}>
           {blocks.map((b, idx) => (
-            <TouchableOpacity key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-              <View style={[styles.dot, idx === pageIndex && styles.dotActive]} />
-            </TouchableOpacity>
+            <Pressable key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+              <Box
+                className="rounded-pill"
+                style={{
+                  width: idx === pageIndex ? 18 : 7,
+                  height: 7,
+                  backgroundColor: idx === pageIndex ? C.textPrimary : C.border,
+                }}
+              />
+            </Pressable>
           ))}
-        </View>
+        </HStack>
       )}
 
-      <View style={styles.countRow}>
-        <Text style={styles.countText} numberOfLines={1}>
+      <HStack space="md" className="items-center justify-between px-5" style={{ marginBottom: 12 }}>
+        <Text weight="bold" muted className="flex-1" style={{ fontSize: 13, letterSpacing: 0.5 }} numberOfLines={1}>
           {blocks.length > 1
             ? `${blocks[pageIndex]?.title || `BLOQUE ${pageIndex + 1}`} · ${blocks[pageIndex]?.exercises.length ?? 0} EJERCICIOS`
             : `${allExercises.length} EJERCICIOS`}
         </Text>
-        <TouchableOpacity onPress={openExercisePicker}>
-          <Text style={styles.addExerciseText}>Añadir ejercicio +</Text>
-        </TouchableOpacity>
-      </View>
+        <Pressable onPress={openExercisePicker}>
+          <Text weight="semibold" className="text-foreground" style={{ fontSize: 13 }}>
+            Añadir ejercicio +
+          </Text>
+        </Pressable>
+      </HStack>
 
       {/* Horizontal pager — una página por bloque */}
       <FlatList
@@ -933,27 +1002,34 @@ export default function WorkoutSessionScreen(props: Props) {
       />
 
       {/* Sticky finish button — siempre visible, sin importar el bloque activo */}
-      <View style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 14) + 6 }]}>
-        <TouchableOpacity style={styles.finishBtn} activeOpacity={0.85} onPress={onFinish}>
-          <Text style={styles.finishBtnText}>✓ FINALIZAR ENTRENAMIENTO</Text>
-        </TouchableOpacity>
-      </View>
+      <Box
+        className="px-5 border-t border-border bg-background"
+        style={{ paddingTop: 10, paddingBottom: Math.max(insets.bottom, 14) + 6 }}
+      >
+        <Button radius="pill" onPress={onFinish}>
+          <ButtonText style={{ letterSpacing: 0.5 }}>✓ FINALIZAR ENTRENAMIENTO</ButtonText>
+        </Button>
+      </Box>
 
       <Modal
         visible={isPickerVisible}
         animationType="slide"
         onRequestClose={() => setIsPickerVisible(false)}
       >
-        <SafeAreaView style={styles.container}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => setIsPickerVisible(false)}>
-              <Ionicons name="close" size={26} color={C.textPrimary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Añadir ejercicio</Text>
-            <View style={{ width: 26 }} />
-          </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+          <Box
+            className="flex-row items-center justify-between px-5"
+            style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+          >
+            <Pressable onPress={() => setIsPickerVisible(false)}>
+              <Icon name="close" size={26} className="text-foreground" />
+            </Pressable>
+            <Heading size="sm">Añadir ejercicio</Heading>
+            <Box style={{ width: 26 }} />
+          </Box>
           <TextInput
-            style={styles.pickerSearchInput}
+            className="mx-5 bg-card rounded-md px-3.5 py-3 text-foreground"
+            style={{ fontFamily: FONT.regular, fontSize: 14, marginBottom: 12 }}
             placeholder="Buscar ejercicio..."
             placeholderTextColor={C.textSecondary}
             value={pickerQuery}
@@ -963,38 +1039,41 @@ export default function WorkoutSessionScreen(props: Props) {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.bodyPartRow}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 12 }}
             >
-              <TouchableOpacity
-                style={[styles.bodyPartChip, selectedBodyPartId === null && styles.bodyPartChipActive]}
+              <Pressable
+                className="px-3.5 py-1.5 rounded-pill"
+                style={{ backgroundColor: selectedBodyPartId === null ? C.accentBlack : C.surfaceLight }}
                 onPress={() => setSelectedBodyPartId(null)}
               >
-                <Text style={[styles.bodyPartChipText, selectedBodyPartId === null && styles.bodyPartChipTextActive]}>
+                <Text
+                  weight="semibold"
+                  style={{ fontSize: 12.5, color: selectedBodyPartId === null ? '#FFFFFF' : C.textSecondary }}
+                >
                   Todos
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
               {bodyParts.map((bp) => (
-                <TouchableOpacity
+                <Pressable
                   key={bp.id}
-                  style={[styles.bodyPartChip, selectedBodyPartId === bp.id && styles.bodyPartChipActive]}
+                  className="px-3.5 py-1.5 rounded-pill"
+                  style={{ backgroundColor: selectedBodyPartId === bp.id ? C.accentBlack : C.surfaceLight }}
                   onPress={() => setSelectedBodyPartId(selectedBodyPartId === bp.id ? null : bp.id)}
                 >
                   <Text
-                    style={[
-                      styles.bodyPartChipText,
-                      selectedBodyPartId === bp.id && styles.bodyPartChipTextActive,
-                    ]}
+                    weight="semibold"
+                    style={{ fontSize: 12.5, color: selectedBodyPartId === bp.id ? '#FFFFFF' : C.textSecondary }}
                   >
                     {bp.title}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </ScrollView>
           )}
           {pickerLoading ? (
-            <View style={styles.loader}>
-              <ActivityIndicator size="large" color={C.textPrimary} />
-            </View>
+            <Box className="flex-1 items-center justify-center">
+              <Spinner size="large" color={C.textPrimary} />
+            </Box>
           ) : (
             <FlatList
               data={pickerResults}
@@ -1002,26 +1081,29 @@ export default function WorkoutSessionScreen(props: Props) {
               contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
               onEndReached={onPickerEndReached}
               onEndReachedThreshold={0.4}
+              ItemSeparatorComponent={Divider}
               ListEmptyComponent={
-                <Text style={styles.emptyText}>No se encontraron ejercicios.</Text>
+                <Text muted className="text-center" style={{ fontSize: 15 }}>
+                  No se encontraron ejercicios.
+                </Text>
               }
               ListFooterComponent={
                 pickerLoadingMore ? (
-                  <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
+                  <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                 ) : null
               }
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.pickerRow} onPress={() => onAddExercise(item)}>
+                <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
                   {item.exercise_image ? (
-                    <Image source={{ uri: item.exercise_image }} style={styles.pickerImage} />
+                    <Image source={{ uri: item.exercise_image }} style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }} />
                   ) : (
-                    <View style={styles.pickerImage} />
+                    <Box className="rounded-md bg-card" style={{ width: 44, height: 44, marginRight: 12 }} />
                   )}
-                  <Text style={styles.pickerRowTitle} numberOfLines={2}>
+                  <Text weight="semibold" className="flex-1 text-foreground" style={{ fontSize: 14, marginRight: 8 }} numberOfLines={2}>
                     {item.title}
                   </Text>
-                  <Ionicons name="add-circle-outline" size={22} color={C.textPrimary} />
-                </TouchableOpacity>
+                  <Icon name="add-circle-outline" size={22} className="text-foreground" />
+                </Pressable>
               )}
             />
           )}
@@ -1070,234 +1152,3 @@ export default function WorkoutSessionScreen(props: Props) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontFamily: FONT.regular, fontSize: 15, color: C.textSecondary, textAlign: 'center', paddingHorizontal: 24 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 12 : 16,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: FONT.bold,
-    fontSize: 16,
-    color: C.textPrimary,
-    marginHorizontal: 12,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  statItem: { flex: 1, alignItems: 'center' },
-  statTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.success },
-  statValue: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary },
-  statLabel: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 4 },
-  dotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: C.border,
-  },
-  dotActive: {
-    backgroundColor: C.textPrimary,
-    width: 18,
-  },
-  countRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    gap: 12,
-  },
-  countText: { flex: 1, fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary, letterSpacing: 0.5 },
-  addExerciseText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.textPrimary },
-  pickerSearchInput: {
-    marginHorizontal: 20,
-    marginBottom: 12,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    color: C.textPrimary,
-  },
-  bodyPartRow: {
-    paddingHorizontal: 20,
-    gap: 8,
-    paddingBottom: 12,
-  },
-  bodyPartChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: C.surfaceLight,
-    marginRight: 8,
-  },
-  bodyPartChipActive: {
-    backgroundColor: C.accentBlack,
-  },
-  bodyPartChipText: {
-    fontFamily: FONT.semiBold,
-    fontSize: 12.5,
-    color: C.textSecondary,
-  },
-  bodyPartChipTextActive: {
-    color: '#FFFFFF',
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  pickerImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: C.surfaceLight,
-    marginRight: 12,
-  },
-  pickerRowTitle: {
-    flex: 1,
-    fontFamily: FONT.semiBold,
-    fontSize: 14,
-    color: C.textPrimary,
-    marginRight: 8,
-  },
-  activeCard: {
-    marginHorizontal: 16,
-    marginBottom: 10,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 16,
-    padding: 16,
-  },
-  activeHeaderRow: { flexDirection: 'row', alignItems: 'center' },
-  activeHeaderTapArea: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  collapseBtn: { padding: 4, marginLeft: 8 },
-  painReportBtn: { padding: 4, marginLeft: 8 },
-  activeInfo: { flex: 1, marginLeft: 12 },
-  activeTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary },
-  activeSubtitle: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
-  coachNoteBanner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    marginTop: 14,
-    backgroundColor: C.warning5,
-    borderRadius: 12,
-    padding: 10,
-  },
-  coachNoteText: {
-    flex: 1,
-    fontFamily: FONT.regular,
-    fontSize: 12.5,
-    color: C.textSecondary,
-    lineHeight: 18,
-  },
-  noteInput: {
-    marginTop: 14,
-    backgroundColor: C.surface,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.textPrimary,
-  },
-  table: { marginTop: 16 },
-  tableHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  tableHeaderCell: {
-    fontFamily: FONT.semiBold,
-    fontSize: 11,
-    color: C.textSecondary,
-    textAlign: 'center',
-  },
-  tableRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  tableCellText: {
-    fontFamily: FONT.medium,
-    fontSize: 13,
-    color: C.textPrimary,
-    textAlign: 'center',
-  },
-  tableInput: {
-    backgroundColor: C.surface,
-    borderRadius: 8,
-    paddingVertical: 8,
-    marginHorizontal: 3,
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.textPrimary,
-    textAlign: 'center',
-  },
-  targetHint: {
-    fontFamily: FONT.regular,
-    fontSize: 9.5,
-    color: C.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  // Punto 1: carga sugerida por el Motor de Auto-Regulacion (aun pendiente
-  // de aprobacion del coach) -- distinguible en color/peso del objetivo
-  // generico normal, misma posicion y tamano.
-  targetHintSuggested: {
-    fontFamily: FONT.semiBold,
-    color: C.warning60,
-  },
-  serieCol: { width: 26 },
-  metricCol: { width: 72, marginHorizontal: 2 },
-  checkCol: { width: 34, alignItems: 'center' },
-  stickyFooter: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 16 : 14,
-    backgroundColor: C.bg,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
-  finishBtn: {
-    backgroundColor: C.accentBlack,
-    borderRadius: 30,
-    paddingVertical: 15,
-    alignItems: 'center',
-  },
-  finishBtnText: { fontFamily: FONT.bold, fontSize: 14, color: '#FFFFFF', letterSpacing: 0.5 },
-  rowActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 14,
-  },
-  rowActionRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  rowActionText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.textPrimary },
-  collapsedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 10,
-    padding: 12,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 16,
-  },
-  collapsedInfo: { flex: 1, marginLeft: 12 },
-  collapsedTitle: { fontFamily: FONT.semiBold, fontSize: 14, color: C.textPrimary },
-  collapsedSubtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
-});

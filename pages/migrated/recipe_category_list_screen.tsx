@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Image, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -16,7 +21,6 @@ interface RecipeCategory {
 export default function RecipeCategoryListScreen(props: any) {
   const [mCategoryList, setMCategoryList] = useState<RecipeCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const styles = useStyle();
 
   useEffect(() => {
     getCategoryData();
@@ -58,77 +62,55 @@ export default function RecipeCategoryListScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={[s.container]}>
-      <View style={[s.header]}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, styles.fontBold]}>Categories</Text>
-        <View style={s.backBtn} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <Box className="flex-row items-center justify-between p-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Categories</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <View style={s.body}>
+      <Box className="flex-1">
         {isLoading ? (
-          <View style={s.center}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Spinner size="large" color="#FF6B35" />
+          </Box>
         ) : mCategoryList.length === 0 ? (
-          <View style={s.center}>
-            <Ionicons name="folder-open-outline" size={64} color={C.gray40} />
-            <Text style={[s.emptyText, styles.fontMedium]}>No categories found</Text>
-          </View>
+          <Box className="flex-1 items-center justify-center">
+            <Icon name="folder-open-outline" size={64} className="text-muted-foreground" />
+            <Text weight="medium" style={{ marginTop: 12 }}>No categories found</Text>
+          </Box>
         ) : (
-          <ScrollView contentContainerStyle={s.scrollContent}>
-            <View style={s.grid}>
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <Box className="flex-row flex-wrap justify-between">
               {mCategoryList.map((item) => (
-                <TouchableOpacity
+                <Pressable
                   key={item.id}
-                  style={[s.categoryCard, { width: columnWidth }]}
+                  style={{ width: columnWidth, marginBottom: 16 }}
                   onPress={() => handleCategoryPress(item)}
-                  activeOpacity={0.7}
                 >
                   {item.recipeCategoryImage ? (
                     <Image
                       source={{ uri: item.recipeCategoryImage }}
-                      style={[s.categoryImage, { width: columnWidth, height: 120 }]}
+                      style={{ width: columnWidth, height: 120, borderRadius: 12 }}
                       resizeMode="cover"
                     />
                   ) : (
-                    <View style={[s.categoryImage, { width: columnWidth, height: 120, backgroundColor: C.surfaceLight }]} />
+                    <Box
+                      style={{ width: columnWidth, height: 120 }}
+                      className="rounded-md bg-secondary"
+                    />
                   )}
-                  <Text style={[s.categoryTitle, styles.fontBold]} numberOfLines={1}>
+                  <Text weight="bold" style={{ marginTop: 8 }} numberOfLines={1}>
                     {item.title}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
-            </View>
+            </Box>
           </ScrollView>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
-}
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  backBtn: { width: 40, alignItems: 'center' },
-  headerTitle: { fontSize: 18, color: C.white },
-  body: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: C.gray30, marginTop: 12 },
-  scrollContent: { padding: 16 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  categoryCard: { marginBottom: 16 },
-  categoryImage: { borderRadius: 12 },
-  categoryTitle: { fontSize: 14, color: C.white, marginTop: 8 },
-});
-
-function useStyle() {
-  return useResponsiveStyleSheet({
-    fontBold: { fontFamily: FONT.bold },
-    fontMedium: { fontFamily: FONT.medium },
-    fontRegular: { fontFamily: FONT.regular },
-    fontSemiBold: { fontFamily: FONT.semiBold },
-  });
 }

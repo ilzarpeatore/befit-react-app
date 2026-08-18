@@ -1,61 +1,32 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import React from 'react';
+import { ScrollView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button } from '@components/ui/button';
+import { Icon } from '@components/ui/icon';
 
 export default function VideoDetailScreen(props: any) {
   return (
-    <View style={styles.container}>
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.white} />
-        </TouchableOpacity>
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 50, paddingBottom: 12 }} className="flex-row items-center px-4">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+          <Icon name="arrow-back" size={24} className="text-foreground" />
+        </Button>
+      </Box>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.videoPlaceholder}>
-          <Ionicons name="play-circle" size={64} color={C.orange} />
-        </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <Box style={{ marginBottom: 16 }} className="w-full h-[200px] bg-secondary items-center justify-center">
+          <Icon name="play-circle" size={64} className="text-warning" />
+        </Box>
 
-        <View style={styles.contentSection}>
-          <Text style={styles.title}>Title</Text>
-          <View style={{ height: 8 }} />
-          <Text style={styles.description}>
+        <Box className="px-2 gap-2">
+          <Text size="lg" weight="bold">Title</Text>
+          <Text size="sm" muted className="px-2" style={{ lineHeight: 22 }}>
             Exercise instruction content will be displayed here. This section contains detailed
             instructions about the exercise, proper form, and safety guidelines.
           </Text>
-        </View>
+        </Box>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-  },
-  scrollContent: { paddingBottom: 32 },
-  videoPlaceholder: {
-    width: '100%',
-    height: 200,
-    backgroundColor: C.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  contentSection: { paddingHorizontal: 8 },
-  title: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  description: {
-    fontSize: 14,
-    fontFamily: FONT.regular,
-    color: C.gray50,
-    lineHeight: 22,
-    paddingHorizontal: 8,
-  },
-});

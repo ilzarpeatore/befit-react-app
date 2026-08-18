@@ -1,16 +1,7 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Dimensions,
-  SafeAreaView,
-} from 'react-native';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
 
 interface NoDataScreenProps {
   navigation?: any;
@@ -21,16 +12,13 @@ export default function NoDataScreen(props: NoDataScreenProps) {
   const { route } = props;
   const mTitle = route?.params?.mTitle || 'No data found';
 
-  const styles = useResponsiveStyleSheet({
-    container: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
-    image: { width: SCREEN_WIDTH * 0.4, height: SCREEN_HEIGHT * 0.2, backgroundColor: C.gray70, borderRadius: '12@ratio', marginBottom: '16@ratio' },
-    title: { fontSize: '16@ratio', fontFamily: FONT.bold, color: C.white, textAlign: 'center' },
-  });
-
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.image} />
-      <Text style={styles.title}>{mTitle}</Text>
+    <SafeAreaView
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+      className="bg-background"
+    >
+      <Box style={{ width: 160, height: 160, marginBottom: 16 }} className="rounded-lg bg-secondary" />
+      <Text weight="bold" className="text-center">{mTitle}</Text>
     </SafeAreaView>
   );
 }

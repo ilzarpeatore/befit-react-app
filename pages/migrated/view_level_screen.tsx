@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  SafeAreaView,
-  ActivityIndicator,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 import { exercisesApi } from '../../api/exercises';
 
 interface LevelItem {
@@ -87,10 +80,9 @@ export default function ViewLevelScreen(props: any) {
   };
 
   const renderLevelItem = ({ item, index }: { item: LevelItem; index: number }) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id?.toString() || index.toString()}
-      style={styles.levelItem}
-      activeOpacity={0.7}
+      className="flex-row items-center bg-card rounded-lg overflow-hidden"
       onPress={() =>
         props.navigation.navigate('MigratedSearch', {
           mTitle: item.title,
@@ -100,31 +92,38 @@ export default function ViewLevelScreen(props: any) {
       }
     >
       {item.image ? (
-        <Image source={{ uri: item.image }} style={styles.levelImage} resizeMode="cover" />
+        <Image source={{ uri: item.image }} style={{ width: 60, height: 60 }} resizeMode="cover" />
       ) : null}
-      <View style={styles.levelContent}>
-        <Text style={styles.levelTitle} numberOfLines={1}>{item.title}</Text>
+      <Box className="flex-1 p-3">
+        <Text weight="semibold" numberOfLines={1}>
+          {item.title}
+        </Text>
         {item.description ? (
-          <Text style={styles.levelDesc} numberOfLines={2}>{item.description}</Text>
+          <Text muted size="sm" numberOfLines={2} style={{ marginTop: 4 }}>
+            {item.description}
+          </Text>
         ) : null}
-      </View>
-    </TouchableOpacity>
+      </Box>
+    </Pressable>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Levels</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box
+        style={{ paddingTop: 48, paddingBottom: 14 }}
+        className="flex-row items-center justify-between px-4 bg-card border-b border-border"
+      >
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Levels</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <View style={styles.body}>
+      <Box className="flex-1">
         <ScrollView
           ref={scrollRef}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ paddingVertical: 4, paddingHorizontal: 16, gap: 12 }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
@@ -132,65 +131,14 @@ export default function ViewLevelScreen(props: any) {
         </ScrollView>
 
         {isLoading && (
-          <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            className="items-center justify-center bg-black/40"
+          >
+            <ActivityIndicator size="large" color="#000000" />
+          </Box>
         )}
-      </View>
-    </SafeAreaView>
+      </Box>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: C.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  headerTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 18,
-    color: C.white,
-  },
-  body: { flex: 1 },
-  scrollContent: { paddingVertical: 4, paddingHorizontal: 16 },
-  levelItem: {
-    flexDirection: 'row',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
-    alignItems: 'center',
-  },
-  levelImage: {
-    width: 60,
-    height: 60,
-  },
-  levelContent: {
-    flex: 1,
-    padding: 12,
-  },
-  levelTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 16,
-    color: C.white,
-  },
-  levelDesc: {
-    fontFamily: FONT.regular,
-    fontSize: 13,
-    color: C.textSecondary,
-    marginTop: 4,
-  },
-  loaderOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-});

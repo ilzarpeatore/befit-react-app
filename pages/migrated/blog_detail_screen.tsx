@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, Image, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Button } from '@components/ui/button';
+import { Icon } from '@components/ui/icon';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionHeader,
+  AccordionTrigger,
+  AccordionTitleText,
+  AccordionContent,
+} from '@components/ui/accordion';
+import { C } from './theme';
 import { blogApi, BlogDetailItem } from '../../api/blog';
 import logger from '@helper/logger';
 
@@ -132,217 +145,172 @@ export default function BlogDetailScreen({ navigation, route }: any) {
 
   if (loading) {
     return (
-      <View style={styles.loadingWrap}>
+      <Box className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={C.orange} />
-      </View>
+      </Box>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <Box className="flex-1 bg-background">
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Hero */}
-        <View style={styles.heroWrap}>
+        <Box style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.42, position: 'relative' }}>
           {blog?.post_image ? (
-            <Image source={{ uri: blog.post_image }} style={styles.heroImage} resizeMode="cover" />
+            <Image source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           ) : (
-            <View style={[styles.heroImage, { backgroundColor: C.surface }]} />
+            <Box className="bg-card" style={{ width: '100%', height: '100%' }} />
           )}
-          <View style={styles.heroOverlay} />
+          <Box style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
 
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={28} color={C.white} />
-          </TouchableOpacity>
+          <Button
+            variant="ghost"
+            size="icon"
+            style={{ position: 'absolute', top: 50, left: 8 }}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="chevron-back" size={28} color={C.white} />
+          </Button>
 
-          <View style={styles.dateBadge}>
-            <Ionicons name="time-outline" size={14} color={C.white} style={{ marginRight: 4 }} />
-            <Text style={styles.dateText}>{formatDate(blog?.datetime || blog?.created_at || '')}</Text>
-          </View>
+          <HStack
+            className="items-center rounded-sm"
+            style={{
+              position: 'absolute',
+              top: 100,
+              left: 16,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              paddingHorizontal: 8,
+              paddingVertical: 5,
+            }}
+          >
+            <Icon name="time-outline" size={14} color={C.white} style={{ marginRight: 4 }} />
+            <Text size="xs" style={{ color: C.white }}>{formatDate(blog?.datetime || blog?.created_at || '')}</Text>
+          </HStack>
 
-          <Text style={styles.heroTitle} numberOfLines={3}>{blog?.title ?? ''}</Text>
+          <Text
+            weight="bold"
+            size="xl"
+            numberOfLines={3}
+            style={{
+              position: 'absolute',
+              bottom: 50,
+              left: 16,
+              right: 16,
+              color: '#FFFFFF',
+              textShadowColor: 'rgba(0,0,0,0.5)',
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 4,
+            }}
+          >
+            {blog?.title ?? ''}
+          </Text>
 
           {blog?.blog_category && (
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>{blog.blog_category.title}</Text>
-            </View>
+            <Box
+              className="rounded-sm"
+              style={{
+                position: 'absolute',
+                bottom: 16,
+                left: 16,
+                backgroundColor: C.brand5,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+              }}
+            >
+              <Text size="xs" weight="semibold" style={{ color: C.white }}>{blog.blog_category.title}</Text>
+            </Box>
           )}
-        </View>
+        </Box>
 
         {/* Content */}
-        <View style={styles.contentSheet}>
+        <Box className="bg-background rounded-t-lg" style={{ paddingTop: 16, paddingBottom: 40 }}>
           {/* Tags */}
           {blog?.tags_name && blog.tags_name.length > 0 && (
-            <View style={styles.tagWrap}>
+            <Box
+              className="flex-row flex-wrap"
+              style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 8 }}
+            >
               {blog.tags_name.map((tag: any, index: number) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag.title ?? ''}</Text>
-                </View>
+                <Box
+                  key={index}
+                  className="bg-card rounded-pill"
+                  style={{ paddingHorizontal: 12, paddingVertical: 5, borderWidth: 0.5, borderColor: C.brand5 }}
+                >
+                  <Text size="xs" style={{ color: C.textPrimary }}>{tag.title ?? ''}</Text>
+                </Box>
               ))}
-            </View>
+            </Box>
           )}
 
           {/* Rich content via WebView */}
           {blog?.content || blog?.description ? (
-            <View style={styles.htmlContent}>
+            <Box style={{ paddingHorizontal: 8, marginTop: 4 }}>
               <WebView
                 source={{ html: getRenderedHtml() }}
-                style={[styles.webView, { height: webViewHeight }]}
+                style={{ width: '100%', height: webViewHeight }}
                 scrollEnabled={false}
                 originWhitelist={['about:blank']}
                 onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
                 onMessage={onWebViewMessage}
                 javaScriptEnabled
               />
-            </View>
+            </Box>
           ) : null}
 
-          {/* Fuente / Bibliografía — acordeón colapsable */}
+          {/* Fuente / Bibliografía — acordeón real (Accordion de Gluestack) */}
           {blog?.bibliography && blog.bibliography.trim().length > 0 && (
-            <View style={styles.bibliographySection}>
-              <TouchableOpacity
-                style={styles.bibliographyHeader}
-                activeOpacity={0.75}
-                onPress={() => setBibliographyOpen((open) => !open)}
-              >
-                <Ionicons name="book-outline" size={20} color={C.textPrimary} />
-                <Text style={styles.bibliographyTitle}>Fuente / Bibliografía</Text>
-                <Ionicons
-                  name={bibliographyOpen ? 'chevron-up' : 'chevron-down'}
-                  size={18}
-                  color={C.textPrimary}
-                  style={styles.bibliographyChevron}
-                />
-              </TouchableOpacity>
-              {bibliographyOpen && (
-                <>
-                  <View style={styles.bibliographyDivider} />
-                  <View style={styles.bibliographyContent}>
+            <Accordion
+              type="single"
+              isCollapsible
+              value={bibliographyOpen ? ['bibliography'] : []}
+              onValueChange={(value) => setBibliographyOpen(value.includes('bibliography'))}
+              className="bg-card rounded-lg"
+              style={{ marginTop: 24, marginHorizontal: 16 }}
+            >
+              <AccordionItem value="bibliography">
+                <AccordionHeader>
+                  <AccordionTrigger style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+                    {({ isExpanded }: { isExpanded: boolean }) => (
+                      <>
+                        <Icon name="book-outline" size={20} color={C.textPrimary} />
+                        <AccordionTitleText className="flex-1">Fuente / Bibliografía</AccordionTitleText>
+                        <Icon name={isExpanded ? 'chevron-up' : 'chevron-down'} size={18} color={C.textPrimary} />
+                      </>
+                    )}
+                  </AccordionTrigger>
+                </AccordionHeader>
+                <AccordionContent style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                  <Box style={{ height: 1, backgroundColor: C.gray60, marginBottom: 12 }} />
+                  <VStack space="sm">
                     {blog.bibliography.split('\n').filter((line: string) => line.trim().length > 0).map((line: string, index: number) => {
                       const isUrl = line.trim().match(/^https?:\/\//);
                       return (
-                        <View key={index} style={styles.bibliographyItem}>
-                          <View style={styles.bibliographyDot} />
+                        <HStack key={index} space="sm" style={{ alignItems: 'flex-start' }}>
+                          <Box style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.brand5, marginTop: 6 }} />
                           {isUrl ? (
-                            <Text style={styles.bibliographyLink} numberOfLines={3}>{line.trim()}</Text>
+                            <Text
+                              numberOfLines={3}
+                              className="flex-1"
+                              size="sm"
+                              style={{ color: C.textPrimary, lineHeight: 18 }}
+                            >
+                              {line.trim()}
+                            </Text>
                           ) : (
-                            <Text style={styles.bibliographyText}>{line.trim()}</Text>
+                            <Text className="flex-1" size="sm" style={{ color: C.gray30, lineHeight: 20 }}>
+                              {line.trim()}
+                            </Text>
                           )}
-                        </View>
+                        </HStack>
                       );
                     })}
-                  </View>
-                </>
-              )}
-            </View>
+                  </VStack>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
-        </View>
+        </Box>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  loadingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: C.bg },
-  heroWrap: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.42,
-    position: 'relative',
-  },
-  heroImage: { width: '100%', height: '100%' },
-  heroOverlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' },
-  backBtn: {
-    position: 'absolute',
-    top: 50,
-    left: 8,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dateBadge: {
-    position: 'absolute',
-    top: 100,
-    left: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-  },
-  dateText: { fontSize: 12, fontFamily: FONT.regular, color: C.white },
-  heroTitle: {
-    position: 'absolute',
-    bottom: 50,
-    left: 16,
-    right: 16,
-    fontSize: 20,
-    fontFamily: FONT.bold,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  categoryBadge: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    backgroundColor: C.brand5,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  categoryBadgeText: { fontSize: 12, fontFamily: FONT.semiBold, color: C.white },
-  contentSheet: {
-    backgroundColor: C.bg,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
-  tagWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 24,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderWidth: 0.5,
-    borderColor: C.brand5,
-  },
-  tagText: { fontSize: 12, fontFamily: FONT.regular, color: C.textPrimary },
-  htmlContent: { paddingHorizontal: 8, marginTop: 4 },
-  webView: { width: '100%' },
-  bibliographySection: {
-    marginTop: 24,
-    marginHorizontal: 16,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 16,
-    padding: 16,
-  },
-  bibliographyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  bibliographyTitle: { flex: 1, fontSize: 16, fontFamily: FONT.bold, color: C.white },
-  bibliographyChevron: { marginLeft: 8 },
-  bibliographyDivider: { height: 1, backgroundColor: C.gray60, marginTop: 12, marginBottom: 12 },
-  bibliographyContent: { gap: 8 },
-  bibliographyItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  bibliographyDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: C.brand5,
-    marginTop: 6,
-  },
-  bibliographyText: { flex: 1, fontSize: 14, fontFamily: FONT.regular, color: C.gray30, lineHeight: 20 },
-  bibliographyLink: { flex: 1, fontSize: 13, fontFamily: FONT.regular, color: C.textPrimary, lineHeight: 18 },
-});

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Dimensions } from 'react-native';
+import { ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button, ButtonText } from '@components/ui/button';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import { resourcesApi, ResourceListItem } from '../../api/resources';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -134,30 +138,30 @@ export default function ResourceDetailScreen(props: Props) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
+        <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
+          <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+            <Icon name="chevron-back" size={24} className="text-foreground" />
+          </Button>
+        </Box>
+        <Box className="flex-1 items-center justify-center px-8">
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
 
   if (error || !resource) {
     return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No se pudo cargar el recurso.</Text>
-        </View>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
+        <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
+          <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+            <Icon name="chevron-back" size={24} className="text-foreground" />
+          </Button>
+        </Box>
+        <Box className="flex-1 items-center justify-center px-8">
+          <Text muted className="text-center">No se pudo cargar el recurso.</Text>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -165,26 +169,36 @@ export default function ResourceDetailScreen(props: Props) {
   const isExternalType = resource.type === 'video' || resource.type === 'link';
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{resource.title || fallbackTitle}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
+      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Text weight="bold" size="sm" numberOfLines={1} className="flex-1 text-center" style={{ marginHorizontal: 12 }}>
+          {resource.title || fallbackTitle}
+        </Text>
+        <Box className="w-10" />
+      </Box>
 
       {isExternalType ? (
-        <View style={styles.center}>
-          <Ionicons name={resource.type === 'video' ? 'play-circle-outline' : 'link-outline'} size={48} color={C.textSecondary} />
-          <Text style={[styles.title, { marginTop: 16 }]}>{resource.title}</Text>
-          <TouchableOpacity style={styles.openBtn} activeOpacity={0.85} onPress={openExternal}>
-            <Text style={styles.openBtnText}>{resource.type === 'video' ? 'VER VÍDEO' : 'ABRIR ENLACE'}</Text>
-          </TouchableOpacity>
-        </View>
+        <Box className="flex-1 items-center justify-center px-8">
+          <Icon
+            name={resource.type === 'video' ? 'play-circle-outline' : 'link-outline'}
+            size={48}
+            className="text-muted-foreground"
+          />
+          <Text weight="extrabold" size="lg" className="text-center" style={{ marginTop: 16 }}>
+            {resource.title}
+          </Text>
+          <Button radius="pill" size="lg" style={{ marginTop: 24 }} onPress={openExternal}>
+            <ButtonText>{resource.type === 'video' ? 'VER VÍDEO' : 'ABRIR ENLACE'}</ButtonText>
+          </Button>
+        </Box>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>{resource.title}</Text>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+          <Text weight="extrabold" size="lg" className="text-center px-5" style={{ marginBottom: 12 }}>
+            {resource.title}
+          </Text>
           {resource.content ? (
             <WebView
               source={{
@@ -195,7 +209,7 @@ export default function ResourceDetailScreen(props: Props) {
                     : WRAPPER_HTML.replace('__CONTENT__', renderYouTubeEmbeds(sanitized));
                 })(),
               }}
-              style={[styles.webView, { height: webViewHeight }]}
+              style={{ width: '100%', height: webViewHeight }}
               scrollEnabled={false}
               originWhitelist={['about:blank']}
               onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
@@ -203,36 +217,10 @@ export default function ResourceDetailScreen(props: Props) {
               javaScriptEnabled
             />
           ) : (
-            <Text style={styles.emptyText}>Este recurso todavía no tiene contenido.</Text>
+            <Text muted className="text-center">Este recurso todavía no tiene contenido.</Text>
           )}
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  headerTitle: { flex: 1, textAlign: 'center', fontFamily: FONT.bold, fontSize: 15, color: C.textPrimary, marginHorizontal: 12 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, textAlign: 'center' },
-  title: { fontFamily: FONT.extraBold, fontSize: 19, color: C.textPrimary, paddingHorizontal: 20, marginBottom: 12, textAlign: 'center' },
-  scrollContent: { paddingBottom: 32 },
-  webView: { width: '100%' },
-  openBtn: {
-    marginTop: 24,
-    backgroundColor: C.accentBlack,
-    borderRadius: 30,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-  },
-  openBtnText: { fontFamily: FONT.bold, fontSize: 14, color: '#FFFFFF', letterSpacing: 0.5 },
-});

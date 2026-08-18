@@ -1,9 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { C } from './theme';
 import { habitsApi, HabitTemplate, HabitFrequency } from '../../api/habits';
 import { HABIT_ICON_KEYS, habitIoniconFor } from '../../constants/habitIcons';
 
@@ -91,188 +97,154 @@ export default function HabitAddScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Añadir hábito</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['bottom']}>
+      <Box className="flex-row items-center justify-between" style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12 }}>
+        <Pressable onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Pressable>
+        <Heading size="sm">Añadir hábito</Heading>
+        <Box className="w-6" />
+      </Box>
 
-      <View style={styles.tabsRow}>
-        <TouchableOpacity style={[styles.tab, tab === 'library' && styles.tabActive]} onPress={() => setTab('library')} activeOpacity={0.75}>
-          <Text style={[styles.tabText, tab === 'library' && styles.tabTextActive]}>Biblioteca</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, tab === 'create' && styles.tabActive]} onPress={() => setTab('create')} activeOpacity={0.75}>
-          <Text style={[styles.tabText, tab === 'create' && styles.tabTextActive]}>Crear el mío</Text>
-        </TouchableOpacity>
-      </View>
+      <Box
+        className="flex-row bg-card rounded-md"
+        style={{ padding: 4, marginHorizontal: 20, marginBottom: 14 }}
+      >
+        <Pressable
+          className="flex-1 rounded-sm items-center"
+          style={{ paddingVertical: 10, backgroundColor: tab === 'library' ? C.accentBlack : 'transparent' }}
+          onPress={() => setTab('library')}
+        >
+          <Text weight="semibold" size="sm" style={{ color: tab === 'library' ? '#FFFFFF' : C.textSecondary }}>Biblioteca</Text>
+        </Pressable>
+        <Pressable
+          className="flex-1 rounded-sm items-center"
+          style={{ paddingVertical: 10, backgroundColor: tab === 'create' ? C.accentBlack : 'transparent' }}
+          onPress={() => setTab('create')}
+        >
+          <Text weight="semibold" size="sm" style={{ color: tab === 'create' ? '#FFFFFF' : C.textSecondary }}>Crear el mío</Text>
+        </Pressable>
+      </Box>
 
       {tab === 'library' ? (
         loadingLibrary ? (
-          <View style={styles.center}><ActivityIndicator size="large" color={C.textPrimary} /></View>
+          <Box className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color={C.textPrimary} />
+          </Box>
         ) : errorLibrary ? (
-          <View style={styles.center}><Text style={styles.emptyText}>No se pudo cargar la biblioteca.</Text></View>
+          <Box className="flex-1 items-center justify-center">
+            <Text size="sm" muted className="text-center">No se pudo cargar la biblioteca.</Text>
+          </Box>
         ) : templates.length === 0 ? (
-          <View style={styles.center}>
-            <Ionicons name="library-outline" size={36} color={C.textSecondary} />
-            <Text style={[styles.emptyText, { marginTop: 12 }]}>Tu coach todavía no ha añadido hábitos a la biblioteca. Puedes crear el tuyo propio.</Text>
-          </View>
+          <Box className="flex-1 items-center justify-center" style={{ paddingHorizontal: 32 }}>
+            <Icon name="library-outline" size={36} className="text-muted-foreground" />
+            <Text size="sm" muted className="text-center" style={{ marginTop: 12 }}>
+              Tu coach todavía no ha añadido hábitos a la biblioteca. Puedes crear el tuyo propio.
+            </Text>
+          </Box>
         ) : (
-          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
             {templates.map((t) => (
-              <View key={t.id} style={styles.libraryRow}>
-                <View style={styles.iconWrap}>
-                  <Ionicons name={habitIoniconFor(t.icon)} size={20} color={C.textPrimary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.libraryTitle}>{t.title}</Text>
+              <Box
+                key={t.id}
+                className="flex-row items-center bg-card rounded-md"
+                style={{ gap: 12, padding: 12, marginBottom: 10 }}
+              >
+                <Box className="items-center justify-center bg-background" style={{ width: 42, height: 42, borderRadius: 13 }}>
+                  <Icon name={habitIoniconFor(t.icon)} size={20} className="text-foreground" />
+                </Box>
+                <Box className="flex-1">
+                  <Text weight="bold" size="sm">{t.title}</Text>
                   {t.target_value && t.target_unit && (
-                    <Text style={styles.librarySub}>{t.target_value} {t.target_unit} / {t.frequency === 'daily' ? 'día' : 'semana'}</Text>
+                    <Text size="xs" muted style={{ marginTop: 2 }}>{t.target_value} {t.target_unit} / {t.frequency === 'daily' ? 'día' : 'semana'}</Text>
                   )}
-                </View>
-                <TouchableOpacity style={styles.addBtn} activeOpacity={0.8} onPress={() => adopt(t)} disabled={adoptingId === t.id}>
-                  {adoptingId === t.id ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="add" size={20} color="#FFFFFF" />}
-                </TouchableOpacity>
-              </View>
+                </Box>
+                <Pressable
+                  className="items-center justify-center rounded-pill"
+                  style={{ width: 34, height: 34, backgroundColor: C.accentBlack }}
+                  onPress={() => adopt(t)}
+                  disabled={adoptingId === t.id}
+                >
+                  {adoptingId === t.id ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Icon name="add" size={20} color="#FFFFFF" />}
+                </Pressable>
+              </Box>
             ))}
           </ScrollView>
         )
       ) : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            <Text style={styles.label}>Icono</Text>
-            <View style={styles.iconGrid}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <Text weight="bold" size="xs" muted className="uppercase" style={{ marginBottom: 8, marginTop: 16, letterSpacing: 0.3 }}>Icono</Text>
+            <Box className="flex-row flex-wrap" style={{ gap: 8 }}>
               {HABIT_ICON_KEYS.map((key) => (
-                <TouchableOpacity
+                <Pressable
                   key={key}
-                  style={[styles.iconOption, icon === key && styles.iconOptionActive]}
+                  className="items-center justify-center bg-card rounded-sm"
+                  style={{ width: 40, height: 40, backgroundColor: icon === key ? C.accentBlack : C.surface }}
                   onPress={() => setIcon(key)}
-                  activeOpacity={0.75}
                 >
-                  <Ionicons name={habitIoniconFor(key)} size={19} color={icon === key ? '#FFFFFF' : C.textSecondary} />
-                </TouchableOpacity>
+                  <Icon name={habitIoniconFor(key)} size={19} color={icon === key ? '#FFFFFF' : C.textSecondary} />
+                </Pressable>
               ))}
-            </View>
+            </Box>
 
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="p. ej. Beber agua"
-              placeholderTextColor={C.textTertiary}
-              value={title}
-              onChangeText={setTitle}
-              maxLength={50}
-            />
-
-            <Text style={styles.label}>Objetivo (opcional)</Text>
-            <View style={styles.goalRow}>
-              <TextInput
-                style={[styles.input, styles.goalInput]}
-                placeholder="8"
-                placeholderTextColor={C.textTertiary}
-                value={targetValue}
-                onChangeText={(t) => setTargetValue(t.replace(/[^0-9]/g, ''))}
-                keyboardType="number-pad"
+            <Text weight="bold" size="xs" muted className="uppercase" style={{ marginBottom: 8, marginTop: 16, letterSpacing: 0.3 }}>Nombre</Text>
+            <Input className="rounded-sm" size="lg">
+              <InputField
+                placeholder="p. ej. Beber agua"
+                value={title}
+                onChangeText={setTitle}
+                maxLength={50}
               />
+            </Input>
+
+            <Text weight="bold" size="xs" muted className="uppercase" style={{ marginBottom: 8, marginTop: 16, letterSpacing: 0.3 }}>Objetivo (opcional)</Text>
+            <Box className="flex-row items-center" style={{ gap: 10 }}>
+              <Input className="rounded-sm" size="lg" style={{ width: 72 }}>
+                <InputField
+                  placeholder="8"
+                  value={targetValue}
+                  onChangeText={(t) => setTargetValue(t.replace(/[^0-9]/g, ''))}
+                  keyboardType="number-pad"
+                  className="text-center"
+                />
+              </Input>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
-                <View style={styles.chipsWrap}>
+                <Box className="flex-row" style={{ gap: 8 }}>
                   {GOAL_UNITS.map((u) => (
-                    <TouchableOpacity key={u} style={[styles.unitChip, targetUnit === u && styles.unitChipActive]} onPress={() => setTargetUnit(u)}>
-                      <Text style={[styles.unitChipText, targetUnit === u && styles.unitChipTextActive]}>{u}</Text>
-                    </TouchableOpacity>
+                    <Pressable
+                      key={u}
+                      className="rounded-pill"
+                      style={{ paddingHorizontal: 14, paddingVertical: 10, backgroundColor: targetUnit === u ? C.accentBlack : C.surface }}
+                      onPress={() => setTargetUnit(u)}
+                    >
+                      <Text weight="semibold" size="sm" style={{ color: targetUnit === u ? '#FFFFFF' : C.textSecondary }}>{u}</Text>
+                    </Pressable>
                   ))}
-                </View>
+                </Box>
               </ScrollView>
-            </View>
+            </Box>
 
-            <Text style={styles.label}>Frecuencia</Text>
-            <View style={styles.freqRow}>
+            <Text weight="bold" size="xs" muted className="uppercase" style={{ marginBottom: 8, marginTop: 16, letterSpacing: 0.3 }}>Frecuencia</Text>
+            <Box className="flex-row" style={{ gap: 10 }}>
               {(['daily', 'weekly'] as HabitFrequency[]).map((f) => (
-                <TouchableOpacity key={f} style={[styles.freqChip, frequency === f && styles.freqChipActive]} onPress={() => setFrequency(f)}>
-                  <Text style={[styles.freqChipText, frequency === f && styles.freqChipTextActive]}>{f === 'daily' ? 'Diario' : 'Semanal'}</Text>
-                </TouchableOpacity>
+                <Pressable
+                  key={f}
+                  className="flex-1 items-center rounded-sm"
+                  style={{ paddingVertical: 12, backgroundColor: frequency === f ? C.accentBlack : C.surface }}
+                  onPress={() => setFrequency(f)}
+                >
+                  <Text weight="bold" size="sm" style={{ color: frequency === f ? '#FFFFFF' : C.textSecondary }}>{f === 'daily' ? 'Diario' : 'Semanal'}</Text>
+                </Pressable>
               ))}
-            </View>
+            </Box>
 
-            <TouchableOpacity style={styles.submitBtn} activeOpacity={0.85} onPress={submitPersonal} disabled={submitting}>
-              {submitting ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.submitBtnText}>CREAR HÁBITO</Text>}
-            </TouchableOpacity>
+            <Button radius="pill" className="py-4" style={{ marginTop: 28 }} onPress={submitPersonal} disabled={submitting}>
+              {submitting ? <ActivityIndicator size="small" color="#FFFFFF" /> : <ButtonText style={{ letterSpacing: 0.5 }}>CREAR HÁBITO</ButtonText>}
+            </Button>
           </ScrollView>
         </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  headerTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary },
-  tabsRow: { flexDirection: 'row', backgroundColor: C.surface, borderRadius: 14, padding: 4, marginHorizontal: 20, marginBottom: 14, ...SHADOW.card },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  tabActive: { backgroundColor: C.accentBlack },
-  tabText: { fontFamily: FONT.semiBold, fontSize: 13, color: C.textSecondary },
-  tabTextActive: { color: '#FFFFFF' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 40, paddingHorizontal: 32 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, textAlign: 'center' },
-  scroll: { paddingHorizontal: 20, paddingBottom: 32 },
-  libraryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: C.surface,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
-    ...SHADOW.card,
-  },
-  iconWrap: { width: 42, height: 42, borderRadius: 13, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
-  libraryTitle: { fontFamily: FONT.bold, fontSize: 14, color: C.textPrimary },
-  librarySub: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary, marginTop: 2 },
-  addBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.accentBlack, alignItems: 'center', justifyContent: 'center' },
-  label: { fontFamily: FONT.bold, fontSize: 12.5, color: C.textSecondary, marginBottom: 8, marginTop: 16, textTransform: 'uppercase', letterSpacing: 0.3 },
-  iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  iconOption: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: C.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOW.card,
-  },
-  iconOptionActive: { backgroundColor: C.accentBlack },
-  input: {
-    backgroundColor: C.surface,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    fontFamily: FONT.medium,
-    fontSize: 14,
-    color: C.textPrimary,
-    ...SHADOW.card,
-  },
-  goalRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
-  goalInput: { width: 72, textAlign: 'center' },
-  chipsWrap: { flexDirection: 'row', gap: 8 },
-  unitChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: C.surface, ...SHADOW.card },
-  unitChipActive: { backgroundColor: C.accentBlack },
-  unitChipText: { fontFamily: FONT.semiBold, fontSize: 12.5, color: C.textSecondary },
-  unitChipTextActive: { color: '#FFFFFF' },
-  freqRow: { flexDirection: 'row', gap: 10 },
-  freqChip: { flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: C.surface, alignItems: 'center', ...SHADOW.card },
-  freqChipActive: { backgroundColor: C.accentBlack },
-  freqChipText: { fontFamily: FONT.bold, fontSize: 13.5, color: C.textSecondary },
-  freqChipTextActive: { color: '#FFFFFF' },
-  submitBtn: { marginTop: 28, backgroundColor: C.accentBlack, borderRadius: 30, paddingVertical: 16, alignItems: 'center' },
-  submitBtnText: { fontFamily: FONT.bold, fontSize: 15, color: '#FFFFFF', letterSpacing: 0.5 },
-});

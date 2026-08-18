@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  SafeAreaView,
-  ActivityIndicator,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 import { exercisesApi } from '../../api/exercises';
 
 interface EquipmentItem {
@@ -88,10 +81,10 @@ export default function ViewEquipmentScreen(props: any) {
   };
 
   const renderEquipmentItem = ({ item, index }: { item: EquipmentItem; index: number }) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id?.toString() || index.toString()}
-      style={styles.gridItem}
-      activeOpacity={0.7}
+      style={{ width: '47%' }}
+      className="bg-card rounded-lg overflow-hidden"
       onPress={() =>
         props.navigation.navigate('MigratedSearch', {
           mTitle: item.title,
@@ -100,88 +93,47 @@ export default function ViewEquipmentScreen(props: any) {
         })
       }
     >
-      <Image source={{ uri: item.image }} style={styles.equipmentImage} resizeMode="cover" />
-      <Text style={styles.equipmentTitle} numberOfLines={2}>{item.title}</Text>
-    </TouchableOpacity>
+      <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} resizeMode="cover" />
+      <Text weight="medium" size="sm" numberOfLines={2} className="p-2.5">
+        {item.title}
+      </Text>
+    </Pressable>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Equipments Exercise</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box
+        style={{ paddingTop: 48, paddingBottom: 14 }}
+        className="flex-row items-center justify-between px-4 bg-card border-b border-border"
+      >
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Heading size="sm">Equipments Exercise</Heading>
+        <Box className="w-10" />
+      </Box>
 
-      <View style={styles.body}>
+      <Box className="flex-1">
         <ScrollView
           ref={scrollRef}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ padding: 16 }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          <View style={styles.grid}>
+          <Box style={{ rowGap: 16 }} className="flex-row flex-wrap justify-between">
             {equipmentList.map((item, index) => renderEquipmentItem({ item, index }))}
-          </View>
+          </Box>
         </ScrollView>
 
         {isLoading && (
-          <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            className="items-center justify-center bg-black/40"
+          >
+            <ActivityIndicator size="large" color="#000000" />
+          </Box>
         )}
-      </View>
-    </SafeAreaView>
+      </Box>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: C.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  headerTitle: {
-    fontFamily: FONT.semiBold,
-    fontSize: 18,
-    color: C.white,
-  },
-  body: { flex: 1 },
-  scrollContent: { padding: 16 },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  gridItem: {
-    width: '47%',
-    marginBottom: 16,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  equipmentImage: {
-    width: '100%',
-    height: 120,
-  },
-  equipmentTitle: {
-    fontFamily: FONT.medium,
-    fontSize: 14,
-    color: C.white,
-    padding: 10,
-  },
-  loaderOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-});

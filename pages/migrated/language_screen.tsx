@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  SafeAreaView,
-  Image,
-  Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { FlatList, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
 
 interface LanguageData {
   languageCode: string;
@@ -36,23 +30,6 @@ export default function LanguageScreen(props: LanguageScreenProps) {
   const [selectedCode, setSelectedCode] = useState('en');
   const [languages] = useState<LanguageData[]>(defaultLanguages);
 
-  const styles = useResponsiveStyleSheet({
-    container: { flex: 1, backgroundColor: C.bg },
-    header: { fontSize: '20@ratio', fontFamily: FONT.bold, color: C.white, padding: '16@ratio' },
-    listContent: { padding: '16@ratio' },
-    langCard: {
-      paddingHorizontal: '16@ratio', paddingVertical: '12@ratio', borderRadius: '12@ratio',
-      marginBottom: '16@ratio', borderWidth: 1,
-    },
-    langCardSelected: { backgroundColor: C.brand5, borderColor: C.brand5 },
-    langCardUnselected: { backgroundColor: C.surface, borderColor: C.border },
-    langRow: { flexDirection: 'row', alignItems: 'center' },
-    langFlag: { width: '32@ratio', height: '32@ratio', borderRadius: '4@ratio', backgroundColor: C.gray70, marginRight: '16@ratio' },
-    langName: { flex: 1, fontSize: '16@ratio', fontFamily: FONT.bold },
-    langNameSelected: { color: C.white },
-    langNameUnselected: { color: C.white },
-  });
-
   const handleSelect = async (item: LanguageData) => {
     setSelectedCode(item.languageCode);
     // API/persist language selection
@@ -64,38 +41,33 @@ export default function LanguageScreen(props: LanguageScreenProps) {
   const renderItem = ({ item }: { item: LanguageData }) => {
     const isSelected = selectedCode === item.languageCode;
     return (
-      <TouchableOpacity
-        style={[styles.langCard, isSelected ? styles.langCardSelected : styles.langCardUnselected]}
+      <Pressable
+        className={`px-4 py-3 rounded-sm border ${isSelected ? 'bg-secondary border-primary' : 'bg-card border-border'}`}
         onPress={() => handleSelect(item)}
-        activeOpacity={0.7}
       >
-        <View style={styles.langRow}>
+        <Box className="flex-row items-center gap-4">
           {item.languageImage ? (
-            <Image source={{ uri: item.languageImage }} style={styles.langFlag} resizeMode="cover" />
+            <Image source={{ uri: item.languageImage }} style={{ width: 32, height: 32, borderRadius: 4 }} resizeMode="cover" />
           ) : (
-            <View style={styles.langFlag} />
+            <Box className="w-8 h-8 rounded-sm bg-muted" />
           )}
-          <Text style={[styles.langName, isSelected ? styles.langNameSelected : styles.langNameUnselected]}>
+          <Text weight="bold" className="flex-1 text-foreground">
             {item.languageName.split(' ')[0]}
           </Text>
-          {isSelected ? (
-            <Ionicons name="radio-button-on" size={20} color={C.white} />
-          ) : (
-            <Ionicons name="radio-button-off" size={20} color={C.textPrimary} />
-          )}
-        </View>
-      </TouchableOpacity>
+          <Icon name={isSelected ? 'radio-button-on' : 'radio-button-off'} size={20} className="text-foreground" />
+        </Box>
+      </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Select Language</Text>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <Heading size="md" className="p-4">Select Language</Heading>
       <FlatList
         data={languages}
         keyExtractor={(item) => item.languageCode}
         renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ padding: 16, gap: 16 }}
       />
     </SafeAreaView>
   );
