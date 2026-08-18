@@ -1,7 +1,25 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import React, { useCallback, useEffect, useState, Suspense } from 'react';
+
+// DEBUG TEMPORAL — investigando crash real "undefined is not a function" al
+// iniciar un entrenamiento (confirmado por el usuario, preexistente a esta
+// sesion). Los logs del dispositivo via MobAI solo dan el mensaje generico
+// de Hermes sin stack -- este handler intercepta el fatal ANTES de que
+// RCTFatalException mate la app, para poder leer el stack real en pantalla.
+// BORRAR una vez identificada la causa real.
+// @ts-ignore -- ErrorUtils es un global de React Native, sin tipos por defecto.
+if (typeof ErrorUtils !== 'undefined') {
+  // @ts-ignore
+  ErrorUtils.setGlobalHandler((error: any, isFatal?: boolean) => {
+    Alert.alert(
+      isFatal ? 'FATAL JS ERROR' : 'JS ERROR',
+      `${error?.message ?? String(error)}\n\n${error?.stack ?? '(sin stack)'}`,
+      [{ text: 'OK' }]
+    );
+  });
+}
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from "expo-font";
 import { DefaultTheme, NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
