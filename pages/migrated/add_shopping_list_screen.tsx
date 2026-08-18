@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Switch, Alert, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { HStack } from '@components/ui/hstack';
+import { Button, ButtonText } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Input, InputField } from '@components/ui/input';
+import { Card } from '@components/ui/card';
+import { Stepper } from '@components/ui/stepper';
+import { Switch } from '@components/ui/switch';
+import { Checkbox, CheckboxIndicator, CheckboxLabel } from '@components/ui/checkbox';
+import ScreenHeader from '@components/ScreenHeader';
+import { C } from './theme';
 import logger from '@helper/logger';
 import { dietApi } from '@api/diet';
 import { shoppingApi, ShoppingMealType } from '@api/shopping';
@@ -137,21 +147,26 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     );
   };
 
-  return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>{isEditMode ? 'Edit Shopping List' : 'Add Shopping List'}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+  const renderCheckboxRow = (label: string, checked: boolean, onPress: () => void, key?: string) => (
+    <Checkbox key={key} value={key ?? label} isChecked={checked} onChange={() => onPress()} className="py-2">
+      <CheckboxIndicator>
+        {checked && <Icon name="checkmark" size={14} className="text-primary-foreground" />}
+      </CheckboxIndicator>
+      <CheckboxLabel className="flex-1">{label}</CheckboxLabel>
+    </Checkbox>
+  );
 
-      <ScrollView style={styles_local.body} contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false}>
+  return (
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 40 }}>
+        <ScreenHeader title={isEditMode ? 'Edit Shopping List' : 'Add Shopping List'} onBack={() => navigation.goBack()} />
+      </Box>
+
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16 }} showsVerticalScrollIndicator={false}>
         {/* Date / Range Selection */}
-        <View style={styles_local.card}>
-          <View style={styles_local.cardRow}>
-            <Text style={styles_local.cardLabel}>Specific Date</Text>
+        <Card variant="outline">
+          <HStack className="items-center justify-between">
+            <Text weight="semibold">Specific Date</Text>
             <Switch
               value={isSpecificDate}
               onValueChange={(value) => {
@@ -161,178 +176,82 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
               trackColor={{ false: C.gray60, true: C.brand5 }}
               thumbColor={C.white}
             />
-          </View>
+          </HStack>
 
           {isSpecificDate ? (
-            <View style={styles_local.cardRow}>
-              <Text style={styles_local.cardLabel}>Date</Text>
-              <TouchableOpacity style={styles_local.dateBtn}>
-                <Text style={styles_local.dateText}>{formatDate(selectedDate)}</Text>
-                <Ionicons name="calendar-outline" size={18} color={C.gray30} />
-              </TouchableOpacity>
-            </View>
+            <HStack className="items-center justify-between" style={{ marginTop: 12 }}>
+              <Text weight="semibold">Date</Text>
+              <Pressable className="flex-row items-center gap-2">
+                <Text size="sm" muted>{formatDate(selectedDate)}</Text>
+                <Icon name="calendar-outline" size={18} className="text-muted-foreground" />
+              </Pressable>
+            </HStack>
           ) : (
-            <View style={styles_local.cardRow}>
-              <Text style={styles_local.cardLabel}>Date Range</Text>
-              <TouchableOpacity style={styles_local.dateBtn}>
-                <Text style={styles_local.dateText}>
+            <HStack className="items-center justify-between" style={{ marginTop: 12 }}>
+              <Text weight="semibold">Date Range</Text>
+              <Pressable className="flex-row items-center gap-2">
+                <Text size="sm" muted>
                   {dateRangeStart && dateRangeEnd
                     ? `${formatDate(dateRangeStart)} - ${formatDate(dateRangeEnd)}`
                     : 'Select Range'}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={C.gray30} />
-              </TouchableOpacity>
-            </View>
+                <Icon name="calendar-outline" size={18} className="text-muted-foreground" />
+              </Pressable>
+            </HStack>
           )}
 
           {isFetchingPlan && isSpecificDate && (
             <ActivityIndicator size="small" color={C.orange} style={{ marginTop: 8 }} />
           )}
-        </View>
+        </Card>
 
         {/* Title */}
-        <View style={[styles_local.card, { marginTop: 16 }]}>
-          <Text style={styles_local.cardLabel}>Title</Text>
-          <TextInput
-            style={styles_local.textInput}
-            placeholder="Enter title"
-            placeholderTextColor={C.gray50}
-            value={title}
-            onChangeText={setTitle}
-          />
-        </View>
+        <Card variant="outline">
+          <Text weight="semibold">Title</Text>
+          <Input style={{ marginTop: 8 }}>
+            <InputField
+              placeholder="Enter title"
+              value={title}
+              onChangeText={setTitle}
+            />
+          </Input>
+        </Card>
 
         {/* Servings (only when not specific date) */}
         {!isSpecificDate && (
-          <View style={[styles_local.card, { marginTop: 16 }]}>
-            <View style={styles_local.cardRow}>
-              <Text style={[styles_local.cardLabel, { flex: 1 }]}>Servings</Text>
-              <TouchableOpacity
-                style={styles_local.servingBtn}
-                onPress={() => { if (servings > 1) setServings(servings - 1); }}
-              >
-                <Ionicons name="remove" size={16} color={C.white} />
-              </TouchableOpacity>
-              <Text style={styles_local.servingValue}>{servings}</Text>
-              <TouchableOpacity
-                style={styles_local.servingBtn}
-                onPress={() => setServings(servings + 1)}
-              >
-                <Ionicons name="add" size={16} color={C.white} />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <Card variant="outline">
+            <HStack className="items-center justify-between">
+              <Text weight="semibold" className="flex-1">Servings</Text>
+              <Stepper value={servings} onChange={setServings} min={1} />
+            </HStack>
+          </Card>
         )}
 
         {/* Meal Types */}
-        <View style={[styles_local.card, { marginTop: 16 }]}>
-          <Text style={styles_local.cardLabel}>Meal Types</Text>
-          {availableMealTypes.map((type) => {
-            const isSelected = selectedMealTypes.includes(type.key);
-            return (
-              <TouchableOpacity
-                key={type.key}
-                style={styles_local.checkboxRow}
-                onPress={() => toggleMealType(type.key)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles_local.checkbox, isSelected && styles_local.checkboxActive]}>
-                  {isSelected && <Ionicons name="checkmark" size={16} color={C.white} />}
-                </View>
-                <Text style={styles_local.checkboxLabel}>{type.label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <Card variant="outline">
+          <Text weight="semibold">Meal Types</Text>
+          {availableMealTypes.map((type) =>
+            renderCheckboxRow(
+              type.label,
+              selectedMealTypes.includes(type.key),
+              () => toggleMealType(type.key),
+              type.key
+            )
+          )}
+        </Card>
 
         {/* Is Complete Only */}
-        <View style={[styles_local.card, { marginTop: 16 }]}>
-          <TouchableOpacity
-            style={styles_local.checkboxRow}
-            onPress={() => setIsCompleteOnly(!isCompleteOnly)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles_local.checkbox, isCompleteOnly && styles_local.checkboxActive]}>
-              {isCompleteOnly && <Ionicons name="checkmark" size={16} color={C.white} />}
-            </View>
-            <Text style={styles_local.checkboxLabel}>Is Complete Only</Text>
-          </TouchableOpacity>
-        </View>
+        <Card variant="outline">
+          {renderCheckboxRow('Is Complete Only', isCompleteOnly, () => setIsCompleteOnly(!isCompleteOnly))}
+        </Card>
       </ScrollView>
 
       {/* Bottom button */}
-      <View style={styles_local.bottomWrap}>
-        <TouchableOpacity style={styles_local.submitBtn} onPress={submit} activeOpacity={0.8}>
-          <Text style={styles_local.submitText}>{isEditMode ? 'Update List' : 'Generate List'}</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <Box className="p-4">
+        <Button size="lg" onPress={submit}>
+          <ButtonText>{isEditMode ? 'Update List' : 'Generate List'}</ButtonText>
+        </Button>
+      </Box>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  body: { flex: 1 },
-  card: {
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  cardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardLabel: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white },
-  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dateText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray40 },
-  textInput: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: C.white,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  servingBtn: {
-    backgroundColor: C.brand5,
-    borderRadius: 4,
-    padding: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  servingValue: { fontSize: 18, fontFamily: FONT.bold, color: C.white, marginHorizontal: 16 },
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 12 },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: C.gray50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxActive: { backgroundColor: C.brand5, borderColor: C.brand5 },
-  checkboxLabel: { fontSize: 15, fontFamily: FONT.regular, color: C.white, flex: 1 },
-  bottomWrap: { padding: 16 },
-  submitBtn: {
-    backgroundColor: C.brand5,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  submitText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-});

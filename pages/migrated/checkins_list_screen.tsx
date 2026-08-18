@@ -1,9 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { VStack } from '@components/ui/vstack';
+import ScreenHeader from '@components/ScreenHeader';
+import { C } from './theme';
 import { checkinsApi, checkinTypeLabel, CheckInAssignment } from '../../api/checkins';
 
 interface Props {
@@ -43,107 +48,90 @@ export default function CheckInsListScreen(props: Props) {
   };
 
   const renderCard = (a: CheckInAssignment) => (
-    <TouchableOpacity key={a.id} style={styles.card} activeOpacity={0.75} onPress={() => openForm(a)}>
-      <View style={[styles.iconWrap, a.is_due ? styles.iconWrapDue : styles.iconWrapDone]}>
-        <Ionicons
+    <Pressable
+      key={a.id}
+      className="flex-row items-center gap-3 bg-card rounded-md"
+      style={{ padding: 14, marginBottom: 10 }}
+      onPress={() => openForm(a)}
+    >
+      <Box
+        className="w-11 h-11 rounded-md items-center justify-center"
+        style={{ backgroundColor: a.is_due ? C.warning10 : C.success10 }}
+      >
+        <Icon
           name={a.is_due ? 'alert-circle-outline' : 'checkmark-circle-outline'}
           size={20}
           color={a.is_due ? C.warning60 : C.success60}
         />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle} numberOfLines={2}>{a.form.title}</Text>
-        <Text style={styles.cardType}>{checkinTypeLabel(a)}</Text>
+      </Box>
+      <Box className="flex-1">
+        <Text weight="bold" size="sm" numberOfLines={2}>{a.form.title}</Text>
+        <Text size="xs" muted style={{ marginTop: 3 }}>{checkinTypeLabel(a)}</Text>
         {a.submitted_at && (
-          <Text style={styles.cardMeta}>
+          <Text size="xs" muted className="text-[11px]" style={{ marginTop: 2 }}>
             Última vez: {new Date(a.submitted_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
           </Text>
         )}
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={C.textSecondary} />
-    </TouchableOpacity>
+      </Box>
+      <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+    </Pressable>
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Check-ins y formularios</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <Box className="flex-1 bg-background">
+        <ScreenHeader title="Check-ins y formularios" onBack={() => navigation?.goBack()} />
 
-      {isLoading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
-      ) : error ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No se pudieron cargar tus check-ins.</Text>
-        </View>
-      ) : items.length === 0 ? (
-        <View style={styles.center}>
-          <Ionicons name="clipboard-outline" size={40} color={C.textSecondary} />
-          <Text style={[styles.emptyText, { marginTop: 12 }]}>
-            Tu coach no te ha asignado ningún check-in o formulario todavía.
-          </Text>
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {pending.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Pendientes</Text>
-              {pending.map(renderCard)}
-            </View>
-          )}
-          {completed.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Al día</Text>
-              {completed.map(renderCard)}
-            </View>
-          )}
-        </ScrollView>
-      )}
+        {isLoading ? (
+          <Box className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color={C.textPrimary} />
+          </Box>
+        ) : error ? (
+          <Box className="flex-1 items-center justify-center px-8" style={{ paddingTop: 60 }}>
+            <Text size="sm" muted className="text-center">No se pudieron cargar tus check-ins.</Text>
+          </Box>
+        ) : items.length === 0 ? (
+          <Box className="flex-1 items-center justify-center px-8" style={{ paddingTop: 60 }}>
+            <Icon name="clipboard-outline" size={40} className="text-muted-foreground" />
+            <Text size="sm" muted className="text-center" style={{ marginTop: 12 }}>
+              Tu coach no te ha asignado ningún check-in o formulario todavía.
+            </Text>
+          </Box>
+        ) : (
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+            <VStack space="sm">
+              {pending.length > 0 && (
+                <Box>
+                  <Text
+                    size="xs"
+                    weight="bold"
+                    muted
+                    className="uppercase"
+                    style={{ letterSpacing: 0.4, marginTop: 4, marginBottom: 10 }}
+                  >
+                    Pendientes
+                  </Text>
+                  {pending.map(renderCard)}
+                </Box>
+              )}
+              {completed.length > 0 && (
+                <Box>
+                  <Text
+                    size="xs"
+                    weight="bold"
+                    muted
+                    className="uppercase"
+                    style={{ letterSpacing: 0.4, marginTop: 4, marginBottom: 10 }}
+                  >
+                    Al día
+                  </Text>
+                  {completed.map(renderCard)}
+                </Box>
+              )}
+            </VStack>
+          </ScrollView>
+        )}
+      </Box>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  headerTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60, paddingHorizontal: 32 },
-  emptyText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, textAlign: 'center' },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 24 },
-  section: { marginBottom: 8 },
-  sectionTitle: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 10, marginTop: 4 },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: C.surface,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconWrapDue: { backgroundColor: C.warning10 },
-  iconWrapDone: { backgroundColor: C.success10 },
-  cardTitle: { fontFamily: FONT.bold, fontSize: 14.5, color: C.textPrimary },
-  cardType: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary, marginTop: 3 },
-  cardMeta: { fontFamily: FONT.regular, fontSize: 11, color: C.textTertiary, marginTop: 2 },
-});

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button } from '@components/ui/button';
+import { Icon } from '@components/ui/icon';
 
 interface Props {
   navigation?: any;
@@ -14,37 +15,19 @@ export default function ComingSoonScreen(props: Props) {
   const title: string = route?.params?.title || 'Próximamente';
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-      </View>
-      <View style={s.body}>
-        <View style={s.iconWrap}>
-          <Ionicons name="construct-outline" size={30} color={C.textSecondary} />
-        </View>
-        <Text style={s.title}>{title}</Text>
-        <Text style={s.subtitle}>Estamos trabajando en esta pantalla. Vuelve pronto.</Text>
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <Box className="flex-row items-center px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
+      </Box>
+      <Box className="flex-1 items-center justify-center px-8">
+        <Box style={{ marginBottom: 16 }} className="w-16 h-16 rounded-pill bg-card items-center justify-center">
+          <Icon name="construct-outline" size={30} className="text-muted-foreground" />
+        </Box>
+        <Text weight="bold" size="lg" className="text-center">{title}</Text>
+        <Text muted className="text-center" style={{ marginTop: 8 }}>Estamos trabajando en esta pantalla. Vuelve pronto.</Text>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12 },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  body: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  iconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: C.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
-  },
-  title: { fontFamily: FONT.bold, fontSize: 18, color: C.textPrimary, textAlign: 'center' },
-  subtitle: { fontFamily: FONT.regular, fontSize: 13.5, color: C.textSecondary, textAlign: 'center', marginTop: 8 },
-});

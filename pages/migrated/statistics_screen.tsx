@@ -1,8 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C, SHADOW } from './theme';
 import MuscleBodyMap, { MuscleVolumeGroup } from '../../components/MuscleBodyMap';
 import { ViewSide } from '../../constants/bodyMusclesPaths';
 import DaySelectorStrip, { buildDayRange } from '../../components/DaySelectorStrip';
@@ -108,134 +116,83 @@ export default function StatisticsScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Estadísticas</Text>
-        <View style={s.iconBtn} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <Box className="bg-background flex-1">
+        <HStack className="items-center justify-between px-3 py-3">
+          <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+            <Icon name="chevron-back" size={22} className="text-foreground" />
+          </Button>
+          <Heading size="sm">Estadísticas</Heading>
+          <Box style={{ width: 36, height: 36 }} />
+        </HStack>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={s.sectionTitleRow}>
-          <Text style={s.sectionTitle}>Gráfico corporal de los últimos 7 días</Text>
-          <TouchableOpacity style={s.helpBtn} onPress={openHelp}>
-            <Text style={s.helpBtnText}>?</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={s.daySelectorWrap}>
-          <DaySelectorStrip days={days7} selectedDate={selectedDate} onSelect={setSelectedDate} />
-        </View>
-
-        <View style={s.heatmapCard}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
-          ) : (
-            <View style={s.heatmapRow}>
-              <MuscleBodyMap data={muscleVolume} height={190} showToggle={false} forcedView={ViewSide.FRONT} />
-              <MuscleBodyMap data={muscleVolume} height={190} showToggle={false} forcedView={ViewSide.BACK} />
-            </View>
-          )}
-        </View>
-
-        <View style={s.advancedHeader}>
-          <Text style={s.advancedHeaderText}>ESTADÍSTICAS AVANZADAS</Text>
-        </View>
-
-        <View style={s.advancedList}>
-          {ADVANCED_ITEMS.map((item) => (
-            <TouchableOpacity
-              key={item.key}
-              style={s.advancedRow}
-              activeOpacity={0.7}
-              onPress={() => onPressItem(item)}
+        <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+          <HStack className="items-center justify-between px-5" style={{ marginTop: 8, marginBottom: 14 }}>
+            <Text weight="semibold" size="sm" className="flex-1" style={{ marginRight: 12 }}>
+              Gráfico corporal de los últimos 7 días
+            </Text>
+            <Pressable
+              className="rounded-pill bg-card items-center justify-center"
+              style={{ width: 28, height: 28, ...SHADOW.card }}
+              onPress={openHelp}
             >
-              <Ionicons name={item.icon} size={22} color={C.textSecondary} style={{ marginRight: 14 }} />
-              <View style={{ flex: 1 }}>
-                <Text style={s.advancedTitle}>{item.title}</Text>
-                <Text style={s.advancedSubtitle} numberOfLines={2}>
-                  {item.subtitle}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={C.gray40} />
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+              <Text weight="bold" size="xs" muted>?</Text>
+            </Pressable>
+          </HStack>
 
-      <SimpleBottomSheet visible={helpVisible} onClose={() => setHelpVisible(false)}>
-        <View style={s.sheetContent}>
-          <Text style={s.sheetTitle}>¿Qué significa el color?</Text>
-          <Text style={s.sheetText}>
-            La intensidad del color de cada zona muestra cuánto volumen has entrenado ese grupo muscular en los
-            últimos 7 días respecto al resto: cuanto más oscuro/saturado, más volumen relativo ha recibido esa zona.
-          </Text>
-        </View>
-      </SimpleBottomSheet>
+          <Box className="px-5" style={{ marginBottom: 16 }}>
+            <DaySelectorStrip days={days7} selectedDate={selectedDate} onSelect={setSelectedDate} />
+          </Box>
+
+          <Box
+            className="bg-card rounded-lg mx-5 justify-center"
+            style={{ paddingVertical: 12, minHeight: 180, ...SHADOW.card }}
+          >
+            {isLoading ? (
+              <Spinner size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
+            ) : (
+              <HStack className="justify-around">
+                <MuscleBodyMap data={muscleVolume} height={190} showToggle={false} forcedView={ViewSide.FRONT} />
+                <MuscleBodyMap data={muscleVolume} height={190} showToggle={false} forcedView={ViewSide.BACK} />
+              </HStack>
+            )}
+          </Box>
+
+          <Box className="px-5" style={{ marginTop: 28, marginBottom: 12 }}>
+            <Text weight="semibold" size="xs" muted style={{ letterSpacing: 0.5 }}>ESTADÍSTICAS AVANZADAS</Text>
+          </Box>
+
+          <Box className="px-5 gap-3">
+            {ADVANCED_ITEMS.map((item) => (
+              <Pressable
+                key={item.key}
+                className="flex-row items-center bg-card rounded-lg"
+                style={{ paddingVertical: 14, paddingHorizontal: 16, ...SHADOW.card }}
+                onPress={() => onPressItem(item)}
+              >
+                <Icon name={item.icon} size={22} color={C.textSecondary} style={{ marginRight: 14 }} />
+                <Box className="flex-1">
+                  <Text weight="semibold" size="sm">{item.title}</Text>
+                  <Text size="xs" muted numberOfLines={2} style={{ marginTop: 3 }}>
+                    {item.subtitle}
+                  </Text>
+                </Box>
+                <Icon name="chevron-forward" size={18} color={C.gray40} />
+              </Pressable>
+            ))}
+          </Box>
+        </ScrollView>
+
+        <SimpleBottomSheet visible={helpVisible} onClose={() => setHelpVisible(false)}>
+          <Box className="p-6">
+            <Heading size="sm" style={{ marginBottom: 10 }}>¿Qué significa el color?</Heading>
+            <Text muted style={{ lineHeight: 20 }}>
+              La intensidad del color de cada zona muestra cuánto volumen has entrenado ese grupo muscular en los
+              últimos 7 días respecto al resto: cuanto más oscuro/saturado, más volumen relativo ha recibido esa zona.
+            </Text>
+          </Box>
+        </SimpleBottomSheet>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  appBarTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },
-  scrollContent: { paddingBottom: 32 },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 8,
-    marginBottom: 14,
-  },
-  sectionTitle: { flex: 1, fontFamily: FONT.semiBold, fontSize: 15, color: C.textPrimary, marginRight: 12 },
-  helpBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: C.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOW.card,
-  },
-  helpBtnText: { fontFamily: FONT.bold, fontSize: 13, color: C.textSecondary },
-  daySelectorWrap: { paddingHorizontal: 20, marginBottom: 16 },
-  heatmapCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    marginHorizontal: 20,
-    paddingVertical: 12,
-    minHeight: 180,
-    justifyContent: 'center',
-    ...SHADOW.card,
-  },
-  heatmapRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  advancedHeader: { paddingHorizontal: 20, marginTop: 28, marginBottom: 12 },
-  advancedHeaderText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.textSecondary, letterSpacing: 0.5 },
-  advancedList: { paddingHorizontal: 20 },
-  advancedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surface,
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    ...SHADOW.card,
-  },
-  advancedTitle: { fontFamily: FONT.semiBold, fontSize: 14.5, color: C.textPrimary },
-  advancedSubtitle: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
-  sheetContent: { padding: 24 },
-  sheetTitle: { fontFamily: FONT.bold, fontSize: 17, color: C.textPrimary, marginBottom: 10 },
-  sheetText: { fontFamily: FONT.regular, fontSize: 14, color: C.textSecondary, lineHeight: 20 },
-});

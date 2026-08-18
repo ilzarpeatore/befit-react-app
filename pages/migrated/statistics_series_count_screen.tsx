@@ -1,8 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT, SHADOW } from './theme';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Heading } from '@components/ui/heading';
+import { HStack } from '@components/ui/hstack';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { C } from './theme';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import { muscleVolumeApi, MuscleVolumeSeriesGroup } from '../../api/muscleVolume';
 import { toLocalISODate } from '../../components/DaySelectorStrip';
@@ -44,10 +51,14 @@ function macroSeriesTotals(data: MuscleVolumeSeriesGroup[]): Record<MacroMuscleG
 
 function DeltaBadge({ current, previous }: { current: number; previous: number }) {
   const delta = current - previous;
-  if (delta === 0) return <Text style={s.deltaNeutral}>=</Text>;
+  if (delta === 0) {
+    return (
+      <Text weight="semibold" size="xs" muted style={{ fontSize: 11.5 }}>=</Text>
+    );
+  }
   const positive = delta > 0;
   return (
-    <Text style={positive ? s.deltaUp : s.deltaDown}>
+    <Text weight="semibold" size="xs" style={{ fontSize: 11.5, color: positive ? C.success60 : C.destructive60 }}>
       {positive ? '↑' : '↓'} {Math.abs(delta)}
     </Text>
   );
@@ -56,18 +67,18 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
 function MacroBar({ group, current, previous, maxValue }: { group: string; current: number; previous: number; maxValue: number }) {
   const pct = maxValue > 0 ? Math.max(current > 0 ? 4 : 0, (current / maxValue) * 100) : 0;
   return (
-    <View style={s.barRow}>
-      <Text style={s.barLabel} numberOfLines={1}>
+    <HStack className="items-center" style={{ marginBottom: 16 }}>
+      <Text weight="medium" size="xs" numberOfLines={1} style={{ width: 76, fontSize: 12.5 }}>
         {group}
       </Text>
-      <View style={s.barTrack}>
-        <View style={[s.barFill, { width: `${pct}%` }]} />
-      </View>
-      <Text style={s.barValue}>{current}</Text>
-      <View style={s.deltaWrap}>
+      <Box className="flex-1 bg-border overflow-hidden" style={{ height: 10, borderRadius: 5, marginHorizontal: 10 }}>
+        <Box style={{ height: 10, width: `${pct}%`, borderRadius: 5, backgroundColor: C.orange }} />
+      </Box>
+      <Text weight="semibold" size="xs" className="text-right" style={{ width: 24, fontSize: 12.5 }}>{current}</Text>
+      <Box className="items-end" style={{ width: 46 }}>
         <DeltaBadge current={current} previous={previous} />
-      </View>
-    </View>
+      </Box>
+    </HStack>
   );
 }
 
@@ -119,35 +130,39 @@ export default function StatisticsSeriesCountScreen(props: Props) {
   const maxValue = Math.max(1, ...MACRO_MUSCLE_GROUPS.map((g) => currentTotals[g] ?? 0));
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => navigation?.goBack()} style={s.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle} numberOfLines={1}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <HStack className="items-center justify-between px-3 py-3">
+        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} className="text-foreground" />
+        </Button>
+        <Heading size="sm" className="flex-1 text-center mx-1" numberOfLines={1}>
           Recuento de series
-        </Text>
-        <View style={s.iconBtn} />
-      </View>
+        </Heading>
+        <Box style={{ width: 36, height: 36 }} />
+      </HStack>
 
-      <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity style={s.rangePill} onPress={() => setRangeSheetVisible(true)} activeOpacity={0.75}>
-          <Text style={s.rangePillText}>{range.label}</Text>
-          <Ionicons name="chevron-down" size={16} color={C.textPrimary} />
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <Pressable
+          className="flex-row items-center self-start bg-card rounded-pill shadow-card gap-2"
+          style={{ paddingHorizontal: 18, paddingVertical: 10, marginTop: 12 }}
+          onPress={() => setRangeSheetVisible(true)}
+        >
+          <Text weight="semibold" size="sm">{range.label}</Text>
+          <Icon name="chevron-down" size={16} className="text-foreground" />
+        </Pressable>
 
-        <View style={s.summaryCard}>
-          <Text style={s.summaryValue}>{totalSeries}</Text>
-          <Text style={s.summaryLabel}>series totales registradas</Text>
-        </View>
+        <Box className="bg-card rounded-lg items-center shadow-card" style={{ marginTop: 16, padding: 22 }}>
+          <Text weight="black" style={{ fontSize: 34 }}>{totalSeries}</Text>
+          <Text size="xs" muted style={{ marginTop: 4 }}>series totales registradas</Text>
+        </Box>
 
-        <View style={s.listCard}>
-          <View style={s.listHeaderRow}>
-            <Text style={s.listHeaderLabel}>ZONA</Text>
-            <Text style={s.listHeaderRight}>VS. PERIODO ANTERIOR</Text>
-          </View>
+        <Box className="bg-card rounded-lg shadow-card" style={{ marginTop: 16, padding: 20 }}>
+          <HStack className="justify-between" style={{ marginBottom: 14 }}>
+            <Text weight="semibold" size="xs" muted style={{ fontSize: 11, letterSpacing: 0.4 }}>ZONA</Text>
+            <Text weight="semibold" size="xs" muted style={{ fontSize: 11, letterSpacing: 0.4 }}>VS. PERIODO ANTERIOR</Text>
+          </HStack>
           {isLoading ? (
-            <ActivityIndicator size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
+            <Spinner size="large" color={C.textSecondary} style={{ paddingVertical: 60 }} />
           ) : (
             sortedGroups.map((group) => (
               <MacroBar
@@ -159,67 +174,30 @@ export default function StatisticsSeriesCountScreen(props: Props) {
               />
             ))
           )}
-        </View>
+        </Box>
       </ScrollView>
 
       <SimpleBottomSheet visible={rangeSheetVisible} onClose={() => setRangeSheetVisible(false)}>
-        <View style={s.sheetContent}>
-          {RANGE_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.key}
-              style={s.rangeOptionRow}
-              onPress={() => {
-                setRange(opt);
-                setRangeSheetVisible(false);
-              }}
-            >
-              <Text style={[s.rangeOptionText, opt.key === range.key && s.rangeOptionTextActive]}>{opt.label}</Text>
-              {opt.key === range.key ? <Ionicons name="checkmark" size={18} color={C.accentBlack} /> : null}
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Box style={{ padding: 24 }}>
+          {RANGE_OPTIONS.map((opt) => {
+            const active = opt.key === range.key;
+            return (
+              <Pressable
+                key={opt.key}
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 14 }}
+                onPress={() => {
+                  setRange(opt);
+                  setRangeSheetVisible(false);
+                }}
+              >
+                <Text size="sm" weight={active ? 'bold' : 'medium'}>{opt.label}</Text>
+                {active ? <Icon name="checkmark" size={18} className="text-foreground" /> : null}
+              </Pressable>
+            );
+          })}
+        </Box>
       </SimpleBottomSheet>
     </SafeAreaView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 12 },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  appBarTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary, marginHorizontal: 4 },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
-  rangePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: C.surface,
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginTop: 12,
-    gap: 8,
-    ...SHADOW.card,
-  },
-  rangePillText: { fontFamily: FONT.semiBold, fontSize: 14, color: C.textPrimary },
-  summaryCard: { backgroundColor: C.surface, borderRadius: 20, marginTop: 16, padding: 22, alignItems: 'center', ...SHADOW.card },
-  summaryValue: { fontFamily: FONT.black, fontSize: 34, color: C.textPrimary },
-  summaryLabel: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
-  listCard: { backgroundColor: C.surface, borderRadius: 20, marginTop: 16, padding: 20, ...SHADOW.card },
-  listHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
-  listHeaderLabel: { fontFamily: FONT.semiBold, fontSize: 11, color: C.textSecondary, letterSpacing: 0.4 },
-  listHeaderRight: { fontFamily: FONT.semiBold, fontSize: 11, color: C.textSecondary, letterSpacing: 0.4 },
-  barRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  barLabel: { width: 76, fontFamily: FONT.medium, fontSize: 12.5, color: C.textPrimary },
-  barTrack: { flex: 1, height: 10, backgroundColor: C.border, borderRadius: 5, overflow: 'hidden', marginHorizontal: 10 },
-  barFill: { height: 10, backgroundColor: C.orange, borderRadius: 5 },
-  barValue: { width: 24, fontFamily: FONT.semiBold, fontSize: 12.5, color: C.textPrimary, textAlign: 'right' },
-  deltaWrap: { width: 46, alignItems: 'flex-end' },
-  deltaUp: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.success60 },
-  deltaDown: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.destructive60 },
-  deltaNeutral: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.textSecondary },
-  sheetContent: { padding: 24 },
-  rangeOptionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
-  rangeOptionText: { fontFamily: FONT.medium, fontSize: 15, color: C.textPrimary },
-  rangeOptionTextActive: { fontFamily: FONT.bold, color: C.accentBlack },
-});

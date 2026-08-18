@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert, FlatList, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, ScrollView, Alert, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Divider } from '@components/ui/divider';
+import ScreenHeader from '@components/ScreenHeader';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -335,148 +344,150 @@ export default function PlanScreen(props: any) {
   const renderWeekDays = (offset: number) => {
     const days = getWeekDays(offset);
     return (
-      <View style={s.weekStrip}>
+      <HStack style={s.weekStrip}>
         {days.map((day, i) => {
           const isSelected = isSameDay(day, selectedDay);
           const isToday = isSameDay(day, new Date());
           return (
-            <TouchableOpacity
+            <Pressable
               key={i}
               style={[s.weekDayItem, isSelected && s.weekDayItemSelected]}
               onPress={() => setSelectedDay(day)}
             >
               <Text style={[s.weekDayLabel, isSelected && s.weekDayLabelSelected]}>{formatWeekday(day)}</Text>
               <Text style={[s.weekDayNum, isSelected && s.weekDayNumSelected, isToday && !isSelected && s.weekDayToday]}>{formatDay(day)}</Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
-      </View>
+      </HStack>
     );
   };
 
   const renderCompactStat = (label: string, value: string, progress: number) => (
-    <View style={s.compactStat}>
+    <VStack style={s.compactStat}>
       <Text style={s.compactStatLabel}>{label}</Text>
       <Text style={s.compactStatValue}>{value}</Text>
-      <View style={s.compactProgressBar}>
-        <View style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
-      </View>
-    </View>
+      <Box style={s.compactProgressBar}>
+        <Box style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
+      </Box>
+    </VStack>
   );
 
   const renderNutrientGraph = () => (
-    <View style={s.nutrientCard}>
-      <View style={s.kcalSection}>
+    <Card variant="ghost" style={s.nutrientCard}>
+      <Box style={s.kcalSection}>
         <Text style={s.kcalValue}>{kcalCurrent}</Text>
         <Text style={s.kcalTarget}>/ {kcalTarget} kcal</Text>
-      </View>
-      <View style={s.nutrientRow}>
+      </Box>
+      <HStack style={s.nutrientRow}>
         {[
           { label: 'Proteína', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
           { label: 'Carbos', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
           { label: 'Grasas', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
         ].map((n, i) => (
-          <View key={i} style={s.nutrientItem}>
+          <Box key={i} style={s.nutrientItem}>
             <Text style={s.nutrientLabel}>{n.label}</Text>
             <Text style={s.nutrientValue}>{n.current}g</Text>
             <Text style={s.nutrientTarget}>de {n.target}g</Text>
-            <View style={s.nutrientBar}>
-              <View style={[s.nutrientBarFill, { width: `${n.progress * 100}%`, backgroundColor: n.color }]} />
-            </View>
-          </View>
+            <Box style={s.nutrientBar}>
+              <Box style={[s.nutrientBarFill, { width: `${n.progress * 100}%`, backgroundColor: n.color }]} />
+            </Box>
+          </Box>
         ))}
-      </View>
-    </View>
+      </HStack>
+    </Card>
   );
 
   const renderMealSection = (key: string, displayName: string) => {
     const total = mealTotals[key] ?? {};
     const recipes = mealRecipes[key] ?? [];
     return (
-      <View key={key} style={s.mealSection}>
-        <View style={s.mealHeader}>
-          <View>
+      <Card key={key} variant="ghost" style={s.mealSection}>
+        <HStack style={s.mealHeader}>
+          <Box>
             <Text style={s.mealTitle}>{displayName}</Text>
             <Text style={s.mealCalories}>{total.totalCalories ?? 0} kcal | P: {total.totalProtein ?? 0}g | C: {total.totalCarbs ?? 0}g | F: {total.totalFats ?? 0}g</Text>
-          </View>
-          <TouchableOpacity style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
-            <Ionicons name="add-circle-outline" size={24} color={C.textPrimary} />
-          </TouchableOpacity>
-        </View>
+          </Box>
+          <Pressable style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
+            <Icon name="add-circle-outline" size={24} color={C.textPrimary} />
+          </Pressable>
+        </HStack>
         {recipes.length === 0 ? (
           <Text style={s.emptyMealText}>Todavía no has añadido {displayName.toLowerCase()}.</Text>
         ) : (
           recipes.map((recipe, i) => (
-            <View key={i} style={s.recipeItem}>
-              <TouchableOpacity
-                style={s.recipeItemTouchable}
-                activeOpacity={0.7}
-                onPress={() => openRecipeDetail(recipe)}
-              >
-                {recipe.recipeImage ? (
-                  <Image source={{ uri: recipe.recipeImage }} style={s.recipeImage} />
-                ) : (
-                  <View style={s.recipeImage} />
-                )}
-                <View style={s.recipeInfo}>
-                  <Text style={s.recipeName} numberOfLines={1}>{recipe.recipeName ?? 'Receta'}</Text>
-                  <View style={s.recipeMacrosRow}>
-                    <Text style={s.recipeMacroCal}>{recipe.calories ?? 0} kcal</Text>
-                    <Text style={s.recipeMacro}>P {recipe.protein ?? 0}g</Text>
-                    <Text style={s.recipeMacro}>C {recipe.carbs ?? 0}g</Text>
-                    <Text style={s.recipeMacro}>F {recipe.fats ?? 0}g</Text>
-                  </View>
-                  {recipe.isCoachAssigned && (
-                    <View style={s.coachBadge}>
-                      <Ionicons name="ribbon-outline" size={11} color={C.orange} />
-                      <Text style={s.coachBadgeText}>
-                        Asignado por {recipe.assignedByName ?? 'tu coach'}
-                      </Text>
-                    </View>
+            <React.Fragment key={i}>
+              <Divider />
+              <HStack style={s.recipeItem}>
+                <Pressable
+                  style={s.recipeItemTouchable}
+                  onPress={() => openRecipeDetail(recipe)}
+                >
+                  {recipe.recipeImage ? (
+                    <Image source={{ uri: recipe.recipeImage }} style={s.recipeImage} />
+                  ) : (
+                    <Box style={s.recipeImage} />
                   )}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => toggleRecipeCompletion(recipe, key)}>
-                <Ionicons
-                  name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={22}
-                  color={recipe.isComplete ? C.success : C.gray40}
-                />
-              </TouchableOpacity>
-            </View>
+                  <Box style={s.recipeInfo}>
+                    <Text style={s.recipeName} numberOfLines={1}>{recipe.recipeName ?? 'Receta'}</Text>
+                    <HStack space="sm">
+                      <Text style={s.recipeMacroCal}>{recipe.calories ?? 0} kcal</Text>
+                      <Text style={s.recipeMacro}>P {recipe.protein ?? 0}g</Text>
+                      <Text style={s.recipeMacro}>C {recipe.carbs ?? 0}g</Text>
+                      <Text style={s.recipeMacro}>F {recipe.fats ?? 0}g</Text>
+                    </HStack>
+                    {recipe.isCoachAssigned && (
+                      <HStack space="xs" style={s.coachBadge}>
+                        <Icon name="ribbon-outline" size={11} color={C.orange} />
+                        <Text style={s.coachBadgeText}>
+                          Asignado por {recipe.assignedByName ?? 'tu coach'}
+                        </Text>
+                      </HStack>
+                    )}
+                  </Box>
+                </Pressable>
+                <Pressable onPress={() => toggleRecipeCompletion(recipe, key)}>
+                  <Icon
+                    name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
+                    size={22}
+                    color={recipe.isComplete ? C.success : C.gray40}
+                  />
+                </Pressable>
+              </HStack>
+            </React.Fragment>
           ))
         )}
-      </View>
+      </Card>
     );
   };
 
   return (
-    <View style={s.container}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={s.appBarTitle}>Plan diario</Text>
-        <TouchableOpacity onPress={clearDailyPlan} style={s.clearBtn}>
-          <Ionicons name="trash-outline" size={20} color={C.destructive} />
-        </TouchableOpacity>
-      </View>
-      <View style={s.weekdayPicker}>
-        <TouchableOpacity onPress={() => setWeekOffset(prev => prev - 1)} style={s.weekNavBtn}>
-          <Ionicons name="chevron-back" size={20} color={C.gray30} />
-        </TouchableOpacity>
+    <Box style={s.container}>
+      <ScreenHeader
+        title="Plan diario"
+        onBack={() => props.navigation?.goBack()}
+        rightAction={
+          <Pressable onPress={clearDailyPlan} style={s.clearBtn}>
+            <Icon name="trash-outline" size={20} color={C.destructive} />
+          </Pressable>
+        }
+      />
+      <HStack style={s.weekdayPicker}>
+        <Pressable onPress={() => setWeekOffset(prev => prev - 1)} style={s.weekNavBtn}>
+          <Icon name="chevron-back" size={20} color={C.gray30} />
+        </Pressable>
         {renderWeekDays(weekOffset)}
-        <TouchableOpacity onPress={() => setWeekOffset(prev => prev + 1)} style={s.weekNavBtn}>
-          <Ionicons name="chevron-forward" size={20} color={C.gray30} />
-        </TouchableOpacity>
-      </View>
+        <Pressable onPress={() => setWeekOffset(prev => prev + 1)} style={s.weekNavBtn}>
+          <Icon name="chevron-forward" size={20} color={C.gray30} />
+        </Pressable>
+      </HStack>
       {showCompactSummary && (
-        <View style={s.compactBar}>
+        <Card variant="ghost" className="flex-row justify-between" style={s.compactBar}>
           {renderCompactStat('Kcal', `${kcalCurrent}/${kcalTarget}`, kcalProgress)}
           {renderCompactStat('Proteína', `${proteinCurrent}/${proteinTarget}g`, proteinProgress)}
           {renderCompactStat('Carbos', `${carbsCurrent}/${carbsTarget}g`, carbsProgress)}
           {renderCompactStat('Grasas', `${fatsCurrent}/${fatsTarget}g`, fatsProgress)}
-        </View>
+        </Card>
       )}
       <ScrollView
         ref={scrollRef}
@@ -491,9 +502,9 @@ export default function PlanScreen(props: any) {
         {Object.entries(MEAL_TYPES).map(([key, displayName]) => renderMealSection(key, displayName))}
       </ScrollView>
       {isLoading && (
-        <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={s.loadingOverlay}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       )}
 
       <Modal visible={!!addMealFor} animationType="slide" onRequestClose={() => setAddMealFor(null)}>
@@ -501,30 +512,30 @@ export default function PlanScreen(props: any) {
           style={[s.modalSheet, { paddingTop: insets.top + 12 }]}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <View style={s.modalHeaderRow}>
+          <HStack style={s.modalHeaderRow}>
             <Text style={s.modalTitle}>Añadir a {addMealFor?.label ?? ''}</Text>
-            <TouchableOpacity onPress={() => setAddMealFor(null)} style={s.modalCloseBtn}>
-              <Ionicons name="close" size={26} color={C.white} />
-            </TouchableOpacity>
-          </View>
-          <View style={s.addMealTabsRow}>
-            <TouchableOpacity
+            <Pressable onPress={() => setAddMealFor(null)} style={s.modalCloseBtn}>
+              <Icon name="close" size={26} color={C.white} />
+            </Pressable>
+          </HStack>
+          <HStack space="sm" style={s.addMealTabsRow}>
+            <Pressable
               style={[s.addMealTab, addMealTab === 'assigned' && s.addMealTabActive]}
               onPress={() => setAddMealTab('assigned')}
             >
               <Text style={[s.addMealTabText, addMealTab === 'assigned' && s.addMealTabTextActive]}>
                 Asignadas
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={[s.addMealTab, addMealTab === 'recipes' && s.addMealTabActive]}
               onPress={() => setAddMealTab('recipes')}
             >
               <Text style={[s.addMealTabText, addMealTab === 'recipes' && s.addMealTabTextActive]}>
                 Recetario
               </Text>
-            </TouchableOpacity>
-          </View>
+            </Pressable>
+          </HStack>
           {addMealTab === 'assigned' ? (
             (() => {
               const assignedForMeal: AssignedMealRecipe[] =
@@ -539,27 +550,29 @@ export default function PlanScreen(props: any) {
               return (
                 <ScrollView style={s.searchResultsScroll} keyboardShouldPersistTaps="handled">
                   {assignedForMeal.map((recipe) => (
-                    <TouchableOpacity
-                      key={recipe.id}
-                      style={s.searchResultRow}
-                      disabled={savingRecipeId === recipe.id}
-                      onPress={() => addRecipeToPlan(recipe)}
-                    >
-                      {recipe.recipe_image ? (
-                        <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
-                      ) : (
-                        <View style={s.searchResultImage} />
-                      )}
-                      <View style={{ flex: 1 }}>
-                        <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                        <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                      </View>
-                      {savingRecipeId === recipe.id ? (
-                        <ActivityIndicator size="small" color={C.textPrimary} />
-                      ) : (
-                        <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
-                      )}
-                    </TouchableOpacity>
+                    <React.Fragment key={recipe.id}>
+                      <Pressable
+                        style={s.searchResultRow}
+                        disabled={savingRecipeId === recipe.id}
+                        onPress={() => addRecipeToPlan(recipe)}
+                      >
+                        {recipe.recipe_image ? (
+                          <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                        ) : (
+                          <Box style={s.searchResultImage} />
+                        )}
+                        <Box style={{ flex: 1 }}>
+                          <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+                          <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+                        </Box>
+                        {savingRecipeId === recipe.id ? (
+                          <Spinner size="small" color={C.textPrimary} />
+                        ) : (
+                          <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
+                        )}
+                      </Pressable>
+                      <Divider />
+                    </React.Fragment>
                   ))}
                 </ScrollView>
               );
@@ -575,7 +588,7 @@ export default function PlanScreen(props: any) {
                 autoFocus
               />
               {searchLoading ? (
-                <ActivityIndicator size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
+                <Spinner size="small" color={C.textPrimary} style={{ marginTop: 20 }} />
               ) : searchResults.length === 0 ? (
                 <Text style={s.noResultsText}>No se encontraron recetas.</Text>
               ) : (
@@ -586,30 +599,32 @@ export default function PlanScreen(props: any) {
                   keyboardShouldPersistTaps="handled"
                 >
                   {searchResults.map((recipe) => (
-                    <TouchableOpacity
-                      key={recipe.id}
-                      style={s.searchResultRow}
-                      disabled={savingRecipeId === recipe.id}
-                      onPress={() => addRecipeToPlan(recipe)}
-                    >
-                      {recipe.recipe_image ? (
-                        <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
-                      ) : (
-                        <View style={s.searchResultImage} />
-                      )}
-                      <View style={{ flex: 1 }}>
-                        <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                        <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                      </View>
-                      {savingRecipeId === recipe.id ? (
-                        <ActivityIndicator size="small" color={C.textPrimary} />
-                      ) : (
-                        <Ionicons name="add-circle-outline" size={26} color={C.textPrimary} />
-                      )}
-                    </TouchableOpacity>
+                    <React.Fragment key={recipe.id}>
+                      <Pressable
+                        style={s.searchResultRow}
+                        disabled={savingRecipeId === recipe.id}
+                        onPress={() => addRecipeToPlan(recipe)}
+                      >
+                        {recipe.recipe_image ? (
+                          <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                        ) : (
+                          <Box style={s.searchResultImage} />
+                        )}
+                        <Box style={{ flex: 1 }}>
+                          <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+                          <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+                        </Box>
+                        {savingRecipeId === recipe.id ? (
+                          <Spinner size="small" color={C.textPrimary} />
+                        ) : (
+                          <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
+                        )}
+                      </Pressable>
+                      <Divider />
+                    </React.Fragment>
                   ))}
                   {searchLoadingMore && (
-                    <ActivityIndicator size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
+                    <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                   )}
                 </ScrollView>
               )}
@@ -617,19 +632,19 @@ export default function PlanScreen(props: any) {
           )}
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </Box>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
+  appBar: { alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
   backBtn: { padding: 4 },
   appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   clearBtn: { padding: 4 },
-  weekdayPicker: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface, paddingBottom: 8 },
+  weekdayPicker: { alignItems: 'center', backgroundColor: C.surface, paddingBottom: 8 },
   weekNavBtn: { paddingHorizontal: 4, paddingVertical: 8 },
-  weekStrip: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
+  weekStrip: { flex: 1, justifyContent: 'space-around' },
   weekDayItem: { alignItems: 'center', paddingVertical: 8, paddingHorizontal: 6, borderRadius: 12 },
   weekDayItemSelected: { backgroundColor: C.brand5 },
   weekDayLabel: { fontSize: 11, fontFamily: FONT.medium, color: C.gray40, marginBottom: 4 },
@@ -637,46 +652,45 @@ const s = StyleSheet.create({
   weekDayNum: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray40 },
   weekDayNumSelected: { color: C.white },
   weekDayToday: { color: C.textPrimary },
-  compactBar: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: C.surface, marginHorizontal: 16, marginBottom: 8, borderRadius: 12, padding: 12 },
+  compactBar: { marginHorizontal: 16, marginBottom: 8 },
   compactStat: { alignItems: 'flex-start' },
   compactStatLabel: { fontSize: 10, color: C.gray40, fontFamily: FONT.regular },
   compactStatValue: { fontSize: 11, fontFamily: FONT.bold, color: C.white, marginTop: 2 },
   compactProgressBar: { height: 3, width: 45, backgroundColor: C.gray70, borderRadius: 2, marginTop: 4, overflow: 'hidden' },
   compactProgressFill: { height: 3, backgroundColor: C.brand5, borderRadius: 2 },
   scrollContent: { padding: 6, paddingBottom: 24 },
-  nutrientCard: { backgroundColor: C.surface, borderRadius: 16, padding: 20, marginBottom: 16 },
+  nutrientCard: { marginBottom: 16 },
   kcalSection: { alignItems: 'center', marginBottom: 16 },
   kcalValue: { fontSize: 32, fontFamily: FONT.extraBold, color: C.white },
   kcalTarget: { fontSize: 14, color: C.gray40, marginTop: 4 },
-  nutrientRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  nutrientRow: { justifyContent: 'space-between' },
   nutrientItem: { flex: 1, alignItems: 'center' },
   nutrientLabel: { fontSize: 12, color: C.gray30, fontFamily: FONT.medium },
   nutrientValue: { fontSize: 16, fontFamily: FONT.bold, color: C.white, marginTop: 4 },
   nutrientTarget: { fontSize: 11, color: C.gray50, marginTop: 2 },
   nutrientBar: { height: 4, width: '80%', backgroundColor: C.gray70, borderRadius: 2, marginTop: 8, overflow: 'hidden' },
   nutrientBarFill: { height: 4, borderRadius: 2 },
-  mealSection: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
-  mealHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  mealSection: { marginBottom: 12 },
+  mealHeader: { alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   mealTitle: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
   mealCalories: { fontSize: 12, color: C.gray40, marginTop: 2 },
   addMealBtn: { padding: 4 },
-  recipeItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, borderTopWidth: 0.5, borderTopColor: C.border },
+  recipeItem: { alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
   recipeItemTouchable: { flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 8 },
   recipeImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
   recipeInfo: { flex: 1, marginRight: 8 },
   recipeName: { fontSize: 14, fontFamily: FONT.medium, color: C.gray50, marginBottom: 4 },
-  recipeMacrosRow: { flexDirection: 'row', gap: 10 },
   recipeMacroCal: { fontSize: 12, fontFamily: FONT.semiBold, color: C.textPrimary },
   recipeMacro: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50 },
-  coachBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  coachBadge: { alignItems: 'center', marginTop: 4 },
   coachBadgeText: { fontSize: 10, fontFamily: FONT.medium, color: C.orange },
   emptyMealText: { fontSize: 13, fontFamily: FONT.regular, color: C.gray50, paddingVertical: 8 },
   loadingOverlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
   modalSheet: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 24 },
-  modalHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  modalHeaderRow: { alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   modalCloseBtn: { padding: 4 },
   modalTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  addMealTabsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  addMealTabsRow: { marginBottom: 14 },
   addMealTab: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 20, backgroundColor: C.surfaceLight },
   addMealTabActive: { backgroundColor: C.brand50 },
   addMealTabText: { fontSize: 13, fontFamily: FONT.semiBold, color: C.gray50 },
@@ -684,7 +698,7 @@ const s = StyleSheet.create({
   searchInput: { backgroundColor: C.surfaceLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, fontFamily: FONT.regular, color: C.white, marginBottom: 12 },
   noResultsText: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50, textAlign: 'center', marginTop: 20 },
   searchResultsScroll: { flex: 1 },
-  searchResultRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
+  searchResultRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   searchResultImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
   searchResultTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
   searchResultMeta: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },

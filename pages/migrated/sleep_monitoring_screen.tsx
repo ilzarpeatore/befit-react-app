@@ -1,7 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import ScreenHeader from '@components/ScreenHeader';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 
@@ -84,10 +85,11 @@ function WeekBar({ day, hours, isToday }: { day: string; hours: number; isToday:
 export default function SleepMonitoringScreen(props: any) {
   return (
     <View style={styles.container}>
-      <View style={styles.appBar}>
-        <Text style={styles.appBarTitle}>Monitor de Sueño</Text>
-        <Ionicons name="ellipsis-horizontal" size={24} color={C.gray30} onPress={() => {}} />
-      </View>
+      <ScreenHeader
+        title="Monitor de Sueño"
+        hideBack
+        rightAction={<Ionicons name="ellipsis-horizontal" size={24} color={C.gray30} onPress={() => {}} />}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.paddingH}>

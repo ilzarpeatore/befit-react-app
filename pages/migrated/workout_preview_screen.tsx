@@ -1,20 +1,24 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Image,
-  ActivityIndicator,
   Dimensions,
   Platform,
   StatusBar,
   Alert,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import { Card } from '@components/ui/card';
+import { HStack } from '@components/ui/hstack';
+import { Divider } from '@components/ui/divider';
+import { Button, ButtonText } from '@components/ui/button';
 import { C, FONT, SHADOW } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { workoutTemplateApi } from '../../api/workoutTemplate';
@@ -65,19 +69,18 @@ function ScaleRow({
   labels?: string[];
 }) {
   return (
-    <View style={rs.scaleRow}>
+    <HStack space="sm" className="items-center flex-wrap" style={{ marginTop: 12 }}>
       {Array.from({ length: count }, (_, i) => i + 1).map((n) => (
-        <TouchableOpacity
+        <Pressable
           key={n}
           style={[rs.scaleChip, value === n && rs.scaleChipActive]}
           onPress={() => onChange(n)}
-          activeOpacity={0.75}
         >
           <Text style={[rs.scaleChipText, value === n && rs.scaleChipTextActive]}>{n}</Text>
-        </TouchableOpacity>
+        </Pressable>
       ))}
       {labels && value ? <Text style={rs.scaleHint}>{labels[value - 1]}</Text> : null}
-    </View>
+    </HStack>
   );
 }
 
@@ -113,50 +116,51 @@ function ReadinessForm({ onDone }: { onDone: () => void }) {
   return (
     <SafeAreaView style={rs.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={[rs.scroll, { paddingTop: insets.top + 12 }]} showsVerticalScrollIndicator={false}>
-        <View style={rs.badge}>
-          <Ionicons name="pulse-outline" size={22} color={C.textPrimary} />
-        </View>
+        <Box style={rs.badge}>
+          <Icon name="pulse-outline" size={22} color={C.textPrimary} />
+        </Box>
         <Text style={rs.title}>¿Cómo llegas hoy?</Text>
         <Text style={rs.subtitle}>
           Responde antes de empezar — ayuda a tu coach a ajustar tu entrenamiento a cómo te sientes de verdad.
         </Text>
 
-        <View style={rs.card}>
+        <Card variant="elevated" style={{ marginBottom: 14 }}>
           <Text style={rs.question}>Valora tu descanso nocturno</Text>
           <ScaleRow count={5} value={sleepQuality} onChange={setSleepQuality} labels={SLEEP_LABELS} />
-        </View>
+        </Card>
 
-        <View style={rs.card}>
+        <Card variant="elevated" style={{ marginBottom: 14 }}>
           <Text style={rs.question}>Nivel de agujetas</Text>
           <Text style={rs.questionHint}>1 = ninguna · 10 = muy intensas</Text>
           <ScaleRow count={10} value={sorenessLevel} onChange={setSorenessLevel} />
-        </View>
+        </Card>
 
-        <View style={rs.card}>
+        <Card variant="elevated" style={{ marginBottom: 14 }}>
           <Text style={rs.question}>Nivel de energía</Text>
           <ScaleRow count={5} value={energyLevel} onChange={setEnergyLevel} labels={ENERGY_LABELS} />
-        </View>
+        </Card>
 
-        <View style={rs.card}>
+        <Card variant="elevated" style={{ marginBottom: 14 }}>
           <Text style={rs.question}>Nivel de estrés mental</Text>
           <ScaleRow count={5} value={stressLevel} onChange={setStressLevel} labels={STRESS_LABELS} />
-        </View>
+        </Card>
       </ScrollView>
 
-      <View style={[rs.footer, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
-        <TouchableOpacity
-          style={[rs.submitBtn, !allAnswered && rs.submitBtnDisabled]}
-          activeOpacity={0.85}
+      <Box style={{ paddingHorizontal: 24, backgroundColor: C.bg, paddingBottom: Math.max(insets.bottom, 12) + 6 }}>
+        <Divider style={{ marginBottom: 12 }} />
+        <Button
           onPress={onSubmit}
           disabled={!allAnswered || saving}
+          radius="pill"
+          className="py-4"
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <Spinner size="small" color="#FFFFFF" />
           ) : (
-            <Text style={rs.submitBtnText}>CONTINUAR AL ENTRENAMIENTO</Text>
+            <ButtonText style={{ fontFamily: FONT.bold, fontSize: 15, letterSpacing: 0.5 }}>CONTINUAR AL ENTRENAMIENTO</ButtonText>
           )}
-        </TouchableOpacity>
-      </View>
+        </Button>
+      </Box>
     </SafeAreaView>
   );
 }
@@ -243,9 +247,9 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (!readinessResolved || isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={C.textPrimary} />
-        </View>
+        <Box style={styles.loader}>
+          <Spinner size="large" color={C.textPrimary} />
+        </Box>
       </SafeAreaView>
     );
   }
@@ -257,12 +261,12 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (error || !workout) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.loader}>
+        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
+        <Box style={styles.loader}>
           <Text style={styles.emptyText}>No se pudo cargar el entrenamiento.</Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -270,15 +274,15 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (workout.isRest || workout.isAdjusted) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.loader}>
-          <Ionicons name="moon-outline" size={40} color={C.textSecondary} />
+        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
+        <Box style={styles.loader}>
+          <Icon name="moon-outline" size={40} color={C.textSecondary} />
           <Text style={[styles.emptyText, { marginTop: 12 }]}>
             {workout.isAdjusted ? 'Sesión ajustada por tu entrenador' : 'Día de descanso'}
           </Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -286,16 +290,16 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (workout.isExclusive && !workout.isAccessible) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <TouchableOpacity style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.loader}>
-          <Ionicons name="lock-closed-outline" size={40} color={C.textSecondary} />
+        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+          <Icon name="chevron-back" size={22} color={C.textPrimary} />
+        </Pressable>
+        <Box style={styles.loader}>
+          <Icon name="lock-closed-outline" size={40} color={C.textSecondary} />
           <Text style={[styles.title, { textAlign: 'center', marginTop: 16 }]}>{workout.title}</Text>
           <Text style={[styles.emptyText, { marginTop: 8 }]}>
             Contenido exclusivo — hazte cliente 1:1 o compra un paquete con acceso completo a Workouts.
           </Text>
-        </View>
+        </Box>
       </SafeAreaView>
     );
   }
@@ -309,7 +313,7 @@ export default function WorkoutPreviewScreen(props: Props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Header image */}
-        <View style={styles.heroSection}>
+        <Box style={styles.heroSection}>
           {workout.thumbnail ? (
             <Image source={{ uri: workout.thumbnail }} style={styles.heroImage} resizeMode="cover" />
           ) : (
@@ -317,69 +321,71 @@ export default function WorkoutPreviewScreen(props: Props) {
               colors={[C.gray20, C.surface]}
               style={[styles.heroImage, styles.heroFallback]}
             >
-              <Ionicons name="barbell-outline" size={64} color={C.gray30} />
+              <Icon name="barbell-outline" size={64} color={C.gray30} />
             </LinearGradient>
           )}
           <LinearGradient
             colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0)']}
             style={styles.heroTopFade}
           />
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+          <Pressable style={styles.backBtn} onPress={() => navigation?.goBack()}>
+            <Icon name="chevron-back" size={22} color="#FFFFFF" />
+          </Pressable>
+        </Box>
 
         {/* Title row — sin numberOfLines: es el título de la propia pantalla
             (dentro de un ScrollView con espacio de sobra), así que se deja
             envolver en tantas líneas como haga falta en vez de cortarlo con
             "..." cuando el nombre del workout es largo. */}
-        <View style={styles.titleRow}>
+        <HStack className="justify-between items-start px-5" style={{ paddingTop: 18 }}>
           <Text style={styles.title}>
             {workout.title}
           </Text>
           {workoutTemplateId ? (
-            <View style={styles.titleActions}>
-              <TouchableOpacity style={styles.iconBtn} onPress={onToggleFavourite} activeOpacity={0.75}>
-                <Ionicons name={isFavourite ? 'bookmark' : 'bookmark-outline'} size={18} color={isFavourite ? C.accentBlack : C.textPrimary} />
-              </TouchableOpacity>
-            </View>
+            <Box style={styles.titleActions}>
+              <Pressable style={styles.iconBtn} onPress={onToggleFavourite}>
+                <Icon name={isFavourite ? 'bookmark' : 'bookmark-outline'} size={18} color={isFavourite ? C.accentBlack : C.textPrimary} />
+              </Pressable>
+            </Box>
           ) : null}
-        </View>
+        </HStack>
 
         {workout.description ? (
           <Text style={styles.description}>{workout.description}</Text>
         ) : null}
 
         {/* Stats row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{workout.exerciseCount}</Text>
-            <Text style={styles.statLabel}>Ejercicios</Text>
-          </View>
-          {totalSeries > 0 && (
-            <>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{totalSeries}</Text>
-                <Text style={styles.statLabel}>Series totales</Text>
-              </View>
-            </>
-          )}
-          {workout.blocks.length > 1 && (
-            <>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{workout.blocks.length}</Text>
-                <Text style={styles.statLabel}>Bloques</Text>
-              </View>
-            </>
-          )}
-        </View>
+        <Card variant="elevated" className="mx-5 px-0 py-4" style={{ marginTop: 20 }}>
+          <HStack className="items-center">
+            <Box style={styles.statItem}>
+              <Text style={styles.statValue}>{workout.exerciseCount}</Text>
+              <Text style={styles.statLabel}>Ejercicios</Text>
+            </Box>
+            {totalSeries > 0 && (
+              <>
+                <Divider orientation="vertical" style={{ height: 28, width: 1 }} />
+                <Box style={styles.statItem}>
+                  <Text style={styles.statValue}>{totalSeries}</Text>
+                  <Text style={styles.statLabel}>Series totales</Text>
+                </Box>
+              </>
+            )}
+            {workout.blocks.length > 1 && (
+              <>
+                <Divider orientation="vertical" style={{ height: 28, width: 1 }} />
+                <Box style={styles.statItem}>
+                  <Text style={styles.statValue}>{workout.blocks.length}</Text>
+                  <Text style={styles.statLabel}>Bloques</Text>
+                </Box>
+              </>
+            )}
+          </HStack>
+        </Card>
 
         {/* Exercise list */}
-        <View style={styles.exerciseList}>
+        <Box style={styles.exerciseList}>
           {workout.blocks.map((block) => (
-            <View key={block.id}>
+            <Box key={block.id}>
               {workout.blocks.length > 1 && block.title ? (
                 <Text style={styles.blockTitle}>{block.title}</Text>
               ) : null}
@@ -388,68 +394,71 @@ export default function WorkoutPreviewScreen(props: Props) {
                 const lastPerformance = formatLastPerformance(ex);
                 const noteExpanded = expandedNoteId === ex.id;
                 return (
-                  <View key={ex.id} style={styles.exerciseCard}>
-                    <View style={styles.exerciseRow}>
+                  <Card key={ex.id} variant="elevated" className="p-3.5" style={{ marginBottom: 12 }}>
+                    <HStack className="items-center">
                       <ExerciseThumbMem image={ex.image} bodyPartId={ex.bodyPartId} />
-                      <View style={styles.exerciseInfo}>
+                      <Box style={styles.exerciseInfo}>
                         <Text style={styles.exerciseTitle} numberOfLines={2}>
                           {ex.title}
                         </Text>
-                        <View style={styles.exerciseMetaRow}>
+                        <HStack space="sm" className="items-center" style={{ marginTop: 6 }}>
                           {seriesCount != null && (
-                            <View style={styles.seriesChip}>
+                            <Box style={styles.seriesChip}>
                               <Text style={styles.seriesChipText}>{seriesCount} series</Text>
-                            </View>
+                            </Box>
                           )}
                           <Text style={styles.exerciseSubtitle} numberOfLines={1}>
                             {formatPrescribedSubtitle(ex.prescribed)}
                           </Text>
-                        </View>
-                      </View>
-                    </View>
+                        </HStack>
+                      </Box>
+                    </HStack>
 
                     {lastPerformance && (
-                      <View style={styles.lastPerformanceRow}>
-                        <View style={styles.lastPerformanceIconWrap}>
-                          <Ionicons name="time-outline" size={13} color={C.blue60} />
-                        </View>
-                        <Text style={styles.lastPerformanceLabel}>Última vez</Text>
-                        <Text style={styles.lastPerformanceText}>{lastPerformance}</Text>
-                      </View>
+                      <>
+                        <Divider style={{ marginTop: 10 }} />
+                        <HStack space="xs" className="items-center" style={{ paddingTop: 10 }}>
+                          <Box style={styles.lastPerformanceIconWrap}>
+                            <Icon name="time-outline" size={13} color={C.blue60} />
+                          </Box>
+                          <Text style={styles.lastPerformanceLabel}>Última vez</Text>
+                          <Text style={styles.lastPerformanceText}>{lastPerformance}</Text>
+                        </HStack>
+                      </>
                     )}
 
                     {ex.coachNotes ? (
-                      <TouchableOpacity
+                      <Pressable
                         style={styles.coachNoteBanner}
-                        activeOpacity={0.8}
                         onPress={() => setExpandedNoteId(noteExpanded ? null : ex.id)}
                       >
-                        <View style={styles.coachNoteHeaderRow}>
-                          <Ionicons name="warning-outline" size={15} color={C.warning60} />
+                        <HStack space="xs" className="items-center">
+                          <Icon name="warning-outline" size={15} color={C.warning60} />
                           <Text style={styles.coachNoteHeaderText}>Revisa las notas de este ejercicio</Text>
-                          <Ionicons
+                          <Icon
                             name={noteExpanded ? 'chevron-up' : 'chevron-down'}
                             size={15}
                             color={C.warning60}
                           />
-                        </View>
+                        </HStack>
                         {noteExpanded ? <Text style={styles.coachNoteBody}>{ex.coachNotes}</Text> : null}
-                      </TouchableOpacity>
+                      </Pressable>
                     ) : null}
-                  </View>
+                  </Card>
                 );
               })}
-            </View>
+            </Box>
           ))}
-        </View>
+        </Box>
       </ScrollView>
 
       {/* Sticky start button */}
-      <View style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
-        <TouchableOpacity style={styles.startBtn} activeOpacity={0.85} onPress={onStart}>
-          <Text style={styles.startBtnText}>INICIAR ENTRENAMIENTO</Text>
-        </TouchableOpacity>
-      </View>
+      <Box style={[styles.stickyFooter, { paddingBottom: Math.max(insets.bottom, 12) + 6 }]}>
+        <Divider style={{ marginBottom: 12 }} />
+        <Button onPress={onStart} radius="pill" className="py-4">
+          <ButtonText style={{ fontFamily: FONT.bold, fontSize: 15, letterSpacing: 0.5 }}>INICIAR ENTRENAMIENTO</ButtonText>
+        </Button>
+      </Box>
     </SafeAreaView>
   );
 }
@@ -493,13 +502,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...SHADOW.card,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 18,
-  },
   title: {
     flex: 1,
     fontFamily: FONT.extraBold,
@@ -525,16 +527,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    marginHorizontal: 20,
-    marginTop: 20,
-    paddingVertical: 16,
-    ...SHADOW.card,
-  },
   statItem: { flex: 1, alignItems: 'center' },
   statValue: {
     fontFamily: FONT.extraBold,
@@ -547,11 +539,6 @@ const styles = StyleSheet.create({
     color: C.textSecondary,
     marginTop: 2,
   },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: C.border,
-  },
   exerciseList: { paddingHorizontal: 20, marginTop: 24 },
   blockTitle: {
     fontFamily: FONT.bold,
@@ -562,28 +549,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textTransform: 'uppercase',
   },
-  exerciseCard: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    padding: 14,
-    marginBottom: 12,
-    ...SHADOW.card,
-  },
-  exerciseRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   exerciseInfo: { flex: 1, marginLeft: 14 },
   exerciseTitle: {
     fontFamily: FONT.bold,
     fontSize: 15,
     color: C.textPrimary,
-  },
-  exerciseMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-    gap: 8,
   },
   seriesChip: {
     backgroundColor: C.brand50,
@@ -601,15 +571,6 @@ const styles = StyleSheet.create({
     fontFamily: FONT.regular,
     fontSize: 13,
     color: C.textSecondary,
-  },
-  lastPerformanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
   },
   lastPerformanceIconWrap: {
     width: 20,
@@ -639,11 +600,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
   },
-  coachNoteHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   coachNoteHeaderText: {
     flex: 1,
     fontFamily: FONT.bold,
@@ -663,23 +619,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingHorizontal: 20,
-    paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 28 : 18,
     backgroundColor: C.bg,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
-  startBtn: {
-    backgroundColor: C.accentBlack,
-    borderRadius: 30,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  startBtnText: {
-    fontFamily: FONT.bold,
-    fontSize: 15,
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
   },
 });
 
@@ -709,13 +650,6 @@ const rs = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 24,
   },
-  card: {
-    backgroundColor: C.surface,
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
-    ...SHADOW.card,
-  },
   question: {
     fontFamily: FONT.bold,
     fontSize: 15,
@@ -727,13 +661,6 @@ const rs = StyleSheet.create({
     color: C.textSecondary,
     marginTop: 2,
     marginBottom: 4,
-  },
-  scaleRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 12,
-    alignItems: 'center',
   },
   scaleChip: {
     width: 34,
@@ -760,27 +687,5 @@ const rs = StyleSheet.create({
     fontFamily: FONT.medium,
     fontSize: 12.5,
     color: C.textSecondary,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    backgroundColor: C.bg,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
-  submitBtn: {
-    backgroundColor: C.accentBlack,
-    borderRadius: 30,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  submitBtnDisabled: {
-    opacity: 0.35,
-  },
-  submitBtnText: {
-    fontFamily: FONT.bold,
-    fontSize: 15,
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
   },
 });

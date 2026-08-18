@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
+import { KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
+import { Actionsheet, ActionsheetBackdrop, ActionsheetContent } from '@components/ui/actionsheet';
+import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
 import { C } from '../pages/migrated/theme';
 
 interface SimpleBottomSheetProps {
@@ -8,22 +10,34 @@ interface SimpleBottomSheetProps {
   children: React.ReactNode;
 }
 
-// Sustituye a @gorhom/bottom-sheet: la app no tiene un BottomSheetModalProvider
-// montado en la raiz (App.tsx), y el componente no-modal `BottomSheet` sin ese
-// contexto llega a capturar los toques de toda la pantalla incluso cerrado
-// (index=-1) — bloqueaba hasta el boton de "atras". Modal es el patron ya
-// usado y probado en el resto de la app (ej. workout_session_screen.tsx).
+// Envuelve el Actionsheet real de Gluestack (verificado: usa el mismo Overlay
+// portal-based que Modal, montado en App.tsx vía GluestackUIProvider, y se
+// desmonta del todo cuando está cerrado — `if (!isOpen && exited) return null`
+// en @gluestack-ui/core — no es el bug de @gorhom/bottom-sheet que motivó
+// este componente en primer lugar, ese SÍ dejaba una capa invisible
+// capturando toques con index=-1).
 //
-// Teclado: el Modal en si no es "keyboard aware" — sin envolverlo, el
-// teclado se solapa encima de la sheet y tapa botones como "Guardar" (bug
-// reportado en Antropometria al añadir una métrica). Se envuelve todo
-// (backdrop + sheet) en un KeyboardAvoidingView para que la sheet suba por
-// encima del teclado. Además, el toque en el backdrop para cerrar la sheet
-// ahora primero solo baja el teclado (si está abierto) — antes, tocar fuera
-// del input cerraba la sheet entera de golpe, dejando al usuario sin ver el
-// formulario para volver a intentarlo.
+// Se conserva a propósito, encima del Actionsheet real, lo que Gluestack no
+// trae de fábrica: el toque en el backdrop primero baja el teclado (si está
+// abierto) y solo cierra la hoja en un segundo toque — mismo fix ya probado
+// en producción (Antropometría), ActionsheetBackdrop no lo replica solo.
+// `onPress` propio sustituye por completo el auto-cierre interno del
+// Backdrop (createActionsheet lo spreadea después de su handler default),
+// así que el control de apertura/cierre sigue siendo 100% el `visible`/
+// `onClose` de este wrapper, igual que antes.
+//
+// El `className` por defecto de ActionsheetContent trae padding/centrado
+// pensados para listas de opciones (`p-2 items-center`) que no encajan con
+// los formularios/listas de ancho completo que usan las 14 pantallas que
+// consumen este componente — se deja transparente y sin padding aquí; el
+// fondo real (Liquid Glass o C.surface de reserva) lo pone el GlassView de
+// dentro, que también lleva el radio/padding que antes tenía este nodo.
 export default function SimpleBottomSheet({ visible, onClose, children }: SimpleBottomSheetProps) {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  // Solo iOS 26+ real (dispositivo + compilado con Xcode 26+) renderiza el
+  // material Liquid Glass de verdad — en cualquier otro caso GlassView cae a
+  // una View normal y quedaría transparente sin este fondo de reserva.
+  const hasGlass = isGlassEffectAPIAvailable();
 
   useEffect(() => {
     if (!visible) return;
@@ -47,25 +61,27 @@ export default function SimpleBottomSheet({ visible, onClose, children }: Simple
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={s.flexFill}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onBackdropPress} />
-        <View style={s.sheet}>{children}</View>
-      </KeyboardAvoidingView>
-    </Modal>
+    <Actionsheet isOpen={visible} onClose={onClose}>
+      <ActionsheetBackdrop onPress={onBackdropPress} />
+      <ActionsheetContent className="items-stretch p-0" style={{ backgroundColor: 'transparent' }}>
+        <GlassView
+          glassEffectStyle="regular"
+          style={{
+            width: '100%',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingBottom: 28,
+            ...(hasGlass ? null : { backgroundColor: C.surface }),
+          }}
+        >
+          <KeyboardAvoidingView
+            style={{ width: '100%' }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            {children}
+          </KeyboardAvoidingView>
+        </GlassView>
+      </ActionsheetContent>
+    </Actionsheet>
   );
 }
-
-const s = StyleSheet.create({
-  flexFill: { flex: 1 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
-  sheet: {
-    backgroundColor: C.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 28,
-  },
-});

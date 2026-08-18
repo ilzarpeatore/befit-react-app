@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedRing from '@components/AnimatedRing';
+import ScreenHeader from '@components/ScreenHeader';
 import { C, FONT } from './theme';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 
@@ -55,12 +56,7 @@ export default function StepsCountScreen(props: any) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Step Tracker</Text>
-      </View>
+      <ScreenHeader title="Step Tracker" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.goalInfoBox}>

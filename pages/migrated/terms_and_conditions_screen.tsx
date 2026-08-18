@@ -1,22 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C, FONT } from './theme';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { ScrollView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Card } from '@components/ui/card';
+import ScreenHeader from '@components/ScreenHeader';
 
 export default function TermsAndConditionsScreen(props: any) {
   return (
-    <View style={styles.container}>
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles.appBarTitle}>Terms of Services</Text>
-      </View>
+    <Box className="flex-1 bg-background">
+      <ScreenHeader title="Terms of Services" onBack={() => props.navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.contentCard}>
-          <Text style={styles.htmlContent}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+        <Card variant="outline">
+          <Text muted className="leading-6">
             {`Terms and Conditions\n\n` +
               `Welcome to MightyFitness. By using our application, you agree to the following terms and conditions.\n\n` +
               `1. Acceptance of Terms\n` +
@@ -30,33 +26,8 @@ export default function TermsAndConditionsScreen(props: any) {
               `5. Subscriptions\n` +
               `Paid plans are arranged and billed outside the app, directly with your coach. This application does not process any payment.`}
           </Text>
-        </View>
+        </Card>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  appBarTitle: { fontSize: 20, fontFamily: FONT.bold, color: C.white },
-  scrollContent: { paddingHorizontal: 8, paddingBottom: 20 },
-  contentCard: {
-    backgroundColor: C.surfaceLight,
-    borderRadius: 12,
-    padding: 16,
-  },
-  htmlContent: {
-    fontSize: 14,
-    fontFamily: FONT.regular,
-    color: C.gray50,
-    lineHeight: 22,
-  },
-});

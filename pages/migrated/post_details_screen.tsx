@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Image, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Card } from '@components/ui/card';
+import { Text } from '@components/ui/text';
+import { Button } from '@components/ui/button';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import ScreenHeader from '@components/ScreenHeader';
+import { C } from './theme';
 import { postsApi, PostComment } from '../../api/posts';
 import logger from '@helper/logger';
 
@@ -63,17 +69,12 @@ export default function PostDetailsScreen(props: any) {
 
   if (!postData) {
     return (
-      <View style={s.container}>
-        <View style={s.appBar}>
-          <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-          </TouchableOpacity>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={s.emptyContainer}>
-          <Text style={s.emptyText}>No post data available</Text>
-        </View>
-      </View>
+      <Box className="flex-1 bg-background">
+        <ScreenHeader title="" onBack={() => props.navigation?.goBack()} />
+        <Box className="flex-1 items-center justify-center">
+          <Text muted weight="medium">No post data available</Text>
+        </Box>
+      </Box>
     );
   }
 
@@ -122,182 +123,131 @@ export default function PostDetailsScreen(props: any) {
   };
 
   return (
-    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
-      <View style={s.appBar}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={{ width: 24 }} />
-      </View>
-      <ScrollView contentContainerStyle={s.scrollContent}>
-        <View style={s.postCard}>
-          <View style={s.postHeader}>
-            <TouchableOpacity
-              style={s.avatarRow}
-              activeOpacity={0.7}
-              onPress={() => {
-                if (!user?.id) return;
-                props.navigation?.navigate('MigratedOtherUserProfile', { userDetails: user });
-              }}
-            >
-              <View style={s.avatarPlaceholder}>
-                {user?.profileImage ? (
-                  <Image source={{ uri: user.profileImage }} style={s.avatarSmall} />
-                ) : (
-                  <Ionicons name="person" size={18} color={C.gray30} />
-                )}
-              </View>
-              <View style={s.userInfo}>
-                <Text style={s.userName}>{user?.firstName ?? ''} {user?.lastName ?? ''}</Text>
-                {postData.createdAt && <Text style={s.postTime}>{postData.createdAt}</Text>}
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.moreBtn}>
-              <Ionicons name="ellipsis-horizontal" size={20} color={C.gray40} />
-            </TouchableOpacity>
-          </View>
-          {postData.content ? <Text style={s.postContent}>{postData.content}</Text> : null}
-          {postData.images && postData.images.length > 0 ? (
-            <View style={s.postImages}>
-              {postData.images.map((img, i) => (
-                <Image key={i} source={{ uri: img }} style={[s.postImage, postData.images!.length === 1 && s.postImageFull]} />
-              ))}
-            </View>
-          ) : null}
-          <View style={s.postFooter}>
-            <TouchableOpacity style={s.actionBtn} onPress={toggleLike}>
-              <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={22} color={isLiked ? C.destructive : C.gray30} />
-              <Text style={[s.actionText, isLiked && s.actionTextActive]}>{(postData.likesCount ?? 0) + (isLiked ? 1 : 0)}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.actionBtn} onPress={focusCommentInput}>
-              <Ionicons name="chatbubble-outline" size={22} color={C.gray30} />
-              <Text style={s.actionText}>{commentsCount}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.actionBtn} onPress={toggleBookmark}>
-              <Ionicons name={isBookmarked ? 'bookmark' : 'bookmark-outline'} size={22} color={isBookmarked ? C.orange : C.gray30} />
-            </TouchableOpacity>
-            <TouchableOpacity style={s.actionBtn}>
-              <Ionicons name="share-outline" size={22} color={C.gray30} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={s.commentsSection}>
-          <Text style={s.commentsTitle}>Comments</Text>
-          {commentsLoading ? (
-            <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
-          ) : comments.length > 0 ? (
-            comments.map((c) => (
-              <View key={c.id} style={s.commentRow}>
-                <View style={s.avatarPlaceholder}>
-                  {c.users?.profile_image ? (
-                    <Image source={{ uri: c.users.profile_image }} style={s.avatarSmall} />
+    <Box className="flex-1 bg-background">
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        <ScreenHeader title="" onBack={() => props.navigation?.goBack()} />
+        <ScrollView contentContainerStyle={{ padding: 6, paddingBottom: 24 }}>
+          <Card variant="ghost" style={{ marginBottom: 12 }}>
+            <Box className="flex-row items-center justify-between" style={{ marginBottom: 12 }}>
+              <Pressable
+                className="flex-row items-center flex-1"
+                onPress={() => {
+                  if (!user?.id) return;
+                  props.navigation?.navigate('MigratedOtherUserProfile', { userDetails: user });
+                }}
+              >
+                <Box className="w-9 h-9 rounded-pill bg-secondary items-center justify-center">
+                  {user?.profileImage ? (
+                    <Image source={{ uri: user.profileImage }} className="w-9 h-9 rounded-pill" />
                   ) : (
-                    <Ionicons name="person" size={16} color={C.gray30} />
+                    <Icon name="person" size={18} className="text-muted-foreground" />
                   )}
-                </View>
-                <View style={s.commentBody}>
-                  <Text style={s.commentUserName}>
-                    {c.users?.first_name ?? ''} {c.users?.last_name ?? ''}
-                  </Text>
-                  <Text style={s.commentText}>{c.comment}</Text>
-                  {c.created_at ? <Text style={s.commentTime}>{c.created_at}</Text> : null}
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text style={s.noCommentsText}>Be the first to comment</Text>
-          )}
-        </View>
-      </ScrollView>
+                </Box>
+                <Box className="flex-1" style={{ marginLeft: 12 }}>
+                  <Text weight="semibold" size="sm">{user?.firstName ?? ''} {user?.lastName ?? ''}</Text>
+                  {postData.createdAt && <Text muted size="xs" style={{ marginTop: 2 }}>{postData.createdAt}</Text>}
+                </Box>
+              </Pressable>
+              <Pressable style={{ padding: 4 }}>
+                <Icon name="ellipsis-horizontal" size={20} className="text-muted-foreground" />
+              </Pressable>
+            </Box>
+            {postData.content ? <Text muted style={{ lineHeight: 22, marginBottom: 12 }}>{postData.content}</Text> : null}
+            {postData.images && postData.images.length > 0 ? (
+              <Box className="flex-row flex-wrap" style={{ marginBottom: 12 }}>
+                {postData.images.map((img, i) => (
+                  <Image
+                    key={i}
+                    source={{ uri: img }}
+                    className="rounded-md bg-secondary"
+                    style={[
+                      { width: '48%', height: 180, marginBottom: 4, marginRight: 8 },
+                      postData.images!.length === 1 && { width: '100%', marginRight: 0 },
+                    ]}
+                  />
+                ))}
+              </Box>
+            ) : null}
+            <Box className="flex-row items-center border-t border-border" style={{ paddingTop: 12, marginTop: 4 }}>
+              <Pressable className="flex-row items-center" style={{ marginRight: 20 }} onPress={toggleLike}>
+                <Icon name={isLiked ? 'heart' : 'heart-outline'} size={22} className={isLiked ? 'text-destructive' : 'text-muted-foreground'} />
+                <Text size="xs" className={isLiked ? 'text-destructive' : 'text-muted-foreground'} style={{ marginLeft: 6 }}>
+                  {(postData.likesCount ?? 0) + (isLiked ? 1 : 0)}
+                </Text>
+              </Pressable>
+              <Pressable className="flex-row items-center" style={{ marginRight: 20 }} onPress={focusCommentInput}>
+                <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
+                <Text size="xs" className="text-muted-foreground" style={{ marginLeft: 6 }}>{commentsCount}</Text>
+              </Pressable>
+              <Pressable className="flex-row items-center" style={{ marginRight: 20 }} onPress={toggleBookmark}>
+                <Icon
+                  name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+                  size={22}
+                  className={isBookmarked ? undefined : 'text-muted-foreground'}
+                  style={isBookmarked ? { color: C.orange } : undefined}
+                />
+              </Pressable>
+              <Pressable className="flex-row items-center" style={{ marginRight: 20 }}>
+                <Icon name="share-outline" size={22} className="text-muted-foreground" />
+              </Pressable>
+            </Box>
+          </Card>
 
-      <View style={s.commentInputBar}>
-        <TextInput
-          ref={commentInputRef}
-          style={s.commentInput}
-          placeholder="Write a comment..."
-          placeholderTextColor={C.gray50}
-          value={commentText}
-          onChangeText={setCommentText}
-          multiline
-        />
-        <TouchableOpacity
-          style={[s.sendBtn, (!commentText.trim() || postingComment) && s.sendBtnDisabled]}
-          onPress={submitComment}
-          disabled={!commentText.trim() || postingComment}
-        >
-          {postingComment ? (
-            <ActivityIndicator size="small" color={C.white} />
-          ) : (
-            <Ionicons name="send" size={18} color={C.white} />
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          <Card variant="ghost" style={{ marginBottom: 12 }}>
+            <Text weight="semibold" size="sm" style={{ marginBottom: 12 }}>Comments</Text>
+            {commentsLoading ? (
+              <Spinner size="small" color={C.orange} style={{ marginVertical: 16 }} />
+            ) : comments.length > 0 ? (
+              comments.map((c) => (
+                <Box key={c.id} className="flex-row items-start" style={{ marginBottom: 14 }}>
+                  <Box className="w-9 h-9 rounded-pill bg-secondary items-center justify-center">
+                    {c.users?.profile_image ? (
+                      <Image source={{ uri: c.users.profile_image }} className="w-9 h-9 rounded-pill" />
+                    ) : (
+                      <Icon name="person" size={16} className="text-muted-foreground" />
+                    )}
+                  </Box>
+                  <Box className="flex-1" style={{ marginLeft: 10 }}>
+                    <Text weight="semibold" size="xs">
+                      {c.users?.first_name ?? ''} {c.users?.last_name ?? ''}
+                    </Text>
+                    <Text muted size="xs" style={{ marginTop: 2, lineHeight: 18 }}>{c.comment}</Text>
+                    {c.created_at ? <Text muted size="xs" style={{ marginTop: 4 }}>{c.created_at}</Text> : null}
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Text muted size="xs" className="text-center" style={{ paddingVertical: 12 }}>Be the first to comment</Text>
+            )}
+          </Card>
+        </ScrollView>
+
+        <Box className="flex-row items-end px-3 py-2.5 gap-2 border-t border-border bg-card">
+          <TextInput
+            ref={commentInputRef}
+            className="flex-1 bg-secondary rounded-md px-3.5 py-2.5 text-foreground font-gilroy-regular text-sm border border-border"
+            style={{ maxHeight: 100 }}
+            placeholder="Write a comment..."
+            placeholderTextColor="rgb(var(--muted-foreground))"
+            value={commentText}
+            onChangeText={setCommentText}
+            multiline
+          />
+          <Button
+            onPress={submitComment}
+            disabled={!commentText.trim() || postingComment}
+            size="icon"
+            radius="pill"
+            className="w-10 h-10"
+          >
+            {postingComment ? (
+              <Spinner size="small" color="#FFFFFF" />
+            ) : (
+              <Icon name="send" size={18} className="text-primary-foreground" />
+            )}
+          </Button>
+        </Box>
+      </KeyboardAvoidingView>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  scrollContent: { padding: 6, paddingBottom: 24 },
-  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.gray40 },
-  postCard: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
-  postHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  avatarRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  userInfo: { marginLeft: 12, flex: 1 },
-  userName: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-  postTime: { fontSize: 12, color: C.gray50, marginTop: 2 },
-  moreBtn: { padding: 4 },
-  postContent: { fontSize: 15, color: C.gray50, lineHeight: 22, marginBottom: 12 },
-  postImages: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
-  postImage: { width: '48%', height: 180, borderRadius: 12, marginBottom: 4, marginRight: 8, backgroundColor: C.surfaceLight },
-  postImageFull: { width: '100%', marginRight: 0 },
-  postFooter: { flexDirection: 'row', alignItems: 'center', borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 12, marginTop: 4 },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', marginRight: 20 },
-  actionText: { fontSize: 13, color: C.gray40, marginLeft: 6 },
-  actionTextActive: { color: C.destructive },
-  avatarPlaceholder: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.surfaceLight, justifyContent: 'center', alignItems: 'center' },
-  avatarSmall: { width: 36, height: 36, borderRadius: 18 },
-  commentsSection: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
-  commentsTitle: { fontSize: 15, fontFamily: FONT.semiBold, color: C.white, marginBottom: 12 },
-  commentRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14 },
-  commentBody: { marginLeft: 10, flex: 1 },
-  commentUserName: { fontSize: 13, fontFamily: FONT.semiBold, color: C.white },
-  commentText: { fontSize: 13, color: C.gray50, marginTop: 2, lineHeight: 18 },
-  commentTime: { fontSize: 11, color: C.gray50, marginTop: 4 },
-  noCommentsText: { fontSize: 13, color: C.gray50, textAlign: 'center', paddingVertical: 12 },
-  commentInputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: C.surface,
-    borderTopWidth: 0.5,
-    borderTopColor: C.border,
-    gap: 8,
-  },
-  commentInput: {
-    flex: 1,
-    backgroundColor: C.surfaceLight,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: C.white,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-    maxHeight: 100,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: C.brand5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendBtnDisabled: { opacity: 0.5 },
-});

@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { HStack } from '@components/ui/hstack';
+import { VStack } from '@components/ui/vstack';
+import { Pressable } from '@components/ui/pressable';
+import { Icon } from '@components/ui/icon';
+import ScreenHeader from '@components/ScreenHeader';
+import { C } from './theme';
 import { postsApi } from '../../api/posts';
 import { profileApi, UserSocialStats } from '../../api/profile';
 import logger from '@helper/logger';
@@ -123,120 +128,101 @@ export default function OtherUserProfileScreen(props: any) {
   };
 
   const renderPostItem = (item: PostData, index: number) => (
-    <TouchableOpacity key={index} style={s.postCard} activeOpacity={0.85} onPress={() => openPostDetail(item)}>
-      <View style={s.postHeader}>
+    <Pressable
+      key={index}
+      className="bg-card rounded-lg p-4"
+      style={{ marginBottom: 12 }}
+      onPress={() => openPostDetail(item)}
+    >
+      <HStack className="items-center" style={{ marginBottom: 12 }}>
         {profileImg ? (
-          <Image source={{ uri: profileImg }} style={s.avatarPlaceholder} />
+          <Image source={{ uri: profileImg }} style={{ width: 40, height: 40, borderRadius: 20 }} />
         ) : (
-          <View style={s.avatarPlaceholder}>
-            <Ionicons name="person" size={20} color={C.gray30} />
-          </View>
+          <Box className="bg-muted rounded-pill items-center justify-center" style={{ width: 40, height: 40 }}>
+            <Icon name="person" size={20} color={C.gray30} />
+          </Box>
         )}
-        <View style={s.postHeaderInfo}>
-          <Text style={s.postUserName}>{firstName} {lastName}</Text>
-          <Text style={s.postTime}>Post</Text>
-        </View>
-      </View>
-      {item.content ? <Text style={s.postContent}>{item.content}</Text> : null}
+        <Box className="flex-1" style={{ marginLeft: 12 }}>
+          <Text weight="semibold" size="sm">{firstName} {lastName}</Text>
+          <Text size="xs" style={{ color: C.gray40 }}>Post</Text>
+        </Box>
+      </HStack>
+      {item.content ? <Text size="sm" style={{ color: C.gray50, marginBottom: 12, lineHeight: 20 }}>{item.content}</Text> : null}
       {item.images && item.images.length > 0 ? (
-        <View style={s.postImagesRow}>
+        <HStack style={{ marginBottom: 12 }}>
           {item.images.map((img, i) => (
-            <Image key={i} source={{ uri: img }} style={s.postImageThumb} />
+            <Image key={i} source={{ uri: img }} style={{ width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight }} />
           ))}
-        </View>
+        </HStack>
       ) : null}
-      <View style={s.postActions}>
-        <TouchableOpacity style={s.postActionBtn} onPress={() => toggleLike(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name={item.isLiked ? 'heart' : 'heart-outline'} size={20} color={item.isLiked ? C.destructive : C.gray30} />
-          <Text style={s.postActionText}>{item.likesCount ?? 0}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={s.postActionBtn} onPress={() => openPostDetail(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="chatbubble-outline" size={20} color={C.gray30} />
-          <Text style={s.postActionText}>{item.commentsCount ?? 0}</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
+      <HStack className="border-t border-border" style={{ paddingTop: 12 }}>
+        <Pressable
+          className="flex-row items-center"
+          style={{ marginRight: 24 }}
+          onPress={() => toggleLike(item)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Icon name={item.isLiked ? 'heart' : 'heart-outline'} size={20} color={item.isLiked ? C.destructive : C.gray30} />
+          <Text size="sm" style={{ color: C.gray30, marginLeft: 6 }}>{item.likesCount ?? 0}</Text>
+        </Pressable>
+        <Pressable
+          className="flex-row items-center"
+          onPress={() => openPostDetail(item)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Icon name="chatbubble-outline" size={20} color={C.gray30} />
+          <Text size="sm" style={{ color: C.gray30, marginLeft: 6 }}>{item.commentsCount ?? 0}</Text>
+        </Pressable>
+      </HStack>
+    </Pressable>
   );
 
   return (
-    <View style={s.container}>
-      <View style={s.headerBg} />
-      <ScrollView ref={scrollRef} style={s.scrollView}>
-        <View style={s.headerBar}>
-          <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={C.white} />
-          </TouchableOpacity>
-          <Text style={s.headerBarTitle}>Profile</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={s.profileCard}>
-          <View style={s.avatarContainer}>
-            <View style={s.avatarLarge}>
+    <Box className="flex-1 bg-background">
+      <Box
+        className="absolute top-0 left-0 right-0"
+        style={{ height: Dimensions.get('window').height * 0.3, backgroundColor: C.brand5 }}
+      />
+      <ScrollView ref={scrollRef} className="flex-1">
+        <ScreenHeader title="Profile" onBack={() => props.navigation?.goBack()} />
+        <Box
+          className="bg-card rounded-lg items-center"
+          style={{ marginTop: Dimensions.get('window').height * 0.15, paddingTop: 60, paddingBottom: 24 }}
+        >
+          <Box className="absolute self-center" style={{ top: -48 }}>
+            <Box className="bg-muted items-center justify-center overflow-hidden" style={{ width: 96, height: 96, borderRadius: 48 }}>
               {profileImg ? (
-                <Image source={{ uri: profileImg }} style={s.avatarImage} />
+                <Image source={{ uri: profileImg }} style={{ width: 96, height: 96, borderRadius: 48 }} />
               ) : (
-                <Ionicons name="person" size={40} color={C.gray30} />
+                <Icon name="person" size={40} color={C.gray30} />
               )}
-            </View>
-          </View>
-          <Text style={s.profileName}>{firstName} {lastName}</Text>
-          <View style={s.statsRow}>
-            <View style={s.statItem}>
-              <Text style={s.statValue}>{stats ? stats.workout_count : '-'}</Text>
-              <Text style={s.statLabel}>Workouts</Text>
-            </View>
-            <View style={s.statDivider} />
-            <View style={s.statItem}>
-              <Text style={s.statValue}>{stats ? stats.posting_count : '-'}</Text>
-              <Text style={s.statLabel}>Posts</Text>
-            </View>
-          </View>
-        </View>
-        <View style={s.postsSection}>
+            </Box>
+          </Box>
+          <Text weight="bold" size="xl" style={{ marginTop: 8 }}>{firstName} {lastName}</Text>
+          <HStack className="items-center" style={{ marginTop: 16 }}>
+            <VStack className="items-center" style={{ paddingHorizontal: 24 }}>
+              <Text weight="bold" size="lg">{stats ? stats.workout_count : '-'}</Text>
+              <Text size="xs" style={{ color: C.gray40, marginTop: 2 }}>Workouts</Text>
+            </VStack>
+            <Box className="bg-border" style={{ width: 1, height: 28 }} />
+            <VStack className="items-center" style={{ paddingHorizontal: 24 }}>
+              <Text weight="bold" size="lg">{stats ? stats.posting_count : '-'}</Text>
+              <Text size="xs" style={{ color: C.gray40, marginTop: 2 }}>Posts</Text>
+            </VStack>
+          </HStack>
+        </Box>
+        <Box style={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 24 }}>
           {postList.length > 0 ? (
             postList.map((item, index) => renderPostItem(item, index))
           ) : !isLoading ? (
-            <View style={s.emptyContainer}>
-              <Ionicons name="document-text-outline" size={64} color={C.gray50} />
-              <Text style={s.emptyText}>No posts yet</Text>
-            </View>
+            <Box className="items-center justify-center" style={{ paddingVertical: 48 }}>
+              <Icon name="document-text-outline" size={64} color={C.gray50} />
+              <Text weight="medium" style={{ color: C.gray40, marginTop: 16 }}>No posts yet</Text>
+            </Box>
           ) : null}
           {isLoading && <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />}
-        </View>
+        </Box>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  headerBg: { position: 'absolute', top: 0, left: 0, right: 0, height: Dimensions.get('window').height * 0.3, backgroundColor: C.brand5 },
-  scrollView: { flex: 1 },
-  headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12 },
-  headerBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  profileCard: { backgroundColor: C.surface, borderRadius: 16, marginTop: Dimensions.get('window').height * 0.15, paddingTop: 60, paddingBottom: 24, alignItems: 'center' },
-  avatarContainer: { position: 'absolute', top: -48, alignSelf: 'center' },
-  profileName: { fontSize: 20, fontFamily: FONT.bold, color: C.white, marginTop: 8 },
-  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
-  statItem: { alignItems: 'center', paddingHorizontal: 24 },
-  statValue: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  statLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray40, marginTop: 2 },
-  statDivider: { width: 1, height: 28, backgroundColor: C.border },
-  postsSection: { paddingHorizontal: 6, paddingTop: 16, paddingBottom: 24 },
-  postCard: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
-  postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  postHeaderInfo: { marginLeft: 12, flex: 1 },
-  postUserName: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
-  postTime: { fontSize: 12, color: C.gray40 },
-  postContent: { fontSize: 14, color: C.gray50, marginBottom: 12, lineHeight: 20 },
-  postImagesRow: { flexDirection: 'row', marginBottom: 12 },
-  postImageThumb: { width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight },
-  postActions: { flexDirection: 'row', borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 12 },
-  postActionBtn: { flexDirection: 'row', alignItems: 'center', marginRight: 24 },
-  postActionText: { fontSize: 13, color: C.gray30, marginLeft: 6 },
-  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 48 },
-  emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.gray40, marginTop: 16 },
-  avatarPlaceholder: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.surfaceLight, justifyContent: 'center', alignItems: 'center' },
-  avatarLarge: { width: 96, height: 96, borderRadius: 48, backgroundColor: C.surfaceLight, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  avatarImage: { width: 96, height: 96, borderRadius: 48 },
-});

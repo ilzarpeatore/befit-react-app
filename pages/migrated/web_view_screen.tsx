@@ -1,16 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ActivityIndicator,
-  TouchableOpacity,
-} from 'react-native';
+import { SafeAreaView, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
-import { C, FONT } from './theme';
+import { Box } from '@components/ui/box';
+import { Button } from '@components/ui/button';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
 
 interface WebViewScreenProps {
   route?: {
@@ -69,19 +63,19 @@ export default function WebViewScreen(props: WebViewScreenProps) {
   const onError = () => setIsLoading(false);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+      <Box className="flex-row items-center px-2 py-2.5 bg-card border-b border-border">
+        <Button variant="ghost" size="icon" onPress={() => props.navigation?.goBack()}>
+          <Icon name="chevron-back" size={24} className="text-foreground" />
+        </Button>
+        <Box className="flex-1" />
+      </Box>
 
-      <View style={styles.webViewContainer}>
+      <Box className="flex-1">
         <WebView
           ref={webViewRef}
           source={{ uri: url }}
-          style={styles.webView}
+          style={{ flex: 1 }}
           onLoadStart={onLoadStart}
           onLoadEnd={onLoadEnd}
           onError={onError}
@@ -95,39 +89,11 @@ export default function WebViewScreen(props: WebViewScreenProps) {
         />
 
         {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={C.orange} />
-          </View>
+          <Box className="items-center justify-center bg-card" style={StyleSheet.absoluteFill}>
+            <Spinner size="large" />
+          </Box>
         )}
-      </View>
+      </Box>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: C.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    backgroundColor: C.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-  },
-  webViewContainer: {
-    flex: 1,
-  },
-  webView: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: C.surface,
-  },
-});

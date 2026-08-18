@@ -1,9 +1,14 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Keyboard, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import { ScrollView, Alert, Keyboard, StyleSheet } from 'react-native';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Button, ButtonText } from '@components/ui/button';
+import { Input, InputField, InputSlot } from '@components/ui/input';
+import { Icon } from '@components/ui/icon';
+import { Spinner } from '@components/ui/spinner';
+import ScreenHeader from '@components/ScreenHeader';
 import { authApi } from '@api/auth';
-import { C, FONT } from './theme';
+import { C } from './theme';
 
 export default function ChangePwdScreen({ navigation }: any) {
 
@@ -16,8 +21,11 @@ export default function ChangePwdScreen({ navigation }: any) {
   const [newSecure, setNewSecure] = useState(true);
   const [confirmSecure, setConfirmSecure] = useState(true);
 
-  const newPasswordRef = useRef<TextInput>(null);
-  const confirmPasswordRef = useRef<TextInput>(null);
+  // Tipado como `any`: el ref forwarding de InputField (createInput de
+  // gluestack) expone un tipo Ref<TextInputProps> en vez de la instancia de
+  // TextInput — en runtime sigue siendo el TextInput real (.focus() funciona).
+  const newPasswordRef = useRef<any>(null);
+  const confirmPasswordRef = useRef<any>(null);
 
   const changePwd = async () => {
     Keyboard.dismiss();
@@ -51,146 +59,89 @@ export default function ChangePwdScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles_local.container}>
-      <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
-        <Text style={styles_local.headerTitle}>Change Password</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <Box className="flex-1 bg-background">
+      <Box style={{ paddingTop: 40 }}>
+        <ScreenHeader title="Change Password" onBack={() => navigation.goBack()} />
+      </Box>
 
       <ScrollView
-        style={styles_local.body}
+        className="flex-1"
         contentContainerStyle={{ padding: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles_local.subtitle}>
+        <Text size="sm" muted style={{ marginBottom: 24 }}>
           Please enter your current password and choose a new password.
         </Text>
 
         {/* Current password */}
-        <Text style={styles_local.label}>Current Password</Text>
-        <View style={styles_local.inputWrap}>
-          <TextInput
-            style={styles_local.input}
+        <Text weight="semibold" size="sm" style={{ marginBottom: 6 }}>Current Password</Text>
+        <Input className="rounded-sm">
+          <InputField
             placeholder="Enter current password"
-            placeholderTextColor={C.gray50}
             value={oldPassword}
             onChangeText={setOldPassword}
             secureTextEntry={oldSecure}
             returnKeyType="next"
             onSubmitEditing={() => newPasswordRef.current?.focus()}
           />
-          <TouchableOpacity style={styles_local.eyeBtn} onPress={() => setOldSecure(!oldSecure)}>
-            <Ionicons name={oldSecure ? 'eye-off-outline' : 'eye-outline'} size={18} color={C.gray40} />
-          </TouchableOpacity>
-        </View>
+          <InputSlot className="px-3" onPress={() => setOldSecure(!oldSecure)}>
+            <Icon name={oldSecure ? 'eye-off-outline' : 'eye-outline'} size={18} className="text-muted-foreground" />
+          </InputSlot>
+        </Input>
 
         {/* New password */}
-        <Text style={[styles_local.label, { marginTop: 16 }]}>New Password</Text>
-        <View style={styles_local.inputWrap}>
-          <TextInput
+        <Text weight="semibold" size="sm" style={{ marginTop: 16, marginBottom: 6 }}>New Password</Text>
+        <Input className="rounded-sm">
+          <InputField
             ref={newPasswordRef}
-            style={styles_local.input}
             placeholder="Enter new password"
-            placeholderTextColor={C.gray50}
             value={newPassword}
             onChangeText={setNewPassword}
             secureTextEntry={newSecure}
             returnKeyType="next"
             onSubmitEditing={() => confirmPasswordRef.current?.focus()}
           />
-          <TouchableOpacity style={styles_local.eyeBtn} onPress={() => setNewSecure(!newSecure)}>
-            <Ionicons name={newSecure ? 'eye-off-outline' : 'eye-outline'} size={18} color={C.gray40} />
-          </TouchableOpacity>
-        </View>
+          <InputSlot className="px-3" onPress={() => setNewSecure(!newSecure)}>
+            <Icon name={newSecure ? 'eye-off-outline' : 'eye-outline'} size={18} className="text-muted-foreground" />
+          </InputSlot>
+        </Input>
 
         {/* Confirm password */}
-        <Text style={[styles_local.label, { marginTop: 16 }]}>Confirm Password</Text>
-        <View style={styles_local.inputWrap}>
-          <TextInput
+        <Text weight="semibold" size="sm" style={{ marginTop: 16, marginBottom: 6 }}>Confirm Password</Text>
+        <Input className="rounded-sm">
+          <InputField
             ref={confirmPasswordRef}
-            style={styles_local.input}
             placeholder="Enter confirm password"
-            placeholderTextColor={C.gray50}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={confirmSecure}
             returnKeyType="done"
             onSubmitEditing={changePwd}
           />
-          <TouchableOpacity style={styles_local.eyeBtn} onPress={() => setConfirmSecure(!confirmSecure)}>
-            <Ionicons name={confirmSecure ? 'eye-off-outline' : 'eye-outline'} size={18} color={C.gray40} />
-          </TouchableOpacity>
-        </View>
+          <InputSlot className="px-3" onPress={() => setConfirmSecure(!confirmSecure)}>
+            <Icon name={confirmSecure ? 'eye-off-outline' : 'eye-outline'} size={18} className="text-muted-foreground" />
+          </InputSlot>
+        </Input>
 
         {confirmPassword.length > 0 && confirmPassword !== newPassword && (
-          <Text style={styles_local.errorText}>Passwords do not match</Text>
+          <Text size="xs" className="text-destructive" style={{ marginTop: 6 }}>Passwords do not match</Text>
         )}
 
         {/* Submit */}
-        <TouchableOpacity style={styles_local.submitBtn} onPress={changePwd} activeOpacity={0.8}>
-          <Text style={styles_local.submitText}>Submit</Text>
-        </TouchableOpacity>
+        <Button onPress={changePwd} className="w-full" style={{ marginTop: 24 }}>
+          <ButtonText>Submit</ButtonText>
+        </Button>
       </ScrollView>
 
       {loading && (
-        <View style={styles_local.loadingOverlay}>
-          <ActivityIndicator size="large" color={C.orange} />
-        </View>
+        <Box
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+          className="items-center justify-center"
+        >
+          <Spinner size="large" color={C.orange} />
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
-
-const styles_local = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
-    backgroundColor: C.surface,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
-  body: { flex: 1 },
-  subtitle: { fontSize: 14, fontFamily: FONT.regular, color: C.gray30, marginBottom: 24 },
-  label: { fontSize: 14, fontFamily: FONT.semiBold, color: C.textPrimary, marginBottom: 6 },
-  inputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.surfaceLight,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  input: {
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: C.white,
-    fontFamily: FONT.regular,
-    fontSize: 14,
-  },
-  eyeBtn: { paddingHorizontal: 12 },
-  errorText: { fontSize: 12, fontFamily: FONT.regular, color: C.destructive, marginTop: 6 },
-  submitBtn: {
-    backgroundColor: C.brand5,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  submitText: { fontSize: 16, fontFamily: FONT.semiBold, color: C.white },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
