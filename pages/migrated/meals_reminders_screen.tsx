@@ -107,10 +107,10 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
   };
 
   const pickTime = (current: TimeObj, onSelected: (t: TimeObj) => void) => {
-    Alert.alert('Set Time', `Current: ${formatTimeDisplay(current)}\n\nUse a proper time picker in production.`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Establecer hora', `Actual: ${formatTimeDisplay(current)}\n\nUsar un selector de hora real en producción.`, [
+      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Set 1 hour later',
+        text: 'Poner 1 hora más tarde',
         onPress: () => {
           onSelected({ hour: (current.hour + 1) % 24, minute: current.minute });
         },
@@ -137,10 +137,10 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
         snacks: { enabled: snacksEnabled, time: snacksTime },
         dinner: { enabled: dinnerEnabled, time: dinnerTime },
       });
-      Alert.alert('Success', 'Settings saved');
+      Alert.alert('Éxito', 'Ajustes guardados');
       navigation?.goBack();
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Something went wrong');
+      Alert.alert('Error', e?.message || 'Algo salió mal');
     } finally {
       setIsSaving(false);
     }
@@ -157,7 +157,7 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
       <Text style={styles.sectionTitle}>{title}</Text>
       <View style={styles.sectionCard}>
         <View style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Reminders</Text>
+          <Text style={styles.settingLabel}>Recordatorios</Text>
           <Switch
             value={enabled}
             onValueChange={onToggle}
@@ -171,7 +171,7 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
           onPress={enabled ? onPickTime : undefined}
           activeOpacity={enabled ? 0.7 : 1}
         >
-          <Text style={styles.settingLabel}>Time</Text>
+          <Text style={styles.settingLabel}>Hora</Text>
           <View style={styles.timeRow}>
             <Text style={styles.timeText}>{formatTimeDisplay(time)}</Text>
             <Ionicons name="chevron-forward" size={20} color={C.gray40} />
@@ -184,22 +184,22 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
-        <Text style={styles.header}>Meals Reminders</Text>
+        <Text style={styles.header}>Recordatorios de comidas</Text>
         <TouchableOpacity onPress={saveSettings} disabled={isSaving}>
-          <Text style={styles.saveBtn}>Save</Text>
+          <Text style={styles.saveBtn}>Guardar</Text>
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        {renderMealSection('Breakfast', breakfastEnabled, setBreakfastEnabled, breakfastTime, () =>
+        {renderMealSection('Desayuno', breakfastEnabled, setBreakfastEnabled, breakfastTime, () =>
           pickTime(breakfastTime, setBreakfastTime)
         )}
         {renderMealSection('Snacks', snacksEnabled, setSnacksEnabled, snacksTime, () =>
           pickTime(snacksTime, setSnacksTime)
         )}
-        {renderMealSection('Lunch', lunchEnabled, setLunchEnabled, lunchTime, () =>
+        {renderMealSection('Comida', lunchEnabled, setLunchEnabled, lunchTime, () =>
           pickTime(lunchTime, setLunchTime)
         )}
-        {renderMealSection('Dinner', dinnerEnabled, setDinnerEnabled, dinnerTime, () =>
+        {renderMealSection('Cena', dinnerEnabled, setDinnerEnabled, dinnerTime, () =>
           pickTime(dinnerTime, setDinnerTime)
         )}
       </ScrollView>

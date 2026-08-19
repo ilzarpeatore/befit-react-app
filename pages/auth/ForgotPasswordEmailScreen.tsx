@@ -30,7 +30,7 @@ export default function ForgotPasswordEmailScreen() {
 
   const handleSendLink = async () => {
     if (!email.trim()) {
-      setError("Please enter your email");
+      setError("Introduce tu email");
       return;
     }
     setLoading(true);
@@ -39,7 +39,7 @@ export default function ForgotPasswordEmailScreen() {
       await authApi.forgotPassword({ email: email.trim() });
       navigation.navigate("ResetSent");
     } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to send reset link";
+      const message = err.response?.data?.message || "No se pudo enviar el enlace de restablecimiento";
       setError(message);
     } finally {
       setLoading(false);
@@ -60,7 +60,7 @@ export default function ForgotPasswordEmailScreen() {
             style={styles.masklabel}
             maskElement={
               <View style={styles.masklabelview}>
-                <Text style={styles.masklabeltext}>Reset</Text>
+                <Text style={styles.masklabeltext}>Nueva</Text>
               </View>
             }
           >
@@ -72,9 +72,9 @@ export default function ForgotPasswordEmailScreen() {
           </MaskedView>
 
           <ScrollView contentContainerStyle={styles.scrollContent}>
-            <Text style={styles.heading}>Forgot Password?</Text>
+            <Text style={styles.heading}>¿Olvidaste tu contraseña?</Text>
             <Text style={styles.subheading}>
-              Enter your email address and we'll send you a link to reset your password.
+              Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.
             </Text>
 
             {error ? (
@@ -83,7 +83,7 @@ export default function ForgotPasswordEmailScreen() {
 
             <AuthTextField
               label="Email"
-              hint="Enter your email"
+              hint="Introduce tu email"
               prefixIcon="mail-outline"
               value={email}
               onChangeText={setEmail}
@@ -92,15 +92,15 @@ export default function ForgotPasswordEmailScreen() {
 
             <View style={styles.buttonContainer}>
               <AuthPrimaryButton
-                label="Send Reset Link"
+                label="Enviar enlace"
                 onPress={handleSendLink}
                 loading={loading}
               />
             </View>
 
             <AuthLinkRow
-              prefix="Remember your password?"
-              linkText="Back to Login"
+              prefix="¿Recuerdas tu contraseña?"
+              linkText="Volver a iniciar sesión"
               onPress={() => navigation.goBack()}
             />
           </ScrollView>

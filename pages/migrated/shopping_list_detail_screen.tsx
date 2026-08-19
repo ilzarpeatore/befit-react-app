@@ -77,12 +77,12 @@ export default function ShoppingListDetailScreen(props: any) {
     } else if (value === 3) {
       // Delete list
       Alert.alert(
-        'Delete Shopping List',
-        'Are you sure you want to delete this shopping list?',
+        'Borrar lista de la compra',
+        '¿Seguro que quieres borrar esta lista de la compra?',
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: 'Cancelar', style: 'cancel' },
           {
-            text: 'Delete',
+            text: 'Borrar',
             style: 'destructive',
             onPress: async () => {
               if (detailData?.id == null) return;
@@ -148,7 +148,7 @@ export default function ShoppingListDetailScreen(props: any) {
       return (
         <Box className="flex-1 items-center justify-center">
           <Icon name="cart-outline" size={64} color={C.gray50} />
-          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No items found</Text>
+          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No se encontraron artículos</Text>
         </Box>
       );
     }
@@ -165,7 +165,7 @@ export default function ShoppingListDetailScreen(props: any) {
       return (
         <Box className="flex-1 items-center justify-center">
           <Icon name="cart-outline" size={64} color={C.gray50} />
-          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No items found</Text>
+          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No se encontraron artículos</Text>
         </Box>
       );
     }
@@ -191,7 +191,7 @@ export default function ShoppingListDetailScreen(props: any) {
           <Icon name="chevron-back" size={24} className="text-foreground" />
         </Button>
         <Text weight="bold" size="lg" numberOfLines={1} className="flex-1 text-center">
-          {detailData?.title ?? 'Shopping List'}
+          {detailData?.title ?? 'Lista de la compra'}
         </Text>
         <Button variant="ghost" size="icon" onPress={() => handleMenuAction(1)}>
           <Icon name="ellipsis-vertical" size={22} className="text-foreground" />
@@ -202,15 +202,15 @@ export default function ShoppingListDetailScreen(props: any) {
       <HStack className="justify-around px-4 py-2 border-b border-border">
         <Pressable className="flex-row items-center gap-1" style={{ padding: 8 }} onPress={() => handleMenuAction(1)}>
           <Icon name={showByCategory ? 'list' : 'grid-outline'} size={20} className="text-foreground" />
-          <Text size="xs" style={{ color: C.gray30 }}>{showByCategory ? 'Simple List' : 'Categorized'}</Text>
+          <Text size="xs" style={{ color: C.gray30 }}>{showByCategory ? 'Lista simple' : 'Por categorías'}</Text>
         </Pressable>
         <Pressable className="flex-row items-center gap-1" style={{ padding: 8 }} onPress={() => handleMenuAction(2)}>
           <Icon name="create-outline" size={20} className="text-foreground" />
-          <Text size="xs" style={{ color: C.gray30 }}>Edit</Text>
+          <Text size="xs" style={{ color: C.gray30 }}>Editar</Text>
         </Pressable>
         <Pressable className="flex-row items-center gap-1" style={{ padding: 8 }} onPress={() => handleMenuAction(3)}>
           <Icon name="trash-outline" size={20} color={C.red} />
-          <Text size="xs" style={{ color: C.red }}>Delete</Text>
+          <Text size="xs" style={{ color: C.red }}>Borrar</Text>
         </Pressable>
       </HStack>
 
@@ -221,7 +221,7 @@ export default function ShoppingListDetailScreen(props: any) {
       ) : !detailData ? (
         <Box className="flex-1 items-center justify-center">
           <Icon name="document-text-outline" size={64} color={C.gray50} />
-          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No data</Text>
+          <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>Sin datos</Text>
         </Box>
       ) : showByCategory ? (
         buildItemsByCategory()
@@ -232,7 +232,7 @@ export default function ShoppingListDetailScreen(props: any) {
       {/* Add Item Button */}
       <Box className="p-4" style={{ paddingBottom: 24 }}>
         <Button size="lg" onPress={() => setShowAddSheet(true)}>
-          <ButtonText>Add Item</ButtonText>
+          <ButtonText>Añadir artículo</ButtonText>
         </Button>
       </Box>
 
@@ -288,7 +288,7 @@ function AddItemSheet({
 
   const submit = async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter an item name');
+      Alert.alert('Error', 'Introduce el nombre del artículo');
       return;
     }
     setSubmitting(true);
@@ -322,8 +322,8 @@ function AddItemSheet({
                 <Icon name="add" size={24} className="text-foreground" />
               </Box>
               <Box className="flex-1" style={{ marginLeft: 14 }}>
-                <Text weight="bold" size="lg">Add Item</Text>
-                <Text size="sm" muted style={{ marginTop: 4 }}>Add a new item to your shopping list</Text>
+                <Text weight="bold" size="lg">Añadir artículo</Text>
+                <Text size="sm" muted style={{ marginTop: 4 }}>Añade un nuevo artículo a tu lista de la compra</Text>
               </Box>
               <Pressable onPress={onClose}>
                 <Icon name="close" size={24} color={C.gray30} />
@@ -336,20 +336,20 @@ function AddItemSheet({
               <Spinner size="large" color={C.orange} style={{ padding: 32 }} />
             ) : (
               <Box className="p-5">
-                <Text weight="bold" style={{ marginBottom: 8 }}>Item</Text>
+                <Text weight="bold" style={{ marginBottom: 8 }}>Artículo</Text>
                 <Input style={{ marginBottom: 16 }}>
                   <InputField
-                    placeholder="Enter item name"
+                    placeholder="Introduce el nombre del artículo"
                     value={name}
                     onChangeText={setName}
                   />
                 </Input>
 
-                <Text weight="bold" style={{ marginBottom: 8 }}>Quantity</Text>
+                <Text weight="bold" style={{ marginBottom: 8 }}>Cantidad</Text>
                 <HStack space="md" style={{ marginBottom: 24 }}>
                   <Input style={{ width: 140 }}>
                     <InputField
-                      placeholder="Quantity"
+                      placeholder="Cantidad"
                       value={quantity}
                       onChangeText={setQuantity}
                       keyboardType="decimal-pad"
@@ -357,17 +357,17 @@ function AddItemSheet({
                   </Input>
                   <Box className="flex-1 h-11 justify-center bg-card rounded-sm border border-border px-3">
                     <Text>
-                      {selectedUnit ? `${selectedUnit.title ?? ''} (${selectedUnit.symbol ?? ''})` : 'None'}
+                      {selectedUnit ? `${selectedUnit.title ?? ''} (${selectedUnit.symbol ?? ''})` : 'Ninguna'}
                     </Text>
                   </Box>
                 </HStack>
 
                 <HStack space="lg">
                   <Button variant="secondary" className="flex-1" onPress={onClose}>
-                    <ButtonText>Cancel</ButtonText>
+                    <ButtonText>Cancelar</ButtonText>
                   </Button>
                   <Button className="flex-1" onPress={submit} disabled={submitting}>
-                    {submitting ? <Spinner size="small" color="#FFFFFF" /> : <ButtonText>Add</ButtonText>}
+                    {submitting ? <Spinner size="small" color="#FFFFFF" /> : <ButtonText>Añadir</ButtonText>}
                   </Button>
                 </HStack>
               </Box>

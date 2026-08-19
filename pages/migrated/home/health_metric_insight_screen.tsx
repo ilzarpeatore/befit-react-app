@@ -10,75 +10,75 @@ import { HStack } from "@components/ui/hstack";
 import { VStack } from "@components/ui/vstack";
 import { C, FONT } from "../theme";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 const METRIC_DATA: Record<string, any> = {
   heart_rate: {
-    label: "Heart Rate",
+    label: "Frecuencia cardíaca",
     icon: "heart",
     iconColor: C.destructive50,
-    peak: "145 bpm",
-    average: "72 bpm",
-    min: "58 bpm",
-    max: "145 bpm",
+    peak: "145 lpm",
+    average: "72 lpm",
+    min: "58 lpm",
+    max: "145 lpm",
     score: 85,
     trend: [65, 70, 72, 68, 75, 72, 70],
     recommendations: [
-      "Maintain consistent cardio sessions 3x/week",
-      "Monitor resting heart rate for changes",
-      "Consider HRV training for recovery",
+      "Mantén sesiones de cardio regulares 3x/semana",
+      "Vigila la frecuencia cardíaca en reposo por si cambia",
+      "Considera entrenamiento de HRV para la recuperación",
     ],
   },
   steps: {
-    label: "Steps",
+    label: "Pasos",
     icon: "footsteps",
     iconColor: C.brand50,
-    peak: "12,450",
-    average: "8,200",
-    min: "3,100",
-    max: "12,450",
+    peak: "12.450",
+    average: "8.200",
+    min: "3.100",
+    max: "12.450",
     score: 72,
     trend: [6500, 8200, 9800, 7400, 10200, 8200, 7800],
     recommendations: [
-      "Aim for 10,000 steps daily",
-      "Take walking breaks every hour",
-      "Use stairs instead of elevator",
+      "Intenta llegar a 10.000 pasos diarios",
+      "Haz pausas para caminar cada hora",
+      "Usa las escaleras en vez del ascensor",
     ],
   },
   weight: {
-    label: "Weight",
+    label: "Peso",
     icon: "scale-outline",
     iconColor: C.blue50,
     peak: "72 kg",
-    average: "70.5 kg",
-    min: "69.8 kg",
+    average: "70,5 kg",
+    min: "69,8 kg",
     max: "72 kg",
     score: 90,
     trend: [71, 70.8, 70.5, 70.3, 70.1, 70, 70],
     recommendations: [
-      "Weight is stable - keep it up",
-      "Continue tracking weekly",
-      "Maintain balanced nutrition",
+      "El peso es estable — sigue así",
+      "Continúa el seguimiento semanal",
+      "Mantén una nutrición equilibrada",
     ],
   },
   hydration: {
-    label: "Hydration",
+    label: "Hidratación",
     icon: "water",
     iconColor: C.blue50,
-    peak: "2.8L",
-    average: "2.1L",
-    min: "1.5L",
-    max: "2.8L",
+    peak: "2,8L",
+    average: "2,1L",
+    min: "1,5L",
+    max: "2,8L",
     score: 78,
     trend: [1.5, 1.8, 2.1, 1.9, 2.3, 2.1, 2.0],
     recommendations: [
-      "Increase water intake to 2.5L daily",
-      "Drink water before each meal",
-      "Carry a water bottle throughout the day",
+      "Aumenta la ingesta de agua a 2,5L diarios",
+      "Bebe agua antes de cada comida",
+      "Lleva una botella de agua contigo durante el día",
     ],
   },
   sleep: {
-    label: "Sleep",
+    label: "Sueño",
     icon: "moon",
     iconColor: C.purple50,
     peak: "8h 45m",
@@ -88,25 +88,25 @@ const METRIC_DATA: Record<string, any> = {
     score: 82,
     trend: [6.5, 7.2, 7.5, 7.0, 7.8, 7.3, 7.5],
     recommendations: [
-      "Maintain consistent sleep schedule",
-      "Avoid screens 1hr before bed",
-      "Keep bedroom cool and dark",
+      "Mantén un horario de sueño constante",
+      "Evita las pantallas 1h antes de dormir",
+      "Mantén el dormitorio fresco y a oscuras",
     ],
   },
   nutrition: {
-    label: "Nutrition",
+    label: "Nutrición",
     icon: "restaurant",
     iconColor: C.brand50,
-    peak: "2,200 kcal",
-    average: "1,850 kcal",
-    min: "1,400 kcal",
-    max: "2,200 kcal",
+    peak: "2.200 kcal",
+    average: "1.850 kcal",
+    min: "1.400 kcal",
+    max: "2.200 kcal",
     score: 88,
     trend: [1600, 1750, 1850, 1800, 1900, 1850, 1820],
     recommendations: [
-      "Protein intake is on track",
-      "Increase vegetable portions",
-      "Monitor micronutrient intake",
+      "La ingesta de proteína va bien encaminada",
+      "Aumenta las raciones de verduras",
+      "Vigila la ingesta de micronutrientes",
     ],
   },
 };
@@ -173,16 +173,16 @@ export default function HealthMetricInsightScreen({ route }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <Box className="flex-row items-center gap-3 px-5 py-4 bg-card border-b border-border">
           <Icon name={data.icon} size={28} color={data.iconColor} />
-          <Heading size="md">{data.label} Insight</Heading>
+          <Heading size="md">Análisis de {data.label}</Heading>
         </Box>
 
         <ScrollView contentContainerStyle={styles.content}>
           <Box className="flex-row flex-wrap gap-2.5" style={{ marginBottom: 24 }}>
             {[
-              { label: "Peak", value: data.peak },
-              { label: "Average", value: data.average },
-              { label: "Min", value: data.min },
-              { label: "Max", value: data.max },
+              { label: "Pico", value: data.peak },
+              { label: "Media", value: data.average },
+              { label: "Mín", value: data.min },
+              { label: "Máx", value: data.max },
             ].map((item) => (
               <Box
                 key={item.label}
@@ -196,12 +196,12 @@ export default function HealthMetricInsightScreen({ route }: any) {
           </Box>
 
           <Box className="items-center" style={{ marginBottom: 28 }}>
-            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Current Status</Text>
+            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Estado actual</Text>
             <CircularProgress score={data.score} />
           </Box>
 
           <Box style={{ marginBottom: 28 }}>
-            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Daily Trend</Text>
+            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Tendencia diaria</Text>
             <View style={styles.chartRow}>
               {DAYS.map((day, i) => (
                 <View key={day} style={styles.chartCol}>
@@ -223,7 +223,7 @@ export default function HealthMetricInsightScreen({ route }: any) {
           </Box>
 
           <Box style={{ marginBottom: 32 }}>
-            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Recommendations</Text>
+            <Text weight="semibold" size="lg" style={{ marginBottom: 16 }}>Recomendaciones</Text>
             {data.recommendations.map((rec: string, i: number) => (
               <Box key={i} className="flex-row items-center gap-2.5" style={{ marginBottom: 12 }}>
                 <Icon name="checkmark-circle" size={20} color={C.success50} />

@@ -9,7 +9,7 @@ import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const CHART_FILTERS = ['Daily', 'Weekly', 'Monthly'];
+const CHART_FILTERS = ['Diario', 'Semanal', 'Mensual'];
 
 export default function StepsCountScreen(props: any) {
   const [editingGoal, setEditingGoal] = useState(false);
@@ -30,11 +30,11 @@ export default function StepsCountScreen(props: any) {
   };
 
   const getGoalMessage = () => {
-    if (dailyGoal === 0) return 'Set your daily goal';
+    if (dailyGoal === 0) return 'Establece tu objetivo diario';
     const diff = dailyGoal - steps;
-    if (diff > 0) return `Only ${diff} steps left`;
-    if (diff === 0) return 'Goal reached!';
-    return `${Math.abs(diff)} steps over goal!`;
+    if (diff > 0) return `Solo ${diff} pasos restantes`;
+    if (diff === 0) return '¡Objetivo alcanzado!';
+    return `¡${Math.abs(diff)} pasos por encima del objetivo!`;
   };
 
   const handleSaveGoal = async () => {
@@ -56,7 +56,7 @@ export default function StepsCountScreen(props: any) {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Step Tracker" onBack={() => props.navigation.goBack()} />
+      <ScreenHeader title="Seguimiento de pasos" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.goalInfoBox}>
@@ -68,7 +68,7 @@ export default function StepsCountScreen(props: any) {
             <View style={styles.progressInner}>
               <Ionicons name="walk-sharp" size={60} color={C.orange} />
               <Text style={styles.stepCount}>{steps}</Text>
-              <Text style={styles.stepsLabel}>Steps</Text>
+              <Text style={styles.stepsLabel}>Pasos</Text>
             </View>
           </AnimatedRing>
         </View>
@@ -82,7 +82,7 @@ export default function StepsCountScreen(props: any) {
           <View style={styles.dailyGoalHeader}>
             <View style={styles.dailyGoalTitleRow}>
               <Ionicons name="water" size={20} color="#FFFFFF" />
-              <Text style={styles.dailyGoalTitle}>Daily Goal</Text>
+              <Text style={styles.dailyGoalTitle}>Objetivo diario</Text>
             </View>
             <TouchableOpacity
               onPress={() => setEditingGoal(!editingGoal)}
@@ -117,12 +117,12 @@ export default function StepsCountScreen(props: any) {
                 </ScrollView>
               </View>
               <TouchableOpacity style={styles.saveButton} onPress={handleSaveGoal}>
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>Guardar</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <Text style={styles.dailyGoalValue}>
-              {dailyGoal === 0 ? '' : `${dailyGoal} Steps`}
+              {dailyGoal === 0 ? '' : `${dailyGoal} pasos`}
             </Text>
           )}
         <View style={{ height: 15 }} />
@@ -131,7 +131,7 @@ export default function StepsCountScreen(props: any) {
         {logList.length > 0 && dailyGoal !== 0 ? (
           <View style={styles.chartCard}>
             <View style={styles.chartHeader}>
-              <Text style={styles.chartTitle}>Steps</Text>
+              <Text style={styles.chartTitle}>Pasos</Text>
               <View style={styles.filterRow}>
                 {CHART_FILTERS.map((f) => (
                   <TouchableOpacity
@@ -147,7 +147,7 @@ export default function StepsCountScreen(props: any) {
               </View>
             </View>
             <View style={styles.chartPlaceholder}>
-              <Text style={styles.chartPlaceholderText}>Chart</Text>
+              <Text style={styles.chartPlaceholderText}>Gráfico</Text>
             </View>
           </View>
         ) : isLoading ? (

@@ -23,7 +23,7 @@ export default function ForgotPasswordOptionsScreen() {
           style={styles.masklabel}
           maskElement={
             <View style={styles.masklabelview}>
-              <Text style={styles.masklabeltext}>Forgot</Text>
+              <Text style={styles.masklabeltext}>Olvidé</Text>
             </View>
           }
         >
@@ -35,28 +35,28 @@ export default function ForgotPasswordOptionsScreen() {
         </MaskedView>
 
         <View style={styles.content}>
-          <Text style={styles.heading}>Reset Password</Text>
+          <Text style={styles.heading}>Restablecer contraseña</Text>
           <Text style={styles.subheading}>
-            Choose how you want to reset your password.
+            Elige cómo quieres restablecer tu contraseña.
           </Text>
 
           <View style={styles.options}>
             <ForgotOptionTile
               icon="mail-outline"
-              label="Reset via Email"
+              label="Restablecer por Email"
               onPress={() => navigation.navigate("ForgotEmail")}
             />
             <ForgotOptionTile
               icon="chatbubble-outline"
-              label="Reset via SMS"
-              onPress={() => Alert.alert("Coming Soon", "SMS password reset will be available soon.")}
+              label="Restablecer por SMS"
+              onPress={() => Alert.alert("Próximamente", "El restablecimiento por SMS estará disponible pronto.")}
             />
           </View>
         </View>
 
         <AuthLinkRow
-          prefix="Remember your password?"
-          linkText="Back to Login"
+          prefix="¿Recuerdas tu contraseña?"
+          linkText="Volver a iniciar sesión"
           onPress={() => navigation.goBack()}
         />
 

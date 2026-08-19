@@ -22,13 +22,13 @@ export default function PasswordResetSentScreen() {
             <Ionicons name="mail-open-outline" size={64} color={Colors.TEXT_PRIMARY} />
           </View>
 
-          <Text style={styles.heading}>Check Your Email</Text>
+          <Text style={styles.heading}>Revisa tu email</Text>
           <Text style={styles.subheading}>
-            We've sent a password reset link to your email address. Please check your inbox and follow the instructions.
+            Te hemos enviado un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y sigue las instrucciones.
           </Text>
 
           <AuthPrimaryButton
-            label="Back to Login"
+            label="Volver a iniciar sesión"
             onPress={() => navigation.reset({ index: 0, routes: [{ name: "LoginAuth" }] })}
           />
         </View>

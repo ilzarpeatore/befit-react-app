@@ -4,6 +4,20 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Auditoría y traducción de pantallas en inglés (2026-08-19)
+
+Auditoría de qué pantallas reales (alcanzables desde la navegación viva, no huérfanas) seguían en inglés mientras el resto de la app está en español. Verificado caso por caso con `grep` + trazado de `navigation.navigate()` antes de tocar nada, para no perder tiempo traduciendo pantallas muertas — se confirmó que `pages/auth/RegisterFlowScreen.tsx`, `pages/auth/ProfileEditScreen.tsx` y las variantes snake_case (`register_flow_screen.tsx`, `register_screen.tsx`, `parq_screen.tsx`, `parq_result_screen.tsx`, `fitness_assessment_screen.tsx`) no están registradas en ninguna ruta activa ni se navega a ellas desde ningún sitio — huérfanas, descartadas de este trabajo.
+
+**Fase 1 — flujo de autenticación (primera impresión, prioridad máxima)**: `WelcomeAuthScreen.tsx`, `LoginScreen.tsx`, `RegisterScreen.tsx` (la ruta real de `RegisterFlow`, no `RegisterFlowScreen.tsx`), `ForgotPasswordOptionsScreen.tsx`, `ForgotPasswordEmailScreen.tsx`, `PasswordResetSentScreen.tsx`, `ChangePasswordScreen.tsx`, `pages/migrated/edit_profile_screen.tsx` (confirmado como el real vía `navigation.navigate('MigratedEditProfile')` en `profile_screen.tsx` — `pages/auth/ProfileEditScreen.tsx` no tiene ningún llamador real).
+
+**Fase 2 — recordatorios y seguimiento**: `meals_reminders_screen.tsx`, `set_reminder_screen.tsx` (días de la semana pasados a `L M X J V S D`, mismo convenio ya usado en "Cumplimiento semanal"), `water_reminders_screen.tsx`, `water_tracker_screen.tsx`, `steps_count_screen.tsx`, `shopping_list_screen.tsx`, `shopping_list_detail_screen.tsx`.
+
+**Fase 3**: `home/health_metric_insight_screen.tsx` (pantalla con datos 100% mock, sin conexión real a backend — solo se tradujeron las etiquetas/labels), y el banner de datos demo + tarjetas Sleep/Load Balance de `home_screen_modern_v2.tsx` (Home v2, ver entrada anterior). De paso, se encontraron y corrigieron 3 textos en inglés ("Workouts"→"Entrenamientos", "Exclusive"→"Exclusivo", "Community"→"Comunidad") que Home v2 había heredado sin querer al copiarse de `home_screen_modern.tsx` — corregidos en **ambas** pantallas ya que la original (`home_screen_modern.tsx`) sigue siendo la ruta de inicio real hoy.
+
+Verificado con `npx tsc --noEmit` limpio tras cada fase. **Pendiente**: verificación visual en dispositivo de las pantallas traducidas (no se hizo en esta ronda por tiempo), y una segunda pasada más superficial por el resto del catálogo de ~170 pantallas para cazar textos en inglés sueltos que no encajan en el patrón de búsqueda usado aquí (frases con minúscula inicial, textos dentro de `Alert.alert` con formato distinto, etc.).
+
+---
+
 ## ✅ Fix crash real al iniciar entrenamiento + Home v2 (2026-08-19)
 
 **Bug real corregido (crash reproducible, confirmado por el usuario como preexistente a la sesión anterior)**: tocar "Iniciar entrenamiento" en cualquier programa crasheaba la app tanto en iOS como en Android. En release de iOS (Hermes optimizado) el log del sistema solo daba `TypeError: undefined is not a function` sin stack — la causa se identificó reproduciendo el mismo flujo en Android conectado a Metro en modo dev, cuyo overlay de error (`LogBox`/Render Error) sí muestra el stack completo con archivo y línea reales. Causa: `TextInput` en `workout_session_screen.tsx` (fila de carga/reps/descanso, dentro del `ScrollView` horizontal de métricas) tenía `className="bg-card rounded-sm text-center text-foreground"` — la clase `text-center` combinada con las demás rompe el resolver de estilos de `react-native-css` específicamente sobre `TextInput` (`path.split is not a function` en `node_modules/react-native-css/dist/module/native/styles/index.js:329`, invocado desde `components/ui/box/index.tsx`). Fix: mover `text-center` fuera de `className` a `style={{ textAlign: 'center' }}`. Verificado en vivo en ambas plataformas tras el fix (Android vía Fast Refresh, iOS con build nuevo firmado e instalado). Se revisó el resto del código en busca del mismo patrón (`TextInput` + `text-center` en `className`) — no hay más casos.

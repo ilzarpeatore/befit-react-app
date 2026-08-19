@@ -90,7 +90,7 @@ export default function ShoppingListScreen(props: any) {
         <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
           <Icon name="chevron-back" size={24} className="text-foreground" />
         </Button>
-        <Heading size="sm">Shopping Lists</Heading>
+        <Heading size="sm">Listas de la compra</Heading>
         <Button variant="ghost" size="icon" onPress={() => setShowGenerateSheet(true)}>
           <Icon name="add" size={28} className="text-foreground" />
         </Button>
@@ -104,7 +104,7 @@ export default function ShoppingListScreen(props: any) {
         ) : shoppingLists.length === 0 ? (
           <Box className="flex-1 items-center justify-center gap-3">
             <Icon name="cart-outline" size={64} color={C.gray50} />
-            <Text weight="medium" muted>No shopping lists found</Text>
+            <Text weight="medium" muted>No se encontraron listas de la compra</Text>
           </Box>
         ) : (
           <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
@@ -117,7 +117,7 @@ export default function ShoppingListScreen(props: any) {
                 <HStack className="items-center justify-between">
                   <Box className="flex-1 gap-1">
                     <Text weight="bold">{list.title}</Text>
-                    <Text size="sm" muted>{list.items_count ?? 0} items</Text>
+                    <Text size="sm" muted>{list.items_count ?? 0} artículos</Text>
                   </Box>
                   <Icon name="chevron-forward" size={20} color={C.gray40} />
                 </HStack>
@@ -136,19 +136,19 @@ export default function ShoppingListScreen(props: any) {
           </ActionsheetDragIndicatorWrapper>
           <VStack space="lg">
             <VStack space="sm">
-              <Heading size="lg">Generate Shopping List</Heading>
-              <Text muted>Choose which planned meals to include</Text>
+              <Heading size="lg">Generar lista de la compra</Heading>
+              <Text muted>Elige qué comidas planificadas incluir</Text>
             </VStack>
 
-            {renderOption(0, 'Date', 'Select a specific date')}
-            {renderOption(1, 'Date Range', 'Pick start and end dates')}
+            {renderOption(0, 'Fecha', 'Selecciona una fecha concreta')}
+            {renderOption(1, 'Rango de fechas', 'Elige fecha de inicio y fin')}
 
             <Button size="lg" onPress={() => openAddListScreen(selectedOption === 0)}>
-              <ButtonText>Continue</ButtonText>
+              <ButtonText>Continuar</ButtonText>
             </Button>
 
             <Button variant="ghost" onPress={() => setShowGenerateSheet(false)}>
-              <ButtonText className="text-muted-foreground">Cancel</ButtonText>
+              <ButtonText className="text-muted-foreground">Cancelar</ButtonText>
             </Button>
           </VStack>
         </ActionsheetContent>

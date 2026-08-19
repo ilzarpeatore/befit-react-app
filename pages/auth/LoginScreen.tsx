@@ -27,15 +27,15 @@ export default function LoginScreen() {
 
   const handleLogin = useCallback(async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please enter email and password");
+      Alert.alert("Error", "Introduce tu email y contraseña");
       return;
     }
     setLoading(true);
     try {
       await login({ email: email.trim(), password, user_type: "user" });
     } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || "Login failed";
-      Alert.alert("Login Failed", message);
+      const message = err?.response?.data?.message || err?.message || "Error al iniciar sesión";
+      Alert.alert("Error al iniciar sesión", message);
     } finally {
       setLoading(false);
     }
@@ -58,8 +58,8 @@ export default function LoginScreen() {
             <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
           </TouchableOpacity>
 
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+          <Text style={styles.title}>Bienvenido de nuevo</Text>
+          <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
@@ -67,7 +67,7 @@ export default function LoginScreen() {
               <Ionicons name="mail-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your email"
+                placeholder="Introduce tu email"
                 placeholderTextColor={Colors.TEXT_MUTED}
                 value={email}
                 onChangeText={setEmail}
@@ -79,12 +79,12 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>Contraseña</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="lock-closed-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your password"
+                placeholder="Introduce tu contraseña"
                 placeholderTextColor={Colors.TEXT_MUTED}
                 value={password}
                 onChangeText={setPassword}
@@ -109,7 +109,7 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#000000" />
             ) : (
-              <Text style={styles.btnText}>Sign In</Text>
+              <Text style={styles.btnText}>Iniciar sesión</Text>
             )}
           </TouchableOpacity>
 
@@ -117,24 +117,24 @@ export default function LoginScreen() {
             onPress={() => navigation.navigate("ForgotOptions")}
             style={styles.forgotBtn}
           >
-            <Text style={styles.forgotText}>Forgot Password?</Text>
+            <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
 
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
+            <Text style={styles.dividerText}>O</Text>
             <View style={styles.dividerLine} />
           </View>
 
           <TouchableOpacity style={styles.googleBtn}>
             <Ionicons name="logo-google" size={20} color={Colors.TEXT_PRIMARY} />
-            <Text style={styles.googleBtnText}>Continue with Google</Text>
+            <Text style={styles.googleBtnText}>Continuar con Google</Text>
           </TouchableOpacity>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={styles.footerText}>¿No tienes una cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate("RegisterFlow")}>
-              <Text style={styles.footerLink}>Sign Up</Text>
+              <Text style={styles.footerLink}>Regístrate</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

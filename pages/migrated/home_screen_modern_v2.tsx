@@ -494,13 +494,13 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
             !demoBannerDismissed && (
               <Box style={styles.bannerCard}>
                 <Icon name="information-circle-outline" size={26} color="#FFFFFF" />
-                <Text style={styles.bannerTitle}>This is demo data</Text>
+                <Text style={styles.bannerTitle}>Esto son datos de demostración</Text>
                 <Text style={styles.bannerText}>
                   Los anillos de Recovery/Strain y las tarjetas de Sueño se activarán con datos reales en cuanto
                   conectes Apple Health o Health Connect.
                 </Text>
                 <Pressable style={styles.bannerBtn} onPress={() => setDemoBannerDismissed(true)}>
-                  <Text style={styles.bannerBtnText}>Continue</Text>
+                  <Text style={styles.bannerBtnText}>Continuar</Text>
                 </Pressable>
               </Box>
             )
@@ -511,12 +511,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           <HStack space="sm" style={{ marginTop: r(16) }}>
             <Box style={styles.miniCard}>
               <Icon name="moon" size={16} color="rgba(255,255,255,0.75)" />
-              <Text style={styles.miniCardTitle}>Sleep</Text>
+              <Text style={styles.miniCardTitle}>Sueño</Text>
               <Text style={styles.miniCardValue}>--</Text>
             </Box>
             <Box style={styles.miniCard}>
               <Icon name="briefcase-outline" size={16} color="rgba(255,255,255,0.75)" />
-              <Text style={styles.miniCardTitle}>Load Balance</Text>
+              <Text style={styles.miniCardTitle}>Balance de carga</Text>
               <Text style={styles.miniCardValue}>--</Text>
             </Box>
           </HStack>
@@ -758,7 +758,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
         {!state.user?.is_personal_client && (
           <>
             <HStack className="justify-between items-center px-5" style={{ marginTop: r(24), marginBottom: r(12) }}>
-              <Text style={styles.sectionTitle}>Workouts</Text>
+              <Text style={styles.sectionTitle}>Entrenamientos</Text>
             </HStack>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
               {workoutTemplateList.map((w) => {
@@ -777,7 +777,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
                     {locked && (
                       <Box style={styles.lockBadge}>
                         <Icon name="lock-closed" size={11} color={'#FFFFFF'} />
-                        <Text style={styles.lockBadgeText}>Exclusive</Text>
+                        <Text style={styles.lockBadgeText}>Exclusivo</Text>
                       </Box>
                     )}
                     <Box style={styles.blogContent}>
@@ -981,7 +981,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
             <Pressable onPress={() => navigateFromMenu('MigratedCommunity')}>
               <HStack className="items-center px-5 py-3.5">
                 <AppIcon name="people-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
-                <Text style={styles.menuItemText}>Community</Text>
+                <Text style={styles.menuItemText}>Comunidad</Text>
                 <Icon name="chevron-forward" size={18} color={C.textSecondary} />
               </HStack>
             </Pressable>

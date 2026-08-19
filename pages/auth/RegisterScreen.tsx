@@ -55,19 +55,19 @@ export default function RegisterScreen() {
 
   const handleRegister = useCallback(async () => {
     if (!name.trim()) {
-      Alert.alert("Error", "Please enter your name");
+      Alert.alert("Error", "Introduce tu nombre");
       return;
     }
     if (!email.trim()) {
-      Alert.alert("Error", "Please enter your email");
+      Alert.alert("Error", "Introduce tu email");
       return;
     }
     if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert("Error", "Las contraseñas no coinciden");
       return;
     }
 
@@ -94,8 +94,8 @@ export default function RegisterScreen() {
         err?.response?.data?.errors?.email?.[0] ||
         err?.response?.data?.errors?.username?.[0] ||
         err?.message ||
-        "Registration failed";
-      Alert.alert("Registration Failed", message);
+        "No se pudo completar el registro";
+      Alert.alert("Error en el registro", message);
     } finally {
       setLoading(false);
     }
@@ -118,16 +118,16 @@ export default function RegisterScreen() {
             <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
           </TouchableOpacity>
 
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
+          <Text style={styles.title}>Crear cuenta</Text>
+          <Text style={styles.subtitle}>Regístrate para empezar</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>Nombre completo</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="person-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your name"
+                placeholder="Introduce tu nombre"
                 placeholderTextColor={Colors.TEXT_MUTED}
                 value={name}
                 onChangeText={setName}
@@ -142,7 +142,7 @@ export default function RegisterScreen() {
               <Ionicons name="mail-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your email"
+                placeholder="Introduce tu email"
                 placeholderTextColor={Colors.TEXT_MUTED}
                 value={email}
                 onChangeText={setEmail}
@@ -154,12 +154,12 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>Contraseña</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="lock-closed-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Min 6 characters"
+                placeholder="Mínimo 6 caracteres"
                 placeholderTextColor={Colors.TEXT_MUTED}
                 value={password}
                 onChangeText={setPassword}
@@ -177,12 +177,12 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirm Password</Text>
+            <Text style={styles.label}>Confirmar contraseña</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="lock-closed-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Repeat password"
+                placeholder="Repite la contraseña"
                 placeholderTextColor={Colors.TEXT_MUTED}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -193,7 +193,7 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Invitation Code (optional)</Text>
+            <Text style={styles.label}>Código de invitación (opcional)</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="key-outline" size={20} color={Colors.TEXT_SECONDARY} style={styles.inputIcon} />
               <TextInput
@@ -227,14 +227,14 @@ export default function RegisterScreen() {
             {loading ? (
               <ActivityIndicator color="#000000" />
             ) : (
-              <Text style={styles.btnText}>Create Account</Text>
+              <Text style={styles.btnText}>Crear cuenta</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={styles.footerText}>¿Ya tienes una cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate("LoginAuth")}>
-              <Text style={styles.footerLink}>Sign In</Text>
+              <Text style={styles.footerLink}>Inicia sesión</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

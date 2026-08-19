@@ -21,28 +21,28 @@ export default function WelcomeAuthScreen() {
         <View style={styles.top}>
           <SandowLogo size={80} />
           <Text style={styles.title}>Bienvenido a{"\n"}Be Stronger!</Text>
-          <Text style={styles.subtitle}>Choose how you want to continue.</Text>
+          <Text style={styles.subtitle}>Elige cómo quieres continuar.</Text>
         </View>
 
         <View style={styles.bottom}>
           <AuthSocialButton
             variant="google"
-            label="Continue with Google"
-            onPress={() => Alert.alert("Coming Soon", "Google sign-in will be available soon.")}
+            label="Continuar con Google"
+            onPress={() => Alert.alert("Próximamente", "El inicio de sesión con Google estará disponible pronto.")}
           />
           <AuthSocialButton
             variant="facebook"
-            label="Continue with Facebook"
-            onPress={() => Alert.alert("Coming Soon", "Facebook sign-in will be available soon.")}
+            label="Continuar con Facebook"
+            onPress={() => Alert.alert("Próximamente", "El inicio de sesión con Facebook estará disponible pronto.")}
           />
           <AuthSocialButton
             variant="email"
-            label="Continue with Email"
+            label="Continuar con Email"
             onPress={() => navigation.navigate("LoginAuth")}
           />
           <AuthLinkRow
-            prefix="Don't have an account?"
-            linkText="Sign Up"
+            prefix="¿No tienes una cuenta?"
+            linkText="Regístrate"
             onPress={() => navigation.navigate("RegisterFlow")}
           />
         </View>

@@ -19,7 +19,8 @@ export default function SetReminderScreen(props: any) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const styles = useStyle();
 
-  const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const weekdayLetters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   const toggleDay = (index: number) => {
     setSelectedDays((prev) => {
@@ -51,16 +52,16 @@ export default function SetReminderScreen(props: any) {
 
   const handleSave = async () => {
     if (!reminderName.trim()) {
-      Alert.alert('Error', 'Please enter a reminder name');
+      Alert.alert('Error', 'Introduce un nombre para el recordatorio');
       return;
     }
     if (!description.trim()) {
-      Alert.alert('Error', 'Please enter a description');
+      Alert.alert('Error', 'Introduce una descripción');
       return;
     }
 
     if (!isDaily && selectedDays.size === 0) {
-      Alert.alert('Error', 'Please select at least one day');
+      Alert.alert('Error', 'Selecciona al menos un día');
       return;
     }
 
@@ -149,9 +150,9 @@ export default function SetReminderScreen(props: any) {
         {/* Repeat Days (only when not daily) */}
         {!isDaily && (
           <View style={s.repeatSection}>
-            <Text style={[s.sectionTitle, styles.fontBold]}>Repeat</Text>
+            <Text style={[s.sectionTitle, styles.fontBold]}>Repetir</Text>
             <TouchableOpacity onPress={toggleEveryDay}>
-              <Text style={[s.everyDayText, { color: C.textPrimary }]}>Everyday</Text>
+              <Text style={[s.everyDayText, { color: C.textPrimary }]}>Todos los días</Text>
             </TouchableOpacity>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.dayChips}>
               {weekdays.map((day, index) => {
@@ -163,7 +164,7 @@ export default function SetReminderScreen(props: any) {
                     onPress={() => toggleDay(index)}
                   >
                     <Text style={[s.dayChipText, isSelected && s.dayChipTextSelected, styles.fontBold]}>
-                      {day.substring(0, 1).toUpperCase()}
+                      {weekdayLetters[index]}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -173,20 +174,20 @@ export default function SetReminderScreen(props: any) {
         )}
 
         {/* Reminder Name */}
-        <Text style={[s.label, styles.fontRegular]}>Reminder Name</Text>
+        <Text style={[s.label, styles.fontRegular]}>Nombre del recordatorio</Text>
         <TextInput
           style={[s.textInput, styles.fontRegular]}
-          placeholder="Enter reminder name"
+          placeholder="Introduce el nombre del recordatorio"
           placeholderTextColor={C.gray50}
           value={reminderName}
           onChangeText={setReminderName}
         />
 
         {/* Description */}
-        <Text style={[s.label, styles.fontRegular]}>Description</Text>
+        <Text style={[s.label, styles.fontRegular]}>Descripción</Text>
         <TextInput
           style={[s.textInput, styles.fontRegular]}
-          placeholder="Enter description"
+          placeholder="Introduce una descripción"
           placeholderTextColor={C.gray50}
           value={description}
           onChangeText={setDescription}
@@ -194,7 +195,7 @@ export default function SetReminderScreen(props: any) {
 
         {/* Save Button */}
         <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
-          <Text style={[s.saveBtnText, styles.fontSemiBold]}>Save</Text>
+          <Text style={[s.saveBtnText, styles.fontSemiBold]}>Guardar</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

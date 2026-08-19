@@ -131,7 +131,7 @@ export default function WaterRemindersScreen(props: any) {
         end: is24Hours ? undefined : { hour: untilHour, minute: untilMinute },
         atTime: is24Hours ? { hour: atHour, minute: atMinute } : undefined,
       });
-      Alert.alert('Success', 'Data saved');
+      Alert.alert('Éxito', 'Datos guardados');
       props.navigation?.goBack();
     } catch (e: any) {
       Alert.alert('Error', e?.response?.data?.message || e.toString());
@@ -149,7 +149,7 @@ export default function WaterRemindersScreen(props: any) {
       }}
     >
       <Text style={styles.pickerItemText}>
-        {item === 1 ? '1 hour' : `${item} hours`}
+        {item === 1 ? '1 hora' : `${item} horas`}
       </Text>
       {item === everyHours && <Ionicons name="checkmark" size={22} color={C.textPrimary} />}
     </TouchableOpacity>
@@ -171,16 +171,16 @@ export default function WaterRemindersScreen(props: any) {
         <TouchableOpacity onPress={() => props.navigation?.goBack()}>
           <Ionicons name="chevron-back" size={24} color={C.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Water Reminders</Text>
+        <Text style={styles.headerTitle}>Recordatorios de agua</Text>
         <TouchableOpacity onPress={saveSettings} disabled={isSaving}>
-          <Text style={styles.saveBtn}>Save</Text>
+          <Text style={styles.saveBtn}>Guardar</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.body}>
         <View style={styles.card}>
           <View style={styles.switchRow}>
-            <Text style={styles.rowTitle}>Reminders</Text>
+            <Text style={styles.rowTitle}>Recordatorios</Text>
             <Switch
               value={enabled}
               onValueChange={setEnabled}
@@ -191,8 +191,8 @@ export default function WaterRemindersScreen(props: any) {
           <View style={styles.divider} />
 
           {renderRow(
-            'Every',
-            everyHours === 1 ? '1 hour' : `${everyHours} hours`,
+            'Cada',
+            everyHours === 1 ? '1 hora' : `${everyHours} horas`,
             enabled ? () => setShowEveryPicker(true) : undefined,
           )}
           <View style={styles.divider} />
@@ -200,20 +200,20 @@ export default function WaterRemindersScreen(props: any) {
           {!is24Hours ? (
             <>
               {renderRow(
-                'From',
+                'Desde',
                 formatTime(fromHour, fromMinute),
                 enabled ? () => openTimePicker('from') : undefined,
               )}
               <View style={styles.divider} />
               {renderRow(
-                'Until',
+                'Hasta',
                 formatTime(untilHour, untilMinute),
                 enabled ? () => openTimePicker('until') : undefined,
               )}
             </>
           ) : (
             renderRow(
-              'At',
+              'A las',
               formatTime(atHour, atMinute),
               enabled ? () => openTimePicker('at') : undefined,
             )
@@ -235,7 +235,7 @@ export default function WaterRemindersScreen(props: any) {
           onPress={() => setShowEveryPicker(false)}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Interval</Text>
+            <Text style={styles.modalTitle}>Seleccionar intervalo</Text>
             <FlatList
               data={Array.from({ length: 24 }, (_, i) => i + 1)}
               renderItem={renderEveryPickerItem}
@@ -255,7 +255,7 @@ export default function WaterRemindersScreen(props: any) {
           onPress={() => setShowTimePicker(null)}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Time</Text>
+            <Text style={styles.modalTitle}>Seleccionar hora</Text>
             <View style={styles.timePickerRow}>
               <View style={styles.timeColumn}>
                 <TouchableOpacity
@@ -290,7 +290,7 @@ export default function WaterRemindersScreen(props: any) {
               </View>
             </View>
             <TouchableOpacity style={styles.confirmBtn} onPress={confirmTimePicker}>
-              <Text style={styles.confirmBtnText}>Confirm</Text>
+              <Text style={styles.confirmBtnText}>Confirmar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

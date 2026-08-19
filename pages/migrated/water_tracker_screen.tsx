@@ -18,6 +18,13 @@ import { C, FONT } from './theme';
 
 type WaterChartFilter = 'week' | 'month' | 'year' | 'every';
 
+const FILTER_LABELS: Record<WaterChartFilter, string> = {
+  week: 'Semana',
+  month: 'Mes',
+  year: 'Año',
+  every: 'Todo',
+};
+
 export default function WaterTrackerScreen(props: any) {
   const [logValue, setLogValue] = useState(0);
   const [editingGoal, setEditingGoal] = useState(false);
@@ -44,11 +51,11 @@ export default function WaterTrackerScreen(props: any) {
   };
 
   const getBannerText = () => {
-    if (dailyGoal === 0) return 'Set up your daily water goal';
+    if (dailyGoal === 0) return 'Configura tu objetivo diario de agua';
     const diff = dailyGoal - consumed;
-    if (diff > 0) return `Only ${diff} glasses to reach your goal`;
-    if (diff === 0) return 'You have reached your daily goal!';
-    return `You exceeded your goal by ${Math.abs(diff)} glasses`;
+    if (diff > 0) return `Solo ${diff} vasos para alcanzar tu objetivo`;
+    if (diff === 0) return '¡Has alcanzado tu objetivo diario!';
+    return `Has superado tu objetivo por ${Math.abs(diff)} vasos`;
   };
 
   const decrementLog = () => {
@@ -61,11 +68,11 @@ export default function WaterTrackerScreen(props: any) {
 
   const logNow = async () => {
     if (dailyGoal === 0) {
-      Alert.alert('Info', 'Set up your daily water goal first');
+      Alert.alert('Info', 'Configura primero tu objetivo diario de agua');
       return;
     }
     if (logValue <= 0) {
-      Alert.alert('Info', 'Value must be greater than zero');
+      Alert.alert('Info', 'El valor debe ser mayor que cero');
       return;
     }
 
@@ -111,7 +118,7 @@ export default function WaterTrackerScreen(props: any) {
         <TouchableOpacity onPress={() => props.navigation?.goBack()}>
           <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Water Tracker</Text>
+        <Text style={styles.headerTitle}>Seguimiento de agua</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -129,7 +136,7 @@ export default function WaterTrackerScreen(props: any) {
             <View style={styles.progressInner}>
               <Ionicons name="water" size={60} color={C.blue} />
               <Text style={styles.consumedValue}>{consumed}</Text>
-              <Text style={styles.glassesLabel}>Glasses</Text>
+              <Text style={styles.glassesLabel}>Vasos</Text>
             </View>
           </AnimatedRing>
         </View>
@@ -143,7 +150,7 @@ export default function WaterTrackerScreen(props: any) {
 
         {/* Log Now Button */}
         <TouchableOpacity style={styles.logBtn} onPress={logNow}>
-          <Text style={styles.logBtnText}>Log Now</Text>
+          <Text style={styles.logBtnText}>Registrar ahora</Text>
         </TouchableOpacity>
 
         {/* Daily Goal Card */}
@@ -156,7 +163,7 @@ export default function WaterTrackerScreen(props: any) {
           <View style={styles.goalHeader}>
             <View style={styles.goalHeaderLeft}>
               <Ionicons name="water" size={22} color="#FFFFFF" />
-              <Text style={styles.goalTitle}>Daily Goal</Text>
+              <Text style={styles.goalTitle}>Objetivo diario</Text>
             </View>
             <TouchableOpacity onPress={() => setEditingGoal(!editingGoal)}>
               <Ionicons name="pencil" size={20} color="#FFFFFF" />
@@ -170,15 +177,15 @@ export default function WaterTrackerScreen(props: any) {
                 value={goalText}
                 onChangeText={setGoalText}
                 keyboardType="numeric"
-                placeholder="Enter glasses"
+                placeholder="Introduce los vasos"
                 placeholderTextColor={C.gray40}
               />
               <TouchableOpacity style={styles.goalSaveBtn} onPress={saveGoal}>
-                <Text style={styles.goalSaveBtnText}>Save</Text>
+                <Text style={styles.goalSaveBtnText}>Guardar</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <Text style={styles.goalValue}>{dailyGoal} Glasses</Text>
+            <Text style={styles.goalValue}>{dailyGoal} vasos</Text>
           )}
         </LinearGradient>
 
@@ -186,7 +193,7 @@ export default function WaterTrackerScreen(props: any) {
         {logList.length > 0 && dailyGoal !== 0 && (
           <View style={styles.chartCard}>
             <View style={styles.chartHeader}>
-              <Text style={styles.chartTitle}>Water Consumption Daily</Text>
+              <Text style={styles.chartTitle}>Consumo diario de agua</Text>
               <View style={styles.filterRow}>
                 {(['week', 'month', 'year', 'every'] as WaterChartFilter[]).map((filter) => (
                   <TouchableOpacity
@@ -203,7 +210,7 @@ export default function WaterTrackerScreen(props: any) {
                         currentFilter === filter && styles.filterChipTextActive,
                       ]}
                     >
-                      {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      {FILTER_LABELS[filter]}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -211,7 +218,7 @@ export default function WaterTrackerScreen(props: any) {
             </View>
             {/* Chart placeholder */}
             <View style={styles.chartPlaceholder}>
-              <Text style={styles.chartPlaceholderText}>Chart Area</Text>
+              <Text style={styles.chartPlaceholderText}>Área del gráfico</Text>
             </View>
           </View>
         )}

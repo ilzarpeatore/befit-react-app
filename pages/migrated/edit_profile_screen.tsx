@@ -56,8 +56,8 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
   const getGender = () => {
     const genderList = [
-      { id: 0, label: 'Male', key: 'male' },
-      { id: 1, label: 'Female', key: 'female' },
+      { id: 0, label: 'Hombre', key: 'male' },
+      { id: 1, label: 'Mujer', key: 'female' },
     ];
     return genderList;
   };
@@ -130,7 +130,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
       }
       props.navigation.goBack();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to save');
+      Alert.alert('Error', e.message || 'No se pudo guardar');
     } finally {
       setIsLoading(false);
     }
@@ -233,14 +233,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
           <Box style={localStyles.formContainer}>
             {/* First Name */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>First Name</Text>
+              <Text style={localStyles.label}>Nombre</Text>
               <Input style={{ borderRadius: 8 }}>
                 <InputField
                   className="text-sm px-3.5"
                   style={{ color: C.white }}
                   value={fName}
                   onChangeText={setFName}
-                  placeholder="First Name"
+                  placeholder="Nombre"
                   placeholderTextColor={C.gray40}
                 />
               </Input>
@@ -248,14 +248,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
             {/* Last Name */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>Last Name</Text>
+              <Text style={localStyles.label}>Apellidos</Text>
               <Input style={{ borderRadius: 8 }}>
                 <InputField
                   className="text-sm px-3.5"
                   style={{ color: C.white }}
                   value={lName}
                   onChangeText={setLName}
-                  placeholder="Last Name"
+                  placeholder="Apellidos"
                   placeholderTextColor={C.gray40}
                 />
               </Input>
@@ -280,7 +280,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
             {/* Gender */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>Gender</Text>
+              <Text style={localStyles.label}>Género</Text>
               <HStack className="gap-2.5">
                 {genderList.map((g) => (
                   <Button
@@ -302,14 +302,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
             {/* Phone Number */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>Phone Number</Text>
+              <Text style={localStyles.label}>Número de teléfono</Text>
               <Input style={{ borderRadius: 8 }}>
                 <InputField
                   className="text-sm px-3.5"
                   style={{ color: C.white }}
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
-                  placeholder="Phone Number"
+                  placeholder="Número de teléfono"
                   placeholderTextColor={C.gray40}
                   keyboardType="phone-pad"
                 />
@@ -318,14 +318,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
             {/* Age */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>Age</Text>
+              <Text style={localStyles.label}>Edad</Text>
               <Input style={{ borderRadius: 8 }}>
                 <InputField
                   className="text-sm px-3.5"
                   style={{ color: C.white }}
                   value={age}
                   onChangeText={setAge}
-                  placeholder="Age"
+                  placeholder="Edad"
                   placeholderTextColor={C.gray40}
                   keyboardType="number-pad"
                 />
@@ -334,14 +334,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
             {/* Weight */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>Weight</Text>
+              <Text style={localStyles.label}>Peso</Text>
               <Input style={{ borderRadius: 8 }}>
                 <InputField
                   className="text-sm px-3.5"
                   style={{ color: C.white }}
                   value={weight}
                   onChangeText={setWeight}
-                  placeholder="Weight"
+                  placeholder="Peso"
                   placeholderTextColor={C.gray40}
                   keyboardType="decimal-pad"
                 />
@@ -354,14 +354,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
 
             {/* Height */}
             <VStack className="gap-1.5" style={localStyles.fieldGroup}>
-              <Text style={localStyles.label}>Height</Text>
+              <Text style={localStyles.label}>Altura</Text>
               <Input style={{ borderRadius: 8 }}>
                 <InputField
                   className="text-sm px-3.5"
                   style={{ color: C.white }}
                   value={heightVal}
                   onChangeText={setHeightVal}
-                  placeholder="Height"
+                  placeholder="Altura"
                   placeholderTextColor={C.gray40}
                   keyboardType="decimal-pad"
                 />
@@ -381,7 +381,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
               {isLoading ? (
                 <Spinner color={C.white} />
               ) : (
-                <ButtonText style={localStyles.saveBtnText}>Save</ButtonText>
+                <ButtonText style={localStyles.saveBtnText}>Guardar</ButtonText>
               )}
             </Button>
           </Box>

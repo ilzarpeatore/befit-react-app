@@ -30,15 +30,15 @@ export default function ChangePasswordScreen() {
 
   const handleSave = useCallback(async () => {
     if (!oldPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert("Error", "Completa todos los campos");
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "New passwords do not match");
+      Alert.alert("Error", "Las nuevas contraseñas no coinciden");
       return;
     }
     if (newPassword.length < 8) {
-      Alert.alert("Error", "New password must be at least 8 characters");
+      Alert.alert("Error", "La nueva contraseña debe tener al menos 8 caracteres");
       return;
     }
     setLoading(true);
@@ -47,11 +47,11 @@ export default function ChangePasswordScreen() {
         old_password: oldPassword,
         new_password: newPassword,
       });
-      Alert.alert("Success", "Password changed successfully", [
+      Alert.alert("Éxito", "Contraseña cambiada correctamente", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to change password";
+      const message = err.response?.data?.message || "No se pudo cambiar la contraseña";
       Alert.alert("Error", message);
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ export default function ChangePasswordScreen() {
               style={styles.masklabel}
               maskElement={
                 <View style={styles.masklabelview}>
-                  <Text style={styles.masklabeltext}>Change Password</Text>
+                  <Text style={styles.masklabeltext}>Cambiar contraseña</Text>
                 </View>
               }
             >
@@ -86,16 +86,16 @@ export default function ChangePasswordScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
               <View style={styles.inputSection}>
                 <AuthTextField
-                  label="Current Password"
-                  hint="Enter your current password"
+                  label="Contraseña actual"
+                  hint="Introduce tu contraseña actual"
                   prefixIcon="lock-closed-outline"
                   value={oldPassword}
                   onChangeText={setOldPassword}
                   secureTextEntry
                 />
                 <AuthTextField
-                  label="New Password"
-                  hint="Enter your new password"
+                  label="Nueva contraseña"
+                  hint="Introduce tu nueva contraseña"
                   prefixIcon="lock-closed-outline"
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -103,8 +103,8 @@ export default function ChangePasswordScreen() {
                 />
                 <PasswordStrengthBar password={newPassword} />
                 <AuthTextField
-                  label="Confirm New Password"
-                  hint="Re-enter your new password"
+                  label="Confirmar nueva contraseña"
+                  hint="Vuelve a introducir tu nueva contraseña"
                   prefixIcon="lock-closed-outline"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -112,7 +112,7 @@ export default function ChangePasswordScreen() {
                 />
 
                 <AuthPrimaryButton
-                  label="Save"
+                  label="Guardar"
                   onPress={handleSave}
                   loading={loading}
                 />
