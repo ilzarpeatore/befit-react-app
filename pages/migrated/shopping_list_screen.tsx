@@ -27,9 +27,9 @@ export default function ShoppingListScreen(props: any) {
   const [showGenerateSheet, setShowGenerateSheet] = useState(false);
   const [selectedOption, setSelectedOption] = useState(0); // 0=Date, 1=Date range
 
-  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- false positive:
-  // this already returns `unsubscribe` from addListener, the rule just doesn't recognize
-  // a bare `return unsubscribe` (only literal `return () => ...`) as valid cleanup.
+  // False positive: this already returns `unsubscribe` from addListener, the rule
+  // just doesn't recognize a bare `return unsubscribe` (only literal `return () => ...`)
+  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup
   useEffect(() => {
     fetchShoppingLists();
     const unsubscribe = props.navigation.addListener('focus', fetchShoppingLists);
