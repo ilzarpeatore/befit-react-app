@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { FlatList, Image, ActivityIndicator } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -19,7 +19,7 @@ export default function ViewEquipmentScreen(props: any) {
   const [numPage, setNumPage] = useState<number | null>(null);
   const [isLastPage, setIsLastPage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getEquipmentData();
@@ -70,32 +70,32 @@ export default function ViewEquipmentScreen(props: any) {
     }
   };
 
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const isAtEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-    if (isAtEnd && !isLoading && numPage && page < numPage) {
+  const handleEquipmentListEndReached = () => {
+    if (!isLoading && numPage && page < numPage) {
       setPage((prev) => prev + 1);
     }
   };
 
-  const renderEquipmentItem = ({ item, index }: { item: EquipmentItem; index: number }) => (
-    <Pressable
-      key={item.id?.toString() || index.toString()}
-      style={{ width: '47%' }}
-      className="bg-card rounded-lg overflow-hidden"
-      onPress={() =>
-        props.navigation.navigate('MigratedSearch', {
-          mTitle: item.title,
-          isEquipment: true,
-          id: item.id,
-        })
-      }
-    >
-      <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} resizeMode="cover" />
-      <Text weight="medium" size="sm" numberOfLines={2} className="p-2.5">
-        {item.title}
-      </Text>
-    </Pressable>
+  const renderEquipmentItem = useCallback(
+    ({ item }: { item: EquipmentItem }) => (
+      <Pressable
+        style={{ width: '47%' }}
+        className="bg-card rounded-lg overflow-hidden"
+        onPress={() =>
+          props.navigation.navigate('MigratedSearch', {
+            mTitle: item.title,
+            isEquipment: true,
+            id: item.id,
+          })
+        }
+      >
+        <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} resizeMode="cover" />
+        <Text weight="medium" size="sm" numberOfLines={2} className="p-2.5">
+          {item.title}
+        </Text>
+      </Pressable>
+    ),
+    [props.navigation]
   );
 
   return (
@@ -105,16 +105,17 @@ export default function ViewEquipmentScreen(props: any) {
       </Box>
 
       <Box className="flex-1">
-        <ScrollView
+        <FlatList
           ref={scrollRef}
-          contentContainerStyle={{ padding: 16 }}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          <Box style={{ rowGap: 16 }} className="flex-row flex-wrap justify-between">
-            {equipmentList.map((item, index) => renderEquipmentItem({ item, index }))}
-          </Box>
-        </ScrollView>
+          data={equipmentList}
+          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+          renderItem={renderEquipmentItem}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          contentContainerStyle={{ padding: 16, rowGap: 16 }}
+          onEndReached={handleEquipmentListEndReached}
+          onEndReachedThreshold={0.3}
+        />
 
         {isLoading && (
           <Box
