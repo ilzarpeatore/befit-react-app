@@ -3,7 +3,7 @@ import {
   FlatList,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -72,8 +72,8 @@ export default function WorkoutDetail() {
 
   const renderDayCard = useCallback(
     ({ item }: { item: WorkoutDay }) => (
-      <TouchableOpacity
-        activeOpacity={0.85}
+      <Pressable
+        style={({ pressed }) => pressed && { opacity: 0.85 }}
         onPress={() =>
           navigation.navigate("WorkoutDayExercises", {
             workoutDayId: item.id,
@@ -97,7 +97,7 @@ export default function WorkoutDetail() {
             color={Colors.TEXT_SECONDARY}
           />
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     ),
     [navigation, styles]
   );
@@ -115,8 +115,8 @@ export default function WorkoutDetail() {
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.container2}>
             <View style={styles.topbar}>
-              <TouchableOpacity
-                style={styles.backBtn}
+              <Pressable
+                style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
                 onPress={() => navigation.goBack()}
               >
                 <Ionicons
@@ -124,7 +124,7 @@ export default function WorkoutDetail() {
                   size={24}
                   color={Colors.TEXT_PRIMARY}
                 />
-              </TouchableOpacity>
+              </Pressable>
               <Text style={styles.headerTitle}>Workout</Text>
               <View style={styles.backBtn} />
             </View>
@@ -154,8 +154,8 @@ export default function WorkoutDetail() {
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.container2}>
             <View style={styles.topbar}>
-              <TouchableOpacity
-                style={styles.backBtn}
+              <Pressable
+                style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
                 onPress={() => navigation.goBack()}
               >
                 <Ionicons
@@ -163,7 +163,7 @@ export default function WorkoutDetail() {
                   size={24}
                   color={Colors.TEXT_PRIMARY}
                 />
-              </TouchableOpacity>
+              </Pressable>
               <Text style={styles.headerTitle}>Workout</Text>
               <View style={styles.backBtn} />
             </View>
@@ -184,8 +184,8 @@ export default function WorkoutDetail() {
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.container2}>
           <View style={styles.topbar}>
-            <TouchableOpacity
-              style={styles.backBtn}
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.goBack()}
             >
               <Ionicons
@@ -193,9 +193,12 @@ export default function WorkoutDetail() {
                 size={24}
                 color={Colors.TEXT_PRIMARY}
               />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Workout</Text>
-            <TouchableOpacity style={styles.backBtn} onPress={handleFavourite}>
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+              onPress={handleFavourite}
+            >
               <Ionicons
                 name={
                   detail.is_favourite === 1 ? "heart" : "heart-outline"
@@ -207,7 +210,7 @@ export default function WorkoutDetail() {
                     : Colors.TEXT_SECONDARY
                 }
               />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <FlatList
