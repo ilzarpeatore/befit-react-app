@@ -5,7 +5,7 @@ import {
 
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   Animated,
   ImageBackground,
   Platform,
@@ -52,7 +52,10 @@ const Activitybox = ({
   styles
 }: ActivityboxPropsInterface) => {
   return (
-    <TouchableOpacity style={styles.activityboxborder} onPress={onPress}>
+    <Pressable
+      style={({ pressed }) => [styles.activityboxborder, pressed && { opacity: 0.2 }]}
+      onPress={onPress}
+    >
       <LinearGradient
         start={{ x: 0.11, y: -0.21 }}
         end={{ x: 0.71, y: 0.38 }}
@@ -111,7 +114,7 @@ const Activitybox = ({
           </LinearGradient>
         </LinearGradient>
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 /**
@@ -238,8 +241,8 @@ export default function Home({ navigation }: HomePropsInterface) {
      * _render_side_menu_item
      */
     return (
-      <TouchableOpacity
-        activeOpacity={0.9}
+      <Pressable
+        style={({ pressed }) => pressed && { opacity: 0.9 }}
         onPress={() => navigation.navigate("WorkoutList")}
       >
       <LinearGradient
@@ -267,7 +270,7 @@ export default function Home({ navigation }: HomePropsInterface) {
           <Text style={styles.slidercardlabel2}>{item.lableline2}</Text>
         </View>
       </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
   const _render_side_menu_item = (item: MenuItemInterface) => {
@@ -276,8 +279,8 @@ export default function Home({ navigation }: HomePropsInterface) {
      * @param item menu item
      */
     return (
-      <TouchableOpacity
-        style={styles.sidemenulistitem}
+      <Pressable
+        style={({ pressed }) => [styles.sidemenulistitem, pressed && { opacity: 0.2 }]}
         key={item.id}
         onPress={() => {
           if (item.id == 1) navigation.navigate("Profile");
@@ -312,7 +315,7 @@ export default function Home({ navigation }: HomePropsInterface) {
             trackOffStyle={styles.sidemenutrackoff}
           />
         ) : null}
-      </TouchableOpacity>
+      </Pressable>
     );
   }
   const _render_side_menu = () => {
@@ -388,14 +391,14 @@ export default function Home({ navigation }: HomePropsInterface) {
      * _render_slider_tab_item
      */
     return (
-      <TouchableOpacity
+      <Pressable
         onLayout={(event) => {
           set_slider_tabs_width(event, item); // set item width for animation
         }}
         onPress={() => {
           slider_tab_item_press(item);
         }}
-        style={styles.tab}
+        style={({ pressed }) => [styles.tab, pressed && { opacity: 0.2 }]}
       >
         <Text
           style={[
@@ -407,7 +410,7 @@ export default function Home({ navigation }: HomePropsInterface) {
         >
           {item.value}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   }
   return (
@@ -435,9 +438,8 @@ export default function Home({ navigation }: HomePropsInterface) {
         ]}
       />
       {_render_side_menu()}
-      <TouchableOpacity
+      <Pressable
         disabled={!side_menu_open}
-        activeOpacity={1}
         onPress={() => {
           toggle_sidemenu();
         }}
@@ -475,34 +477,35 @@ export default function Home({ navigation }: HomePropsInterface) {
             <View style={styles.container2}>
               {/*toolbar start*/}
               <View style={styles.topbar}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => {
                     toggle_sidemenu();
                   }}
-                  style={styles.menu}
+                  style={({ pressed }) => [styles.menu, pressed && { opacity: 0.2 }]}
                 >
                   <Image
                     source={require("@assets/menu.png")}
                     contentFit="contain"
                     style={styles.menuicon}
                   />
-                </TouchableOpacity>
+                </Pressable>
                 <View style={styles.logo}>
                   <Image
                     source={require("@assets/logo.png")}
                     style={styles.logoicon}
                   />
                 </View>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => {
                     navigation.navigate("Profile"); //navigate to profile page
                   }}
+                  style={({ pressed }) => pressed && { opacity: 0.2 }}
                 >
                   <Image
                     source={require("@assets/profile.png")}
                     style={styles.profileicon}
                   />
-                </TouchableOpacity>
+                </Pressable>
               </View>
               {/*toolbar end*/}
               {/*scrollview start*/}
@@ -594,9 +597,8 @@ export default function Home({ navigation }: HomePropsInterface) {
                   {/*activities end*/}
                   {/*quick links start*/}
                   <View style={styles.quickLinksRow}>
-                    <TouchableOpacity
-                      style={styles.quickLinkCard}
-                      activeOpacity={0.85}
+                    <Pressable
+                      style={({ pressed }) => [styles.quickLinkCard, pressed && { opacity: 0.85 }]}
                       onPress={() =>
                         navigation.navigate("Migrated", { screen: "MigratedMyProgramCalendar" })
                       }
@@ -610,10 +612,9 @@ export default function Home({ navigation }: HomePropsInterface) {
                         <Text style={styles.quickLinkTitle}>Mi Programa</Text>
                         <Text style={styles.quickLinkSubtitle}>Ver calendario asignado</Text>
                       </LinearGradient>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.quickLinkCard}
-                      activeOpacity={0.85}
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [styles.quickLinkCard, pressed && { opacity: 0.85 }]}
                       onPress={() =>
                         navigation.navigate("Migrated", { screen: "MigratedViewAllBlog" })
                       }
@@ -627,7 +628,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                         <Text style={styles.quickLinkTitle}>Blog</Text>
                         <Text style={styles.quickLinkSubtitle}>Consejos y artículos</Text>
                       </LinearGradient>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   {/*quick links end*/}
                   {/*slider start*/}
@@ -696,17 +697,20 @@ export default function Home({ navigation }: HomePropsInterface) {
             <View style={styles.navigationbgfix} />
             {/*navigation end*/}
 
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.navigate("ScreenExplorer")}
-              style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(119, 115, 250, 0.3)', zIndex: 999 }}
+              style={({ pressed }) => [
+                { position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(119, 115, 250, 0.3)', zIndex: 999 },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
-            </TouchableOpacity>
+            </Pressable>
 
           </SafeAreaView>
           <StatusBar style="dark" />
         </AnimatedImageBackground>
-      </TouchableOpacity>
+      </Pressable>
     </ImageBackground>
   );
 }
