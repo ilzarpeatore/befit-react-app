@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
   FlatList,
   Text,
@@ -22,6 +22,13 @@ import { LoadingSkeletonMem } from "../components/LoadingSkeleton";
 interface Props {
   navigation: any;
 }
+
+// Constantes del gradiente del chip activo, fuera del componente para no
+// reconstruir el objeto/array en cada render de cada fila del FlatList.
+const CHIP_GRADIENT_START = { x: 0.24, y: -0.09 };
+const CHIP_GRADIENT_END = { x: 0.78, y: 0.93 };
+const CHIP_GRADIENT_COLORS: [string, string] = [Colors.ACCENT_START, Colors.ACCENT_END];
+const ALL_CATEGORY: DietCategory = { id: 0, title: "All", categorydiet_image: "" } as DietCategory;
 
 export default function DietList({ navigation }: Props) {
   const styles = useStyle();
@@ -119,6 +126,69 @@ export default function DietList({ navigation }: Props) {
     fetchData(selectedCategory, searchQuery, nextPage);
   }, [loadingMore, page, totalPages, selectedCategory, searchQuery, fetchData]);
 
+  const categoryFilterData = useMemo(
+    () => [ALL_CATEGORY, ...categories],
+    [categories]
+  );
+
+  const handleCategoryChipPress = useCallback(
+    (catId: number) => {
+      onCategoryPress(catId === 0 ? null : catId);
+      setCategoryFilterOpen(false);
+    },
+    [onCategoryPress]
+  );
+
+  const renderCategoryItem = useCallback(
+    ({ item }: { item: DietCategory }) => {
+      const isActive =
+        item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
+      return (
+        <TouchableOpacity onPress={() => handleCategoryChipPress(item.id)} activeOpacity={0.85}>
+          {isActive ? (
+            <LinearGradient
+              start={CHIP_GRADIENT_START}
+              end={CHIP_GRADIENT_END}
+              colors={CHIP_GRADIENT_COLORS}
+              style={styles.chip}
+            >
+              <Text style={styles.chipTextActive}>{item.title}</Text>
+            </LinearGradient>
+          ) : (
+            <View style={styles.chipInactive}>
+              <Text style={styles.chipText}>{item.title}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    },
+    [selectedCategory, handleCategoryChipPress, styles]
+  );
+
+  const handleDietPress = useCallback(
+    (dietId: number, dietTitle: string) => {
+      navigation.navigate("Migrated", {
+        screen: "MigratedAssignedMeals",
+        params: { dietId, dietTitle },
+      });
+    },
+    [navigation]
+  );
+
+  const renderDietItem = useCallback(
+    ({ item }: { item: DietListItem }) => (
+      <View style={styles.cardWrap}>
+        <DietCardMem
+          title={item.title}
+          calories={Number(item.calories)}
+          image={item.diet_image}
+          onPress={() => handleDietPress(item.id, item.title)}
+        />
+      </View>
+    ),
+    [styles, handleDietPress]
+  );
+
   const renderHeader = () => (
     <View style={styles.searchContainer}>
       <View style={styles.searchBar}>
@@ -163,39 +233,12 @@ export default function DietList({ navigation }: Props) {
           inventó un filtro sin datos reales detrás de él. */}
       {categoryFilterOpen && (
         <FlatList
-          data={[{ id: 0, title: "All", categorydiet_image: "" } as DietCategory, ...categories]}
+          data={categoryFilterData}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.chipList}
-          renderItem={({ item }) => {
-            const isActive =
-              item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  onCategoryPress(item.id === 0 ? null : item.id);
-                  setCategoryFilterOpen(false);
-                }}
-                activeOpacity={0.85}
-              >
-                {isActive ? (
-                  <LinearGradient
-                    start={{ x: 0.24, y: -0.09 }}
-                    end={{ x: 0.78, y: 0.93 }}
-                    colors={[Colors.ACCENT_START, Colors.ACCENT_END]}
-                    style={styles.chip}
-                  >
-                    <Text style={styles.chipTextActive}>{item.title}</Text>
-                  </LinearGradient>
-                ) : (
-                  <View style={styles.chipInactive}>
-                    <Text style={styles.chipText}>{item.title}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          }}
+          renderItem={renderCategoryItem}
         />
       )}
     </View>
@@ -263,21 +306,7 @@ export default function DietList({ navigation }: Props) {
               message="Try a different search or category."
             />
           }
-          renderItem={({ item }) => (
-            <View style={styles.cardWrap}>
-              <DietCardMem
-                title={item.title}
-                calories={Number(item.calories)}
-                image={item.diet_image}
-                onPress={() =>
-                  navigation.navigate("Migrated", {
-                    screen: "MigratedAssignedMeals",
-                    params: { dietId: item.id, dietTitle: item.title },
-                  })
-                }
-              />
-            </View>
-          )}
+          renderItem={renderDietItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
