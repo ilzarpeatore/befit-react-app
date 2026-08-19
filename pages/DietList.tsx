@@ -3,7 +3,7 @@ import {
   FlatList,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   TextInput,
 } from "react-native";
@@ -130,15 +130,14 @@ export default function DietList({ navigation }: Props) {
           onChangeText={onSearchChange}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange("")}>
+          <Pressable onPress={() => onSearchChange("")} style={({ pressed }) => pressed && { opacity: 0.2 }}>
             <Ionicons name="close-circle" size={20} color={Colors.TEXT_MUTED} />
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.filterToggle}
-        activeOpacity={0.85}
+      <Pressable
+        style={({ pressed }) => [styles.filterToggle, pressed && { opacity: 0.85 }]}
         onPress={() => setCategoryFilterOpen((v) => !v)}
       >
         <Ionicons name="filter-outline" size={16} color={Colors.TEXT_PRIMARY} />
@@ -152,7 +151,7 @@ export default function DietList({ navigation }: Props) {
           size={16}
           color={Colors.TEXT_MUTED}
         />
-      </TouchableOpacity>
+      </Pressable>
       {/* Nota: no hay filtro por país/etiqueta aquí a propósito — `diets` (modelo
           legacy que alimenta esta pantalla) no tiene ningún campo de tag/país en
           el backend (columnas reales: id/title/slug/categorydiet_id/calories/
@@ -171,12 +170,12 @@ export default function DietList({ navigation }: Props) {
             const isActive =
               item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
             return (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => {
                   onCategoryPress(item.id === 0 ? null : item.id);
                   setCategoryFilterOpen(false);
                 }}
-                activeOpacity={0.85}
+                style={({ pressed }) => pressed && { opacity: 0.85 }}
               >
                 {isActive ? (
                   <LinearGradient
@@ -192,7 +191,7 @@ export default function DietList({ navigation }: Props) {
                     <Text style={styles.chipText}>{item.title}</Text>
                   </View>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             );
           }}
         />
@@ -205,9 +204,15 @@ export default function DietList({ navigation }: Props) {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -229,9 +234,15 @@ export default function DietList({ navigation }: Props) {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -245,9 +256,15 @@ export default function DietList({ navigation }: Props) {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+              pressed && { opacity: 0.2 },
+            ]}
+          >
             <Ionicons name="chevron-back" size={22} color="#000000" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
           <View style={{ width: 40 }} />
         </View>
