@@ -54,8 +54,8 @@ export default function OnboardingScreen({ navigation }: any) {
           showsHorizontalScrollIndicator={false}
           scrollEnabled={false}
         >
-          {PAGES.map((p, i) => (
-            <View key={i} style={styles.page}>
+          {PAGES.map((p) => (
+            <View key={p.title} style={styles.page}>
               <View style={styles.iconCircle}>
                 <Ionicons name={p.icon} size={48} color={C.textPrimary} />
               </View>
@@ -66,9 +66,9 @@ export default function OnboardingScreen({ navigation }: any) {
         </ScrollView>
 
         <View style={styles.dotsRow}>
-          {PAGES.map((_, i) => (
+          {PAGES.map((p, i) => (
             <View
-              key={i}
+              key={p.title}
               style={[styles.dot, i === page && styles.dotActive]}
             />
           ))}

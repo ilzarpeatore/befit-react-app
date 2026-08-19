@@ -26,8 +26,8 @@ export default function PrivacyPolicyScreen({ navigation }: any) {
         </View>
         <Text style={[localStyles.title, { color: C.textPrimary }]}>PolÃ­tica de privacidad</Text>
 
-        {SECTIONS.map((section, idx) => (
-          <View key={idx} style={localStyles.section}>
+        {SECTIONS.map((section) => (
+          <View key={section.title} style={localStyles.section}>
             <Text style={[localStyles.sectionTitle, { color: C.white }]}>{section.title}</Text>
             <Text style={[localStyles.sectionText, { color: C.gray }]}>{section.text}</Text>
           </View>

@@ -76,8 +76,8 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
         </Text>
 
         <View style={localStyles.checkList}>
-          {checks.map((item, idx) => (
-            <View key={idx} style={localStyles.checkRow}>
+          {checks.map((item) => (
+            <View key={item.label} style={localStyles.checkRow}>
               <Ionicons name={item.done ? "checkmark-circle" : "ellipse-outline"} size={22} color={item.done ? C.textPrimary : C.gray} />
               <Text style={[localStyles.checkText, { color: item.done ? C.white : C.gray }]}>{item.label}</Text>
             </View>
