@@ -20,12 +20,12 @@ const QUESTIONS = [
 export default function ParqScreen({ navigation }: any) {
   const styles = useStyle();
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState<boolean[]>([]);
+  const answersRef = useRef<boolean[]>([]);
   const scrollRef = useRef<ScrollView>(null);
 
   const handleAnswer = (yes: boolean) => {
-    const newAnswers = [...answers, yes];
-    setAnswers(newAnswers);
+    const newAnswers = [...answersRef.current, yes];
+    answersRef.current = newAnswers;
 
     if (currentQ < QUESTIONS.length - 1) {
       const next = currentQ + 1;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, Image, Alert, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Box } from '@components/ui/box';
@@ -42,11 +42,11 @@ export default function AddPostScreen({ navigation, route }: any) {
     }
   }, []);
 
-  const [removedMediaIds, setRemovedMediaIds] = useState<number[]>([]);
+  const removedMediaIdsRef = useRef<number[]>([]);
 
   const removeExistingImage = (index: number) => {
     const media = (postData?.postingMediaArray ?? [])[index];
-    if (media?.id) setRemovedMediaIds((prev) => [...prev, media.id]);
+    if (media?.id) removedMediaIdsRef.current = [...removedMediaIdsRef.current, media.id];
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -119,8 +119,8 @@ export default function AddPostScreen({ navigation, route }: any) {
     }
     setLoading(true);
     try {
-      if (removedMediaIds.length > 0 && postData?.id) {
-        await postsApi.removeMedia(postData.id, removedMediaIds);
+      if (removedMediaIdsRef.current.length > 0 && postData?.id) {
+        await postsApi.removeMedia(postData.id, removedMediaIdsRef.current);
       }
       const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
       await postsApi.update(postData?.id, description.trim(), media);

@@ -22,8 +22,8 @@ interface PostData {
 
 export default function CommunityScreen(props: any) {
   const [mPostList, setMPostList] = useState<PostData[]>([]);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | null>(null);
+  const pageRef = useRef(1);
+  const numPageRef = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollController = useRef<FlatList | null>(null);
@@ -32,7 +32,7 @@ export default function CommunityScreen(props: any) {
     setIsLoading(true);
     try {
       const res = await postsApi.getList(pageNum);
-      setNumPage(res.data.pagination?.totalPages ?? 1);
+      numPageRef.current = res.data.pagination?.totalPages ?? 1;
       const list = (res.data.data ?? []).map((p: any) => ({
         id: p.id,
         users: p.users ? {
@@ -61,14 +61,14 @@ export default function CommunityScreen(props: any) {
 
   useFocusEffect(
     useCallback(() => {
-      setPage(1);
+      pageRef.current = 1;
       getPostList(1);
     }, [getPostList])
   );
 
   const _onRefresh = async () => {
     setIsRefreshing(true);
-    setPage(1);
+    pageRef.current = 1;
     setMPostList([]);
     await getPostList(1);
     setIsRefreshing(false);
@@ -79,9 +79,9 @@ export default function CommunityScreen(props: any) {
   };
 
   const handleEndReached = () => {
-    if (!isLoading && numPage && page < numPage) {
-      const nextPage = page + 1;
-      setPage(nextPage);
+    if (!isLoading && numPageRef.current && pageRef.current < numPageRef.current) {
+      const nextPage = pageRef.current + 1;
+      pageRef.current = nextPage;
       getPostList(nextPage);
     }
   };

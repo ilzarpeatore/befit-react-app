@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Text,
@@ -30,8 +30,8 @@ export default function CommunityFeed({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(1);
+  const hasMoreRef = useRef(true);
 
   const fetchPosts = useCallback(
     async (pageNum: number = 1, isRefresh: boolean = false) => {
@@ -49,8 +49,8 @@ export default function CommunityFeed({ navigation }: Props) {
         } else {
           setPosts((prev) => [...prev, ...newData]);
         }
-        setHasMore(pagination ? pageNum < pagination.totalPages : false);
-        setPage(pageNum);
+        hasMoreRef.current = pagination ? pageNum < pagination.totalPages : false;
+        pageRef.current = pageNum;
       } catch (e) {
         if (pageNum === 1) setError("Failed to load posts. Please try again.");
       } finally {
@@ -70,10 +70,10 @@ export default function CommunityFeed({ navigation }: Props) {
   }, [fetchPosts]);
 
   const handleLoadMore = useCallback(() => {
-    if (hasMore && !loading && !refreshing) {
-      fetchPosts(page + 1);
+    if (hasMoreRef.current && !loading && !refreshing) {
+      fetchPosts(pageRef.current + 1);
     }
-  }, [hasMore, loading, refreshing, page, fetchPosts]);
+  }, [loading, refreshing, fetchPosts]);
 
   const handlePostPress = useCallback(
     (id: number) => {

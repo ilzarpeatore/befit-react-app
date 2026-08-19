@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -90,7 +90,7 @@ export default function ExerciseInfoScreen(props: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
-  const [isSavingFeedback, setIsSavingFeedback] = useState(false);
+  const isSavingFeedbackRef = useRef(false);
 
   const [analysis, setAnalysis] = useState<ExerciseAnalysisData | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -164,17 +164,17 @@ export default function ExerciseInfoScreen(props: Props) {
   };
 
   const onFeedback = async (value: 'like' | 'dislike') => {
-    if (!detail || isSavingFeedback) return;
+    if (!detail || isSavingFeedbackRef.current) return;
     const next = detail.user_feedback === value ? null : value;
     const prev = detail.user_feedback;
     setDetail({ ...detail, user_feedback: next });
-    setIsSavingFeedback(true);
+    isSavingFeedbackRef.current = true;
     try {
       await exerciseInfoApi.sendFeedback(detail.id, next);
     } catch (e) {
       setDetail((d) => (d ? { ...d, user_feedback: prev } : d));
     } finally {
-      setIsSavingFeedback(false);
+      isSavingFeedbackRef.current = false;
     }
   };
 

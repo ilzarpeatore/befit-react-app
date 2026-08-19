@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -31,9 +31,9 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
   const [isCompleteOnly, setIsCompleteOnly] = useState(true);
   const [selectedMealTypes, setSelectedMealTypes] = useState<ShoppingMealType[]>([]);
   const [servings, setServings] = useState(1);
-  const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
+  const dailyPlanIdRef = useRef<number | null>(null);
   const [isFetchingPlan, setIsFetchingPlan] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
 
   const availableMealTypes: { key: ShoppingMealType; label: string }[] = [
     { key: 'breakfast', label: 'Desayuno' },
@@ -55,7 +55,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     setTitle(shoppingList.title ?? '');
     if (shoppingList.daily_plan_id) {
       setIsSpecificDate(true);
-      setDailyPlanId(shoppingList.daily_plan_id);
+      dailyPlanIdRef.current = shoppingList.daily_plan_id;
       if (shoppingList.start_date) {
         setSelectedDate(new Date(shoppingList.start_date));
       }
@@ -71,10 +71,10 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
   const fetchDailyPlanId = async (date: Date) => {
     setIsFetchingPlan(true);
-    setDailyPlanId(null);
+    dailyPlanIdRef.current = null;
     try {
       const res = await dietApi.getDailyPlan(formatDate(date));
-      setDailyPlanId(res.data?.data?.id ?? null);
+      dailyPlanIdRef.current = res.data?.data?.id ?? null;
     } catch (e) {
       logger.error('Error fetching daily plan:', e);
     } finally {
@@ -110,7 +110,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     }
 
     if (isSpecificDate) {
-      if (dailyPlanId === null && !isFetchingPlan) {
+      if (dailyPlanIdRef.current === null && !isFetchingPlan) {
         Alert.alert('Error', 'No daily plan found for this date');
         return;
       }
@@ -118,7 +118,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
         Alert.alert('Error', 'Please wait for daily plan to load');
         return;
       }
-      req.daily_plan_id = dailyPlanId;
+      req.daily_plan_id = dailyPlanIdRef.current;
     } else {
       if (!dateRangeStart || !dateRangeEnd) {
         Alert.alert('Error', 'Please select a date range');
@@ -129,13 +129,13 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       req.servings = servings;
     }
 
-    setLoading(true);
+    loadingRef.current = true;
     try {
       await shoppingApi.generateFromDailyPlan(req);
-      setLoading(false);
+      loadingRef.current = false;
       navigation.goBack(true);
     } catch (e: any) {
-      setLoading(false);
+      loadingRef.current = false;
       const msg = e?.response?.data?.message ?? 'Failed to save shopping list';
       Alert.alert('Error', msg);
     }

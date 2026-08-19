@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,7 +10,7 @@ export default function StepGoalScreen({ navigation }: any) {
 
   const [showEditSheet, setShowEditSheet] = useState(false);
   const [goal, setGoal] = useState(10000);
-  const [savedGoal, setSavedGoal] = useState<number | null>(null);
+  const savedGoalRef = useRef<number | null>(null);
   const [saving, setSaving] = useState(false);
   const current = 3000;
   const percentage = Math.round((current / goal) * 100);
@@ -22,7 +22,7 @@ export default function StepGoalScreen({ navigation }: any) {
         const latest = res.data?.data?.[0];
         if (latest?.value) {
           setGoal(latest.value);
-          setSavedGoal(latest.value);
+          savedGoalRef.current = latest.value;
         }
       })
       .catch(() => {});
@@ -33,7 +33,7 @@ export default function StepGoalScreen({ navigation }: any) {
     try {
       const today = new Date().toISOString().slice(0, 10);
       await stepsApi.saveGoal(goal, today);
-      setSavedGoal(goal);
+      savedGoalRef.current = goal;
     } catch {
       // deja el valor local visible aunque el guardado falle; el usuario puede reintentar
     } finally {

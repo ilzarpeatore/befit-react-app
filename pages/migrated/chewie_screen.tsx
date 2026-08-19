@@ -17,7 +17,7 @@ export default function ChewieScreen({ route }: any) {
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const isPlayingRef = useRef(autoPlay);
   const videoRef = useRef<any>(null);
 
   useEffect(() => {
@@ -38,18 +38,18 @@ export default function ChewieScreen({ route }: any) {
 
   const handlePlaybackStatusUpdate = (status: any) => {
     if (status.isLoaded) {
-      setIsPlaying(status.isPlaying);
+      isPlayingRef.current = status.isPlaying;
     }
   };
 
   const handleVisibility = (visible: boolean) => {
     if (!videoRef.current) return;
     if (visible) {
-      if (!isPlaying) {
+      if (!isPlayingRef.current) {
         videoRef.current.playAsync();
       }
     } else {
-      if (isPlaying) {
+      if (isPlayingRef.current) {
         videoRef.current.pauseAsync();
       }
     }

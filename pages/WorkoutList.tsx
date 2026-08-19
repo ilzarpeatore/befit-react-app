@@ -42,11 +42,11 @@ export default function WorkoutList({ navigation }: Props) {
   const [selectedType, setSelectedType] = useState<number | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [page, setPage] = useState(1);
+  const pageRef = useRef(1);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const hasMoreRef = useRef(true);
 
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -73,7 +73,7 @@ export default function WorkoutList({ navigation }: Props) {
         } else {
           setWorkouts((prev) => [...prev, ...data]);
         }
-        setHasMore(pageNum < (res.data?.pagination?.total_pages ?? 1));
+        hasMoreRef.current = pageNum < (res.data?.pagination?.total_pages ?? 1);
       } catch (e: any) {
         setError(e?.message || "Failed to load workouts");
       }
@@ -104,23 +104,23 @@ export default function WorkoutList({ navigation }: Props) {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    setPage(1);
+    pageRef.current = 1;
     await fetchWorkouts(1);
     setRefreshing(false);
   }, [fetchWorkouts]);
 
   const handleLoadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
+    if (!loading && hasMoreRef.current) {
+      const nextPage = pageRef.current + 1;
+      pageRef.current = nextPage;
       fetchWorkouts(nextPage);
     }
-  }, [loading, hasMore, page, fetchWorkouts]);
+  }, [loading, fetchWorkouts]);
 
   const handleTypeFilter = useCallback(
     (typeId: number | null) => {
       setSelectedType(typeId);
-      setPage(1);
+      pageRef.current = 1;
       setLoading(true);
       fetchWorkouts(1, typeId, selectedLevel, searchText).finally(() => setLoading(false));
     },
@@ -130,7 +130,7 @@ export default function WorkoutList({ navigation }: Props) {
   const handleLevelFilter = useCallback(
     (levelId: number | null) => {
       setSelectedLevel(levelId);
-      setPage(1);
+      pageRef.current = 1;
       setLoading(true);
       fetchWorkouts(1, selectedType, levelId, searchText).finally(() => setLoading(false));
     },
@@ -142,7 +142,7 @@ export default function WorkoutList({ navigation }: Props) {
       setSearchText(text);
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
       searchDebounceRef.current = setTimeout(() => {
-        setPage(1);
+        pageRef.current = 1;
         setLoading(true);
         fetchWorkouts(1, selectedType, selectedLevel, text).finally(() => setLoading(false));
       }, 400);

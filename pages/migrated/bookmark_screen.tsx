@@ -22,8 +22,8 @@ interface BookmarkPost {
 export default function BookmarkScreen({ navigation }: any) {
 
   const [postList, setPostList] = useState<BookmarkPost[]>([]);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | null>(null);
+  const pageRef = useRef(1);
+  const numPageRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const scrollRef = useRef<ScrollView>(null);
@@ -36,7 +36,7 @@ export default function BookmarkScreen({ navigation }: any) {
     setLoading(true);
     try {
       const res = await postsApi.getBookmarks(pageNum);
-      setNumPage(res.data.pagination?.totalPages ?? 1);
+      numPageRef.current = res.data.pagination?.totalPages ?? 1;
       const list: BookmarkPost[] = (res.data.data ?? []).map((p: any) => ({
         id: p.id,
         content: p.description,
@@ -56,7 +56,7 @@ export default function BookmarkScreen({ navigation }: any) {
   }, []);
 
   const onRefresh = () => {
-    setPage(1);
+    pageRef.current = 1;
     getPostList(1);
   };
 
