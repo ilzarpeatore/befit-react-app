@@ -8,6 +8,9 @@ import { useAuth } from '@store/AuthContext';
 import { scheduleWaterReminders } from '@helper/reminderNotifications';
 import { C, FONT } from './theme';
 
+// Fuera del componente para no reconstruir el array en cada render del picker.
+const EVERY_HOURS_OPTIONS = Array.from({ length: 24 }, (_, i) => i + 1);
+
 export default function WaterRemindersScreen(props: any) {
   const { state } = useAuth();
   const [enabled, setEnabled] = useState(true);
@@ -226,7 +229,7 @@ export default function WaterRemindersScreen(props: any) {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Seleccionar intervalo</Text>
             <FlatList
-              data={Array.from({ length: 24 }, (_, i) => i + 1)}
+              data={EVERY_HOURS_OPTIONS}
               renderItem={renderEveryPickerItem}
               keyExtractor={(item) => item.toString()}
               ItemSeparatorComponent={() => <View style={styles.divider} />}
