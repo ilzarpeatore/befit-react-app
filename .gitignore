@@ -31,5 +31,10 @@ dist_release2/
 android/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
-# root-anchored: an unanchored "graft/" also matched .claude/skills/graft/
-/graft/
+# kept as the unanchored "graft/" on purpose: graft's own ensureGitignored()
+# checks for that exact line and re-appends it every build otherwise. The
+# negations below re-admit .claude/skills/graft/ (the graft skill itself,
+# which this pattern would otherwise also match).
+graft/
+!/.claude/skills/graft/
+!/.claude/skills/graft/**
