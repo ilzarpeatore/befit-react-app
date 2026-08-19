@@ -47,6 +47,11 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ADHOC_DEFAULT_METRICS = ['carga', 'reps'];
+// Estilos del renderItem del picker de "Añadir ejercicio", fuera del
+// componente para no reconstruirlos en cada fila del FlatList.
+const PICKER_RESULT_IMAGE_STYLE = { width: 44, height: 44, borderRadius: 8, marginRight: 12 };
+const PICKER_RESULT_PLACEHOLDER_STYLE = { width: 44, height: 44, marginRight: 12 };
+const PICKER_RESULT_TITLE_STYLE = { fontSize: 14, marginRight: 8 };
 const RESISTANCE_TRAINING_MET = 5.0;
 const FALLBACK_WEIGHT_KG = 70;
 // Sesion activa sin guardar (punto 3/4/5 del encargo): se persiste el
@@ -678,39 +683,59 @@ export default function WorkoutSessionScreen(props: Props) {
     runPickerSearch(pickerQuery, selectedBodyPartId, nextPage);
   };
 
-  const onAddExercise = (item: ExerciseItem) => {
-    const targetBlockIdx = Math.min(pageIndex, blocks.length - 1);
-    const baseExercise: UnifiedExercise = {
-      id: -item.id, // synthetic, solo para key de React - no se envia al backend
-      exerciseId: item.id,
-      title: item.title,
-      image: item.exercise_image,
-      bodyPartId: item.bodypart_name?.[0]?.id ?? null,
-      videoUrl: item.video_url,
-      prescribed: {},
-      enabledMetrics: ADHOC_DEFAULT_METRICS,
-      coachNotes: null,
-      lastPerformance: null,
-      sequence: (blocks[targetBlockIdx]?.exercises.length ?? 0) + 1,
-    };
-    const newExercise: SessionExercise = {
-      ...baseExercise,
-      rows: buildInitialRows(baseExercise),
-      note: '',
-      isAdhoc: true,
-    };
-    const newIdx = blocks[targetBlockIdx]?.exercises.length ?? 0;
-    setBlocks((prev) => {
-      const next = [...prev];
-      const block = { ...next[targetBlockIdx] };
-      block.exercises = [...block.exercises, newExercise];
-      next[targetBlockIdx] = block;
-      return next;
-    });
-    setActiveIndexByBlock((prevActive) => ({ ...prevActive, [targetBlockIdx]: newIdx }));
-    fetchLoadSuggestion(newExercise);
-    setIsPickerVisible(false);
-  };
+  const onAddExercise = useCallback(
+    (item: ExerciseItem) => {
+      const targetBlockIdx = Math.min(pageIndex, blocks.length - 1);
+      const baseExercise: UnifiedExercise = {
+        id: -item.id, // synthetic, solo para key de React - no se envia al backend
+        exerciseId: item.id,
+        title: item.title,
+        image: item.exercise_image,
+        bodyPartId: item.bodypart_name?.[0]?.id ?? null,
+        videoUrl: item.video_url,
+        prescribed: {},
+        enabledMetrics: ADHOC_DEFAULT_METRICS,
+        coachNotes: null,
+        lastPerformance: null,
+        sequence: (blocks[targetBlockIdx]?.exercises.length ?? 0) + 1,
+      };
+      const newExercise: SessionExercise = {
+        ...baseExercise,
+        rows: buildInitialRows(baseExercise),
+        note: '',
+        isAdhoc: true,
+      };
+      const newIdx = blocks[targetBlockIdx]?.exercises.length ?? 0;
+      setBlocks((prev) => {
+        const next = [...prev];
+        const block = { ...next[targetBlockIdx] };
+        block.exercises = [...block.exercises, newExercise];
+        next[targetBlockIdx] = block;
+        return next;
+      });
+      setActiveIndexByBlock((prevActive) => ({ ...prevActive, [targetBlockIdx]: newIdx }));
+      fetchLoadSuggestion(newExercise);
+      setIsPickerVisible(false);
+    },
+    [pageIndex, blocks, fetchLoadSuggestion]
+  );
+
+  const renderPickerResultItem = useCallback(
+    ({ item }: { item: ExerciseItem }) => (
+      <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
+        {item.exercise_image ? (
+          <Image source={{ uri: item.exercise_image }} contentFit="cover" style={PICKER_RESULT_IMAGE_STYLE} />
+        ) : (
+          <Box className="rounded-md bg-card" style={PICKER_RESULT_PLACEHOLDER_STYLE} />
+        )}
+        <Text weight="semibold" className="flex-1 text-foreground" style={PICKER_RESULT_TITLE_STYLE} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <Icon name="add-circle-outline" size={22} className="text-foreground" />
+      </Pressable>
+    ),
+    [onAddExercise]
+  );
 
   const onPagerScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -1240,19 +1265,7 @@ export default function WorkoutSessionScreen(props: Props) {
                   <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                 ) : null
               }
-              renderItem={({ item }) => (
-                <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
-                  {item.exercise_image ? (
-                    <Image source={{ uri: item.exercise_image }} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }} />
-                  ) : (
-                    <Box className="rounded-md bg-card" style={{ width: 44, height: 44, marginRight: 12 }} />
-                  )}
-                  <Text weight="semibold" className="flex-1 text-foreground" style={{ fontSize: 14, marginRight: 8 }} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Icon name="add-circle-outline" size={22} className="text-foreground" />
-                </Pressable>
-              )}
+              renderItem={renderPickerResultItem}
             />
           )}
         </SafeAreaView>

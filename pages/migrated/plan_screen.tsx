@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StyleSheet, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, FlatList, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
+import Animated, {
+  useAnimatedRef,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { runOnJS } from 'react-native-worklets';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -121,7 +128,22 @@ export default function PlanScreen(props: any) {
   const [savingRecipeId, setSavingRecipeId] = useState<number | null>(null);
 
   const insets = useSafeAreaInsets();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  // Guardamos la posición de scroll en un shared value (hilo de UI) en vez de
+  // en un setState directo dentro de onScroll, y solo avisamos a React cuando
+  // el umbral realmente cambia de lado (ver useAnimatedReaction más abajo).
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  useAnimatedReaction(
+    () => scrollY.value > GRAPH_CARD_HEIGHT * 0.3,
+    (show, prevShow) => {
+      if (show !== prevShow) {
+        runOnJS(setShowCompactSummary)(show);
+      }
+    }
+  );
 
   useEffect(() => {
     fetchDailyPlan();
@@ -316,15 +338,11 @@ export default function PlanScreen(props: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, addMealFor]);
 
-  const handleSearchScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 40;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      if (!searchIsLastPage && !searchLoading && !searchLoadingMore && addMealFor) {
-        const nextPage = searchPage + 1;
-        setSearchPage(nextPage);
-        searchRecipes(addMealFor.key, searchQuery, nextPage);
-      }
+  const handleSearchEndReached = () => {
+    if (!searchIsLastPage && !searchLoading && !searchLoadingMore && addMealFor) {
+      const nextPage = searchPage + 1;
+      setSearchPage(nextPage);
+      searchRecipes(addMealFor.key, searchQuery, nextPage);
     }
   };
 
@@ -342,16 +360,46 @@ export default function PlanScreen(props: any) {
     }
   };
 
+  const renderAddMealResultItem = useCallback(
+    ({ item: recipe }: { item: RecipeListItem | AssignedMealRecipe }) => (
+      <>
+        <Pressable
+          style={s.searchResultRow}
+          disabled={savingRecipeId === recipe.id}
+          onPress={() => addRecipeToPlan(recipe)}
+        >
+          {recipe.recipe_image ? (
+            <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={s.searchResultImage} />
+          ) : (
+            <Box style={s.searchResultImage} />
+          )}
+          <Box style={s.searchResultInfo}>
+            <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+            <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+          </Box>
+          {savingRecipeId === recipe.id ? (
+            <Spinner size="small" color={C.textPrimary} />
+          ) : (
+            <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
+          )}
+        </Pressable>
+        <Divider />
+      </>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [savingRecipeId]
+  );
+
   const renderWeekDays = (offset: number) => {
     const days = getWeekDays(offset);
     return (
       <HStack style={s.weekStrip}>
-        {days.map((day, i) => {
+        {days.map((day) => {
           const isSelected = isSameDay(day, selectedDay);
           const isToday = isSameDay(day, new Date());
           return (
             <Pressable
-              key={i}
+              key={formatDateYMD(day)}
               style={[s.weekDayItem, isSelected && s.weekDayItemSelected]}
               onPress={() => setSelectedDay(day)}
             >
@@ -385,8 +433,8 @@ export default function PlanScreen(props: any) {
           { label: 'Proteína', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
           { label: 'Carbos', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
           { label: 'Grasas', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
-        ].map((n, i) => (
-          <Box key={i} style={s.nutrientItem}>
+        ].map((n) => (
+          <Box key={n.label} style={s.nutrientItem}>
             <Text style={s.nutrientLabel}>{n.label}</Text>
             <Text style={s.nutrientValue}>{n.current}g</Text>
             <Text style={s.nutrientTarget}>de {n.target}g</Text>
@@ -416,8 +464,8 @@ export default function PlanScreen(props: any) {
         {recipes.length === 0 ? (
           <Text style={s.emptyMealText}>Todavía no has añadido {displayName.toLowerCase()}.</Text>
         ) : (
-          recipes.map((recipe, i) => (
-            <React.Fragment key={i}>
+          recipes.map((recipe) => (
+            <React.Fragment key={recipe.id}>
               <Divider />
               <HStack style={s.recipeItem}>
                 <Pressable
@@ -490,18 +538,15 @@ export default function PlanScreen(props: any) {
           {renderCompactStat('Grasas', `${fatsCurrent}/${fatsTarget}g`, fatsProgress)}
         </Card>
       )}
-      <ScrollView
+      <Animated.ScrollView
         ref={scrollRef}
         contentContainerStyle={s.scrollContent}
-        onScroll={(e) => {
-          const show = e.nativeEvent.contentOffset.y > GRAPH_CARD_HEIGHT * 0.3;
-          if (show !== showCompactSummary) setShowCompactSummary(show);
-        }}
+        onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
         {renderNutrientGraph()}
         {Object.entries(MEAL_TYPES).map(([key, displayName]) => renderMealSection(key, displayName))}
-      </ScrollView>
+      </Animated.ScrollView>
       {isLoading && (
         <Box style={s.loadingOverlay}>
           <Spinner size="large" color={C.textPrimary} />
@@ -549,33 +594,13 @@ export default function PlanScreen(props: any) {
                 );
               }
               return (
-                <ScrollView style={s.searchResultsScroll} keyboardShouldPersistTaps="handled">
-                  {assignedForMeal.map((recipe) => (
-                    <React.Fragment key={recipe.id}>
-                      <Pressable
-                        style={s.searchResultRow}
-                        disabled={savingRecipeId === recipe.id}
-                        onPress={() => addRecipeToPlan(recipe)}
-                      >
-                        {recipe.recipe_image ? (
-                          <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={s.searchResultImage} />
-                        ) : (
-                          <Box style={s.searchResultImage} />
-                        )}
-                        <Box style={{ flex: 1 }}>
-                          <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                          <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                        </Box>
-                        {savingRecipeId === recipe.id ? (
-                          <Spinner size="small" color={C.textPrimary} />
-                        ) : (
-                          <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
-                        )}
-                      </Pressable>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                </ScrollView>
+                <FlatList
+                  style={s.searchResultsScroll}
+                  data={assignedForMeal}
+                  keyExtractor={(recipe) => String(recipe.id)}
+                  renderItem={renderAddMealResultItem}
+                  keyboardShouldPersistTaps="handled"
+                />
               );
             })()
           ) : (
@@ -593,41 +618,20 @@ export default function PlanScreen(props: any) {
               ) : searchResults.length === 0 ? (
                 <Text style={s.noResultsText}>No se encontraron recetas.</Text>
               ) : (
-                <ScrollView
+                <FlatList
                   style={s.searchResultsScroll}
-                  onScroll={handleSearchScroll}
-                  scrollEventThrottle={16}
+                  data={searchResults}
+                  keyExtractor={(recipe) => String(recipe.id)}
+                  renderItem={renderAddMealResultItem}
                   keyboardShouldPersistTaps="handled"
-                >
-                  {searchResults.map((recipe) => (
-                    <React.Fragment key={recipe.id}>
-                      <Pressable
-                        style={s.searchResultRow}
-                        disabled={savingRecipeId === recipe.id}
-                        onPress={() => addRecipeToPlan(recipe)}
-                      >
-                        {recipe.recipe_image ? (
-                          <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={s.searchResultImage} />
-                        ) : (
-                          <Box style={s.searchResultImage} />
-                        )}
-                        <Box style={{ flex: 1 }}>
-                          <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                          <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                        </Box>
-                        {savingRecipeId === recipe.id ? (
-                          <Spinner size="small" color={C.textPrimary} />
-                        ) : (
-                          <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
-                        )}
-                      </Pressable>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                  {searchLoadingMore && (
-                    <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
-                  )}
-                </ScrollView>
+                  onEndReached={handleSearchEndReached}
+                  onEndReachedThreshold={0.4}
+                  ListFooterComponent={
+                    searchLoadingMore ? (
+                      <Spinner size="small" color={C.textPrimary} style={s.searchLoadingMoreSpinner} />
+                    ) : null
+                  }
+                />
               )}
             </>
           )}
@@ -701,6 +705,8 @@ const s = StyleSheet.create({
   searchResultsScroll: { flex: 1 },
   searchResultRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   searchResultImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
+  searchResultInfo: { flex: 1 },
   searchResultTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
   searchResultMeta: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
+  searchLoadingMoreSpinner: { marginVertical: 16 },
 });

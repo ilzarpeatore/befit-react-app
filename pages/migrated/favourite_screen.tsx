@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FlatList, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,9 @@ import ScreenHeader from '@components/ScreenHeader';
 import { workoutTemplateApi } from '../../api/workoutTemplate';
 import { recipesApi } from '../../api/recipes';
 import logger from '@helper/logger';
+
+// Fuera del componente para no reconstruir el objeto en cada fila del FlatList.
+const THUMBNAIL_STYLE = { width: 44, height: 44, borderRadius: 8 };
 
 interface FavouriteScreenProps {
   navigation: any;
@@ -93,6 +96,30 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
     }
   };
 
+  const handleWorkoutPress = useCallback(
+    (workoutTemplateId: number, mTitle: string) => {
+      navigation.navigate('MigratedWorkoutPreview', { workoutTemplateId, mTitle });
+    },
+    [navigation]
+  );
+
+  const renderWorkoutFavItem = useCallback(
+    ({ item }: { item: any }) => (
+      <Pressable
+        className="flex-row items-center gap-3 bg-secondary rounded-lg p-4"
+        onPress={() => handleWorkoutPress(item.id, item.title)}
+      >
+        {item.thumbnail ? (
+          <Image source={{ uri: item.thumbnail }} contentFit="cover" style={THUMBNAIL_STYLE} />
+        ) : null}
+        <Text weight="semibold" size="sm" className="flex-1">
+          {item.title || ''}
+        </Text>
+      </Pressable>
+    ),
+    [handleWorkoutPress]
+  );
+
   if (isLoading) {
     return (
       <Box className="flex-1 items-center justify-center">
@@ -114,24 +141,7 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
       data={workouts}
       keyExtractor={(item, i) => `${item.id}-${i}`}
       contentContainerStyle={{ padding: 16, gap: 10 }}
-      renderItem={({ item }) => (
-        <Pressable
-          className="flex-row items-center gap-3 bg-secondary rounded-lg p-4"
-          onPress={() =>
-            navigation.navigate('MigratedWorkoutPreview', {
-              workoutTemplateId: item.id,
-              mTitle: item.title,
-            })
-          }
-        >
-          {item.thumbnail ? (
-            <Image source={{ uri: item.thumbnail }} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 8 }} />
-          ) : null}
-          <Text weight="semibold" size="sm" className="flex-1">
-            {item.title || ''}
-          </Text>
-        </Pressable>
-      )}
+      renderItem={renderWorkoutFavItem}
     />
   );
 }
@@ -160,6 +170,30 @@ function RecipesFavContent({ navigation }: { navigation: any }) {
     }
   };
 
+  const handleRecipePress = useCallback(
+    (recipeId: number, recipeImage: string) => {
+      navigation.navigate('MigratedDietDetail', { recipeId, recipeImage });
+    },
+    [navigation]
+  );
+
+  const renderRecipeFavItem = useCallback(
+    ({ item }: { item: any }) => (
+      <Pressable
+        className="flex-row items-center gap-3 bg-secondary rounded-lg p-4"
+        onPress={() => handleRecipePress(item.id, item.recipe_image || '')}
+      >
+        {item.recipe_image ? (
+          <Image source={{ uri: item.recipe_image }} contentFit="cover" style={THUMBNAIL_STYLE} />
+        ) : null}
+        <Text weight="semibold" size="sm" className="flex-1">
+          {item.title || ''}
+        </Text>
+      </Pressable>
+    ),
+    [handleRecipePress]
+  );
+
   if (isLoading) {
     return (
       <Box className="flex-1 items-center justify-center">
@@ -181,24 +215,7 @@ function RecipesFavContent({ navigation }: { navigation: any }) {
       data={recipes}
       keyExtractor={(item, i) => `${item.id}-${i}`}
       contentContainerStyle={{ padding: 16, gap: 10 }}
-      renderItem={({ item }) => (
-        <Pressable
-          className="flex-row items-center gap-3 bg-secondary rounded-lg p-4"
-          onPress={() =>
-            navigation.navigate('MigratedDietDetail', {
-              recipeId: item.id,
-              recipeImage: item.recipe_image || '',
-            })
-          }
-        >
-          {item.recipe_image ? (
-            <Image source={{ uri: item.recipe_image }} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 8 }} />
-          ) : null}
-          <Text weight="semibold" size="sm" className="flex-1">
-            {item.title || ''}
-          </Text>
-        </Pressable>
-      )}
+      renderItem={renderRecipeFavItem}
     />
   );
 }

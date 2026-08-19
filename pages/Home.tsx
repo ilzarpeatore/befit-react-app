@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   ScrollView,
@@ -172,10 +172,10 @@ export default function Home({ navigation }: HomePropsInterface) {
     return subscribe.remove();
   }, [side_menu_open])
 
-  const slider_tab_item_press = (item: SliderTabItemInterface) => {
+  const slider_tab_item_press = useCallback((item: SliderTabItemInterface) => {
     if (slider_items.length === 0) return;
     _imageslider.current?.scrollToIndex({ index: item.sliderkey }); // scroll slider to ne item index*/
-  }
+  }, [slider_items.length]);
   const slider_viewable_items_changed = ({ viewableItems }: { viewableItems: any[] }) => {
     if (!viewableItems || viewableItems.length === 0) return;
     let item = viewableItems[0].item;
@@ -192,7 +192,7 @@ export default function Home({ navigation }: HomePropsInterface) {
     }).start();
     setSliderTabsActive(item.key);// set active slider tab
   };
-  const set_slider_tabs_width = (event: LayoutChangeEvent, item: SliderTabItemInterface) => {
+  const set_slider_tabs_width = useCallback((event: LayoutChangeEvent, item: SliderTabItemInterface) => {
     //find slider tab item width and save it for later animation
     let { width } = event.nativeEvent.layout;
     setSliderTabItems((prev) => {
@@ -202,7 +202,7 @@ export default function Home({ navigation }: HomePropsInterface) {
       }
       return copy;
     });
-  };
+  }, []);
   const toggle_sidemenu = () => {
     /**
      * toggle_sidemenu
@@ -224,7 +224,7 @@ export default function Home({ navigation }: HomePropsInterface) {
       }).start();
     }
   }
-  const toggle_sidemenu_switchstate = (item: MenuItemInterface) => {
+  const toggle_sidemenu_switchstate = useCallback((item: MenuItemInterface) => {
     /**
      * toggle_sidemenu_switchstate
      * toggle sidemenu switchstate on_toggle
@@ -232,8 +232,8 @@ export default function Home({ navigation }: HomePropsInterface) {
     let sidemenutmp = [...sidemenu];
     sidemenutmp[item.id - 1].switchstate = !sidemenutmp[item.id - 1].switchstate;
     setSidemenu(sidemenutmp);
-  }
-  const _render_slider_items = (item: SliderItemInterface) => {
+  }, [sidemenu]);
+  const _render_slider_items = useCallback((item: SliderItemInterface) => {
     /**
      * _render_side_menu_item
      */
@@ -269,8 +269,8 @@ export default function Home({ navigation }: HomePropsInterface) {
       </LinearGradient>
       </TouchableOpacity>
     );
-  };
-  const _render_side_menu_item = (item: MenuItemInterface) => {
+  }, [navigation]);
+  const _render_side_menu_item = useCallback((item: MenuItemInterface) => {
     /**
      * _render_side_menu_item
      * @param item menu item
@@ -314,7 +314,7 @@ export default function Home({ navigation }: HomePropsInterface) {
         ) : null}
       </TouchableOpacity>
     );
-  }
+  }, [navigation, logout, toggle_sidemenu_switchstate]);
   const _render_side_menu = () => {
     /**
      * side menu
@@ -376,14 +376,14 @@ export default function Home({ navigation }: HomePropsInterface) {
             ]}
             data={extendedSidemenu}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => _render_side_menu_item(item)}
+            renderItem={renderSideMenuItem}
             keyExtractor={(item) => item.id.toString()}
           />
         </View>
       </View>
     );
   }
-  const _render_slider_tab_item = (item: SliderTabItemInterface) => {
+  const _render_slider_tab_item = useCallback((item: SliderTabItemInterface) => {
     /**
      * _render_slider_tab_item
      */
@@ -409,7 +409,21 @@ export default function Home({ navigation }: HomePropsInterface) {
         </Text>
       </TouchableOpacity>
     );
-  }
+  }, [slider_tabs_active, set_slider_tabs_width, slider_tab_item_press]);
+
+  const renderSideMenuItem = useCallback(
+    ({ item }: { item: MenuItemInterface }) => _render_side_menu_item(item),
+    [_render_side_menu_item]
+  );
+  const renderSliderTabItem = useCallback(
+    ({ item }: { item: SliderTabItemInterface }) => _render_slider_tab_item(item),
+    [_render_slider_tab_item]
+  );
+  const renderSliderItem = useCallback(
+    ({ item }: { item: SliderItemInterface }) => _render_slider_items(item),
+    [_render_slider_items]
+  );
+
   return (
     <ImageBackground source={require("@assets/bg.png")} style={styles.bg}>
       {/* home page background shadow */}
@@ -638,9 +652,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                       data={slider_tab_items}
                       horizontal={true}
                       keyExtractor={(item) => item.key.toString()}
-                      renderItem={({ item }) =>
-                        _render_slider_tab_item(item)
-                      }
+                      renderItem={renderSliderTabItem}
                     />
                     {/*slider tabs end*/}
                     {/*slider tabsunderline animation start*/}
@@ -674,9 +686,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                       pagingEnabled
                       horizontal={true}
                       keyExtractor={(item) => item.key.toString()}
-                      renderItem={({ item }) =>
-                        _render_slider_items(item)
-                      }
+                      renderItem={renderSliderItem}
                       onViewableItemsChanged={
                         slider_viewable_items_changed
                       }

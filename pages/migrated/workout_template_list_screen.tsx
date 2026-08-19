@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import { FlatList, ActivityIndicator, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
@@ -23,7 +23,7 @@ export default function WorkoutTemplateListScreen(props: any) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isLastPage, setIsLastPage] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
 
   const loadWorkouts = useCallback(async () => {
     setIsLoading(true);
@@ -48,17 +48,67 @@ export default function WorkoutTemplateListScreen(props: any) {
     loadWorkouts();
   }, [loadWorkouts]);
 
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 20;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      if (!isLastPage && !isLoading) {
-        setPage((prev) => prev + 1);
-      }
+  const handleWorkoutListEndReached = () => {
+    if (!isLastPage && !isLoading) {
+      setPage((prev) => prev + 1);
     }
   };
 
   const columnWidth = (SCREEN_WIDTH - 48) / 2;
+
+  const renderWorkoutItem = useCallback(
+    ({ item }: { item: WorkoutTemplateListItem }) => {
+      const locked = item.is_exclusive && !item.is_accessible;
+      return (
+        <Pressable
+          style={{ width: columnWidth, marginBottom: 16 }}
+          onPress={() =>
+            props.navigation.navigate('MigratedWorkoutPreview', {
+              workoutTemplateId: item.id,
+              mTitle: item.title,
+            })
+          }
+        >
+          {item.thumbnail ? (
+            <Image
+              source={{ uri: item.thumbnail }}
+              style={{ width: columnWidth, height: 140, borderRadius: 12 }}
+              contentFit="cover"
+            />
+          ) : (
+            <Box
+              className="bg-secondary"
+              style={{ width: columnWidth, height: 140, borderRadius: 12 }}
+            />
+          )}
+          {locked && (
+            <Box
+              className="flex-row items-center"
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                borderRadius: 12,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                gap: 4,
+              }}
+            >
+              <Icon name="lock-closed" size={14} color="#FFFFFF" />
+              <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>
+                Exclusive
+              </Text>
+            </Box>
+          )}
+          <Text weight="bold" numberOfLines={1} style={{ marginTop: 8 }}>
+            {item.title}
+          </Text>
+        </Pressable>
+      );
+    },
+    [props.navigation, columnWidth]
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -80,69 +130,22 @@ export default function WorkoutTemplateListScreen(props: any) {
             <Text muted>No workouts found</Text>
           </Box>
         ) : (
-          <ScrollView
+          <FlatList
             ref={scrollRef}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
+            data={items}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderWorkoutItem}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: 'space-between' }}
             contentContainerStyle={{ padding: 16 }}
-          >
-            <Box className="flex-row flex-wrap justify-between">
-              {items.map((item) => {
-                const locked = item.is_exclusive && !item.is_accessible;
-                return (
-                  <Pressable
-                    key={item.id}
-                    style={{ width: columnWidth, marginBottom: 16 }}
-                    onPress={() =>
-                      props.navigation.navigate('MigratedWorkoutPreview', {
-                        workoutTemplateId: item.id,
-                        mTitle: item.title,
-                      })
-                    }
-                  >
-                    {item.thumbnail ? (
-                      <Image
-                        source={{ uri: item.thumbnail }}
-                        style={{ width: columnWidth, height: 140, borderRadius: 12 }}
-                        contentFit="cover"
-                      />
-                    ) : (
-                      <Box
-                        className="bg-secondary"
-                        style={{ width: columnWidth, height: 140, borderRadius: 12 }}
-                      />
-                    )}
-                    {locked && (
-                      <Box
-                        className="flex-row items-center"
-                        style={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          borderRadius: 12,
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          gap: 4,
-                        }}
-                      >
-                        <Icon name="lock-closed" size={14} color="#FFFFFF" />
-                        <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>
-                          Exclusive
-                        </Text>
-                      </Box>
-                    )}
-                    <Text weight="bold" numberOfLines={1} style={{ marginTop: 8 }}>
-                      {item.title}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </Box>
-            {isLoading && page > 1 && (
-              <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
-            )}
-          </ScrollView>
+            onEndReached={handleWorkoutListEndReached}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              isLoading && page > 1 ? (
+                <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
+              ) : null
+            }
+          />
         )}
       </Box>
     </SafeAreaView>

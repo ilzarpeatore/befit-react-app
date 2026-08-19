@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   Dimensions,
@@ -33,6 +33,8 @@ import { dashboardApi } from '../../api/dashboard';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const PAGE_INDEXES = [0, 1, 2, 3, 4, 5];
 const CONDENSED_PAGE_INDEX = 4;
+// Fuera del componente para no reconstruir el objeto en cada página del pager.
+const PAGER_PAGE_STYLE = { width: SCREEN_WIDTH, flex: 1, paddingHorizontal: 20 };
 
 interface Props {
   navigation?: any;
@@ -308,12 +310,15 @@ export default function WorkoutSummaryScreen(props: Props) {
     setPageIndex(idx);
   };
 
-  const renderMap = (height: number, forcedView?: ViewSide) => {
-    if (mapLoading) return <Spinner size="small" color={C.textSecondary} />;
-    return <MuscleBodyMap data={muscleVolume} height={height} showToggle={false} forcedView={forcedView} />;
-  };
+  const renderMap = useCallback(
+    (height: number, forcedView?: ViewSide) => {
+      if (mapLoading) return <Spinner size="small" color={C.textSecondary} />;
+      return <MuscleBodyMap data={muscleVolume} height={height} showToggle={false} forcedView={forcedView} />;
+    },
+    [mapLoading, muscleVolume]
+  );
 
-  const renderPage = (index: number) => {
+  const renderPage = useCallback((index: number) => {
     switch (index) {
       case 0:
         return (
@@ -413,7 +418,23 @@ export default function WorkoutSummaryScreen(props: Props) {
           </Box>
         );
     }
-  };
+  }, [volumeKg, funFact, durationSeconds, completedSets, exerciseCount, exercisesSummary, mTitle, topMuscles, renderMap]);
+
+  const renderPagerItem = useCallback(
+    ({ item }: { item: number }) => (
+      <Box style={PAGER_PAGE_STYLE}>
+        <Card
+          ref={(el) => {
+            cardRefs.current[item] = el;
+          }}
+          footerCentered={item === CONDENSED_PAGE_INDEX}
+        >
+          {renderPage(item)}
+        </Card>
+      </Box>
+    ),
+    [renderPage]
+  );
 
   return (
     <SafeAreaView style={s.container} edges={['top', 'bottom']}>
@@ -432,18 +453,7 @@ export default function WorkoutSummaryScreen(props: Props) {
           ref={pagerRef}
           data={PAGE_INDEXES}
           keyExtractor={(i) => String(i)}
-          renderItem={({ item }) => (
-            <Box style={{ width: SCREEN_WIDTH, flex: 1, paddingHorizontal: 20 }}>
-              <Card
-                ref={(el) => {
-                  cardRefs.current[item] = el;
-                }}
-                footerCentered={item === CONDENSED_PAGE_INDEX}
-              >
-                {renderPage(item)}
-              </Card>
-            </Box>
-          )}
+          renderItem={renderPagerItem}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
