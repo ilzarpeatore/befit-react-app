@@ -42,7 +42,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
   );
   const [isCompleteOnly, setIsCompleteOnly] = useState(true);
   const [selectedMealTypes, setSelectedMealTypes] = useState<ShoppingMealType[]>([]);
-  const [servings, setServings] = useState(1);
+  const [servings, setServings] = useState(() => shoppingList?.servings ?? 1);
   const dailyPlanIdRef = useRef<number | null>(null);
   const [isFetchingPlan, setIsFetchingPlan] = useState(false);
   const loadingRef = useRef(false);
@@ -70,7 +70,6 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       dailyPlanIdRef.current = shoppingList.daily_plan_id;
     } else {
       setIsSpecificDate(false);
-      setServings(shoppingList.servings ?? 1);
     }
   };
 
