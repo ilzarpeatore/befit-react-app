@@ -29,3 +29,7 @@ dist_release2/
 .expo-map/
 
 android/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+# root-anchored: an unanchored "graft/" also matched .claude/skills/graft/
+/graft/
