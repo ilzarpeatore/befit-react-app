@@ -56,10 +56,18 @@ export default function BlogScreen({ navigation }: any) {
     loadData();
   }, []);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadFilteredPosts (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    if (!isSearching && !loading) {
-      loadFilteredPosts();
-    }
+    if (isSearching || loading) return;
+    const ignoreRef = { current: false };
+    loadFilteredPosts(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [selectedCategory, sortBy, orderDir]);
 
   const loadData = async () => {
@@ -83,12 +91,13 @@ export default function BlogScreen({ navigation }: any) {
     }
   };
 
-  const loadFilteredPosts = async () => {
+  const loadFilteredPosts = async (ignoreRef: { current: boolean }) => {
     try {
       const params: any = { per_page: 100, order_by: sortBy, order_dir: orderDir };
       if (selectedCategory) params.blog_category_id = selectedCategory;
 
       const res = await blogApi.getList(1, params);
+      if (ignoreRef.current) return;
       const posts: BlogListItem[] = (res.data?.data ?? []).filter((p: any) => p.status === 'publish');
 
       setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));

@@ -97,21 +97,32 @@ export default function BlogDetailScreen({ navigation, route }: any) {
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
   const [bibliographyOpen, setBibliographyOpen] = useState(false);
 
-  const loadDetail = async () => {
+  const loadDetail = async (ignoreRef: { current: boolean }) => {
     setLoading(true);
     try {
       const res = await blogApi.getDetail(blogId);
+      if (ignoreRef.current) return;
       setBlog(res.data?.data ?? mBlogModel ?? null);
     } catch (e) {
       logger.error('Error loading blog detail:', e);
+      if (ignoreRef.current) return;
       setBlog(mBlogModel ?? null);
     } finally {
       setLoading(false);
     }
   };
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadDetail (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    loadDetail();
+    const ignoreRef = { current: false };
+    loadDetail(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [blogId]);
 
   const onWebViewMessage = (event: any) => {

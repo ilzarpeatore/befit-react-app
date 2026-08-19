@@ -25,10 +25,18 @@ export default function ViewEquipmentScreen(props: any) {
     getEquipmentData();
   }, []);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getEquipmentDataPagination (llamada por referencia, no inline): si el
+  // fetch queda obsoleto, ignoreRef.current corta antes de tocar el estado
+  // con datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    if (numPageRef.current && page > 1) {
-      getEquipmentDataPagination();
-    }
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getEquipmentDataPagination(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [page]);
 
   const getEquipmentData = async () => {
@@ -51,10 +59,11 @@ export default function ViewEquipmentScreen(props: any) {
     }
   };
 
-  const getEquipmentDataPagination = async () => {
+  const getEquipmentDataPagination = async (ignoreRef: { current: boolean }) => {
     setIsLoading(true);
     try {
       const value = await exercisesApi.getEquipment(page);
+      if (ignoreRef.current) return;
       const items = (value.data.data ?? []).map((e) => ({
         id: e.id,
         title: e.title,

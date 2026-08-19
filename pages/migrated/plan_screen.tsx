@@ -122,8 +122,17 @@ export default function PlanScreen(props: any) {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // fetchDailyPlan (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    fetchDailyPlan();
+    const ignoreRef = { current: false };
+    fetchDailyPlan(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [selectedDay]);
 
   useEffect(() => {
@@ -137,7 +146,11 @@ export default function PlanScreen(props: any) {
 
   useFocusEffect(
     useCallback(() => {
-      fetchDailyPlan();
+      const ignoreRef = { current: false };
+      fetchDailyPlan(ignoreRef);
+      return () => {
+        ignoreRef.current = true;
+      };
     }, [selectedDay])
   );
 
@@ -193,10 +206,15 @@ export default function PlanScreen(props: any) {
     plannedDaysRef.current = value?.day_has_daily_plan ?? [];
   };
 
-  const fetchDailyPlan = async () => {
+  // ignoreRef solo lo pasan los dos efectos de abajo (mount/cambio de dia y
+  // foco de pantalla), que pueden solaparse entre si -- las llamadas
+  // manuales tras mutaciones (clearDailyPlan, addRecipeToPlan) lo dejan sin
+  // pasar a proposito, no hay condicion de carrera ahi.
+  const fetchDailyPlan = async (ignoreRef?: { current: boolean }) => {
     setIsLoading(true);
     try {
       const res = await dietApi.getDailyPlan(formatDateYMD(selectedDay));
+      if (ignoreRef?.current) return;
       applyDailyPlanResponse(res.data);
     } catch (e) {
       logger.error('Plan fetch error:', e);

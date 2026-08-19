@@ -66,10 +66,18 @@ export default function WorkoutDetailScreen(props: any) {
     init();
   }, []);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getDayExerciseData (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    if (numPageRef.current && page > 1) {
-      getDayExerciseData(workoutDayList[currentTabIndex]?.id);
-    }
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getDayExerciseData(workoutDayList[currentTabIndex]?.id, ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [page]);
 
   const init = async () => {
@@ -90,10 +98,11 @@ export default function WorkoutDetailScreen(props: any) {
     }
   };
 
-  const getDayExerciseData = async (dayId?: number) => {
+  const getDayExerciseData = async (dayId?: number, ignoreRef?: { current: boolean }) => {
     setIsLoading(true);
     try {
       await workoutsApi.getDayExercises(dayId!).then((res) => {
+        if (ignoreRef?.current) return;
         const value: any = res.data;
         numPageRef.current = value.pagination?.total_pages ?? null;
         isLastPageRef.current = false;
