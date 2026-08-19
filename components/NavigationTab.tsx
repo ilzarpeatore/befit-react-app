@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Image,
@@ -29,7 +29,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   const [navlocations, set_navlocations] = useState([0, 0, 0, 0]);
   /* set navigation avtive page */
   const [activepage, set_activepage] = useState(state.index);
-  const navigationbtnactiveX = useRef(new Animated.Value(0)).current;
+  const [navigationbtnactiveX] = useState(() => new Animated.Value(0));
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
     /* save navigation tab x positions */

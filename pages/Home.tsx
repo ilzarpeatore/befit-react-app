@@ -124,8 +124,8 @@ export default function Home({ navigation }: HomePropsInterface) {
   const [slider_tabs_active, setSliderTabsActive] = useState<number>(0);
   const [side_menu_open, setSideMenuOpen] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const slider_tab_underline_AnimX = useRef(new Animated.Value(0)).current; // slider tab underline animation
-  const side_menu_Anim = useRef(new Animated.Value(0)).current; // side menu animation
+  const [slider_tab_underline_AnimX] = useState(() => new Animated.Value(0)); // slider tab underline animation
+  const [side_menu_Anim] = useState(() => new Animated.Value(0)); // side menu animation
   const _imageslider = useRef<FlatList<any>>(null)
   const [slider_tab_items, setSliderTabItems] = useState(sliderTabItemsData);
   const [sidemenu, setSidemenu] = useState(sidemenuData);
@@ -169,7 +169,7 @@ export default function Home({ navigation }: HomePropsInterface) {
       handleBackButtonClick
     );
     return subscribe.remove();
-  }, [side_menu_open])
+  }, [side_menu_open, side_menu_Anim])
 
   const slider_tab_item_press = (item: SliderTabItemInterface) => {
     if (slider_items.length === 0) return;

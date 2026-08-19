@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Image, Animated, StyleSheet } from "react-native";
 import {
   Svg,
@@ -16,7 +16,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 function CircularProgress({ width, height, percent, icon }: CircularProgressInterface) {
   const styles = useStyle();
   /* chart data */
-  const weightpercentageanime = useRef(new Animated.Value(100)).current;
+  const [weightpercentageanime] = useState(() => new Animated.Value(100));
   /* chart animation */
   useEffect(() => {
     Animated.timing(weightpercentageanime, {

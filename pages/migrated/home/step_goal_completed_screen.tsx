@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ function Confetti() {
     delay: Math.random() * 2000,
   }));
 
-  const anims = useRef(pieces.map(() => new Animated.Value(0))).current;
+  const [anims] = useState(() => pieces.map(() => new Animated.Value(0)));
 
   useEffect(() => {
     anims.forEach((anim, i) => {
@@ -39,7 +39,12 @@ function Confetti() {
         ])
       ).start();
     });
-  }, []);
+    // `pieces` se queda fuera a propósito: se recalcula (Math.random) en cada
+    // render y este efecto solo debe correr una vez al montar, usando los
+    // delays de las piezas iniciales (las mismas que capturó `anims`).
+    // Añadirlo reiniciaría todos los loops de confeti en cada re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anims]);
 
   return (
     <View style={styles.confettiContainer}>

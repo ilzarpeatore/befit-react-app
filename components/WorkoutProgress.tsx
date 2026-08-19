@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Animated, Easing } from "react-native";
 import { Svg, Path, Circle } from "react-native-svg";
 import { WorkoutProgressInterface } from "./_types/WorkoutProgress.i";
@@ -29,7 +29,7 @@ export default function WorkoutProgress({
     return { properties, length }
   }, [])
 
-  const progress_Anim = useRef(new Animated.Value(-550)).current; // circle progress animation
+  const [progress_Anim] = useState(() => new Animated.Value(-550)); // circle progress animation
   const chart = useMemo(() => {
     const progress_dash_offset = -1 * (((100 - percent) * 550) / 100); // convert percentage to dash offset
     const progress_length = ((100 - percent) * svg.length) / 100; // convert percentage to circle length
@@ -49,7 +49,7 @@ export default function WorkoutProgress({
       useNativeDriver: true,
       easing: Easing.linear,
     }).start();
-  }, [chart.progress_dash_offset])
+  }, [chart.progress_dash_offset, progress_Anim])
   return (
     <Svg width={width} height={height} viewBox="0 0 229 250" fill="none">
       {/* workout progress bg */}

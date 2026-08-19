@@ -126,8 +126,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [periodMode, setPeriodMode] = useState<'week' | 'month'>('month');
-  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(today));
-  const [weekAnchor, setWeekAnchor] = useState(startOfWeekMonday(today));
+  const [selectedMonth, setSelectedMonth] = useState(() => startOfMonth(today));
+  const [weekAnchor, setWeekAnchor] = useState(() => startOfWeekMonday(today));
   const [selectedDayKey, setSelectedDayKey] = useState<string | null>(todayKey);
 
   // Modo vida real (2026-08-12): el cliente marca desde su calendario qué

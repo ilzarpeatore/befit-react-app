@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { C } from '../pages/migrated/theme';
@@ -28,7 +28,7 @@ export default function AnimatedRing({
 }: AnimatedRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = useRef(new Animated.Value(circumference)).current;
+  const [offset] = useState(() => new Animated.Value(circumference));
 
   useEffect(() => {
     offset.setValue(circumference);

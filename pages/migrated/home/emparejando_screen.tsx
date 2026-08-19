@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "@components/ui/text";
@@ -8,10 +8,10 @@ import { VStack } from "@components/ui/vstack";
 import { Icon } from "@components/ui/icon";
 
 export default function EmparejandoScreen({ navigation }: any) {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const dot1 = useRef(new Animated.Value(0)).current;
-  const dot2 = useRef(new Animated.Value(0)).current;
-  const dot3 = useRef(new Animated.Value(0)).current;
+  const [pulseAnim] = useState(() => new Animated.Value(1));
+  const [dot1] = useState(() => new Animated.Value(0));
+  const [dot2] = useState(() => new Animated.Value(0));
+  const [dot3] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -43,7 +43,7 @@ export default function EmparejandoScreen({ navigation }: any) {
       dotAnimations.forEach((a) => a.stop());
       clearTimeout(timer);
     };
-  }, []);
+  }, [pulseAnim, dot1, dot2, dot3, navigation]);
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background">
