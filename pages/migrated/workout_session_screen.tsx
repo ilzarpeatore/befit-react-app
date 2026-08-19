@@ -184,8 +184,8 @@ export default function WorkoutSessionScreen(props: Props) {
   const [pickerResults, setPickerResults] = useState<ExerciseItem[]>([]);
   const [pickerLoading, setPickerLoading] = useState(false);
   const [pickerLoadingMore, setPickerLoadingMore] = useState(false);
-  const [pickerPage, setPickerPage] = useState(1);
-  const [pickerIsLastPage, setPickerIsLastPage] = useState(false);
+  const pickerPageRef = useRef(1);
+  const pickerIsLastPageRef = useRef(false);
   const [bodyParts, setBodyParts] = useState<BodyPartItem[]>([]);
   const [selectedBodyPartId, setSelectedBodyPartId] = useState<number | null>(null);
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
@@ -636,7 +636,7 @@ export default function WorkoutSessionScreen(props: Props) {
       const items = res.data?.data ?? [];
       setPickerResults((prev) => (page === 1 ? items : [...prev, ...items]));
       const totalPages = res.data?.pagination?.totalPages ?? 1;
-      setPickerIsLastPage(page >= totalPages);
+      pickerIsLastPageRef.current = page >= totalPages;
     } catch (e) {
       if (page === 1) setPickerResults([]);
     } finally {
@@ -648,8 +648,8 @@ export default function WorkoutSessionScreen(props: Props) {
   const openExercisePicker = () => {
     setPickerQuery('');
     setSelectedBodyPartId(null);
-    setPickerPage(1);
-    setPickerIsLastPage(false);
+    pickerPageRef.current = 1;
+    pickerIsLastPageRef.current = false;
     setIsPickerVisible(true);
     runPickerSearch('', null, 1);
     if (bodyParts.length === 0) {
@@ -663,8 +663,8 @@ export default function WorkoutSessionScreen(props: Props) {
   useEffect(() => {
     if (!isPickerVisible) return;
     const timeout = setTimeout(() => {
-      setPickerPage(1);
-      setPickerIsLastPage(false);
+      pickerPageRef.current = 1;
+      pickerIsLastPageRef.current = false;
       runPickerSearch(pickerQuery, selectedBodyPartId, 1);
     }, 350);
     return () => clearTimeout(timeout);
@@ -672,9 +672,9 @@ export default function WorkoutSessionScreen(props: Props) {
   }, [pickerQuery, selectedBodyPartId, isPickerVisible]);
 
   const onPickerEndReached = () => {
-    if (pickerIsLastPage || pickerLoading || pickerLoadingMore) return;
-    const nextPage = pickerPage + 1;
-    setPickerPage(nextPage);
+    if (pickerIsLastPageRef.current || pickerLoading || pickerLoadingMore) return;
+    const nextPage = pickerPageRef.current + 1;
+    pickerPageRef.current = nextPage;
     runPickerSearch(pickerQuery, selectedBodyPartId, nextPage);
   };
 

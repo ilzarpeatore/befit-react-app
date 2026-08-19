@@ -68,7 +68,7 @@ export default function OtherUserProfileScreen(props: any) {
     setIsLoading(true);
     try {
       const res = await postsApi.getList(pageNum, userDetails.id);
-      setNumPage(res.data.pagination?.totalPages ?? 1);
+      numPageRef.current = res.data.pagination?.totalPages ?? 1;
       const list: PostData[] = (res.data.data ?? []).map((p: any) => ({
         id: p.id,
         content: p.description,
@@ -80,7 +80,7 @@ export default function OtherUserProfileScreen(props: any) {
         isBookmarked: p.is_bookmark,
       }));
       setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
-      setPage(pageNum);
+      pageRef.current = pageNum;
     } catch (e) {
       logger.error('Error fetching user posts', e);
     } finally {

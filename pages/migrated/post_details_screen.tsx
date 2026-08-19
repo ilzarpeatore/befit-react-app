@@ -82,22 +82,22 @@ export default function PostDetailsScreen(props: any) {
 
   const toggleLike = () => {
     setIsLiked((prev) => !prev);
-    setLikeChange((prev) => prev + 1);
+    likeChangeRef.current += 1;
     if (postData.id) {
       postsApi.like(postData.id).catch(() => {
         setIsLiked((prev) => !prev);
-        setLikeChange((prev) => prev - 1);
+        likeChangeRef.current -= 1;
       });
     }
   };
 
   const toggleBookmark = () => {
     setIsBookmarked((prev) => !prev);
-    setBookMarkChange((prev) => prev + 1);
+    bookMarkChangeRef.current += 1;
     if (postData.id) {
       postsApi.bookmark(postData.id).catch(() => {
         setIsBookmarked((prev) => !prev);
-        setBookMarkChange((prev) => prev - 1);
+        bookMarkChangeRef.current -= 1;
       });
     }
   };

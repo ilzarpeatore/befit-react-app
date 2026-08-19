@@ -95,13 +95,13 @@ export default function WorkoutDetailScreen(props: any) {
     try {
       await workoutsApi.getDayExercises(dayId!).then((res) => {
         const value: any = res.data;
-        setNumPage(value.pagination?.total_pages ?? null);
-        setIsLastPage(false);
+        numPageRef.current = value.pagination?.total_pages ?? null;
+        isLastPageRef.current = false;
         if (page === 1) setDayExerciseList([]);
         setDayExerciseList((prev) => [...prev, ...value.data]);
       });
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
     } finally {
       setIsLoading(false);
     }

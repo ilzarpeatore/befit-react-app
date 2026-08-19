@@ -21,7 +21,7 @@ export default function WorkoutTemplateListScreen(props: any) {
   const [items, setItems] = useState<WorkoutTemplateListItem[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const isLastPageRef = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const loadWorkouts = useCallback(async () => {
@@ -35,7 +35,7 @@ export default function WorkoutTemplateListScreen(props: any) {
         setItems((prev) => [...prev, ...data]);
       }
       const totalPages = res.data.pagination?.totalPages ?? 1;
-      setIsLastPage(page >= totalPages);
+      isLastPageRef.current = page >= totalPages;
     } catch (e) {
       // best-effort, deja la lista como estaba
     } finally {
@@ -51,7 +51,7 @@ export default function WorkoutTemplateListScreen(props: any) {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const paddingToBottom = 20;
     if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      if (!isLastPage && !isLoading) {
+      if (!isLastPageRef.current && !isLoading) {
         setPage((prev) => prev + 1);
       }
     }
