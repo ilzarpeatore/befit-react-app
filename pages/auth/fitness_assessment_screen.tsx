@@ -178,7 +178,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
           <View style={styles.daysRow}>
             {DAYS.map((d, i) => (
               <TouchableOpacity
-                key={i}
+                key={d}
                 style={[styles.dayBtn, selectedDays[i] && styles.dayOn]}
                 onPress={() => toggleDay(i)}
               >
