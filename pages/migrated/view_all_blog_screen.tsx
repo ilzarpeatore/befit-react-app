@@ -60,8 +60,8 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   const [posts, setPosts] = useState<BlogListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const pageRef = useRef(1);
+  const isLastPageRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   }, []);
 
   useEffect(() => {
-    setPage(1);
+    pageRef.current = 1;
     loadPosts(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, sortBy, orderDir]);
@@ -93,7 +93,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       const pagination = res.data.pagination;
 
       setPosts((prev) => (pageNum === 1 ? filtered : [...prev, ...filtered]));
-      setIsLastPage(pageNum >= (pagination.totalPages || 1));
+      isLastPageRef.current = pageNum >= (pagination.totalPages || 1);
     } catch (e) {
       logger.error('Error loading posts:', e);
     } finally {
@@ -103,13 +103,13 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   };
 
   const handleLoadMore = useCallback(() => {
-    if (!isLastPage && !loadingMore && !isSearching) {
-      const nextPage = page + 1;
-      setPage(nextPage);
+    if (!isLastPageRef.current && !loadingMore && !isSearching) {
+      const nextPage = pageRef.current + 1;
+      pageRef.current = nextPage;
       loadPosts(nextPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, isLastPage, loadingMore, isSearching]);
+  }, [loadingMore, isSearching]);
 
   const handleSearch = async (text: string) => {
     setSearchText(text);

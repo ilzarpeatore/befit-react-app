@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
@@ -264,7 +264,7 @@ function AddItemSheet({
 }) {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [units, setUnits] = useState<MeasurementUnit[]>([]);
+  const unitsRef = useRef<MeasurementUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<MeasurementUnit | null>(null);
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -278,7 +278,7 @@ function AddItemSheet({
     try {
       const res = await shoppingApi.getMeasurementUnits();
       const list = res.data?.data ?? [];
-      setUnits(list);
+      unitsRef.current = list;
       setSelectedUnit(list[0] ?? null);
     } catch (e) {
       logger.error('Error loading measurement units:', e);

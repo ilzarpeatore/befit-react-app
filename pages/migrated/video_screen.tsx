@@ -34,9 +34,9 @@ function VideoComponent({ item }: { item: any }) {
 export default function VideoScreen(props: any) {
   const [videoList, setVideoList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const pageRef = useRef(1);
   const [numPage, setNumPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const isLastPageRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
@@ -52,14 +52,14 @@ export default function VideoScreen(props: any) {
       // setVideoList(prev => [...prev, ...value.data]);
       setIsLoading(false);
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
       setIsLoading(false);
     }
   };
 
   const handleLoadMore = () => {
-    if (!isLastPage && !isLoading && page < numPage) {
-      setPage(page + 1);
+    if (!isLastPageRef.current && !isLoading && pageRef.current < numPage) {
+      pageRef.current = pageRef.current + 1;
       getVideoData();
     }
   };

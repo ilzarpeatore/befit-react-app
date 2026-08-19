@@ -40,8 +40,8 @@ export default function OtherUserProfileScreen(props: any) {
   const [profileImg, setProfileImg] = useState(userDetails.profileImage ?? '');
   const [postList, setPostList] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState(1);
+  const pageRef = useRef(1);
+  const numPageRef = useRef(1);
   const [stats, setStats] = useState<UserSocialStats | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 

@@ -100,12 +100,12 @@ export default function PlanScreen(props: any) {
 
   const [mealTotals, setMealTotals] = useState<Record<string, MealTotal>>({});
   const [mealRecipes, setMealRecipes] = useState<Record<string, DailyPlanRecipeItem[]>>({});
-  const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
+  const dailyPlanIdRef = useRef<number | null>(null);
 
   const [selectedDay, setSelectedDay] = useState(new Date());
   const [showCompactSummary, setShowCompactSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [plannedDays, setPlannedDays] = useState<string[]>([]);
+  const plannedDaysRef = useRef<string[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
 
   const [addMealFor, setAddMealFor] = useState<{ key: string; label: string } | null>(null);
@@ -115,8 +115,8 @@ export default function PlanScreen(props: any) {
   const [searchResults, setSearchResults] = useState<RecipeListItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchLoadingMore, setSearchLoadingMore] = useState(false);
-  const [searchPage, setSearchPage] = useState(1);
-  const [searchIsLastPage, setSearchIsLastPage] = useState(false);
+  const searchPageRef = useRef(1);
+  const searchIsLastPageRef = useRef(false);
   const [savingRecipeId, setSavingRecipeId] = useState<number | null>(null);
 
   const insets = useSafeAreaInsets();
@@ -145,7 +145,7 @@ export default function PlanScreen(props: any) {
     const data = value?.data;
     if (!data) return;
 
-    setDailyPlanId(data.id ?? null);
+    dailyPlanIdRef.current = data.id ?? null;
 
     const goals = data.daily_plan ?? {};
     setKcalTarget(goals.kCal ?? 0);
@@ -190,7 +190,7 @@ export default function PlanScreen(props: any) {
     });
     setMealRecipes(recipesByMeal);
 
-    setPlannedDays(value?.day_has_daily_plan ?? []);
+    plannedDaysRef.current = value?.day_has_daily_plan ?? [];
   };
 
   const fetchDailyPlan = async () => {
@@ -241,7 +241,8 @@ export default function PlanScreen(props: any) {
   };
 
   const clearDailyPlan = () => {
-    if (!dailyPlanId) return;
+    const planId = dailyPlanIdRef.current;
+    if (!planId) return;
     Alert.alert('Vaciar plan', '¿Seguro que quieres borrar todas las recetas de este día?', [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -250,7 +251,7 @@ export default function PlanScreen(props: any) {
         onPress: async () => {
           setIsLoading(true);
           try {
-            await recipesApi.deleteAllDailyPlanRecipes(dailyPlanId);
+            await recipesApi.deleteAllDailyPlanRecipes(planId);
             await fetchDailyPlan();
           } catch (e) {
             Alert.alert('Error', 'No se pudo vaciar el plan');
@@ -278,7 +279,7 @@ export default function PlanScreen(props: any) {
       const items = res.data?.data ?? [];
       setSearchResults((prev) => (page === 1 ? items : [...prev, ...items]));
       const totalPages = res.data?.pagination?.totalPages ?? 1;
-      setSearchIsLastPage(page >= totalPages);
+      searchIsLastPageRef.current = page >= totalPages;
     } catch {
       if (page === 1) setSearchResults([]);
     } finally {
@@ -297,8 +298,8 @@ export default function PlanScreen(props: any) {
       setAddMealTab(hasAssigned ? 'assigned' : 'recipes');
       setSearchQuery('');
       setSearchResults([]);
-      setSearchPage(1);
-      setSearchIsLastPage(false);
+      searchPageRef.current = 1;
+      searchIsLastPageRef.current = false;
       searchRecipes(key, '', 1);
     },
     [searchRecipes, assignedMeals]
@@ -307,8 +308,8 @@ export default function PlanScreen(props: any) {
   useEffect(() => {
     if (!addMealFor) return;
     const timeout = setTimeout(() => {
-      setSearchPage(1);
-      setSearchIsLastPage(false);
+      searchPageRef.current = 1;
+      searchIsLastPageRef.current = false;
       searchRecipes(addMealFor.key, searchQuery, 1);
     }, 350);
     return () => clearTimeout(timeout);
@@ -319,19 +320,20 @@ export default function PlanScreen(props: any) {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const paddingToBottom = 40;
     if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      if (!searchIsLastPage && !searchLoading && !searchLoadingMore && addMealFor) {
-        const nextPage = searchPage + 1;
-        setSearchPage(nextPage);
+      if (!searchIsLastPageRef.current && !searchLoading && !searchLoadingMore && addMealFor) {
+        const nextPage = searchPageRef.current + 1;
+        searchPageRef.current = nextPage;
         searchRecipes(addMealFor.key, searchQuery, nextPage);
       }
     }
   };
 
   const addRecipeToPlan = async (recipe: RecipeListItem | AssignedMealRecipe) => {
-    if (!dailyPlanId || !addMealFor) return;
+    const planId = dailyPlanIdRef.current;
+    if (!planId || !addMealFor) return;
     setSavingRecipeId(recipe.id);
     try {
-      await recipesApi.saveDailyPlanRecipe(dailyPlanId, recipe.id, addMealFor.key);
+      await recipesApi.saveDailyPlanRecipe(planId, recipe.id, addMealFor.key);
       setAddMealFor(null);
       await fetchDailyPlan();
     } catch {
