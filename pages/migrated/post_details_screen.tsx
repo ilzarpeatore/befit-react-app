@@ -155,9 +155,9 @@ export default function PostDetailsScreen(props: any) {
             {postData.content ? <Text muted style={{ lineHeight: 22, marginBottom: 12 }}>{postData.content}</Text> : null}
             {postData.images && postData.images.length > 0 ? (
               <Box className="flex-row flex-wrap" style={{ marginBottom: 12 }}>
-                {postData.images.map((img, i) => (
+                {postData.images.map((img) => (
                   <Image
-                    key={i}
+                    key={img}
                     source={{ uri: img }}
                     className="rounded-md bg-secondary"
                     style={[

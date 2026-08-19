@@ -121,9 +121,9 @@ export default function ProfileScreen(props: any) {
         </Box>
 
         <Box className="px-5 gap-2" style={{ marginTop: 24 }}>
-          {menuItems.map((item, index) => (
+          {menuItems.map((item) => (
             <Pressable
-              key={index}
+              key={item.route}
               className="flex-row items-center rounded-sm px-4"
               style={{ backgroundColor: C.gray80, paddingVertical: 14 }}
               onPress={() => handleMenuItemPress(item)}

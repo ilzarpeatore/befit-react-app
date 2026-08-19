@@ -127,9 +127,9 @@ export default function OtherUserProfileScreen(props: any) {
     });
   };
 
-  const renderPostItem = (item: PostData, index: number) => (
+  const renderPostItem = (item: PostData) => (
     <Pressable
-      key={index}
+      key={item.id}
       className="bg-card rounded-lg p-4"
       style={{ marginBottom: 12 }}
       onPress={() => openPostDetail(item)}
@@ -150,8 +150,8 @@ export default function OtherUserProfileScreen(props: any) {
       {item.content ? <Text size="sm" style={{ color: C.gray50, marginBottom: 12, lineHeight: 20 }}>{item.content}</Text> : null}
       {item.images && item.images.length > 0 ? (
         <HStack style={{ marginBottom: 12 }}>
-          {item.images.map((img, i) => (
-            <Image key={i} source={{ uri: img }} style={{ width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight }} />
+          {item.images.map((img) => (
+            <Image key={img} source={{ uri: img }} style={{ width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight }} />
           ))}
         </HStack>
       ) : null}
@@ -213,7 +213,7 @@ export default function OtherUserProfileScreen(props: any) {
         </Box>
         <Box style={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 24 }}>
           {postList.length > 0 ? (
-            postList.map((item, index) => renderPostItem(item, index))
+            postList.map((item) => renderPostItem(item))
           ) : !isLoading ? (
             <Box className="items-center justify-center" style={{ paddingVertical: 48 }}>
               <Icon name="document-text-outline" size={64} color={C.gray50} />
