@@ -46,14 +46,17 @@ const prStyles = StyleSheet.create({
   segOn: { backgroundColor: C.brand50 },
 });
 
+const PASSWORD_STRENGTH_COLORS = [C.destructive50, C.orange, C.warning40, C.success50, C.success60];
+const PASSWORD_STRENGTH_LABELS = ["Muy débil", "Débil", "Regular", "Fuerte", "Muy fuerte"];
+
 function PasswordStrength({ password }: { password: string }) {
   let strength = 0;
   if (password.length >= 6) strength++;
   if (/[A-Z]/.test(password)) strength++;
   if (/[0-9]/.test(password)) strength++;
   if (/[^A-Za-z0-9]/.test(password)) strength++;
-  const colors = [C.destructive50, C.orange, C.warning40, C.success50, C.success60];
-  const labels = ["Muy débil", "Débil", "Regular", "Fuerte", "Muy fuerte"];
+  const colors = PASSWORD_STRENGTH_COLORS;
+  const labels = PASSWORD_STRENGTH_LABELS;
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 }}>
       {[0, 1, 2, 3].map(i => (

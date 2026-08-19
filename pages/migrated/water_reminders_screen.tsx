@@ -19,6 +19,24 @@ import { useAuth } from '@store/AuthContext';
 import { scheduleWaterReminders } from '@helper/reminderNotifications';
 import { C, FONT } from './theme';
 
+function formatTime(hour: number, minute: number) {
+  const h = hour.toString().padStart(2, '0');
+  const m = minute.toString().padStart(2, '0');
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${h12}:${m} ${period}`;
+}
+
+const renderRow = (title: string, value: string, onPress?: () => void) => (
+  <TouchableOpacity style={styles.row} onPress={onPress} disabled={!onPress}>
+    <Text style={styles.rowTitle}>{title}</Text>
+    <View style={styles.rowTrailing}>
+      <Text style={styles.rowValue}>{value}</Text>
+      <Ionicons name="chevron-forward" size={20} color={C.gray30} />
+    </View>
+  </TouchableOpacity>
+);
+
 export default function WaterRemindersScreen(props: any) {
   const { state } = useAuth();
   const [enabled, setEnabled] = useState(true);
@@ -63,14 +81,6 @@ export default function WaterRemindersScreen(props: any) {
         setAtMinute(m);
       }
     }
-  };
-
-  const formatTime = (hour: number, minute: number) => {
-    const h = hour.toString().padStart(2, '0');
-    const m = minute.toString().padStart(2, '0');
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${h12}:${m} ${period}`;
   };
 
   const openTimePicker = (type: 'from' | 'until' | 'at') => {
@@ -152,16 +162,6 @@ export default function WaterRemindersScreen(props: any) {
         {item === 1 ? '1 hora' : `${item} horas`}
       </Text>
       {item === everyHours && <Ionicons name="checkmark" size={22} color={C.textPrimary} />}
-    </TouchableOpacity>
-  );
-
-  const renderRow = (title: string, value: string, onPress?: () => void) => (
-    <TouchableOpacity style={styles.row} onPress={onPress} disabled={!onPress}>
-      <Text style={styles.rowTitle}>{title}</Text>
-      <View style={styles.rowTrailing}>
-        <Text style={styles.rowValue}>{value}</Text>
-        <Ionicons name="chevron-forward" size={20} color={C.gray30} />
-      </View>
     </TouchableOpacity>
   );
 

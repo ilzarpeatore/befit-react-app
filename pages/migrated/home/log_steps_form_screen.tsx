@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { C, FONT } from "../theme";
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default function LogStepsFormScreen({ navigation }: any) {
 
@@ -26,14 +34,6 @@ export default function LogStepsFormScreen({ navigation }: any) {
     Alert.alert("Ã‰xito", "Pasos registrados correctamente", [
       { text: "OK", onPress: () => navigation.navigate("MigratedStepsLogged") },
     ]);
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
   };
 
   return (

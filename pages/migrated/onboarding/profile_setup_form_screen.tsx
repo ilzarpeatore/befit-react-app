@@ -7,6 +7,15 @@ import { authApi } from "@api/auth";
 
 import { C, FONT } from "../theme";
 
+const GENEROS = ["Masculino", "Femenino", "Otro", "Prefiero no decir"];
+
+const GENDER_KEY_MAP: Record<string, string> = {
+  Masculino: "male",
+  Femenino: "female",
+  Otro: "other",
+  "Prefiero no decir": "not_specified",
+};
+
 export default function ProfileSetupFormScreen({ navigation }: any) {
   const { state, updateUser } = useAuth();
   const [nombre, setNombre] = useState("");
@@ -41,14 +50,8 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
     setAlergias(alergias.filter((_, i) => i !== index));
   };
 
-  const generos = ["Masculino", "Femenino", "Otro", "Prefiero no decir"];
-
-  const genderKeyMap: Record<string, string> = {
-    Masculino: "male",
-    Femenino: "female",
-    Otro: "other",
-    "Prefiero no decir": "not_specified",
-  };
+  const generos = GENEROS;
+  const genderKeyMap = GENDER_KEY_MAP;
 
   const handleContinue = async () => {
     setSaving(true);

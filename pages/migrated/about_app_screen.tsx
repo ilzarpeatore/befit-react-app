@@ -8,6 +8,19 @@ import { Divider } from '@components/ui/divider';
 import ScreenHeader from '@components/ScreenHeader';
 import logger from '@helper/logger';
 
+const mOption = (icon: string, title: string, onPress: () => void) => (
+  <Pressable
+    className="flex-row items-center gap-3 px-4 py-4 bg-card"
+    onPress={onPress}
+  >
+    <Box className="w-9 h-9 rounded-md bg-secondary items-center justify-center">
+      <Icon name={icon as any} size={20} className="text-foreground" />
+    </Box>
+    <Text className="flex-1">{title}</Text>
+    <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+  </Pressable>
+);
+
 export default function AboutAppScreen({ navigation }: any) {
   const [aboutPages, setAboutPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,19 +42,6 @@ export default function AboutAppScreen({ navigation }: any) {
       setLoading(false);
     }
   }
-
-  const mOption = (icon: string, title: string, onPress: () => void) => (
-    <Pressable
-      className="flex-row items-center gap-3 px-4 py-4 bg-card"
-      onPress={onPress}
-    >
-      <Box className="w-9 h-9 rounded-md bg-secondary items-center justify-center">
-        <Icon name={icon as any} size={20} className="text-foreground" />
-      </Box>
-      <Text className="flex-1">{title}</Text>
-      <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
-    </Pressable>
-  );
 
   return (
     <Box className="flex-1 bg-background">

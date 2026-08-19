@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -27,21 +27,21 @@ const RECOMMENDATIONS = [
   "Camina despuÃ©s de cada comida principal",
 ];
 
+function getIntensityColor(intensity: string) {
+  switch (intensity) {
+    case "High":
+      return "#F44336";
+    case "Moderate":
+      return "#FF9800";
+    default:
+      return "#4CAF50";
+  }
+}
+
 export default function StepsScreen({ navigation }: any) {
 
   const [period, setPeriod] = useState("1d");
   const currentSteps = 4523;
-
-  const getIntensityColor = (intensity: string) => {
-    switch (intensity) {
-      case "High":
-        return "#F44336";
-      case "Moderate":
-        return "#FF9800";
-      default:
-        return "#4CAF50";
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>

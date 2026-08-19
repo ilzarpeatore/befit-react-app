@@ -20,7 +20,7 @@ const MotionView = Motion.View as React.ComponentType<IMotionViewProps>;
 
 const StyledMotionView = styled(MotionView, { className: 'style' });
 
-export const UITooltip = createTooltip({
+const UITooltip = createTooltip({
   Root: withStyleContext(StyledMotionView),
   Content: MotionView,
   Text: Text,

@@ -37,7 +37,11 @@ function AnalysisHistoryCard({ session }: Props) {
   // bestValueForMetric() en exercise_info_screen.tsx para la grafica.
   const loadPrValue = useMemo(() => {
     if (!session.prs_this_session?.includes(LOAD_PR_KEY)) return null;
-    const nums = session.sets.map((s) => Number(s.carga)).filter((n) => Number.isFinite(n));
+    const nums = session.sets.reduce<number[]>((acc, s) => {
+      const n = Number(s.carga);
+      if (Number.isFinite(n)) acc.push(n);
+      return acc;
+    }, []);
     return nums.length > 0 ? Math.max(...nums) : null;
   }, [session]);
 

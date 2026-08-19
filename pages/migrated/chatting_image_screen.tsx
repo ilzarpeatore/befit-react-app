@@ -12,6 +12,55 @@ import { C } from './theme';
 
 let selectedImageIndex = -1;
 
+const renderMessage = ({ item, index }: { item: any; index: number }) => (
+  <Box className="px-4">
+    {/* User message */}
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.brand60,
+        borderBottomRightRadius: 4,
+        padding: 12,
+        marginLeft: 48,
+        marginBottom: 4,
+        gap: 8,
+      }}
+    >
+      {item.imageUri ? (
+        <Box
+          className="items-center justify-center"
+          style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.2)' }}
+        >
+          <Icon name="image" size={16} className="text-muted-foreground" />
+        </Box>
+      ) : null}
+      <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
+    </Box>
+
+    {/* Bot response */}
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.surfaceLight,
+        borderBottomLeftRadius: 4,
+        padding: 12,
+        marginRight: 48,
+        gap: 8,
+      }}
+    >
+      <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
+      {item.isLoading ? (
+        <Box className="flex-row items-center" style={{ gap: 8 }}>
+          <Spinner size="small" color={C.orange} />
+          <Text size="sm" muted>Thinking...</Text>
+        </Box>
+      ) : (
+        <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
+      )}
+    </Box>
+  </Box>
+);
+
 export default function ChattingImageScreen({ navigation }: any) {
 
   const [questionAnswers, setQuestionAnswers] = useState<any[]>([]);
@@ -96,55 +145,6 @@ export default function ChattingImageScreen({ navigation }: any) {
       },
     ]);
   };
-
-  const renderMessage = ({ item, index }: { item: any; index: number }) => (
-    <Box className="px-4">
-      {/* User message */}
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.brand60,
-          borderBottomRightRadius: 4,
-          padding: 12,
-          marginLeft: 48,
-          marginBottom: 4,
-          gap: 8,
-        }}
-      >
-        {item.imageUri ? (
-          <Box
-            className="items-center justify-center"
-            style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.2)' }}
-          >
-            <Icon name="image" size={16} className="text-muted-foreground" />
-          </Box>
-        ) : null}
-        <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
-      </Box>
-
-      {/* Bot response */}
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.surfaceLight,
-          borderBottomLeftRadius: 4,
-          padding: 12,
-          marginRight: 48,
-          gap: 8,
-        }}
-      >
-        <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
-        {item.isLoading ? (
-          <Box className="flex-row items-center" style={{ gap: 8 }}>
-            <Spinner size="small" color={C.orange} />
-            <Text size="sm" muted>Thinking...</Text>
-          </Box>
-        ) : (
-          <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
-        )}
-      </Box>
-    </Box>
-  );
 
   if (!showUI) {
     return (

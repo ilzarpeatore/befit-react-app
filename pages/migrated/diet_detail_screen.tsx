@@ -48,6 +48,14 @@ interface DietDetailScreenProps {
   };
 }
 
+const getVitamins = (icon: string, title: string, subTitle: string) => (
+  <VStack className="items-center flex-1">
+    <Icon name={icon as any} size={26} color={C.textPrimary} />
+    <Text style={localStyles.vitaminTitle}>{title}</Text>
+    <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
+  </VStack>
+);
+
 export default function DietDetailScreen(props: DietDetailScreenProps) {
   const dietModel = props.route.params?.dietModel ?? {};
   const fallbackId = props.route.params?.id;
@@ -144,14 +152,6 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
       setIsLoading(false);
     }
   };
-
-  const getVitamins = (icon: string, title: string, subTitle: string) => (
-    <VStack className="items-center flex-1">
-      <Icon name={icon as any} size={26} color={C.textPrimary} />
-      <Text style={localStyles.vitaminTitle}>{title}</Text>
-      <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
-    </VStack>
-  );
 
   const isLockedRecipe = isRecipeMode && dietState.isPremium === 1 && dietState.isAccessible === 0;
 

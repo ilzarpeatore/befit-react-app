@@ -86,6 +86,20 @@ const WRAPPER_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+// Only the WRAPPER_HTML we generate (loaded as source.html, origin "about:blank") and the
+// YouTube embed iframe it may contain should ever load in this WebView — block navigation
+// to any other origin (e.g. a malicious link/redirect inside sanitized blog content).
+const onShouldStartLoadWithRequest = (request: any) => {
+  const url: string = request?.url ?? '';
+  if (url === 'about:blank' || url.startsWith('data:')) return true;
+  try {
+    const host = new URL(url).hostname;
+    return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
+  } catch {
+    return false;
+  }
+};
+
 export default function BlogDetailScreen({ navigation, route }: any) {
   const mBlogModel = route?.params?.mBlogModel;
   // home_screen_modern.tsx navigates with { id } instead of { mBlogModel }; support both
@@ -127,20 +141,6 @@ export default function BlogDetailScreen({ navigation, route }: any) {
     const content = blog?.content || blog?.description || '';
     const withEmbeds = renderYouTubeEmbeds(sanitizeHtml(content));
     return WRAPPER_HTML.replace('__CONTENT__', withEmbeds);
-  };
-
-  // Only the WRAPPER_HTML we generate (loaded as source.html, origin "about:blank") and the
-  // YouTube embed iframe it may contain should ever load in this WebView — block navigation
-  // to any other origin (e.g. a malicious link/redirect inside sanitized blog content).
-  const onShouldStartLoadWithRequest = (request: any) => {
-    const url: string = request?.url ?? '';
-    if (url === 'about:blank' || url.startsWith('data:')) return true;
-    try {
-      const host = new URL(url).hostname;
-      return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
-    } catch {
-      return false;
-    }
   };
 
   if (loading) {

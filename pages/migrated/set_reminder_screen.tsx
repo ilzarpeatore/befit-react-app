@@ -10,6 +10,17 @@ interface Props {
   isDaily?: boolean;
 }
 
+const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const weekdayLetters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+function formatHour(h: number): string {
+  const hour12 = h % 12 || 12;
+  return String(hour12).padStart(2, '0');
+}
+function formatMinute(m: number): string {
+  return String(m).padStart(2, '0');
+}
+
 export default function SetReminderScreen(props: any) {
   const isDaily = props.route?.params?.isDaily ?? false;
   const [dateTime, setDateTime] = useState(new Date());
@@ -18,9 +29,6 @@ export default function SetReminderScreen(props: any) {
   const [description, setDescription] = useState('');
   const [showTimePicker, setShowTimePicker] = useState(false);
   const styles = useStyle();
-
-  const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const weekdayLetters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   const toggleDay = (index: number) => {
     setSelectedDays((prev) => {
@@ -89,11 +97,6 @@ export default function SetReminderScreen(props: any) {
     props.navigation.goBack();
   };
 
-  const formatHour = (h: number): string => {
-    const hour12 = h % 12 || 12;
-    return String(hour12).padStart(2, '0');
-  };
-  const formatMinute = (m: number): string => String(m).padStart(2, '0');
   const isAM = dateTime.getHours() < 12;
 
   return (

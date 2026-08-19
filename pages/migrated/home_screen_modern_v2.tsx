@@ -40,7 +40,8 @@ import { habitsApi, Habit } from '../../api/habits';
 import { healthApi, HealthReading, HealthDataSource } from '../../api/health';
 import { isHealthAvailable, getHealthSnapshot } from '../../helper/health';
 import { habitIoniconFor } from '../../constants/habitIcons';
-import WeekComplianceRow, { computeWeekCompliance } from '@components/WeekComplianceRow';
+import WeekComplianceRow from '@components/WeekComplianceRow';
+import { computeWeekCompliance } from '@components/weekCompliance';
 import { useAuth } from '../../store/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -226,7 +227,8 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
       if (calendarRes.status === 'fulfilled') {
         const calData: any = calendarRes.value.data.data;
         const days = calData?.days ?? [];
-        const today = days.find((day: any) => day.date === todayStr);
+        const daysByDate = new Map(days.map((day: any) => [day.date, day]));
+        const today = daysByDate.get(todayStr);
         setTodayWorkouts(today?.workouts ?? []);
 
         const dayOfWeek = now.getDay();
@@ -238,7 +240,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           const d = new Date(monday);
           d.setDate(monday.getDate() + i);
           const dateStr = d.toISOString().split('T')[0];
-          const dayData = days.find((day: any) => day.date === dateStr);
+          const dayData: any = daysByDate.get(dateStr);
           weekBools.push(!!(dayData?.workouts && dayData.workouts.length > 0));
         }
         setWeeklyWorkouts(weekBools);

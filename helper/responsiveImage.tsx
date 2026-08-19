@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-// eslint-disable-next-line import/namespace
+ 
 import { Image, PixelRatio } from 'react-native';
 import { ResponsiveImageInterface } from './_types/ResponsiveImage.i';
 /**
@@ -7,24 +7,25 @@ import { ResponsiveImageInterface } from './_types/ResponsiveImage.i';
  * had to make some changes
  * @component
  */
+function getClosestHighQualitySource(sources: Record<string, any>, preferredPixelRatio: number) {
+  let pixelRatios = Object.keys(sources);
+  if (!pixelRatios.length) {
+    return null;
+  }
+  let pixelRatiosNum = pixelRatios.map((ratio) => parseFloat(ratio));
+  pixelRatiosNum.sort((ratioA, ratioB) => ratioA - ratioB);
+  for (let ii = 0; ii < pixelRatios.length; ii++) {
+    if (pixelRatiosNum[ii] >= preferredPixelRatio) {
+      return sources[pixelRatios[ii]];
+    }
+  }
+
+  let largestPixelRatio = pixelRatios[pixelRatios.length - 1];
+  return sources[largestPixelRatio];
+}
+
 export default function ResponsiveImage({ source, sources, preferredPixelRatio = PixelRatio.get(), renderImageElement, ...rest }: ResponsiveImageInterface) {
   const _image = useRef<Image>(null);
-  const getClosestHighQualitySource = (sources: Record<string, any>, preferredPixelRatio: number) => {
-    let pixelRatios = Object.keys(sources);
-    if (!pixelRatios.length) {
-      return null;
-    }
-    let pixelRatiosNum = pixelRatios.map((ratio) => parseFloat(ratio));
-    pixelRatiosNum.sort((ratioA, ratioB) => ratioA - ratioB);
-    for (let ii = 0; ii < pixelRatios.length; ii++) {
-      if (pixelRatiosNum[ii] >= preferredPixelRatio) {
-        return sources[pixelRatios[ii]];
-      }
-    }
-
-    let largestPixelRatio = pixelRatios[pixelRatios.length - 1];
-    return sources[largestPixelRatio];
-  }
 
   const optimalSource = getClosestHighQualitySource(sources as Record<string, any>, preferredPixelRatio);
   if (optimalSource) {

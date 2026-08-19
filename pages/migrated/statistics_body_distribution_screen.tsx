@@ -14,7 +14,8 @@ import { Spinner } from '@components/ui/spinner';
 import { C } from './theme';
 import MuscleBodyMap, { MuscleVolumeGroup } from '../../components/MuscleBodyMap';
 import { ViewSide } from '../../constants/bodyMusclesPaths';
-import DaySelectorStrip, { buildWeekRange, DaySelectorItem, toLocalISODate } from '../../components/DaySelectorStrip';
+import DaySelectorStrip, { DaySelectorItem } from '../../components/DaySelectorStrip';
+import { buildWeekRange, toLocalISODate } from '../../components/dayRange';
 import { muscleVolumeApi, MuscleVolumeSeriesGroup } from '../../api/muscleVolume';
 
 interface Props {
@@ -35,6 +36,12 @@ function weekLabel(days: DaySelectorItem[]): string {
   }
   return `${start.getDate()} ${MONTHS_ES[start.getMonth()].slice(0, 3)} - ${end.getDate()} ${MONTHS_ES[end.getMonth()].slice(0, 3)} ${end.getFullYear()}`;
 }
+
+const onHelp = () =>
+  Alert.alert(
+    '¿Qué muestra este mapa?',
+    'El color de cada zona refleja el volumen entrenado en los últimos 7 días terminando en el día seleccionado (igual que el gráfico corporal de la pantalla principal de Estadísticas). La tabla de abajo muestra las series registradas por grupo muscular en esa misma ventana.'
+  );
 
 export default function StatisticsBodyDistributionScreen(props: Props) {
   const { navigation } = props;
@@ -139,12 +146,6 @@ export default function StatisticsBodyDistributionScreen(props: Props) {
       setIsSharing(false);
     }
   };
-  const onHelp = () =>
-    Alert.alert(
-      '¿Qué muestra este mapa?',
-      'El color de cada zona refleja el volumen entrenado en los últimos 7 días terminando en el día seleccionado (igual que el gráfico corporal de la pantalla principal de Estadísticas). La tabla de abajo muestra las series registradas por grupo muscular en esa misma ventana.'
-    );
-
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <HStack className="items-center justify-between px-3 py-3">
