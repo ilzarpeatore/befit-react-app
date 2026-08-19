@@ -354,7 +354,7 @@ function MuscleTab({
         <Box style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>SECUNDARIA</Text>
           {secondary.map((m, idx) => (
-            <Box key={`${m.name}-${idx}`}>
+            <Box key={m.name}>
               <MuscleRow name={m.name} />
               {idx < secondary.length - 1 && <Divider />}
             </Box>
@@ -599,8 +599,8 @@ function AnalysisTab({
   return (
     <Box>
       <ProgressChartSection sessions={data.sessions} />
-      {data.sessions.map((session, idx) => (
-        <AnalysisHistoryCardMem key={`${session.date}-${idx}`} session={session} />
+      {data.sessions.map((session) => (
+        <AnalysisHistoryCardMem key={session.date} session={session} />
       ))}
     </Box>
   );
