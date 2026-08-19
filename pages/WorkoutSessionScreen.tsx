@@ -81,23 +81,22 @@ export default function WorkoutSessionScreen() {
     };
   }, [startTime]);
 
-  // rest timer countdown
+  // rest timer countdown. Side effects (stopping the timer, exiting rest mode)
+  // live in this effect body, not in setRestTimer's updater: React can
+  // re-invoke a functional updater, so it must stay pure.
   useEffect(() => {
-    if (!isRestMode || restTimer <= 0) return;
+    if (!isRestMode) return;
+    if (restTimer <= 0) {
+      setIsRestMode(false);
+      return;
+    }
     restRef.current = setInterval(() => {
-      setRestTimer((prev) => {
-        if (prev <= 1) {
-          if (restRef.current) clearInterval(restRef.current);
-          setIsRestMode(false);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setRestTimer((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => {
       if (restRef.current) clearInterval(restRef.current);
     };
-  }, [isRestMode, restTimer > 0]);
+  }, [isRestMode, restTimer]);
 
   if (exercises.length === 0 || !exercise || !exerciseData) {
     return (

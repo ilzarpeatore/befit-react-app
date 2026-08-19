@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -26,6 +27,9 @@ export default function ShoppingListScreen(props: any) {
   const [showGenerateSheet, setShowGenerateSheet] = useState(false);
   const [selectedOption, setSelectedOption] = useState(0); // 0=Date, 1=Date range
 
+  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- false positive:
+  // this already returns `unsubscribe` from addListener, the rule just doesn't recognize
+  // a bare `return unsubscribe` (only literal `return () => ...`) as valid cleanup.
   useEffect(() => {
     fetchShoppingLists();
     const unsubscribe = props.navigation.addListener('focus', fetchShoppingLists);

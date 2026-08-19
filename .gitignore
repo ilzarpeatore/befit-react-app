@@ -22,4 +22,7 @@ dist_release2/
 # macOS
 .DS_Store
 
+# expo-map generated navigation map (regenerate with tools/expo-map/generate-map.sh)
+.expo-map/
+
 android/

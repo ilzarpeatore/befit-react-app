@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { SafeAreaView, Platform } from 'react-native';
+import { Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';

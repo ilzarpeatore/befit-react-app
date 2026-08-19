@@ -496,18 +496,7 @@ export default function WorkoutSessionScreen(props: Props) {
     if (restIntervalRef.current) clearInterval(restIntervalRef.current);
     setRestCountdown(seconds);
     restIntervalRef.current = setInterval(() => {
-      setRestCountdown((prev) => {
-        if (prev == null) return null;
-        if (prev <= 1) {
-          if (restIntervalRef.current) {
-            clearInterval(restIntervalRef.current);
-            restIntervalRef.current = null;
-          }
-          Vibration.vibrate([0, 400, 200, 400]);
-          return null;
-        }
-        return prev - 1;
-      });
+      setRestCountdown((prev) => (prev != null && prev > 1 ? prev - 1 : null));
     }, 1000);
   };
 
@@ -519,6 +508,18 @@ export default function WorkoutSessionScreen(props: Props) {
     setRestCountdown(null);
   };
 
+  // fires once when the countdown reaches zero on its own (the ref guard
+  // distinguishes that from dismissRestCountdown, which already clears the
+  // ref before setting restCountdown to null). Kept out of setRestCountdown's
+  // updater above: React may re-invoke that updater, and it must stay pure.
+  useEffect(() => {
+    if (restCountdown === null && restIntervalRef.current) {
+      clearInterval(restIntervalRef.current);
+      restIntervalRef.current = null;
+      Vibration.vibrate([0, 400, 200, 400]);
+    }
+  }, [restCountdown]);
+
   useEffect(() => {
     return () => {
       if (restIntervalRef.current) clearInterval(restIntervalRef.current);
@@ -526,27 +527,31 @@ export default function WorkoutSessionScreen(props: Props) {
   }, []);
 
   const toggleRowComplete = (blockIdx: number, exIdx: number, rowIndex: number) => {
+    const currentEx = blocks[blockIdx].exercises[exIdx];
+    const wasCompleted = currentEx.rows[rowIndex].completed;
+    const rows = [...currentEx.rows];
+    rows[rowIndex] = { ...rows[rowIndex], completed: !wasCompleted };
+    const ex = { ...currentEx, rows };
+
+    // side effects live outside the updater below: setBlocks's updater must
+    // stay pure since React may re-invoke it, which would duplicate the
+    // network sync and could start overlapping rest timers.
     setBlocks((prev) => {
       const next = [...prev];
       const block = { ...next[blockIdx] };
       const exercisesList = [...block.exercises];
-      const ex = { ...exercisesList[exIdx] };
-      const rows = [...ex.rows];
-      const wasCompleted = rows[rowIndex].completed;
-      rows[rowIndex] = { ...rows[rowIndex], completed: !wasCompleted };
-      ex.rows = rows;
       exercisesList[exIdx] = ex;
       block.exercises = exercisesList;
       next[blockIdx] = block;
-      syncExerciseLog(ex);
-      // Solo al MARCAR (no al desmarcar) y solo si esta serie concreta tiene
-      // un valor de descanso real configurado -- sin dato, no se inventa.
-      if (!wasCompleted && ex.enabledMetrics.includes('descanso')) {
-        const seconds = parseRestSeconds(rows[rowIndex].values.descanso);
-        if (seconds != null) startRestCountdown(seconds);
-      }
       return next;
     });
+    syncExerciseLog(ex);
+    // Solo al MARCAR (no al desmarcar) y solo si esta serie concreta tiene
+    // un valor de descanso real configurado -- sin dato, no se inventa.
+    if (!wasCompleted && ex.enabledMetrics.includes('descanso')) {
+      const seconds = parseRestSeconds(rows[rowIndex].values.descanso);
+      if (seconds != null) startRestCountdown(seconds);
+    }
   };
 
   const addRow = (blockIdx: number, exIdx: number) => {
@@ -558,18 +563,19 @@ export default function WorkoutSessionScreen(props: Props) {
   };
 
   const markAllRows = (blockIdx: number, exIdx: number) => {
+    const currentEx = blocks[blockIdx].exercises[exIdx];
+    const ex = { ...currentEx, rows: currentEx.rows.map((r) => ({ ...r, completed: true })) };
+
     setBlocks((prev) => {
       const next = [...prev];
       const block = { ...next[blockIdx] };
       const exercisesList = [...block.exercises];
-      const ex = { ...exercisesList[exIdx] };
-      ex.rows = ex.rows.map((r) => ({ ...r, completed: true }));
       exercisesList[exIdx] = ex;
       block.exercises = exercisesList;
       next[blockIdx] = block;
-      syncExerciseLog(ex);
       return next;
     });
+    syncExerciseLog(ex);
   };
 
   const openExerciseInfo = (ex: SessionExercise) => {
@@ -693,15 +699,15 @@ export default function WorkoutSessionScreen(props: Props) {
       note: '',
       isAdhoc: true,
     };
+    const newIdx = blocks[targetBlockIdx]?.exercises.length ?? 0;
     setBlocks((prev) => {
       const next = [...prev];
       const block = { ...next[targetBlockIdx] };
-      const newIdx = block.exercises.length;
       block.exercises = [...block.exercises, newExercise];
       next[targetBlockIdx] = block;
-      setActiveIndexByBlock((prevActive) => ({ ...prevActive, [targetBlockIdx]: newIdx }));
       return next;
     });
+    setActiveIndexByBlock((prevActive) => ({ ...prevActive, [targetBlockIdx]: newIdx }));
     fetchLoadSuggestion(newExercise);
     setIsPickerVisible(false);
   };

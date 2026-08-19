@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { SafeAreaView, FlatList, Image, RefreshControl, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { FlatList, Image, RefreshControl, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';

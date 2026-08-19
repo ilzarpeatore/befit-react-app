@@ -1,13 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  Image,
-  SafeAreaView,
-  Dimensions,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import { StyleSheet, ScrollView, Image, Dimensions, Platform, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';

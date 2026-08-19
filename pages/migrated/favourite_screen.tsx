@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, Image, SafeAreaView, ActivityIndicator } from 'react-native';
+import { FlatList, Image, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';

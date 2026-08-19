@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, ScrollView, Image, TextInput, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, Image, TextInput, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';

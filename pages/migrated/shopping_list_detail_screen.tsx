@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, SafeAreaView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';

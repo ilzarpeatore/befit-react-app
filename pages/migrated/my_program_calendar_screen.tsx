@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-  Image,
-  Alert,
-} from 'react-native';
+import { StyleSheet, ScrollView, Image, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
