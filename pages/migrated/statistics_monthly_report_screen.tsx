@@ -270,8 +270,8 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
               </HStack>
               {prEvents.length > 0 && (
                 <>
-                  {visiblePrs.map((p, idx) => (
-                    <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+                  {visiblePrs.map((p) => (
+                    <HStack key={`${p.exercise_id}-${p.record_type}`} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
                       <Icon name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
                       <Box style={{ flex: 1 }}>
                         <Text style={s.prTitle} numberOfLines={1}>
@@ -333,8 +333,8 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
                 <Text style={s.emptyText}>Sin entrenamientos registrados este mes.</Text>
               ) : (
                 <>
-                  {visibleSessions.map((sess, idx) => (
-                    <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+                  {visibleSessions.map((sess) => (
+                    <HStack key={sess.date} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
                       <Box style={s.sessionDateWrap}>
                         <Text style={s.sessionDate}>{formatDate(sess.date)}</Text>
                       </Box>
@@ -364,8 +364,8 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
         <Box style={s.modalHandle} />
         <Text style={s.modalTitle}>Progreso y marcas ({prEvents.length})</Text>
         <ScrollView style={s.modalScroll} contentContainerStyle={s.modalScrollContent}>
-          {prEvents.map((p, idx) => (
-            <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+          {prEvents.map((p) => (
+            <HStack key={`${p.exercise_id}-${p.record_type}`} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
               <Icon name="trophy" size={14} color={C.orange} style={{ marginRight: 8 }} />
               <Box style={{ flex: 1 }}>
                 <Text style={s.prTitle} numberOfLines={1}>
@@ -385,8 +385,8 @@ export default function StatisticsMonthlyReportScreen(props: Props) {
         <Box style={s.modalHandle} />
         <Text style={s.modalTitle}>Entrenamientos del mes ({sortedSessions.length})</Text>
         <ScrollView style={s.modalScroll} contentContainerStyle={s.modalScrollContent}>
-          {sortedSessions.map((sess, idx) => (
-            <HStack key={idx} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
+          {sortedSessions.map((sess) => (
+            <HStack key={sess.date} className="items-center py-2.5" style={{ borderTopWidth: 1, borderTopColor: C.border, marginTop: 8 }}>
               <Box style={s.sessionDateWrap}>
                 <Text style={s.sessionDate}>{formatDate(sess.date)}</Text>
               </Box>
