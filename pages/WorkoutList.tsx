@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
-  ImageBackground,
   Text,
   View,
   TouchableOpacity,

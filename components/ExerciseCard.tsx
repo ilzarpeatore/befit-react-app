@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, TouchableOpacity, View, Image } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -32,7 +33,7 @@ function ExerciseCard({
         style={styles.container}
       >
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} contentFit="cover" style={styles.image} />
         ) : (
           <View style={[styles.image, styles.imagePlaceholder]} />
         )}
@@ -81,7 +82,6 @@ function useStyle() {
       width: "56@ratio",
       height: "56@ratio",
       borderRadius: "8@ratio",
-      resizeMode: "cover",
     },
     imagePlaceholder: {
       backgroundColor: "#E5E5EA",

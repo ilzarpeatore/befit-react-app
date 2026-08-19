@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { FlatList, Image, RefreshControl, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { FlatList, RefreshControl, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Box } from '@components/ui/box';
@@ -192,7 +193,7 @@ export default function CommunityScreen(props: any) {
         <HStack className="items-center">
           <Pressable className="flex-1 flex-row items-center" onPress={() => openUserProfile(item)}>
             {item.users?.profileImage ? (
-              <Image source={{ uri: item.users.profileImage }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+              <Image source={{ uri: item.users.profileImage }} contentFit="cover" style={{ width: 40, height: 40, borderRadius: 20 }} />
             ) : (
               <Box className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
                 <Icon name="person" size={18} className="text-muted-foreground" />
@@ -216,7 +217,7 @@ export default function CommunityScreen(props: any) {
           <Image
             source={{ uri: item.postImage }}
             style={{ width: '100%', height: 200, borderRadius: 10, marginTop: 10 }}
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : null}
         <HStack

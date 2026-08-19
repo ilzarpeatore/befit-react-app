@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Image, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -42,7 +43,7 @@ export default function ArticlesScreen({ navigation }: any) {
           <TouchableOpacity style={localStyles.featuredCard} onPress={() => openArticle(featured)}>
             <View style={localStyles.featuredImage}>
               {featured.post_image ? (
-                <Image source={{ uri: featured.post_image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                <Image source={{ uri: featured.post_image }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
               ) : (
                 <Ionicons name="newspaper-outline" size={48} color={C.textPrimary} />
               )}
@@ -61,7 +62,7 @@ export default function ArticlesScreen({ navigation }: any) {
             <TouchableOpacity key={article.id} style={localStyles.gridCard} onPress={() => openArticle(article)}>
               <View style={localStyles.gridImage}>
                 {article.post_image ? (
-                  <Image source={{ uri: article.post_image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                  <Image source={{ uri: article.post_image }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
                 ) : (
                   <Ionicons name="document-text-outline" size={32} color={C.textPrimary} />
                 )}
@@ -72,7 +73,7 @@ export default function ArticlesScreen({ navigation }: any) {
                     <Text style={[localStyles.categoryText, { color: C.textPrimary }]}>{article.blog_category.title}</Text>
                   </View>
                 )}
-                <Text style={[localStyles.gridTitle]} numberOfLines={2}>{article.title}</Text>
+                <Text style={localStyles.gridTitle} numberOfLines={2}>{article.title}</Text>
               </View>
             </TouchableOpacity>
           ))}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FlatList, ActivityIndicator, Image } from 'react-native';
+import { FlatList, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -136,7 +137,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
-        <Image source={{ uri: item.post_image }} style={{ width: '100%', height: 160 }} resizeMode="cover" />
+        <Image source={{ uri: item.post_image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
       ) : (
         <Box className="bg-secondary" style={{ width: '100%', height: 160 }} />
       )}

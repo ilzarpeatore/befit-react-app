@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, ScrollView, Image, Dimensions, Platform, StatusBar } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView, Dimensions,
+  Platform,
+  StatusBar,
+} from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Box } from '@components/ui/box';
@@ -164,7 +170,7 @@ export default function WorkoutDetailScreen(props: any) {
         <Card variant="ghost" className="p-3" style={{ marginHorizontal: 16, marginBottom: 12 }}>
           <HStack space="md" className="items-center">
             {item.exercise?.exercise_image ? (
-              <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} resizeMode="cover" />
+              <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} contentFit="cover" />
             ) : null}
             <VStack className="flex-1">
               <Text style={styles.exerciseTitle} numberOfLines={1}>
@@ -200,7 +206,7 @@ export default function WorkoutDetailScreen(props: any) {
           <Image
             source={{ uri: workoutDetail.workout_image }}
             style={styles.heroImage}
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : (
           <Box style={[styles.heroImage, { backgroundColor: C.surface }]} />

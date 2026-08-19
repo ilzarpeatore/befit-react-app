@@ -793,7 +793,7 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
 
       <Pressable
         onPress={() => navigation?.navigate('ScreenExplorer')}
-        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#E5E5EA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(229, 229, 234, 0.3)', zIndex: 999 }}
       >
         <Text style={{ fontSize: 28, color: '#000000', marginTop: -2 }}>+</Text>
       </Pressable>

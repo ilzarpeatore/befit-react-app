@@ -5,7 +5,6 @@ import {
 
   Text,
   View,
-  Image,
   TouchableOpacity,
   Animated,
   ImageBackground,
@@ -16,6 +15,7 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
@@ -66,7 +66,7 @@ const Activitybox = ({
           style={styles.activitybox}
         >
           <Image source={cover} style={[styles.activityboxcover, coverstyle]} />
-          <Image source={bg} style={styles.activityboxbg} />
+          <Image source={bg} contentFit="cover" style={styles.activityboxbg} />
           <LinearGradient
             start={{ x: 0.24, y: -0.09 }}
             end={{ x: 0.78, y: 0.93 }}
@@ -76,6 +76,7 @@ const Activitybox = ({
           <View style={styles.activityiconbox}>
             <Image
               source={icon}
+              contentFit="contain"
               style={[styles.activityicon, { width: iconwidth }]}
             />
           </View>
@@ -248,12 +249,13 @@ export default function Home({ navigation }: HomePropsInterface) {
         style={styles.slidercard}
       >
         {/* slider image */}
-        <Image source={item.image} style={styles.slidercardimage} />
+        <Image source={item.image} contentFit="cover" style={styles.slidercardimage} />
         {/* slider overlay mask */}
-        <Image source={item.mask} style={styles.slidercardmask} />
+        <Image source={item.mask} contentFit="cover" style={styles.slidercardmask} />
         {/* slider card cover ( those patterns on the image ) */}
         <Image
           source={require("@assets/cardcover.png")}
+          contentFit="cover"
           style={[
             styles.slidercardcover,
             item.coverleft ? styles.slidercardcoverleft : {}, // card cover position (left or right)  flip the image
@@ -291,7 +293,7 @@ export default function Home({ navigation }: HomePropsInterface) {
         }}
       >
         {/* menu icon */}
-        <Image source={item.icon} style={styles.sidemenulisticon} />
+        <Image source={item.icon} contentFit="contain" style={styles.sidemenulisticon} />
         {/* menu text */}
         <Text style={styles.sidemenulisttext}>{item.title}</Text>
         {/* menu switch */}
@@ -481,6 +483,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                 >
                   <Image
                     source={require("@assets/menu.png")}
+                    contentFit="contain"
                     style={styles.menuicon}
                   />
                 </TouchableOpacity>
@@ -695,7 +698,7 @@ export default function Home({ navigation }: HomePropsInterface) {
 
             <TouchableOpacity
               onPress={() => navigation.navigate("ScreenExplorer")}
-              style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#7773FA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+              style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(119, 115, 250, 0.3)', zIndex: 999 }}
             >
               <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
             </TouchableOpacity>
@@ -755,7 +758,6 @@ function useStyle() {
     menuicon: {
       width: '24@ratio',
       height: '11@ratio',
-      resizeMode: "contain",
     },
     logo: {
       flex: 1,
@@ -846,7 +848,6 @@ function useStyle() {
       position: "absolute",
       top: 0,
       left: 0,
-      resizeMode: "cover",
       opacity: 0.15,
     },
     activityboxoverlay: {
@@ -866,7 +867,6 @@ function useStyle() {
     },
     activityicon: {
       maxWidth: '64@ratio',
-      resizeMode: "contain",
     },
     activitydata: {
       flexDirection: "row",
@@ -965,7 +965,6 @@ function useStyle() {
       top: 0,
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       zIndex: 3,
     },
     slidercardcoverleft: {
@@ -977,7 +976,6 @@ function useStyle() {
       top: 0,
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       zIndex: 2,
     },
     slidercardoverlay: {
@@ -992,7 +990,6 @@ function useStyle() {
     slidercardimage: {
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
     },
     slidercardlabel: {
       position: "absolute",
@@ -1090,7 +1087,6 @@ function useStyle() {
     sidemenulisticon: {
       width: '24@ratio',
       height: '24@ratio',
-      resizeMode: "contain",
       marginRight: '22@ratio',
     },
     sidemenulisttext: {

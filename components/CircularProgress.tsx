@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { View, Image, Animated, StyleSheet } from "react-native";
+import { View, Animated, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import {
   Svg,
   Defs,
@@ -29,9 +30,10 @@ function CircularProgress({ width, height, percent, icon }: CircularProgressInte
     <View>
       <Image
         source={require("./../assets/challenges/progressbg.png")}
+        contentFit="contain"
         style={styles.chartdataprogressbg}
       />
-      <Image source={icon} style={styles.chartdataprogressicon} />
+      <Image source={icon} contentFit="contain" style={styles.chartdataprogressicon} />
       <Svg
         width={width}
         height={height}
@@ -83,7 +85,6 @@ function useStyle() {
       height: '56@ratio',
       top: 0,
       right: 0,
-      resizeMode: "contain",
     },
     chartdataprogresssvg: {
       marginTop: '-2@ratio',
@@ -97,7 +98,6 @@ function useStyle() {
       left: "50%",
       marginLeft: '-12@ratio',
       marginTop: '-12@ratio',
-      resizeMode: "contain",
     },
   });
   return styles

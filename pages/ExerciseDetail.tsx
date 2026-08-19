@@ -3,10 +3,9 @@ import {
   ScrollView,
   Text,
   View,
-  Image,
   TouchableOpacity,
-  ImageBackground,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -114,6 +113,7 @@ export default function ExerciseDetail() {
           {exercise.exercise_image ? (
             <Image
               source={{ uri: exercise.exercise_image }}
+              contentFit="cover"
               style={styles.heroImage}
             />
           ) : (
@@ -250,7 +250,6 @@ function useStyle() {
       width: "100%",
       height: "220@ratio",
       borderRadius: "16@ratio",
-      resizeMode: "cover",
       marginBottom: "20@ratio",
     },
     heroPlaceholder: {

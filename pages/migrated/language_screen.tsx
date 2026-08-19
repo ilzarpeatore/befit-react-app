@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FlatList, Image } from 'react-native';
+import { FlatList } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -47,7 +48,7 @@ export default function LanguageScreen(props: LanguageScreenProps) {
       >
         <Box className="flex-row items-center gap-4">
           {item.languageImage ? (
-            <Image source={{ uri: item.languageImage }} style={{ width: 32, height: 32, borderRadius: 4 }} resizeMode="cover" />
+            <Image source={{ uri: item.languageImage }} style={{ width: 32, height: 32, borderRadius: 4 }} contentFit="cover" />
           ) : (
             <Box className="w-8 h-8 rounded-sm bg-muted" />
           )}

@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, ScrollView, Image, Alert } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView, Alert,
+} from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { Box } from '@components/ui/box';
@@ -314,7 +318,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           className="flex-row items-center p-3"
           style={completed ? styles.workoutCardCompleted : { marginTop: 8 }}
         >
-          <Image source={{ uri: getWorkoutImage(w.title || '') }} style={styles.workoutImage} />
+          <Image source={{ uri: getWorkoutImage(w.title || '') }} contentFit="cover" style={styles.workoutImage} />
           <VStack style={{ flex: 1, marginLeft: 14 }}>
             <Text style={styles.workoutTitle} numberOfLines={2}>{w.title || ''}</Text>
             {completed && (

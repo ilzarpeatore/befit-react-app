@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     pointerEvents: "none",
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",

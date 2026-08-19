@@ -367,11 +367,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginTop: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
   },
   chartHeader: {
     flexDirection: 'row',

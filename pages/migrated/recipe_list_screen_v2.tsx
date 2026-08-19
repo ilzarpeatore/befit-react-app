@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -194,7 +195,7 @@ export default function RecipeListScreenV2(props: any) {
                     <Image
                       source={{ uri: item.recipeImage }}
                       style={{ width: columnWidth, height: 140, borderRadius: 12 }}
-                      resizeMode="cover"
+                      contentFit="cover"
                     />
                   ) : (
                     <Box className="bg-card" style={{ width: columnWidth, height: 140, borderRadius: 12 }} />

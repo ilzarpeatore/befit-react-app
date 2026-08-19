@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Image, Dimensions } from 'react-native';
+import { Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Spinner } from '@components/ui/spinner';
@@ -82,7 +83,7 @@ export default function ChewieScreen({ route }: any) {
         <Image
           source={{ uri: image }}
           style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : (
         <Box className="flex-1 items-center justify-center bg-background">

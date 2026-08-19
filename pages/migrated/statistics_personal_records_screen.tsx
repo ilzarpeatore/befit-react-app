@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, Image } from 'react-native';
+import { ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -35,7 +36,7 @@ function RecordRow({ item, rank, onOpenExercise }: { item: PersonalRecordItem; r
       </Box>
       <Pressable onPress={onOpenExercise}>
         {item.image ? (
-          <Image source={{ uri: item.image }} style={{ width: 48, height: 48, borderRadius: 10, backgroundColor: C.gray5 }} />
+          <Image source={{ uri: item.image }} contentFit="cover" style={{ width: 48, height: 48, borderRadius: 10, backgroundColor: C.gray5 }} />
         ) : (
           <Box className="items-center justify-center bg-muted" style={{ width: 48, height: 48, borderRadius: 10 }}>
             <Icon name="trophy-outline" size={18} className="text-muted-foreground" />

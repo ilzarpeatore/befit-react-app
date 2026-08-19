@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   ScrollView,
-  Image,
   Dimensions,
   LayoutAnimation,
   Platform,
   UIManager,
   RefreshControl,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -437,7 +437,7 @@ function EquipmentTab({ equipment }: { equipment: ExerciseDetailData['equipment'
   return (
     <HStack className="items-center py-3">
       {equipment.image_url ? (
-        <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} resizeMode="cover" />
+        <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} contentFit="cover" />
       ) : (
         <Box style={[styles.equipmentImage, styles.equipmentImageFallback]}>
           <Icon name="barbell-outline" size={32} color={C.gray30} />

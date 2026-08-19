@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-// eslint-disable-next-line import/namespace
-import { Image, PixelRatio } from 'react-native';
+import { PixelRatio } from 'react-native';
+import { Image } from 'expo-image';
 import { ResponsiveImageInterface } from './_types/ResponsiveImage.i';
 /**
  * https://github.com/expo/react-native-responsive-image
@@ -8,7 +8,7 @@ import { ResponsiveImageInterface } from './_types/ResponsiveImage.i';
  * @component
  */
 export default function ResponsiveImage({ source, sources, preferredPixelRatio = PixelRatio.get(), renderImageElement, ...rest }: ResponsiveImageInterface) {
-  const _image = useRef<Image>(null);
+  const _image = useRef<React.ElementRef<typeof Image>>(null);
   const getClosestHighQualitySource = (sources: Record<string, any>, preferredPixelRatio: number) => {
     let pixelRatios = Object.keys(sources);
     if (!pixelRatios.length) {

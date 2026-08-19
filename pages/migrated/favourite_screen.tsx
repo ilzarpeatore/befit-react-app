@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, Image, ActivityIndicator } from 'react-native';
+import { FlatList, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -124,7 +125,7 @@ function WorkoutsFavContent({ navigation }: { navigation: any }) {
           }
         >
           {item.thumbnail ? (
-            <Image source={{ uri: item.thumbnail }} style={{ width: 44, height: 44, borderRadius: 8 }} />
+            <Image source={{ uri: item.thumbnail }} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 8 }} />
           ) : null}
           <Text weight="semibold" size="sm" className="flex-1">
             {item.title || ''}
@@ -191,7 +192,7 @@ function RecipesFavContent({ navigation }: { navigation: any }) {
           }
         >
           {item.recipe_image ? (
-            <Image source={{ uri: item.recipe_image }} style={{ width: 44, height: 44, borderRadius: 8 }} />
+            <Image source={{ uri: item.recipe_image }} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 8 }} />
           ) : null}
           <Text weight="semibold" size="sm" className="flex-1">
             {item.title || ''}

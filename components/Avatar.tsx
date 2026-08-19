@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, View, Image } from "react-native";
+import { Text, View } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -27,6 +28,7 @@ function Avatar({ uri, name = "", size = 48 }: Props) {
     return (
       <Image
         source={{ uri }}
+        contentFit="cover"
         style={[
           styles.image,
           { width: size, height: size, borderRadius: size / 2 },
@@ -56,9 +58,7 @@ export const AvatarMem = React.memo(Avatar);
 
 function useStyle() {
   return useResponsiveStyleSheet({
-    image: {
-      resizeMode: "cover",
-    },
+    image: {},
     circle: {
       alignItems: "center",
       justifyContent: "center",

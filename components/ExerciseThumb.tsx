@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Image, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { C } from "../pages/migrated/theme";
 import { MuscleIsolateIconMem } from "./MuscleIsolateIcon";
@@ -18,7 +19,7 @@ function ExerciseThumb({ image, bodyPartId, size = 56 }: Props) {
   return (
     <View style={[styles.wrap, { width: size, height: size }]}>
       {image ? (
-        <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
+        <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
       ) : (
         <View style={[styles.image, styles.imageFallback]}>
           <Ionicons name="barbell-outline" size={size * 0.4} color={C.gray40} />
