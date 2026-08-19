@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ScrollView, Image, Dimensions } from 'react-native';
+import { ScrollView, FlatList, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -80,7 +80,7 @@ export default function SearchScreen(props: any) {
   // TextInput nativo que envuelve (blur) — any es el escape pragmático ya
   // usado en otras pantallas migradas para este mismo caso.
   const searchRef = useRef<any>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
 
   useEffect(() => {
     initList(incoming);
@@ -327,116 +327,138 @@ export default function SearchScreen(props: any) {
     getExerciseData();
   };
 
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 20) {
-      if (page < (numPage ?? 1) && !isLoading) {
-        setPage((prev) => prev + 1);
-        getExercise({
-          isFilter: selectedFilterList !== 0,
-          isEquipment: selectedFilterList === 1,
-          isLevel: selectedFilterList === 2,
-          isBodyPart: selectedFilterList === 3,
-          isExerciseType: selectedFilterList === 4,
-          ids: selectedId,
-        });
-      }
+  const handleExerciseListEndReached = () => {
+    if (page < (numPage ?? 1) && !isLoading) {
+      setPage((prev) => prev + 1);
+      getExercise({
+        isFilter: selectedFilterList !== 0,
+        isEquipment: selectedFilterList === 1,
+        isLevel: selectedFilterList === 2,
+        isBodyPart: selectedFilterList === 3,
+        isExerciseType: selectedFilterList === 4,
+        ids: selectedId,
+      });
     }
   };
+
+  const renderExerciseItem = useCallback(
+    ({ item }: { item: ExerciseModel }) => (
+      <Pressable
+        className="flex-row items-center rounded-md"
+        style={{ backgroundColor: C.surfaceLight, padding: 12, marginBottom: 12, marginHorizontal: 16 }}
+        onPress={() =>
+          props.navigation.navigate('MigratedExerciseInfo', {
+            mExerciseId: item.id,
+            mExerciseName: item.title,
+          })
+        }
+      >
+        {item.exerciseImage ? (
+          <Image source={{ uri: item.exerciseImage }} style={{ width: 64, height: 64, borderRadius: 12 }} resizeMode="cover" />
+        ) : (
+          <Box style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: C.surfaceLight }} />
+        )}
+        <Text weight="medium" className="flex-1 text-foreground" style={{ marginLeft: 12 }}>{item.title}</Text>
+      </Pressable>
+    ),
+    [props.navigation]
+  );
+
+  const bottomSheetOptions: (EquipmentModel | LevelModel | { id: string; title: string })[] =
+    bottomSheetListId === 1 ? equipmentList : bottomSheetListId === 4 ? EXERCISE_TYPES : levelList;
+
+  const renderBottomSheetItem = useCallback(
+    ({ item }: { item: EquipmentModel | LevelModel | { id: string; title: string } }) => (
+      <Pressable
+        className="border-b border-border"
+        style={{ paddingVertical: 14 }}
+        onPress={() => handleBottomSheetApply([item.id])}
+      >
+        <Text className="text-foreground">{item.title}</Text>
+      </Pressable>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Box className="flex-1 bg-background">
-        <ScrollView ref={scrollRef} onScroll={handleScroll} scrollEventThrottle={16}>
-          {/* Search Bar */}
-          <Box className="flex-row items-center gap-2" style={{ padding: 16, paddingTop: 30 }}>
-            <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-              <Icon name="chevron-back" size={28} className="text-foreground" />
-            </Button>
-            <Input className="flex-1 rounded-md bg-card border border-border px-3.5 gap-2" size="md">
-              <InputField
-                ref={searchRef}
-                placeholder="Buscar ejercicio"
-                value={searchValue}
-                onChangeText={(v) => {
-                  setSearchValue(v);
-                  setShowClearButton(v.length > 0);
-                }}
-              />
-              {showClearButton ? (
-                <InputSlot onPress={handleClear}>
-                  <Icon name="close-circle" size={20} className="text-muted-foreground" />
-                </InputSlot>
-              ) : (
-                <Icon name="search" size={20} className="text-muted-foreground" />
-              )}
-            </Input>
-            <Button variant="ghost" size="icon" onPress={() => props.navigation.navigate('MigratedViewBodyPart')}>
-              <Icon name="body-outline" size={24} className="text-foreground" />
-            </Button>
-          </Box>
-
-          {headerTitle ? (
-            <Text weight="medium" className="text-foreground" style={{ paddingHorizontal: 16, marginTop: -4, marginBottom: 8 }} numberOfLines={1}>
-              {headerTitle}
-            </Text>
-          ) : null}
-
-          {/* Filter Chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-            {list.map((item, index) => (
-              <Pressable
-                key={item.id}
-                className="rounded-pill border"
-                style={{
-                  paddingHorizontal: 18,
-                  paddingVertical: 8,
-                  marginRight: 8,
-                  backgroundColor: item.select ? C.brand5 : C.bg,
-                  borderColor: item.select ? C.brand5 : C.border,
-                }}
-                onPress={() => handleFilterPress(index)}
-              >
-                <Text size="sm" style={{ color: item.select ? C.white : C.gray30 }}>
-                  {item.id === 3 && muscleName ? muscleName : item.title}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          {/* Exercise List */}
-          <Box className="px-4">
-            {exerciseList.length > 0 ? (
-              exerciseList.map((item) => (
-                <Pressable
-                  key={item.id}
-                  className="flex-row items-center rounded-md"
-                  style={{ backgroundColor: C.surfaceLight, padding: 12, marginBottom: 12 }}
-                  onPress={() =>
-                    props.navigation.navigate('MigratedExerciseInfo', {
-                      mExerciseId: item.id,
-                      mExerciseName: item.title,
-                    })
-                  }
-                >
-                  {item.exerciseImage ? (
-                    <Image source={{ uri: item.exerciseImage }} style={{ width: 64, height: 64, borderRadius: 12 }} resizeMode="cover" />
+        <FlatList
+          ref={scrollRef}
+          data={exerciseList}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderExerciseItem}
+          onEndReached={handleExerciseListEndReached}
+          onEndReachedThreshold={0.3}
+          ListHeaderComponent={
+            <>
+              {/* Search Bar */}
+              <Box className="flex-row items-center gap-2" style={{ padding: 16, paddingTop: 30 }}>
+                <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+                  <Icon name="chevron-back" size={28} className="text-foreground" />
+                </Button>
+                <Input className="flex-1 rounded-md bg-card border border-border px-3.5 gap-2" size="md">
+                  <InputField
+                    ref={searchRef}
+                    placeholder="Buscar ejercicio"
+                    value={searchValue}
+                    onChangeText={(v) => {
+                      setSearchValue(v);
+                      setShowClearButton(v.length > 0);
+                    }}
+                  />
+                  {showClearButton ? (
+                    <InputSlot onPress={handleClear}>
+                      <Icon name="close-circle" size={20} className="text-muted-foreground" />
+                    </InputSlot>
                   ) : (
-                    <Box style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: C.surfaceLight }} />
+                    <Icon name="search" size={20} className="text-muted-foreground" />
                   )}
-                  <Text weight="medium" className="flex-1 text-foreground" style={{ marginLeft: 12 }}>{item.title}</Text>
-                </Pressable>
-              ))
-            ) : (
-              !isLoading && (
-                <Box className="items-center" style={{ paddingVertical: 60 }}>
-                  <Icon name="search-outline" size={64} color={C.gray50} />
-                  <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No se encontraron ejercicios</Text>
-                </Box>
-              )
-            )}
-          </Box>
-        </ScrollView>
+                </Input>
+                <Button variant="ghost" size="icon" onPress={() => props.navigation.navigate('MigratedViewBodyPart')}>
+                  <Icon name="body-outline" size={24} className="text-foreground" />
+                </Button>
+              </Box>
+
+              {headerTitle ? (
+                <Text weight="medium" className="text-foreground" style={{ paddingHorizontal: 16, marginTop: -4, marginBottom: 8 }} numberOfLines={1}>
+                  {headerTitle}
+                </Text>
+              ) : null}
+
+              {/* Filter Chips */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                {list.map((item, index) => (
+                  <Pressable
+                    key={item.id}
+                    className="rounded-pill border"
+                    style={{
+                      paddingHorizontal: 18,
+                      paddingVertical: 8,
+                      marginRight: 8,
+                      backgroundColor: item.select ? C.brand5 : C.bg,
+                      borderColor: item.select ? C.brand5 : C.border,
+                    }}
+                    onPress={() => handleFilterPress(index)}
+                  >
+                    <Text size="sm" style={{ color: item.select ? C.white : C.gray30 }}>
+                      {item.id === 3 && muscleName ? muscleName : item.title}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </>
+          }
+          ListEmptyComponent={
+            !isLoading ? (
+              <Box className="items-center" style={{ paddingVertical: 60 }}>
+                <Icon name="search-outline" size={64} color={C.gray50} />
+                <Text weight="medium" style={{ color: C.gray30, marginTop: 12 }}>No se encontraron ejercicios</Text>
+              </Box>
+            ) : null
+          }
+        />
 
         {isLoading && (
           <Box
@@ -461,18 +483,12 @@ export default function SearchScreen(props: any) {
           <Text weight="bold" size="xl" className="text-foreground" style={{ marginBottom: 16 }}>
             {bottomSheetListId === 1 ? 'Equipamiento' : bottomSheetListId === 4 ? 'Tipo de ejercicio' : 'Niveles'}
           </Text>
-          <ScrollView style={{ maxHeight: 400 }}>
-            {(bottomSheetListId === 1 ? equipmentList : bottomSheetListId === 4 ? EXERCISE_TYPES : levelList).map((item) => (
-              <Pressable
-                key={item.id}
-                className="border-b border-border"
-                style={{ paddingVertical: 14 }}
-                onPress={() => handleBottomSheetApply([item.id])}
-              >
-                <Text className="text-foreground">{item.title}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+          <FlatList
+            style={{ maxHeight: 400 }}
+            data={bottomSheetOptions}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderBottomSheetItem}
+          />
         </ActionsheetContent>
       </Actionsheet>
 
