@@ -72,7 +72,7 @@ export default function ArticlesScreen({ navigation }: any) {
                     <Text style={[localStyles.categoryText, { color: C.textPrimary }]}>{article.blog_category.title}</Text>
                   </View>
                 )}
-                <Text style={[localStyles.gridTitle]} numberOfLines={2}>{article.title}</Text>
+                <Text style={localStyles.gridTitle} numberOfLines={2}>{article.title}</Text>
               </View>
             </TouchableOpacity>
           ))}

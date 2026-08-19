@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { ScrollView, Image, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';
@@ -33,6 +33,7 @@ interface PostData {
 }
 
 export default function OtherUserProfileScreen(props: any) {
+  const { height: windowHeight } = useWindowDimensions();
   const userDetails: UserDetails = props.route?.params?.userDetails ?? {};
 
   const [firstName, setFirstName] = useState(userDetails.firstName ?? '');
@@ -181,13 +182,13 @@ export default function OtherUserProfileScreen(props: any) {
     <Box className="flex-1 bg-background">
       <Box
         className="absolute top-0 left-0 right-0"
-        style={{ height: Dimensions.get('window').height * 0.3, backgroundColor: C.brand5 }}
+        style={{ height: windowHeight * 0.3, backgroundColor: C.brand5 }}
       />
       <ScrollView ref={scrollRef} className="flex-1">
         <ScreenHeader title="Profile" onBack={() => props.navigation?.goBack()} />
         <Box
           className="bg-card rounded-lg items-center"
-          style={{ marginTop: Dimensions.get('window').height * 0.15, paddingTop: 60, paddingBottom: 24 }}
+          style={{ marginTop: windowHeight * 0.15, paddingTop: 60, paddingBottom: 24 }}
         >
           <Box className="absolute self-center" style={{ top: -48 }}>
             <Box className="bg-muted items-center justify-center overflow-hidden" style={{ width: 96, height: 96, borderRadius: 48 }}>

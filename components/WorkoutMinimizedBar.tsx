@@ -66,7 +66,7 @@ export default function WorkoutMinimizedBar({ navigationRef }: Props) {
         right: 12,
         bottom: Math.max(insets.bottom, 12) + (Platform.OS === 'ios' ? 6 : 10),
         zIndex: 50,
-        elevation: 8,
+        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)',
       }}
     >
       <Pressable onPress={restore}>

@@ -52,7 +52,7 @@ export default function RecommendationsScreen({ navigation }: any) {
         {isPersonalClient && (
           <>
             <Text style={[localStyles.sectionTitle, { color: C.white }]}>Tu entrenamiento</Text>
-            <View style={[localStyles.card]}>
+            <View style={localStyles.card}>
               <Text style={[localStyles.planText, { color: C.white }]}>
                 Como cliente de entrenamiento personal, tu coach revisará tu perfil y te asignará tu plan real desde el panel — lo verás en "Mi Programa" en cuanto esté listo.
               </Text>
