@@ -13,7 +13,8 @@ import { Spinner } from '@components/ui/spinner';
 import { C, SHADOW } from './theme';
 import MuscleBodyMap, { MuscleVolumeGroup } from '../../components/MuscleBodyMap';
 import { ViewSide } from '../../constants/bodyMusclesPaths';
-import DaySelectorStrip, { buildDayRange } from '../../components/DaySelectorStrip';
+import DaySelectorStrip from '../../components/DaySelectorStrip';
+import { buildDayRange } from '../../components/dayRange';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import { muscleVolumeApi } from '../../api/muscleVolume';
 

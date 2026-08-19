@@ -57,9 +57,11 @@ function Bar({ day, heightFactor, isHighlighted = false }: any) {
   );
 }
 
+const ACTIVITY_PERIODS = ['Today', 'Week', 'Month', 'Year'];
+
 export default function ActivityTrackerScreen({ navigation }: any) {
   const [selectedPeriod, setSelectedPeriod] = useState('Today');
-  const periods = ['Today', 'Week', 'Month', 'Year'];
+  const periods = ACTIVITY_PERIODS;
 
   return (
     <View style={styles_local.container}>

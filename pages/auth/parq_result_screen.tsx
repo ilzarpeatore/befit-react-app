@@ -5,18 +5,21 @@ import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { C, FONT } from "../migrated/theme";
 
+// TODO: placeholder hasta que el perfil real venga del backend/registro.
+const PLACEHOLDER_PROFILE = {
+  name: "Makise",
+  age: "28",
+  weight: "70 kg",
+  height: "175 cm",
+  goal: "Ganar músculo",
+  activity: "Moderado",
+};
+
 export default function ParqResultScreen({ navigation, route }: any) {
   const styles = useStyle();
   const cleared = route?.params?.cleared ?? true;
 
-  const profile = {
-    name: "Makise",
-    age: "28",
-    weight: "70 kg",
-    height: "175 cm",
-    goal: "Ganar músculo",
-    activity: "Moderado",
-  };
+  const profile = PLACEHOLDER_PROFILE;
 
   return (
     <View style={styles.root}>

@@ -209,31 +209,34 @@ function StepAccount({ data, update }: { data: UserRegistrationData; update: (p:
   );
 }
 
+const PASSWORD_STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Excellent"];
+const PASSWORD_STRENGTH_COLORS = ["", Colors.DANGER, Colors.TEXT_PRIMARY, Colors.SUCCESS, Colors.SUCCESS];
+
 function PasswordStrengthInline({ password }: { password: string }) {
   const styles = useStyle();
   const strength = calcStrength(password);
-  const labels = ["", "Weak", "Fair", "Good", "Excellent"];
-  const colors = ["", Colors.DANGER, Colors.TEXT_PRIMARY, Colors.SUCCESS, Colors.SUCCESS];
   if (!password) return null;
   return (
     <View style={stepStyles.strengthRow}>
       <View style={stepStyles.strengthTrack}>
         {[1, 2, 3, 4].map((i) => (
-          <View key={i} style={[stepStyles.strengthSeg, i <= strength && { backgroundColor: colors[strength] }]} />
+          <View key={i} style={[stepStyles.strengthSeg, i <= strength && { backgroundColor: PASSWORD_STRENGTH_COLORS[strength] }]} />
         ))}
       </View>
-      <Text style={[stepStyles.strengthLabel, { color: colors[strength] }]}>{labels[strength]}</Text>
+      <Text style={[stepStyles.strengthLabel, { color: PASSWORD_STRENGTH_COLORS[strength] }]}>{PASSWORD_STRENGTH_LABELS[strength]}</Text>
     </View>
   );
 }
 
 /* ─── Step 1: Gender ─── */
+const GENDER_OPTIONS: { key: UserRegistrationData["gender"]; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: "male", label: "Male", icon: "male" },
+  { key: "female", label: "Female", icon: "female" },
+  { key: "other", label: "Other", icon: "male-female" },
+];
+
 function StepGender({ data, update }: { data: UserRegistrationData; update: (p: Partial<UserRegistrationData>) => void }) {
-  const options: { key: UserRegistrationData["gender"]; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { key: "male", label: "Male", icon: "male" },
-    { key: "female", label: "Female", icon: "female" },
-    { key: "other", label: "Other", icon: "male-female" },
-  ];
+  const options = GENDER_OPTIONS;
   return (
     <View>
       <Text style={stepStyles.title}>What's your gender?</Text>
@@ -402,8 +405,10 @@ function StepEquipment({ data, update }: { data: UserRegistrationData; update: (
 }
 
 /* ─── Step 7: Frequency ─── */
+const FREQUENCY_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+
 function StepFrequency({ data, update }: { data: UserRegistrationData; update: (p: Partial<UserRegistrationData>) => void }) {
-  const days = ["M", "T", "W", "T", "F", "S", "S"];
+  const days = FREQUENCY_DAYS;
 
   return (
     <View>

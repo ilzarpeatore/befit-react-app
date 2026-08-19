@@ -35,8 +35,10 @@ function pointAt(cx: number, cy: number, radius: number, angle: number): [number
 
 function polygonPointsStr(values: number[], cx: number, cy: number, maxRadius: number): string {
   return values
-    .map((v, i) => pointAt(cx, cy, maxRadius * Math.max(0, Math.min(1, v)), axisAngle(i, values.length)))
-    .map(([x, y]) => `${x},${y}`)
+    .map((v, i) => {
+      const [x, y] = pointAt(cx, cy, maxRadius * Math.max(0, Math.min(1, v)), axisAngle(i, values.length));
+      return `${x},${y}`;
+    })
     .join(' ');
 }
 

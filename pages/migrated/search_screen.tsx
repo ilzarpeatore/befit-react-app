@@ -53,6 +53,22 @@ interface ApiResponse<T> {
   pagination?: Pagination;
 }
 
+async function getEquipmentListApi(page: number): Promise<ApiResponse<EquipmentModel>> {
+  const res = await exercisesApi.getEquipment(page);
+  return {
+    data: (res.data.data ?? []).map((e) => ({ id: e.id, title: e.title })),
+    pagination: { totalPages: res.data.pagination?.totalPages ?? 1 },
+  };
+}
+
+async function getLevelListApi(page: number): Promise<ApiResponse<LevelModel>> {
+  const res = await exercisesApi.getLevels(page);
+  return {
+    data: (res.data.data ?? []).map((l) => ({ id: l.id, title: l.title })),
+    pagination: { totalPages: res.data.pagination?.totalPages ?? 1 },
+  };
+}
+
 export default function SearchScreen(props: any) {
   // Cuando se llega desde ViewBodyPart/ViewEquipment/ViewLevel (esta pantalla
   // sustituye a exercise_list_screen.tsx en todos sus llamadores), viene con
@@ -182,22 +198,6 @@ export default function SearchScreen(props: any) {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getEquipmentListApi = async (page: number): Promise<ApiResponse<EquipmentModel>> => {
-    const res = await exercisesApi.getEquipment(page);
-    return {
-      data: (res.data.data ?? []).map((e) => ({ id: e.id, title: e.title })),
-      pagination: { totalPages: res.data.pagination?.totalPages ?? 1 },
-    };
-  };
-
-  const getLevelListApi = async (page: number): Promise<ApiResponse<LevelModel>> => {
-    const res = await exercisesApi.getLevels(page);
-    return {
-      data: (res.data.data ?? []).map((l) => ({ id: l.id, title: l.title })),
-      pagination: { totalPages: res.data.pagination?.totalPages ?? 1 },
-    };
   };
 
   const getExerciseData = useCallback(async (params: {

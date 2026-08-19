@@ -12,7 +12,7 @@ import { VStack } from '@components/ui/vstack';
 import { C, FONT } from './theme';
 import { statisticsApi, PeriodStats, MonthlySessionItem, MonthlyPrEvent } from '../../api/statistics';
 import { muscleVolumeApi, MuscleVolumeGroup, MuscleVolumeByDate } from '../../api/muscleVolume';
-import { toLocalISODate } from '../../components/DaySelectorStrip';
+import { toLocalISODate } from '../../components/dayRange';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 
 interface Props {

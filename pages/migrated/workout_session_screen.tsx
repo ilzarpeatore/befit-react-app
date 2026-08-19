@@ -163,6 +163,20 @@ function formatTimer(totalSeconds: number): string {
   return `${m}:${s}`;
 }
 
+// Acepta "90" (segundos) o "1:30" (mm:ss) -- el catalogo real no fija un
+// formato unico para "descanso", asi que se manejan los dos sin asumir.
+function parseRestSeconds(raw?: string): number | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (trimmed.includes(':')) {
+    const [m, s] = trimmed.split(':').map(Number);
+    if (Number.isFinite(m) && Number.isFinite(s)) return m * 60 + s;
+    return null;
+  }
+  const n = Number(trimmed);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 export default function WorkoutSessionScreen(props: Props) {
   const { navigation, route } = props;
   const { state } = useAuth();
@@ -432,15 +446,15 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const syncExerciseLog = useCallback(
     (ex: SessionExercise) => {
-      const loggedSets = ex.rows
-        .filter((r) => r.completed)
-        .map((r) => {
-          const clean: Record<string, any> = {};
-          ex.enabledMetrics.forEach((key) => {
-            if (r.values[key] != null && r.values[key] !== '') clean[key] = r.values[key];
-          });
-          return clean;
+      const loggedSets = ex.rows.reduce<Record<string, any>[]>((acc, r) => {
+        if (!r.completed) return acc;
+        const clean: Record<string, any> = {};
+        ex.enabledMetrics.forEach((key) => {
+          if (r.values[key] != null && r.values[key] !== '') clean[key] = r.values[key];
         });
+        acc.push(clean);
+        return acc;
+      }, []);
       if (loggedSets.length === 0) return;
       workoutHistoryApi
         .logCalendarSets({
@@ -481,20 +495,6 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const setNoteValue = (blockIdx: number, exIdx: number, note: string) => {
     updateExercise(blockIdx, exIdx, (ex) => ({ ...ex, note }));
-  };
-
-  // Acepta "90" (segundos) o "1:30" (mm:ss) -- el catalogo real no fija un
-  // formato unico para "descanso", asi que se manejan los dos sin asumir.
-  const parseRestSeconds = (raw?: string): number | null => {
-    if (!raw) return null;
-    const trimmed = raw.trim();
-    if (trimmed.includes(':')) {
-      const [m, s] = trimmed.split(':').map(Number);
-      if (Number.isFinite(m) && Number.isFinite(s)) return m * 60 + s;
-      return null;
-    }
-    const n = Number(trimmed);
-    return Number.isFinite(n) && n > 0 ? n : null;
   };
 
   const startRestCountdown = (seconds: number) => {
@@ -756,9 +756,11 @@ export default function WorkoutSessionScreen(props: Props) {
     // Solo ejercicios con al menos una serie completada, en el orden en que
     // aparecen en la sesion — para la lista de ejercicios del carrusel de
     // resumen (pantallas 4 y 6 de Pantallas_Resumen_Entrenamiento.md).
-    const exercisesSummary = allExercises
-      .map((ex) => ({ title: ex.title, sets: ex.rows.filter((r) => r.completed).length }))
-      .filter((ex) => ex.sets > 0);
+    const exercisesSummary = allExercises.reduce<{ title: string; sets: number }[]>((acc, ex) => {
+      const sets = ex.rows.filter((r) => r.completed).length;
+      if (sets > 0) acc.push({ title: ex.title, sets });
+      return acc;
+    }, []);
     navigation?.navigate('MigratedWorkoutFeedback', {
       programDayAssignmentId,
       workoutTemplateId,

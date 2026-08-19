@@ -12,7 +12,7 @@ import { Spinner } from '@components/ui/spinner';
 import { C } from './theme';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import { muscleVolumeApi, MuscleVolumeSeriesGroup } from '../../api/muscleVolume';
-import { toLocalISODate } from '../../components/DaySelectorStrip';
+import { toLocalISODate } from '../../components/dayRange';
 import { MACRO_MUSCLE_GROUPS, MacroMuscleGroup, macroGroupFor } from '../../constants/bodyMusclesMap';
 
 interface Props {

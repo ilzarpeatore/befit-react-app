@@ -14,7 +14,7 @@ import { C } from './theme';
 import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import MuscleFilterSheet from '../../components/MuscleFilterSheet';
 import { exerciseStatsApi, TopExerciseItem } from '../../api/exerciseStats';
-import { toLocalISODate } from '../../components/DaySelectorStrip';
+import { toLocalISODate } from '../../components/dayRange';
 
 interface Props {
   navigation?: any;

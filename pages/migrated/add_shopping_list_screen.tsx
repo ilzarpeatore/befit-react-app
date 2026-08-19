@@ -17,6 +17,29 @@ import logger from '@helper/logger';
 import { dietApi } from '@api/diet';
 import { shoppingApi, ShoppingMealType } from '@api/shopping';
 
+const availableMealTypes: { key: ShoppingMealType; label: string }[] = [
+  { key: 'breakfast', label: 'Desayuno' },
+  { key: 'lunch', label: 'Comida' },
+  { key: 'dinner', label: 'Cena' },
+  { key: 'snacks', label: 'Snacks' },
+];
+
+function formatDate(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+const renderCheckboxRow = (label: string, checked: boolean, onPress: () => void, key?: string) => (
+  <Checkbox key={key} value={key ?? label} isChecked={checked} onChange={() => onPress()} className="py-2">
+    <CheckboxIndicator>
+      {checked && <Icon name="checkmark" size={14} className="text-primary-foreground" />}
+    </CheckboxIndicator>
+    <CheckboxLabel className="flex-1">{label}</CheckboxLabel>
+  </Checkbox>
+);
+
 export default function AddShoppingListScreen({ navigation, route }: any) {
   const shoppingList = route?.params?.shoppingList;
   const isDefaultSpecificDate = route?.params?.isDefaultSpecificDate ?? true;
@@ -34,13 +57,6 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
   const dailyPlanIdRef = useRef<number | null>(null);
   const [isFetchingPlan, setIsFetchingPlan] = useState(false);
   const loadingRef = useRef(false);
-
-  const availableMealTypes: { key: ShoppingMealType; label: string }[] = [
-    { key: 'breakfast', label: 'Desayuno' },
-    { key: 'lunch', label: 'Comida' },
-    { key: 'dinner', label: 'Cena' },
-    { key: 'snacks', label: 'Snacks' },
-  ];
 
   useEffect(() => {
     setSelectedMealTypes(availableMealTypes.map((t) => t.key));
@@ -80,13 +96,6 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     } finally {
       setIsFetchingPlan(false);
     }
-  };
-
-  const formatDate = (date: Date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
   };
 
   const submit = async () => {
@@ -146,15 +155,6 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
     );
   };
-
-  const renderCheckboxRow = (label: string, checked: boolean, onPress: () => void, key?: string) => (
-    <Checkbox key={key} value={key ?? label} isChecked={checked} onChange={() => onPress()} className="py-2">
-      <CheckboxIndicator>
-        {checked && <Icon name="checkmark" size={14} className="text-primary-foreground" />}
-      </CheckboxIndicator>
-      <CheckboxLabel className="flex-1">{label}</CheckboxLabel>
-    </Checkbox>
-  );
 
   return (
     <Box className="flex-1 bg-background">

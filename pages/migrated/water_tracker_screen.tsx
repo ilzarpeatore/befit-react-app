@@ -16,6 +16,12 @@ const FILTER_LABELS: Record<WaterChartFilter, string> = {
   every: 'Todo',
 };
 
+const roundBtn = (icon: string, onPress: () => void) => (
+  <TouchableOpacity style={styles.roundBtn} onPress={onPress}>
+    <Ionicons name={icon as any} size={24} color={C.blue} />
+  </TouchableOpacity>
+);
+
 export default function WaterTrackerScreen(props: any) {
   const [logValue, setLogValue] = useState(0);
   const [editingGoal, setEditingGoal] = useState(false);
@@ -96,12 +102,6 @@ export default function WaterTrackerScreen(props: any) {
   };
 
   const progress = dailyGoal > 0 ? Math.min(consumed / dailyGoal, 1) : 0;
-
-  const roundBtn = (icon: string, onPress: () => void) => (
-    <TouchableOpacity style={styles.roundBtn} onPress={onPress}>
-      <Ionicons name={icon as any} size={24} color={C.blue} />
-    </TouchableOpacity>
-  );
 
   return (
     <SafeAreaView style={styles.container}>

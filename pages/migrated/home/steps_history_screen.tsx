@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,17 @@ const INITIAL_DATA: StepEntry[] = [
 
 const FILTERS = ["All", "High", "Moderate", "Low"];
 
+function getIntensityColor(intensity: string) {
+  switch (intensity) {
+    case "High":
+      return "#F44336";
+    case "Moderate":
+      return "#FF9800";
+    default:
+      return "#4CAF50";
+  }
+}
+
 export default function StepsHistoryScreen({ navigation }: any) {
 
   const [filter, setFilter] = useState("All");
@@ -53,17 +64,6 @@ export default function StepsHistoryScreen({ navigation }: any) {
         onPress: () => setData((prev) => prev.filter((e) => e.id !== id)),
       },
     ]);
-  };
-
-  const getIntensityColor = (intensity: string) => {
-    switch (intensity) {
-      case "High":
-        return "#F44336";
-      case "Moderate":
-        return "#FF9800";
-      default:
-        return "#4CAF50";
-    }
   };
 
   const renderEntry = (entry: StepEntry) => (

@@ -52,6 +52,27 @@ interface WorkoutDetailData {
   [key: string]: any;
 }
 
+const renderDataItem = (img: string, title: string, value: string) => (
+  <Box style={styles.dataItem}>
+    <Text style={styles.dataTitle}>{title}</Text>
+    <Text style={styles.dataValue}>{value}</Text>
+  </Box>
+);
+
+const renderSets = (exercise: DayExerciseModel) => {
+  const sets: string[] = [];
+  if (exercise.exercise?.type === 'sets' && exercise.exercise?.sets?.length) {
+    exercise.exercise.sets.forEach((set) => {
+      if (exercise.exercise?.based === 'time') {
+        sets.push(`${set.time}s`);
+      } else {
+        sets.push(`${set.reps}x`);
+      }
+    });
+  }
+  return sets;
+};
+
 export default function WorkoutDetailScreen(props: any) {
   const workoutId = props.route?.params?.id;
   const onCall = props.route?.params?.onCall;
@@ -133,27 +154,6 @@ export default function WorkoutDetailScreen(props: any) {
     setCurrentTabIndex(index);
     setIsLoading(true);
     getDayExerciseData(workoutDayList[index]?.id);
-  };
-
-  const renderDataItem = (img: string, title: string, value: string) => (
-    <Box style={styles.dataItem}>
-      <Text style={styles.dataTitle}>{title}</Text>
-      <Text style={styles.dataValue}>{value}</Text>
-    </Box>
-  );
-
-  const renderSets = (exercise: DayExerciseModel) => {
-    const sets: string[] = [];
-    if (exercise.exercise?.type === 'sets' && exercise.exercise?.sets?.length) {
-      exercise.exercise.sets.forEach((set) => {
-        if (exercise.exercise?.based === 'time') {
-          sets.push(`${set.time}s`);
-        } else {
-          sets.push(`${set.reps}x`);
-        }
-      });
-    }
-    return sets;
   };
 
   const renderExerciseItem = (item: DayExerciseModel, index: number) => {

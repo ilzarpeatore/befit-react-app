@@ -147,28 +147,31 @@ function QuestionCard({
         </Box>
       ) : question.type === 'multiple_choice' ? (
         <Box className="flex-row flex-wrap gap-2">
-          {(question.options || []).map((opt) => {
-            const selected = question.allow_multiple
-              ? Array.isArray(value) && value.includes(opt)
-              : value === opt;
-            return (
-              <Pressable
-                key={opt}
-                className="rounded-pill"
-                style={{ paddingHorizontal: 14, paddingVertical: 9, backgroundColor: selected ? C.accentBlack : C.bg }}
-                onPress={() => {
-                  if (question.allow_multiple) {
-                    const current = Array.isArray(value) ? value : [];
-                    onChange(current.includes(opt) ? current.filter((o) => o !== opt) : [...current, opt]);
-                  } else {
-                    onChange(opt);
-                  }
-                }}
-              >
-                <Text weight="semibold" size="xs" style={{ color: selected ? '#FFFFFF' : C.textSecondary }}>{opt}</Text>
-              </Pressable>
-            );
-          })}
+          {(() => {
+            const selectedSet = question.allow_multiple && Array.isArray(value) ? new Set(value) : null;
+            return (question.options || []).map((opt) => {
+              const selected = question.allow_multiple
+                ? !!selectedSet?.has(opt)
+                : value === opt;
+              return (
+                <Pressable
+                  key={opt}
+                  className="rounded-pill"
+                  style={{ paddingHorizontal: 14, paddingVertical: 9, backgroundColor: selected ? C.accentBlack : C.bg }}
+                  onPress={() => {
+                    if (question.allow_multiple) {
+                      const current = Array.isArray(value) ? value : [];
+                      onChange(current.includes(opt) ? current.filter((o) => o !== opt) : [...current, opt]);
+                    } else {
+                      onChange(opt);
+                    }
+                  }}
+                >
+                  <Text weight="semibold" size="xs" style={{ color: selected ? '#FFFFFF' : C.textSecondary }}>{opt}</Text>
+                </Pressable>
+              );
+            });
+          })()}
         </Box>
       ) : null}
     </Card>
@@ -231,9 +234,12 @@ export default function CheckInFillScreen(props: Props) {
     if (!canSubmit || !formAssignmentId) return;
     setSubmitting(true);
     try {
-      const payload: CheckInAnswerInput[] = questions
-        .filter((q) => !UNSUPPORTED_QUESTION_TYPES.includes(q.type) && isAnswered(answers[q.id]))
-        .map((q) => ({ form_question_id: q.id, answer_value: answers[q.id] as string | string[] }));
+      const payload: CheckInAnswerInput[] = questions.reduce<CheckInAnswerInput[]>((acc, q) => {
+        if (!UNSUPPORTED_QUESTION_TYPES.includes(q.type) && isAnswered(answers[q.id])) {
+          acc.push({ form_question_id: q.id, answer_value: answers[q.id] as string | string[] });
+        }
+        return acc;
+      }, []);
 
       await checkinsApi.submit(formAssignmentId, payload);
       Alert.alert('Enviado', 'Tu respuesta se ha guardado correctamente.', [

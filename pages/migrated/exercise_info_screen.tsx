@@ -52,7 +52,11 @@ function metricMeta(key: string) {
   return METRIC_META[key] ?? { label: key.charAt(0).toUpperCase() + key.slice(1), unit: '', color: C.textSecondary };
 }
 function bestValueForMetric(session: ExerciseAnalysisSession, key: string): number | null {
-  const nums = session.sets.map((s) => Number(s[key])).filter((n) => Number.isFinite(n));
+  const nums = session.sets.reduce<number[]>((acc, s) => {
+    const n = Number(s[key]);
+    if (Number.isFinite(n)) acc.push(n);
+    return acc;
+  }, []);
   return nums.length > 0 ? Math.max(...nums) : null;
 }
 function formatShortDate(dateStr: string): string {
@@ -527,19 +531,22 @@ function ProgressChartSection({ sessions }: { sessions: ExerciseAnalysisSession[
       <Text style={styles.chartSectionTitle}>Evolución</Text>
 
       <HStack space="sm" className="flex-wrap" style={{ marginBottom: 14 }}>
-        {numericMetricKeys.map((key) => {
-          const meta = metricMeta(key);
-          const active = selectedMetrics.includes(key);
-          return (
-            <Pressable
-              key={key}
-              style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
-              onPress={() => toggleMetric(key)}
-            >
-              <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
-            </Pressable>
-          );
-        })}
+        {(() => {
+          const selectedMetricsSet = new Set(selectedMetrics);
+          return numericMetricKeys.map((key) => {
+            const meta = metricMeta(key);
+            const active = selectedMetricsSet.has(key);
+            return (
+              <Pressable
+                key={key}
+                style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
+                onPress={() => toggleMetric(key)}
+              >
+                <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
+              </Pressable>
+            );
+          });
+        })()}
       </HStack>
 
       {chronoSessions.length < 2 ? (

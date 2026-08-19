@@ -92,6 +92,16 @@ function formatWeekday(d: Date): string {
   return days[(d.getDay() + 6) % 7];
 }
 
+const renderCompactStat = (label: string, value: string, progress: number) => (
+  <VStack style={s.compactStat}>
+    <Text style={s.compactStatLabel}>{label}</Text>
+    <Text style={s.compactStatValue}>{value}</Text>
+    <Box style={s.compactProgressBar}>
+      <Box style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
+    </Box>
+  </VStack>
+);
+
 export default function PlanScreen(props: any) {
 
   const [kcalTarget, setKcalTarget] = useState(1331);
@@ -413,16 +423,6 @@ export default function PlanScreen(props: any) {
       </HStack>
     );
   };
-
-  const renderCompactStat = (label: string, value: string, progress: number) => (
-    <VStack style={s.compactStat}>
-      <Text style={s.compactStatLabel}>{label}</Text>
-      <Text style={s.compactStatValue}>{value}</Text>
-      <Box style={s.compactProgressBar}>
-        <Box style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
-      </Box>
-    </VStack>
-  );
 
   const renderNutrientGraph = () => (
     <Card variant="ghost" style={s.nutrientCard}>

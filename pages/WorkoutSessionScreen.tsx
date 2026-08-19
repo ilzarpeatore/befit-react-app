@@ -41,6 +41,12 @@ interface RouteParams {
   workoutDayId: number;
 }
 
+function formatTime(sec: number) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export default function WorkoutSessionScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -110,12 +116,6 @@ export default function WorkoutSessionScreen() {
     );
   }
 
-  const formatTime = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
-
   const updateSet = (setIndex: number, field: "reps" | "weight", value: string) => {
     setAllExerciseData((prev) => {
       const updated = [...prev];
@@ -169,21 +169,25 @@ export default function WorkoutSessionScreen() {
 
     try {
       const today = new Date().toISOString().split("T")[0];
-      for (let i = 0; i < exercises.length; i++) {
-        const ex = exercises[i];
-        const data = allExerciseData[i];
-        const completedSets = data.sets
-          .filter((s) => s.completed)
-          .map((s) => ({ reps: s.reps, weight: s.weight }));
-        if (completedSets.length === 0) continue;
-        await workoutHistoryApi.storeWorkoutExercise({
-          workout_id: workoutId,
-          exercise_id: ex.id,
-          sets: completedSets,
-          date: today,
-          workout_day_id: workoutDayId,
-        });
-      }
+      const saves = exercises
+        .map((ex, i) => {
+          const data = allExerciseData[i];
+          const completedSets = data.sets.reduce<{ reps: string; weight: string }[]>((acc, s) => {
+            if (s.completed) acc.push({ reps: s.reps, weight: s.weight });
+            return acc;
+          }, []);
+          if (completedSets.length === 0) return null;
+          return workoutHistoryApi.storeWorkoutExercise({
+            workout_id: workoutId,
+            exercise_id: ex.id,
+            sets: completedSets,
+            date: today,
+            workout_day_id: workoutDayId,
+          });
+        })
+        .filter((p): p is ReturnType<typeof workoutHistoryApi.storeWorkoutExercise> => p !== null);
+      // Guardar cada ejercicio es independiente (exercise_id distinto), sin orden requerido.
+      await Promise.all(saves);
       navigation.replace("WorkoutSummary", {
         exercises: exercises.map((ex, i) => ({
           ...ex,

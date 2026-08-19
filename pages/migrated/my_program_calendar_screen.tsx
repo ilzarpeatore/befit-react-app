@@ -229,7 +229,12 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     [completedSessions]
   );
   const completedByTemplate = useMemo(
-    () => new Set(completedSessions.filter((s) => s.workout_template_id != null && s.date).map((s) => `${String(s.date).slice(0, 10)}|${s.workout_template_id}`)),
+    () => completedSessions.reduce((set, s) => {
+      if (s.workout_template_id != null && s.date) {
+        set.add(`${String(s.date).slice(0, 10)}|${s.workout_template_id}`);
+      }
+      return set;
+    }, new Set<string>()),
     [completedSessions]
   );
 
@@ -373,10 +378,11 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     // Agrupar por semana (lunes) -- una solicitud = una semana calendario,
     // igual que el flujo del coach (AdaptiveWeekPlanner::persist()).
     const byWeek = new Map<string, number[]>();
+    const mDaysByDate = new Map(mDays.map((d) => [d.date, d]));
     for (const dateKey of selectedDates) {
       const dateObj = new Date(`${dateKey}T00:00:00`);
       const weekStartKey = toDateKey(startOfWeekMonday(dateObj));
-      const day = mDays.find((d) => d.date === dateKey);
+      const day = mDaysByDate.get(dateKey);
       const ids = (day?.workouts ?? []).map((w) => w.assignmentId).filter((id): id is number => id != null);
       if (!ids.length) continue;
       byWeek.set(weekStartKey, [...(byWeek.get(weekStartKey) ?? []), ...ids]);
@@ -387,15 +393,15 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     setSubmittingSelection(true);
     let okCount = 0;
     let errCount = 0;
-    for (const [weekStart, ids] of byWeek) {
-      try {
-        await adaptiveWeekPlansApi.requestUnavailable(weekStart, ids);
-        okCount++;
-      } catch {
-        errCount++;
-      }
+    try {
+      const results = await Promise.allSettled(
+        Array.from(byWeek, ([weekStart, ids]) => adaptiveWeekPlansApi.requestUnavailable(weekStart, ids))
+      );
+      okCount = results.filter((r) => r.status === 'fulfilled').length;
+      errCount = results.length - okCount;
+    } finally {
+      setSubmittingSelection(false);
     }
-    setSubmittingSelection(false);
     cancelSelectionMode();
 
     if (errCount === 0) {

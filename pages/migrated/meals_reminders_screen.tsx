@@ -28,6 +28,25 @@ interface MealsRemindersScreenProps {
   route?: any;
 }
 
+function parseTime(value: string): TimeObj | null {
+  if (!value) return null;
+  const [h, m] = value.split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return null;
+  return { hour: h, minute: m };
+}
+
+function pickTime(current: TimeObj, onSelected: (t: TimeObj) => void) {
+  Alert.alert('Establecer hora', `Actual: ${formatTimeDisplay(current)}\n\nUsar un selector de hora real en producción.`, [
+    { text: 'Cancelar', style: 'cancel' },
+    {
+      text: 'Poner 1 hora más tarde',
+      onPress: () => {
+        onSelected({ hour: (current.hour + 1) % 24, minute: current.minute });
+      },
+    },
+  ]);
+}
+
 export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
   const { navigation } = props;
   const { state } = useAuth();
@@ -64,13 +83,6 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
     loadSettings();
   }, []);
 
-  const parseTime = (value: string): TimeObj | null => {
-    if (!value) return null;
-    const [h, m] = value.split(':').map(Number);
-    if (Number.isNaN(h) || Number.isNaN(m)) return null;
-    return { hour: h, minute: m };
-  };
-
   const loadSettings = async () => {
     const settings = state.user?.user_profile?.meal_reminder_settings;
     if (!settings) return;
@@ -95,18 +107,6 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
       const t = parseTime(settings.dinner.time);
       if (t) setDinnerTime(t);
     }
-  };
-
-  const pickTime = (current: TimeObj, onSelected: (t: TimeObj) => void) => {
-    Alert.alert('Establecer hora', `Actual: ${formatTimeDisplay(current)}\n\nUsar un selector de hora real en producción.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Poner 1 hora más tarde',
-        onPress: () => {
-          onSelected({ hour: (current.hour + 1) % 24, minute: current.minute });
-        },
-      },
-    ]);
   };
 
   const saveSettings = async () => {

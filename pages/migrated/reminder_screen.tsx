@@ -10,6 +10,21 @@ import { C, FONT } from './theme';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+function formatTime(item: CustomReminder): string {
+  const d = new Date();
+  d.setHours(item.time.hour, item.time.minute, 0, 0);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDays(item: CustomReminder): string {
+  if (item.isDaily) return 'Every day';
+  return item.days
+    .slice()
+    .sort((a, b) => a - b)
+    .map((d) => DAY_LABELS[d])
+    .join(', ');
+}
+
 export default function ReminderScreen(props: any) {
   const [remindList, setRemindList] = useState<CustomReminder[]>([]);
   const styles = useStyle();
@@ -22,21 +37,6 @@ export default function ReminderScreen(props: any) {
 
   const loadReminders = async () => {
     setRemindList(await getCustomReminders());
-  };
-
-  const formatTime = (item: CustomReminder): string => {
-    const d = new Date();
-    d.setHours(item.time.hour, item.time.minute, 0, 0);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDays = (item: CustomReminder): string => {
-    if (item.isDaily) return 'Every day';
-    return item.days
-      .slice()
-      .sort((a, b) => a - b)
-      .map((d) => DAY_LABELS[d])
-      .join(', ');
   };
 
   const handleAddReminder = () => {

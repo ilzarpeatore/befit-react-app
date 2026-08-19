@@ -19,6 +19,44 @@ interface DisplayMessage {
   time?: string;
 }
 
+const renderMessage = ({ item }: { item: DisplayMessage }) => (
+  <Box className="px-4">
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.brand60,
+        borderBottomRightRadius: 4,
+        padding: 12,
+        marginLeft: 48,
+        marginBottom: 4,
+      }}
+    >
+      <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
+    </Box>
+
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.surfaceLight,
+        borderBottomLeftRadius: 4,
+        padding: 12,
+        marginRight: 48,
+        gap: 8,
+      }}
+    >
+      <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
+      {item.isLoading ? (
+        <Box className="flex-row items-center" style={{ gap: 8 }}>
+          <Spinner size="small" color={C.orange} />
+          <Text size="sm" muted>Pensando...</Text>
+        </Box>
+      ) : (
+        <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
+      )}
+    </Box>
+  </Box>
+);
+
 export default function ChattingScreen({ navigation }: any) {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [msgController, setMsgController] = useState('');
@@ -96,44 +134,6 @@ export default function ChattingScreen({ navigation }: any) {
       },
     ]);
   };
-
-  const renderMessage = ({ item }: { item: DisplayMessage }) => (
-    <Box className="px-4">
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.brand60,
-          borderBottomRightRadius: 4,
-          padding: 12,
-          marginLeft: 48,
-          marginBottom: 4,
-        }}
-      >
-        <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
-      </Box>
-
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.surfaceLight,
-          borderBottomLeftRadius: 4,
-          padding: 12,
-          marginRight: 48,
-          gap: 8,
-        }}
-      >
-        <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
-        {item.isLoading ? (
-          <Box className="flex-row items-center" style={{ gap: 8 }}>
-            <Spinner size="small" color={C.orange} />
-            <Text size="sm" muted>Pensando...</Text>
-          </Box>
-        ) : (
-          <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
-        )}
-      </Box>
-    </Box>
-  );
 
   return (
     <Box className="flex-1 bg-background">

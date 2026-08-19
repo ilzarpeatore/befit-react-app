@@ -9,15 +9,14 @@ import AppIcon from '@components/AppIcon';
 import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 
+async function launchUrl(url: string) {
+  const supported = await Linking.canOpenURL(url);
+  if (supported) {
+    await Linking.openURL(url);
+  }
+}
+
 export default function AboutUsScreen({ navigation }: any) {
-
-  const launchUrl = async (url: string) => {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    }
-  };
-
   return (
     <Box className="flex-1 bg-background">
       <Box style={{ paddingTop: 40 }}>

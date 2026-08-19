@@ -160,7 +160,7 @@ const FormControlLabelAstrick = React.forwardRef<
 
 const StyledUIIcon = styled(UIIcon, { className: "style" });
 
-export const UIFormControl = createFormControl({
+const UIFormControl = createFormControl({
   Root: withStyleContext(View, SCOPE),
   Error: View,
   ErrorText: Text,

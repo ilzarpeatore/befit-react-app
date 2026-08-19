@@ -20,6 +20,21 @@ interface EditProfileScreenProps {
   navigation: any;
 }
 
+function getGender() {
+  const genderList = [
+    { id: 0, label: 'Hombre', key: 'male' },
+    { id: 1, label: 'Mujer', key: 'female' },
+  ];
+  return genderList;
+}
+
+ 
+async function pickImage() {
+  // ImagePicker logic
+  // const result = await ImagePicker.launchImageLibraryAsync({...});
+  // if (!result.canceled) setImageUri(result.assets[0].uri);
+}
+
 export default function EditProfileScreen(props: EditProfileScreenProps) {
 
   const { updateUser, state } = useAuth();
@@ -55,14 +70,6 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
     }
   };
 
-  const getGender = () => {
-    const genderList = [
-      { id: 0, label: 'Hombre', key: 'male' },
-      { id: 1, label: 'Mujer', key: 'female' },
-    ];
-    return genderList;
-  };
-
   const convertFeetToCm = () => {
     const val = parseFloat(heightVal) || 0;
     const cm = val * 30.48;
@@ -85,12 +92,6 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
     const val = parseFloat(weight) || 0;
     const lbs = val * 2.2046;
     if (weight) setWeight(lbs.toFixed(2));
-  };
-
-  const pickImage = async () => {
-    // ImagePicker logic
-    // const result = await ImagePicker.launchImageLibraryAsync({...});
-    // if (!result.canceled) setImageUri(result.assets[0].uri);
   };
 
   const save = async () => {
