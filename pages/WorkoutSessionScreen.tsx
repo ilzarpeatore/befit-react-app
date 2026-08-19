@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   ScrollView,
   Alert,
@@ -229,12 +229,15 @@ export default function WorkoutSessionScreen() {
             paddingVertical: r(10),
           }}
         >
-          <TouchableOpacity
+          <Pressable
             onPress={handleBack}
-            style={{ width: r(44), height: r(44), alignItems: "center", justifyContent: "center" }}
+            style={({ pressed }) => [
+              { width: r(44), height: r(44), alignItems: "center", justifyContent: "center" },
+              pressed && { opacity: 0.2 },
+            ]}
           >
             <Ionicons name="chevron-back" size={r(24)} color={C.textWhite} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ fontFamily: FONT.bold, fontSize: r(14), color: C.textSecondary }}>
             Exercise {currentIndex + 1}/{exercises.length}
           </Text>
@@ -274,19 +277,22 @@ export default function WorkoutSessionScreen() {
             <Text style={{ fontFamily: FONT.medium, fontSize: r(13), color: C.textSecondary, marginBottom: r(12) }}>
               Rest Timer
             </Text>
-            <TouchableOpacity
+            <Pressable
               onPress={skipRest}
-              style={{
-                backgroundColor: C.gray40,
-                borderRadius: r(12),
-                paddingVertical: r(10),
-                paddingHorizontal: r(24),
-              }}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: C.gray40,
+                  borderRadius: r(12),
+                  paddingVertical: r(10),
+                  paddingHorizontal: r(24),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <Text style={{ fontFamily: FONT.semiBold, fontSize: r(14), color: C.textWhite }}>
                 Skip Rest
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
 
@@ -436,49 +442,58 @@ export default function WorkoutSessionScreen() {
                 {set.completed ? (
                   <Ionicons name="checkmark-circle" size={r(24)} color={C.success} />
                 ) : (
-                  <TouchableOpacity onPress={() => markSetDone(setIndex)}>
+                  <Pressable
+                    onPress={() => markSetDone(setIndex)}
+                    style={({ pressed }) => pressed && { opacity: 0.2 }}
+                  >
                     <Ionicons name="ellipse-outline" size={r(24)} color={C.gray30} />
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
             </View>
           ))}
 
           {/* Add Set Button */}
-          <TouchableOpacity
+          <Pressable
             onPress={addSet}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: r(6),
-              backgroundColor: C.surfaceLight,
-              borderRadius: r(12),
-              paddingVertical: r(12),
-              marginBottom: r(16),
-              borderWidth: 1,
-              borderColor: C.border,
-              borderStyle: "dashed",
-            }}
+            style={({ pressed }) => [
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: r(6),
+                backgroundColor: C.surfaceLight,
+                borderRadius: r(12),
+                paddingVertical: r(12),
+                marginBottom: r(16),
+                borderWidth: 1,
+                borderColor: C.border,
+                borderStyle: "dashed",
+              },
+              pressed && { opacity: 0.2 },
+            ]}
           >
             <Ionicons name="add-circle-outline" size={r(18)} color={C.textSecondary} />
             <Text style={{ fontFamily: FONT.semiBold, fontSize: r(14), color: C.textSecondary }}>
               Add Set
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
           {/* Mark Set Done Button */}
           {!allSetsCompleted && (
-            <TouchableOpacity
+            <Pressable
               onPress={() => {
                 const firstIncomplete = exerciseData.sets.findIndex((s) => !s.completed);
                 if (firstIncomplete !== -1) markSetDone(firstIncomplete);
               }}
-              style={{
-                borderRadius: r(14),
-                overflow: "hidden",
-                marginBottom: r(12),
-              }}
+              style={({ pressed }) => [
+                {
+                  borderRadius: r(14),
+                  overflow: "hidden",
+                  marginBottom: r(12),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <LinearGradient
                 start={{ x: 0, y: 0 }}
@@ -494,18 +509,21 @@ export default function WorkoutSessionScreen() {
                   Mark Set Done
                 </Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* Next Exercise Button */}
           {allSetsCompleted && !isLastExercise && (
-            <TouchableOpacity
+            <Pressable
               onPress={goToNextExercise}
-              style={{
-                borderRadius: r(14),
-                overflow: "hidden",
-                marginBottom: r(12),
-              }}
+              style={({ pressed }) => [
+                {
+                  borderRadius: r(14),
+                  overflow: "hidden",
+                  marginBottom: r(12),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <LinearGradient
                 start={{ x: 0, y: 0 }}
@@ -525,18 +543,21 @@ export default function WorkoutSessionScreen() {
                 </Text>
                 <Ionicons name="arrow-forward" size={r(18)} color="#FFFFFF" />
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* Finish Workout Button */}
           {allSetsCompleted && isLastExercise && (
-            <TouchableOpacity
+            <Pressable
               onPress={finishWorkout}
-              style={{
-                borderRadius: r(14),
-                overflow: "hidden",
-                marginBottom: r(12),
-              }}
+              style={({ pressed }) => [
+                {
+                  borderRadius: r(14),
+                  overflow: "hidden",
+                  marginBottom: r(12),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <LinearGradient
                 start={{ x: 0, y: 0 }}
@@ -556,7 +577,7 @@ export default function WorkoutSessionScreen() {
                   Finish Workout
                 </Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </ScrollView>
       </SafeAreaView>
