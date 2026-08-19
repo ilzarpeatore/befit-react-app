@@ -1,15 +1,6 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
-import { Platform ,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  SafeAreaView,
-  Dimensions,
-  useWindowDimensions,
-  Modal,
-  Alert,
-  Switch,
-} from 'react-native';
+import { Platform, StyleSheet, ScrollView, RefreshControl, Dimensions, useWindowDimensions, Modal, Alert, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
