@@ -22,6 +22,9 @@ dist_release2/
 # macOS
 .DS_Store
 
+# active agent worktrees (transient, not project content)
+.claude/worktrees/
+
 # expo-map generated navigation map (regenerate with tools/expo-map/generate-map.sh)
 .expo-map/
 
