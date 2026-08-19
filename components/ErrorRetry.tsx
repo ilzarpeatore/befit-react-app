@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, Pressable, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -22,7 +22,7 @@ function ErrorRetry({ message, onRetry }: Props) {
       />
       <Text style={styles.message}>{message}</Text>
 
-      <TouchableOpacity activeOpacity={0.85} onPress={onRetry}>
+      <Pressable style={({ pressed }) => pressed && { opacity: 0.85 }} onPress={onRetry}>
         <LinearGradient
           start={{ x: 0.24, y: -0.09 }}
           end={{ x: 0.5, y: 1 }}
@@ -31,7 +31,7 @@ function ErrorRetry({ message, onRetry }: Props) {
         >
           <Text style={styles.btnText}>Retry</Text>
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

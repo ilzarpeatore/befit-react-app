@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
-  TouchableOpacity,
+  Pressable,
   Animated,
   StyleSheet,
   LayoutChangeEvent,
@@ -124,7 +124,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
         };
 
         return (
-          <TouchableOpacity
+          <Pressable
             key={index}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
@@ -135,7 +135,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
               navigation_press(index, onPress);
             }}
             onLongPress={onLongPress}
-            style={styles.navigationbtn}
+            style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
           >
             <Image
               source={typedOptions.icon}
@@ -145,7 +145,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
                 { tintColor: isFocused ? "#000000" : "#AEAEB2" },
               ]}
             />
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
       {/*navigation icons end*/}

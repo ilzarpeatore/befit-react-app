@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, Pressable, View } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,7 +18,7 @@ function DietCard({ title, calories, category, image, onPress }: Props) {
   const styles = useStyle();
 
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
+    <Pressable style={({ pressed }) => pressed && { opacity: 0.85 }} onPress={onPress}>
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -54,7 +54,7 @@ function DietCard({ title, calories, category, image, onPress }: Props) {
           ) : null}
         </View>
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
