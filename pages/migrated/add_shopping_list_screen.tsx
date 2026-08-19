@@ -25,9 +25,21 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
   const [title, setTitle] = useState('');
   const [isSpecificDate, setIsSpecificDate] = useState(isDefaultSpecificDate);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
-  const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState(() =>
+    shoppingList?.daily_plan_id && shoppingList?.start_date
+      ? new Date(shoppingList.start_date)
+      : new Date()
+  );
+  const [dateRangeStart, setDateRangeStart] = useState<Date | null>(() =>
+    !shoppingList?.daily_plan_id && shoppingList?.start_date && shoppingList?.end_date
+      ? new Date(shoppingList.start_date)
+      : null
+  );
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(() =>
+    !shoppingList?.daily_plan_id && shoppingList?.start_date && shoppingList?.end_date
+      ? new Date(shoppingList.end_date)
+      : null
+  );
   const [isCompleteOnly, setIsCompleteOnly] = useState(true);
   const [selectedMealTypes, setSelectedMealTypes] = useState<ShoppingMealType[]>([]);
   const [servings, setServings] = useState(1);
@@ -56,16 +68,9 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     if (shoppingList.daily_plan_id) {
       setIsSpecificDate(true);
       dailyPlanIdRef.current = shoppingList.daily_plan_id;
-      if (shoppingList.start_date) {
-        setSelectedDate(new Date(shoppingList.start_date));
-      }
     } else {
       setIsSpecificDate(false);
       setServings(shoppingList.servings ?? 1);
-      if (shoppingList.start_date && shoppingList.end_date) {
-        setDateRangeStart(new Date(shoppingList.start_date));
-        setDateRangeEnd(new Date(shoppingList.end_date));
-      }
     }
   };
 

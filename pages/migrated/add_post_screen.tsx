@@ -103,12 +103,12 @@ export default function AddPostScreen({ navigation, route }: any) {
     try {
       const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
       await postsApi.create(description.trim(), media);
-      setLoading(false);
       navigation.goBack();
     } catch (e) {
       logger.error('Error submitting post', e);
-      setLoading(false);
       Alert.alert('Error', 'Failed to submit post');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,12 +124,12 @@ export default function AddPostScreen({ navigation, route }: any) {
       }
       const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
       await postsApi.update(postData?.id, description.trim(), media);
-      setLoading(false);
       navigation.goBack();
     } catch (e) {
       logger.error('Error editing post', e);
-      setLoading(false);
       Alert.alert('Error', 'Failed to edit post');
+    } finally {
+      setLoading(false);
     }
   };
 
