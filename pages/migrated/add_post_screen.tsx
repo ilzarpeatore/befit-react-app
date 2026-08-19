@@ -157,7 +157,7 @@ export default function AddPostScreen({ navigation, route }: any) {
           {existingImages.length > 0 && (
             <Box className="flex-row flex-wrap gap-2">
               {existingImages.map((uri, index) => (
-                <Box key={index} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
+                <Box key={uri} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
                   <Image source={{ uri }} className="w-full h-full rounded-sm bg-secondary" />
                   <Pressable
                     style={{ position: 'absolute', top: -6, right: -6 }}
@@ -174,7 +174,7 @@ export default function AddPostScreen({ navigation, route }: any) {
           {selectedImages.length > 0 && (
             <Box className="flex-row flex-wrap gap-2">
               {selectedImages.map((img, index) => (
-                <Box key={index} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
+                <Box key={img.uri} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
                   <Image source={{ uri: img.uri }} className="w-full h-full rounded-sm bg-secondary" />
                   <Pressable
                     style={{ position: 'absolute', top: -6, right: -6 }}
