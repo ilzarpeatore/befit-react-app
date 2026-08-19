@@ -21,11 +21,7 @@ interface FavouriteScreenProps {
 export default function FavouriteScreen(props: FavouriteScreenProps) {
   const initialIndex = props.route.params?.index ?? 0;
 
-  const [select, setSelect] = useState(initialIndex === 0);
-
-  useEffect(() => {
-    setSelect(initialIndex === 0);
-  }, [initialIndex]);
+  const [select, setSelect] = useState(() => initialIndex === 0);
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background">
