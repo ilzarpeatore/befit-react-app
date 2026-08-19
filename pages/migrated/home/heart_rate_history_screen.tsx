@@ -76,9 +76,9 @@ export default function HeartRateHistoryScreen({ navigation }: any) {
             entries.length > 0 ? (
               <View key={date} style={styles.group}>
                 <Text style={styles.dateLabel}>{date}</Text>
-                {entries.map((entry, i) => (
+                {entries.map((entry) => (
                   <TouchableOpacity
-                    key={i}
+                    key={entry.time}
                     style={styles.entry}
                     onPress={() => navigation.navigate("MigratedHeartRateDetails")}
                   >

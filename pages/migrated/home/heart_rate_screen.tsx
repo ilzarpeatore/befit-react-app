@@ -95,9 +95,9 @@ export default function HeartRateScreen({ navigation }: any) {
           </View>
 
           <Text style={styles.sectionTitle}>Recent Readings</Text>
-          {RECENT.map((r, i) => (
+          {RECENT.map((r) => (
             <TouchableOpacity
-              key={i}
+              key={r.time}
               style={styles.entry}
               onPress={() => navigation.navigate("MigratedHeartRateDetails")}
             >
