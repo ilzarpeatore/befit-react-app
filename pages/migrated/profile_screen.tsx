@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, Image, Alert } from 'react-native';
+import { ScrollView, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -97,7 +98,7 @@ export default function ProfileScreen(props: any) {
           <Box className="relative" style={{ marginBottom: 16 }}>
             <Box className="rounded-pill bg-card items-center justify-center overflow-hidden" style={{ width: 96, height: 96 }}>
               {profileImage ? (
-                <Image source={{ uri: profileImage }} style={{ width: 96, height: 96, borderRadius: 48 }} />
+                <Image source={{ uri: profileImage }} contentFit="cover" style={{ width: 96, height: 96, borderRadius: 48 }} />
               ) : (
                 <Icon name="person" size={40} color={C.gray30} />
               )}

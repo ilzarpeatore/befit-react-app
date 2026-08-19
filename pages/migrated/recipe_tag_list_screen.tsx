@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -89,6 +90,7 @@ export default function RecipeTagListScreen(props: any) {
                   {item.recipeTagImage ? (
                     <Image
                       source={{ uri: item.recipeTagImage }}
+                      contentFit="cover"
                       style={{ width: 20, height: 20, borderRadius: 10 }}
                     />
                   ) : null}

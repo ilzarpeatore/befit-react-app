@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
-  Image,
-  ImageBackground,
   Text,
   View,
   TouchableOpacity,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
@@ -68,6 +67,7 @@ export default function WorkoutDayExercises() {
           {item.exercise?.exercise_image ? (
             <Image
               source={{ uri: item.exercise.exercise_image }}
+              contentFit="cover"
               style={styles.exerciseImage}
             />
           ) : (

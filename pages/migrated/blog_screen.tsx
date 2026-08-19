@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, ScrollView, TextInput, Dimensions, Image, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TextInput, Dimensions, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -147,7 +148,7 @@ export default function BlogScreen({ navigation }: any) {
     <Pressable key={item.id} onPress={() => navigateToDetail(item)}>
       <Card variant="ghost" className="flex-row overflow-hidden rounded-sm p-0 mx-4" style={{ marginBottom: 12 }}>
         {item.post_image ? (
-          <Image source={{ uri: item.post_image }} style={styles_local.blogImage} resizeMode="cover" />
+          <Image source={{ uri: item.post_image }} style={styles_local.blogImage} contentFit="cover" />
         ) : (
           <Box style={[styles_local.blogImage, { backgroundColor: C.surfaceLight }]} />
         )}
@@ -168,7 +169,7 @@ export default function BlogScreen({ navigation }: any) {
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
-        <Image source={{ uri: item.post_image }} style={styles_local.featuredImage} resizeMode="cover" />
+        <Image source={{ uri: item.post_image }} style={styles_local.featuredImage} contentFit="cover" />
       ) : (
         <Box style={[styles_local.featuredImage, { backgroundColor: C.surfaceLight }]} />
       )}

@@ -5,12 +5,12 @@ import {
   Platform,
   Modal,
   FlatList,
-  Image,
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Vibration,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Box } from '@components/ui/box';
@@ -1237,7 +1237,7 @@ export default function WorkoutSessionScreen(props: Props) {
               renderItem={({ item }) => (
                 <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
                   {item.exercise_image ? (
-                    <Image source={{ uri: item.exercise_image }} style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }} />
+                    <Image source={{ uri: item.exercise_image }} contentFit="cover" style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }} />
                   ) : (
                     <Box className="rounded-md bg-card" style={{ width: 44, height: 44, marginRight: 12 }} />
                   )}

@@ -13,7 +13,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { ImageBackground } from "react-native";
 import { C, FONT, GRADIENT } from "./migrated/theme";
 import { workoutHistoryApi } from "../api/workoutHistory";
 

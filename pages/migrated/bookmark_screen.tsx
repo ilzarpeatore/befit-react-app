@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -106,7 +107,7 @@ export default function BookmarkScreen({ navigation }: any) {
         {/* User header */}
         <Box className="flex-row items-center gap-2.5 p-3">
           {item.users?.profileImage ? (
-            <Image source={{ uri: item.users.profileImage }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+            <Image source={{ uri: item.users.profileImage }} contentFit="cover" style={{ width: 36, height: 36, borderRadius: 18 }} />
           ) : (
             <Box className="w-9 h-9 rounded-full bg-secondary items-center justify-center">
               <Icon name="person" size={20} className="text-muted-foreground" />
@@ -131,7 +132,7 @@ export default function BookmarkScreen({ navigation }: any) {
             <Image
               source={{ uri: item.postImage }}
               style={{ width: '100%', height: 200, borderRadius: 8 }}
-              resizeMode="cover"
+              contentFit="cover"
             />
           </Box>
         ) : null}

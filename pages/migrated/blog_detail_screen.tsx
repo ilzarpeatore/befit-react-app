@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Image, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import { ScrollView, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { WebView } from 'react-native-webview';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -157,7 +158,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
         {/* Hero */}
         <Box style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.42, position: 'relative' }}>
           {blog?.post_image ? (
-            <Image source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <Image source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           ) : (
             <Box className="bg-card" style={{ width: '100%', height: '100%' }} />
           )}

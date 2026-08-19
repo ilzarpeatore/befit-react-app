@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, Image } from 'react-native';
+import { ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { VStack } from '@components/ui/vstack';
@@ -206,7 +207,7 @@ export default function AssignedMealsScreen(props: any) {
                     onPress={() => openRecipe(recipe)}
                   >
                     {recipe.recipe_image ? (
-                      <Image source={{ uri: recipe.recipe_image }} style={{ width: 52, height: 52, borderRadius: 10, marginRight: 12 }} />
+                      <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={{ width: 52, height: 52, borderRadius: 10, marginRight: 12 }} />
                     ) : (
                       <Box className="bg-muted" style={{ width: 52, height: 52, borderRadius: 10, marginRight: 12 }} />
                     )}

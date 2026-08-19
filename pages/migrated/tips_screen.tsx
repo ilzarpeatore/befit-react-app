@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, Dimensions } from 'react-native';
+import { ScrollView, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { VStack } from '@components/ui/vstack';
@@ -32,7 +33,7 @@ export default function TipsScreen(props: any) {
               <Image
                 source={{ uri: mExerciseImage }}
                 style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
+                contentFit="cover"
               />
             ) : (
               <Box style={{ width: '100%', height: '100%' }} className="bg-card items-center justify-center">
@@ -46,7 +47,7 @@ export default function TipsScreen(props: any) {
               <Image
                 source={{ uri: mExerciseImage }}
                 style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
+                contentFit="cover"
               />
             ) : (
               <Box style={{ width: '100%', height: '100%' }} className="bg-card items-center justify-center">

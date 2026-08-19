@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Text,
   View,
-  Image,
-  ImageBackground,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -12,6 +10,7 @@ import {
   FlatList,
   RefreshControl,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -296,6 +295,7 @@ export default function PostDetail() {
               {post.posting_media_array?.[0]?.media_url ? (
                 <Image
                   source={{ uri: post.posting_media_array[0].media_url }}
+                  contentFit="cover"
                   style={styles.postImage}
                 />
               ) : null}
@@ -505,7 +505,6 @@ function useStyle() {
       width: "100%",
       height: "200@ratio",
       borderRadius: "12@ratio",
-      resizeMode: "cover",
       marginBottom: "12@ratio",
     },
     postActions: {

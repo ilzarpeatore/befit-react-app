@@ -28,6 +28,7 @@ function Item({ item }: ItemPropsInterface) {
         <ResponsiveImage
           sources={item.sources}
           source={item.source}
+          contentFit="contain"
           style={styles.sliderimg}
         />
       </View>
@@ -102,7 +103,6 @@ function useStyle() {
       position: "absolute",
       width: "100%",
       height: '440@ratio',
-      resizeMode: "contain",
       top: '40@ratio',
     },
     slideriteminfo: {

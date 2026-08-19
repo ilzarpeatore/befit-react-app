@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Image, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, ScrollView, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -142,14 +143,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
     if (imageUri) {
       return (
         <Box style={localStyles.profileImageContainer}>
-          <Image source={{ uri: imageUri }} style={localStyles.profileImage} />
+          <Image source={{ uri: imageUri }} contentFit="cover" style={localStyles.profileImage} />
         </Box>
       );
     }
     if (profileImage) {
       return (
         <Box style={localStyles.profileImageContainer}>
-          <Image source={{ uri: profileImage }} style={localStyles.profileImage} />
+          <Image source={{ uri: profileImage }} contentFit="cover" style={localStyles.profileImage} />
         </Box>
       );
     }

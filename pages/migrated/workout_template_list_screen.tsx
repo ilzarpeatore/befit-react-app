@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ScrollView, Image, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
+import { ScrollView, SafeAreaView, ActivityIndicator, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -102,7 +103,7 @@ export default function WorkoutTemplateListScreen(props: any) {
                       <Image
                         source={{ uri: item.thumbnail }}
                         style={{ width: columnWidth, height: 140, borderRadius: 12 }}
-                        resizeMode="cover"
+                        contentFit="cover"
                       />
                     ) : (
                       <Box

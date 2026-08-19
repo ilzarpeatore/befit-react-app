@@ -3,7 +3,6 @@ import {
   FlatList,
   Text,
   View,
-  ImageBackground,
   TouchableOpacity,
   RefreshControl,
   Alert,

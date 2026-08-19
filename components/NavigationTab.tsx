@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
-  Image,
   TouchableOpacity,
   Animated,
   StyleSheet,
   LayoutChangeEvent,
 } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { NavigationTabOptionsInterface } from "./_types/NavigationTab.i";
@@ -30,6 +30,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   /* set navigation avtive page */
   const [activepage, set_activepage] = useState(state.index);
   const navigationbtnactiveX = useRef(new Animated.Value(0)).current;
+  const AnimatedImage = useRef(Animated.createAnimatedComponent(Image)).current;
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
     /* save navigation tab x positions */
@@ -83,8 +84,9 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
         locations={[0, 0.515625, 1]}
         style={styles.navigationglow}
       ></LinearGradient>
-      <Animated.Image
+      <AnimatedImage
         source={require("./../assets/icons/navigationellipse.png")}
+        contentFit="contain"
         style={[
           styles.navigationbtnactive,
           {
@@ -137,6 +139,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
           >
             <Image
               source={typedOptions.icon}
+              contentFit="contain"
               style={[
                 styles.navigationicon,
                 { tintColor: isFocused ? "#000000" : "#AEAEB2" },
@@ -188,7 +191,6 @@ function useStyle() {
     navigationicon: {
       width: '28@ratio',
       height: '28@ratio',
-      resizeMode: "contain",
     },
     navigationbtnactive: {
       position: "absolute",
@@ -196,7 +198,6 @@ function useStyle() {
       left: 0,
       width: '9@ratio',
       height: '5@ratio',
-      resizeMode: "contain",
     },
   });
   return styles

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FlatList, Image } from 'react-native';
+import { FlatList } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -13,7 +14,7 @@ function VideoComponent({ item }: { item: any }) {
       <Image
         source={{ uri: item.image || '' }}
         style={{ width: 120, height: 80 }}
-        resizeMode="cover"
+        contentFit="cover"
       />
       <Box className="flex-1 p-3 justify-center">
         <Text size="sm" weight="semibold" numberOfLines={2} style={{ marginBottom: 4 }}>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../pages/migrated/theme';
 
@@ -27,7 +28,7 @@ interface Props {
  */
 function ExerciseMediaHeader({ headerHeight, thumbnailUrl, onPlayPress }: Props) {
   const media = thumbnailUrl ? (
-    <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
+    <Image source={{ uri: thumbnailUrl }} style={styles.image} contentFit="cover" />
   ) : (
     <View style={[styles.image, styles.imageFallback]}>
       <Ionicons name="barbell-outline" size={72} color={C.gray30} />

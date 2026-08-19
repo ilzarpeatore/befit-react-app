@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ScrollView, Image, SafeAreaView, Dimensions } from 'react-native';
+import { ScrollView, SafeAreaView, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button } from '@components/ui/button';
@@ -419,7 +420,7 @@ export default function SearchScreen(props: any) {
                   }
                 >
                   {item.exerciseImage ? (
-                    <Image source={{ uri: item.exerciseImage }} style={{ width: 64, height: 64, borderRadius: 12 }} resizeMode="cover" />
+                    <Image source={{ uri: item.exerciseImage }} style={{ width: 64, height: 64, borderRadius: 12 }} contentFit="cover" />
                   ) : (
                     <Box style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: C.surfaceLight }} />
                   )}

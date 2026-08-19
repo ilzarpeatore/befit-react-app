@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, TouchableOpacity, View, Image } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -25,7 +26,7 @@ function DietCard({ title, calories, category, image, onPress }: Props) {
         style={styles.container}
       >
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} contentFit="cover" style={styles.image} />
         ) : null}
 
         <View style={styles.content}>
@@ -69,7 +70,6 @@ function useStyle() {
     image: {
       width: "100%",
       height: "140@ratio",
-      resizeMode: "cover",
     },
     content: {
       padding: "16@ratio",

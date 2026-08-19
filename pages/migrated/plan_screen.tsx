@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StyleSheet, ScrollView, Alert, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -424,7 +425,7 @@ export default function PlanScreen(props: any) {
                   onPress={() => openRecipeDetail(recipe)}
                 >
                   {recipe.recipeImage ? (
-                    <Image source={{ uri: recipe.recipeImage }} style={s.recipeImage} />
+                    <Image source={{ uri: recipe.recipeImage }} contentFit="cover" style={s.recipeImage} />
                   ) : (
                     <Box style={s.recipeImage} />
                   )}
@@ -557,7 +558,7 @@ export default function PlanScreen(props: any) {
                         onPress={() => addRecipeToPlan(recipe)}
                       >
                         {recipe.recipe_image ? (
-                          <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                          <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={s.searchResultImage} />
                         ) : (
                           <Box style={s.searchResultImage} />
                         )}
@@ -606,7 +607,7 @@ export default function PlanScreen(props: any) {
                         onPress={() => addRecipeToPlan(recipe)}
                       >
                         {recipe.recipe_image ? (
-                          <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
+                          <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={s.searchResultImage} />
                         ) : (
                           <Box style={s.searchResultImage} />
                         )}

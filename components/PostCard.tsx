@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, TouchableOpacity, View, Image } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -50,7 +51,7 @@ function PostCard({
         <Text style={styles.content}>{content}</Text>
 
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} contentFit="cover" style={styles.image} />
         ) : null}
 
         <View style={styles.actions}>
@@ -126,7 +127,6 @@ function useStyle() {
       width: "100%",
       height: "200@ratio",
       borderRadius: "12@ratio",
-      resizeMode: "cover",
       marginBottom: "12@ratio",
     },
     actions: {

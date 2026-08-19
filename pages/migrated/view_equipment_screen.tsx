@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -91,7 +92,7 @@ export default function ViewEquipmentScreen(props: any) {
         })
       }
     >
-      <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} resizeMode="cover" />
+      <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} contentFit="cover" />
       <Text weight="medium" size="sm" numberOfLines={2} className="p-2.5">
         {item.title}
       </Text>

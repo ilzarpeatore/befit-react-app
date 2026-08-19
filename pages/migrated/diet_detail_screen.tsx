@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -216,7 +217,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         <Image
           source={{ uri: dietState.dietImage || '' }}
           style={localStyles.headerImage}
-          resizeMode="cover"
+          contentFit="cover"
         />
         <Box style={localStyles.headerOverlay} />
 
