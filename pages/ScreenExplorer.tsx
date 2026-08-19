@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -212,6 +212,46 @@ export default function ScreenExplorer({ navigation }: any) {
   const navigableCount = ALL_SCREENS.filter((s) => s.route).length;
   const gluestackMigratedCount = ALL_SCREENS.filter((s) => s.gluestackMigrated).length;
 
+  const handleScreenPress = useCallback(
+    (route: string | null) => {
+      if (!route) return;
+      if (route.startsWith('Migrated')) {
+        navigation.navigate('Migrated', { screen: route });
+      } else {
+        navigation.navigate(route);
+      }
+    },
+    [navigation]
+  );
+
+  const renderScreenItem = useCallback(
+    ({ item }: { item: ScreenItem }) => (
+      <TouchableOpacity
+        style={styles.screenItem}
+        onPress={() => handleScreenPress(item.route)}
+        disabled={!item.route}
+      >
+        <View style={styles.screenInfo}>
+          <View style={[styles.statusDot, item.route ? styles.statusDotGreen : styles.statusDotGray]} />
+          <View style={styles.screenNameCol}>
+            <Text style={styles.screenName} numberOfLines={1}>
+              {item.gluestackMigrated ? '🟢 ' : ''}
+              {item.name}
+              {item.file ? <Text style={styles.screenFile}> ({item.file})</Text> : null}
+            </Text>
+            {item.deletionCandidate ? (
+              <Text style={styles.deletionReason} numberOfLines={3}>
+                {item.deletionCandidate}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color="#8A8CB2" />
+      </TouchableOpacity>
+    ),
+    [handleScreenPress]
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -252,38 +292,7 @@ export default function ScreenExplorer({ navigation }: any) {
             <Text style={styles.sectionCount}>{section.count}</Text>
           </View>
         )}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.screenItem}
-            onPress={() => {
-              if (item.route) {
-                if (item.route.startsWith("Migrated")) {
-                  navigation.navigate("Migrated", { screen: item.route });
-                } else {
-                  navigation.navigate(item.route);
-                }
-              }
-            }}
-            disabled={!item.route}
-          >
-            <View style={styles.screenInfo}>
-              <View style={[styles.statusDot, item.route ? styles.statusDotGreen : styles.statusDotGray]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.screenName} numberOfLines={1}>
-                  {item.gluestackMigrated ? '🟢 ' : ''}
-                  {item.name}
-                  {item.file ? <Text style={styles.screenFile}> ({item.file})</Text> : null}
-                </Text>
-                {item.deletionCandidate ? (
-                  <Text style={styles.deletionReason} numberOfLines={3}>
-                    {item.deletionCandidate}
-                  </Text>
-                ) : null}
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#8A8CB2" />
-          </TouchableOpacity>
-        )}
+        renderItem={renderScreenItem}
         contentContainerStyle={styles.listContent}
       />
     </SafeAreaView>
@@ -317,6 +326,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#2A2844',
   },
   screenInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  screenNameCol: { flex: 1 },
   statusDot: { width: 8, height: 8, borderRadius: 4, marginRight: 12 },
   statusDotGreen: { backgroundColor: '#34D399' },
   statusDotGray: { backgroundColor: '#4A4868' },
