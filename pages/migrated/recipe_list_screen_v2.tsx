@@ -67,7 +67,7 @@ export default function RecipeListScreenV2(props: any) {
   const [recipeList, setRecipeList] = useState<RecipeItem[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const isLastPageRef = useRef(false);
   const [filter, setFilter] = useState<RecipeFilterModel>({});
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [mealTypeDraft, setMealTypeDraft] = useState<string[]>([]);
@@ -118,7 +118,7 @@ export default function RecipeListScreenV2(props: any) {
         setRecipeList((prev) => [...prev, ...items]);
       }
       const totalPages = res.data.pagination?.totalPages ?? 1;
-      setIsLastPage(page >= totalPages);
+      isLastPageRef.current = page >= totalPages;
     } catch (e: any) {
       // toast(e.toString());
     } finally {
@@ -127,7 +127,7 @@ export default function RecipeListScreenV2(props: any) {
   }, [page, filter, categoryId, tagId]);
 
   const handleRecipeListEndReached = () => {
-    if (!isLastPage && !isLoading) {
+    if (!isLastPageRef.current && !isLoading) {
       setPage((prev) => prev + 1);
     }
   };

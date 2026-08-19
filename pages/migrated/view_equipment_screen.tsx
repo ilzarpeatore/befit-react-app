@@ -17,8 +17,8 @@ interface EquipmentItem {
 export default function ViewEquipmentScreen(props: any) {
   const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
   const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | null>(null);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const numPageRef = useRef<number | null>(null);
+  const isLastPageRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<FlatList>(null);
 
@@ -27,7 +27,7 @@ export default function ViewEquipmentScreen(props: any) {
   }, []);
 
   useEffect(() => {
-    if (numPage && page > 1) {
+    if (numPageRef.current && page > 1) {
       getEquipmentDataPagination();
     }
   }, [page]);
@@ -41,12 +41,12 @@ export default function ViewEquipmentScreen(props: any) {
         title: e.title,
         image: e.equipment_image,
       }));
-      setNumPage(value.data.pagination?.totalPages ?? 1);
-      setIsLastPage(false);
+      numPageRef.current = value.data.pagination?.totalPages ?? 1;
+      isLastPageRef.current = false;
       if (page === 1) setEquipmentList(items);
       else setEquipmentList((prev) => [...prev, ...items]);
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
     } finally {
       setIsLoading(false);
     }
@@ -61,18 +61,18 @@ export default function ViewEquipmentScreen(props: any) {
         title: e.title,
         image: e.equipment_image,
       }));
-      setNumPage(value.data.pagination?.totalPages ?? 1);
-      setIsLastPage(false);
+      numPageRef.current = value.data.pagination?.totalPages ?? 1;
+      isLastPageRef.current = false;
       setEquipmentList((prev) => [...prev, ...items]);
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleEquipmentListEndReached = () => {
-    if (!isLoading && numPage && page < numPage) {
+    if (!isLoading && numPageRef.current && page < numPageRef.current) {
       setPage((prev) => prev + 1);
     }
   };

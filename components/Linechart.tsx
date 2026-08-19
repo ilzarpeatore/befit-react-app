@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Animated, Easing, Platform } from "react-native";
 import {
   Svg,
@@ -22,7 +22,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
   /* chart data */
   const chartviewboxworkingwidth = styles.chartviewbox.width; //chart working area width (because of spacing, it's different from view box width)
   const chartviewboxworkingheight = styles.chartviewbox.height; //chart working area height (because of spacing, it's different from view box height)
-  const PathAnim = useRef(new Animated.Value(1000)).current; // chart path anime
+  const [PathAnim] = useState(() => new Animated.Value(1000)); // chart path anime
   const Ystartpoint = styles.chartviewbox.top; //starting Y position for chart to render
   const cropfixh = styles.chartviewbox.padding; // fixing line croping height
   const startX = styles.chartviewbox.left; // start x position for chart to render from viewbox

@@ -50,7 +50,7 @@ export default function WorkoutSessionScreen() {
   const r = (n: number) => Math.round(n * sc);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [allExerciseData, setAllExerciseData] = useState<ExerciseData[]>(
+  const [allExerciseData, setAllExerciseData] = useState<ExerciseData[]>(() =>
     exercises.map((ex) => ({
       sets: Array.from({ length: ex.sets }, () => ({
         reps: String(ex.reps),
@@ -64,7 +64,7 @@ export default function WorkoutSessionScreen() {
   const [isRestMode, setIsRestMode] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startTimeRef = useRef(Date.now());
+  const [startTime] = useState(() => Date.now());
 
   const exercise = exercises[currentIndex];
   const exerciseData = allExerciseData[currentIndex];
@@ -74,12 +74,12 @@ export default function WorkoutSessionScreen() {
   // elapsed workout timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
+  }, [startTime]);
 
   // rest timer countdown. Side effects (stopping the timer, exiting rest mode)
   // live in this effect body, not in setRestTimer's updater: React can
@@ -165,7 +165,7 @@ export default function WorkoutSessionScreen() {
   const finishWorkout = async () => {
     if (!workoutId) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    const totalTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    const totalTime = Math.floor((Date.now() - startTime) / 1000);
 
     try {
       const today = new Date().toISOString().split("T")[0];

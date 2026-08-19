@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Animated } from "react-native";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 
@@ -10,7 +10,7 @@ interface Props {
 
 function LoadingSkeleton({ width, height, borderRadius }: Props) {
   const styles = useStyle();
-  const pulse = useRef(new Animated.Value(0.3)).current;
+  const [pulse] = useState(() => new Animated.Value(0.3));
 
   useEffect(() => {
     const animation = Animated.loop(

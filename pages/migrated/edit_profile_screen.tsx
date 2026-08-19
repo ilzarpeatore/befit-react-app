@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, ScrollView, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
@@ -30,7 +30,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [weight, setWeight] = useState('');
   const [heightVal, setHeightVal] = useState('');
-  const [gender, setGender] = useState('female');
+  const genderRef = useRef('female');
   const [selectGender, setSelectGender] = useState(0);
   const [profileImage, setProfileImage] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
       setLName(state.user.last_name ?? '');
       setEmail(state.user.email ?? '');
       setPhoneNumber(state.user.phone_number ?? '');
-      setGender(state.user.gender || 'female');
+      genderRef.current = state.user.gender || 'female';
       setProfileImage(state.user.profile_image ?? '');
       setSelectGender(state.user.gender === 'male' ? 0 : 1);
     }
@@ -111,7 +111,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
         email: email.trim(),
         username: state.user?.username,
         phone_number: phoneNumber.trim(),
-        gender,
+        gender: genderRef.current,
         user_profile: {
           age: age.trim(),
           weight: weight.trim(),
@@ -290,7 +290,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                     style={[localStyles.genderBtn, selectGender === g.id && localStyles.genderBtnActive] as any}
                     onPress={() => {
                       setSelectGender(g.id);
-                      setGender(g.key);
+                      genderRef.current = g.key;
                     }}
                   >
                     <ButtonText style={[localStyles.genderText, selectGender === g.id && localStyles.genderTextActive] as any}>

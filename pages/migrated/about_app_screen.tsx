@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -10,7 +10,7 @@ import logger from '@helper/logger';
 
 export default function AboutAppScreen({ navigation }: any) {
   const [aboutPages, setAboutPages] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(true);
 
   useEffect(() => {
     loadAppSettings();
@@ -23,10 +23,10 @@ export default function AboutAppScreen({ navigation }: any) {
       // let pages = response.pages ?? [];
       // pages.sort((a: any, b: any) => (a.title ?? '').localeCompare(b.title ?? ''));
       // setAboutPages(pages);
-      setLoading(false);
+      loadingRef.current = false;
     } catch (e) {
       logger.error('Error loading settings:', e);
-      setLoading(false);
+      loadingRef.current = false;
     }
   }
 

@@ -36,8 +36,8 @@ export default function PostDetailsScreen(props: any) {
   const postData: PostData | undefined = props.route?.params?.postData;
   const isFromLink: boolean = props.route?.params?.isFromLink ?? false;
 
-  const [likeChange, setLikeChange] = useState(0);
-  const [bookMarkChange, setBookMarkChange] = useState(0);
+  const likeChangeRef = useRef(0);
+  const bookMarkChangeRef = useRef(0);
   const [heartVisible, setHeartVisible] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(postData?.isLiked ?? false);

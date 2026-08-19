@@ -35,10 +35,10 @@ export default function DietList({ navigation }: Props) {
   const [categories, setCategories] = useState<DietCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const pageRef = useRef(1);
+  const totalPagesRef = useRef(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const loadingMoreRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [categoryFilterOpen, setCategoryFilterOpen] = useState(false);
@@ -63,12 +63,12 @@ export default function DietList({ navigation }: Props) {
         } else {
           setData((prev) => [...prev, ...(res.data?.data ?? [])]);
         }
-        setTotalPages(res.data?.pagination?.totalPages ?? 1);
+        totalPagesRef.current = res.data?.pagination?.totalPages ?? 1;
       } catch {
         setError("Failed to load diet list.");
       } finally {
         setLoading(false);
-        setLoadingMore(false);
+        loadingMoreRef.current = false;
       }
     },
     []
@@ -90,7 +90,7 @@ export default function DietList({ navigation }: Props) {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setPage(1);
+    pageRef.current = 1;
     await fetchData(selectedCategory, searchQuery, 1);
     setRefreshing(false);
   }, [selectedCategory, searchQuery, fetchData]);
@@ -98,7 +98,7 @@ export default function DietList({ navigation }: Props) {
   const onCategoryPress = useCallback(
     (catId: number | null) => {
       setSelectedCategory(catId);
-      setPage(1);
+      pageRef.current = 1;
       setSearchQuery("");
       fetchData(catId, "", 1);
     },
@@ -110,7 +110,7 @@ export default function DietList({ navigation }: Props) {
       setSearchQuery(text);
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
       searchTimeout.current = setTimeout(() => {
-        setPage(1);
+        pageRef.current = 1;
         fetchData(selectedCategory, text, 1);
       }, 500);
     },
@@ -118,12 +118,12 @@ export default function DietList({ navigation }: Props) {
   );
 
   const loadMore = useCallback(() => {
-    if (loadingMore || page >= totalPages) return;
-    setLoadingMore(true);
-    const nextPage = page + 1;
-    setPage(nextPage);
+    if (loadingMoreRef.current || pageRef.current >= totalPagesRef.current) return;
+    loadingMoreRef.current = true;
+    const nextPage = pageRef.current + 1;
+    pageRef.current = nextPage;
     fetchData(selectedCategory, searchQuery, nextPage);
-  }, [loadingMore, page, totalPages, selectedCategory, searchQuery, fetchData]);
+  }, [selectedCategory, searchQuery, fetchData]);
 
   const categoryFilterData = useMemo(
     () => [ALL_CATEGORY, ...categories],

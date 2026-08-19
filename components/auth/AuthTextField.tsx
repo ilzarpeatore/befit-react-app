@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   TextInput,
@@ -34,7 +34,7 @@ export function AuthTextField({
   editable = true,
 }: Props) {
   const styles = useStyle();
-  const [focused, setFocused] = useState(false);
+  const focusedRef = useRef(false);
   const [hidden, setHidden] = useState(secureTextEntry);
 
   return (
@@ -65,8 +65,8 @@ export function AuthTextField({
             placeholderTextColor={Colors.TEXT_MUTED}
             placeholder={hint}
             editable={editable}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
+            onFocus={() => { focusedRef.current = true; }}
+            onBlur={() => { focusedRef.current = false; }}
           />
           {secureTextEntry && (
             <TouchableOpacity onPress={() => setHidden(!hidden)}>

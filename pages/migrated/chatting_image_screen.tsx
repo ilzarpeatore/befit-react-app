@@ -15,19 +15,19 @@ let selectedImageIndex = -1;
 export default function ChattingImageScreen({ navigation }: any) {
 
   const [questionAnswers, setQuestionAnswers] = useState<any[]>([]);
-  const [myMessages, setMyMessages] = useState<any[]>([]);
+  const myMessagesRef = useRef<any[]>([]);
   const [msgController, setMsgController] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoadingRef = useRef(false);
   const [showUI, setShowUI] = useState(true);
-  const [isScroll, setIsScroll] = useState(false);
+  const isScrollRef = useRef(false);
   const [showResponse, setShowResponse] = useState(false);
-  const [imageSelected, setImageSelected] = useState('');
+  const imageSelectedRef = useRef('');
   const [selectedText, setSelectedText] = useState('');
   const [firstQuestion, setFirstQuestion] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    setIsLoading(false);
+    isLoadingRef.current = false;
     // TODO: Initialize OpenAI and auto-send first message
     setShowUI(true);
   }, []);
@@ -36,22 +36,22 @@ export default function ChattingImageScreen({ navigation }: any) {
     if (!msgController.trim()) return;
     Keyboard.dismiss();
     setShowResponse(true);
-    setIsLoading(true);
+    isLoadingRef.current = true;
 
     const question = selectedText ? selectedText + msgController : msgController;
     setMsgController('');
 
     const newQA = {
       question,
-      imageUri: imageSelected,
+      imageUri: imageSelectedRef.current,
       answer: '',
       isLoading: true,
       smartCompose: selectedText,
     };
     setQuestionAnswers((prev) => [newQA, ...prev]);
 
-    const newMsgs = [...myMessages, { role: 'user', content: question }];
-    setMyMessages(newMsgs);
+    const newMsgs = [...myMessagesRef.current, { role: 'user', content: question }];
+    myMessagesRef.current = newMsgs;
 
     try {
       // TODO: Replace with actual OpenAI API call
@@ -65,8 +65,8 @@ export default function ChattingImageScreen({ navigation }: any) {
         }
         return updated;
       });
-      setMyMessages((prev) => [...prev, { role: 'assistant', content: answer }]);
-      setImageSelected('');
+      myMessagesRef.current = [...myMessagesRef.current, { role: 'assistant', content: answer }];
+      imageSelectedRef.current = '';
       selectedImageIndex = -1;
     } catch (error) {
       setQuestionAnswers((prev) => {
@@ -76,11 +76,11 @@ export default function ChattingImageScreen({ navigation }: any) {
         }
         return updated;
       });
-      setImageSelected('');
+      imageSelectedRef.current = '';
       selectedImageIndex = -1;
     }
 
-    setIsLoading(false);
+    isLoadingRef.current = false;
     setShowResponse(false);
   };
 
@@ -91,7 +91,7 @@ export default function ChattingImageScreen({ navigation }: any) {
         text: 'Yes',
         onPress: () => {
           setQuestionAnswers([]);
-          setMyMessages([]);
+          myMessagesRef.current = [];
         },
       },
     ]);
@@ -203,7 +203,7 @@ export default function ChattingImageScreen({ navigation }: any) {
               onChangeText={setMsgController}
               onSubmitEditing={sendMessage}
               multiline
-              onFocus={() => setIsScroll(true)}
+              onFocus={() => { isScrollRef.current = true; }}
             />
           </Input>
           <Pressable

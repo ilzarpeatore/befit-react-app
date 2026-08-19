@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Animated, Platform } from "react-native";
 import {
   Svg,
@@ -22,7 +22,7 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
     const translateY = 31 - waterY; // water Y position - 0 position (31px)
     return translateY;
   }, [percent])
-  const waterpercentanime = useRef(new Animated.Value(31)).current; // water Y position animation
+  const [waterpercentanime] = useState(() => new Animated.Value(31)); // water Y position animation
   /* chart animation */
   useEffect(() => {
     Animated.timing(waterpercentanime, {
@@ -30,7 +30,7 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
       duration: 500,
       useNativeDriver: false,
     }).start();
-  }, [translateY])
+  }, [translateY, waterpercentanime])
   return (
     <View
       style={{

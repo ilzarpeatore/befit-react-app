@@ -60,17 +60,17 @@ export default function SearchScreen(props: any) {
   const incoming = props.route?.params ?? {};
   const [searchValue, setSearchValue] = useState('');
   const [showClearButton, setShowClearButton] = useState(false);
-  const [selectedFilterList, setSelectedFilterList] = useState(0);
+  const selectedFilterListRef = useRef(0);
   const [exerciseList, setExerciseList] = useState<ExerciseModel[]>([]);
   const [equipmentList, setEquipmentList] = useState<EquipmentModel[]>([]);
   const [levelList, setLevelList] = useState<LevelModel[]>([]);
   const [list, setList] = useState<CategoryModelList[]>([]);
-  const [selectedId, setSelectedId] = useState('');
-  const [isSearch, setIsSearch] = useState(false);
+  const selectedIdRef = useRef('');
+  const isSearchRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | undefined>(undefined);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const pageRef = useRef(1);
+  const numPageRef = useRef<number | undefined>(undefined);
+  const isLastPageRef = useRef(false);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [bottomSheetListId, setBottomSheetListId] = useState(0);
   const [showMuscleSheet, setShowMuscleSheet] = useState(false);
@@ -86,17 +86,17 @@ export default function SearchScreen(props: any) {
   useEffect(() => {
     initList(incoming);
     if (incoming.isBodyPart && incoming.id) {
-      setIsSearch(false);
-      setSelectedFilterList(3);
-      setSelectedId(String(incoming.id));
+      isSearchRef.current = false;
+      selectedFilterListRef.current = 3;
+      selectedIdRef.current = String(incoming.id);
       getExerciseData({ isFilter: true, isBodyPart: true, ids: String(incoming.id) });
     } else if (incoming.isEquipment && incoming.id) {
-      setSelectedFilterList(1);
-      setSelectedId(String(incoming.id));
+      selectedFilterListRef.current = 1;
+      selectedIdRef.current = String(incoming.id);
       getExerciseData({ isFilter: true, isEquipment: true, ids: String(incoming.id) });
     } else if (incoming.isLevel && incoming.id) {
-      setSelectedFilterList(2);
-      setSelectedId(String(incoming.id));
+      selectedFilterListRef.current = 2;
+      selectedIdRef.current = String(incoming.id);
       getExerciseData({ isFilter: true, isLevel: true, ids: String(incoming.id) });
     } else {
       getExerciseData();
@@ -105,15 +105,15 @@ export default function SearchScreen(props: any) {
 
   useEffect(() => {
     if (searchValue.length > 0) {
-      setIsSearch(true);
+      isSearchRef.current = true;
       setExerciseList([]);
       getExerciseData({
         isFilter: true,
-        ids: selectedId,
-        isEquipment: selectedFilterList === 1,
-        isLevel: selectedFilterList === 2,
-        isBodyPart: selectedFilterList === 3,
-        isExerciseType: selectedFilterList === 4,
+        ids: selectedIdRef.current,
+        isEquipment: selectedFilterListRef.current === 1,
+        isLevel: selectedFilterListRef.current === 2,
+        isBodyPart: selectedFilterListRef.current === 3,
+        isExerciseType: selectedFilterListRef.current === 4,
       });
     }
   }, [searchValue]);
@@ -137,6 +137,7 @@ export default function SearchScreen(props: any) {
     ids?: string;
   } = {}): Promise<void> => {
     setIsLoading(true);
+    const page = pageRef.current;
     try {
       let res;
       // Bug real: antes, en cuanto había texto de búsqueda, se ignoraba
@@ -169,15 +170,15 @@ export default function SearchScreen(props: any) {
         title: e.title,
         exerciseImage: e.exercise_image ?? undefined,
       }));
-      setNumPage(res.data.pagination?.totalPages);
-      setIsLastPage(false);
+      numPageRef.current = res.data.pagination?.totalPages;
+      isLastPageRef.current = false;
       if (page === 1) {
         setExerciseList(items);
       } else {
         setExerciseList((prev) => [...prev, ...items]);
       }
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
     } finally {
       setIsLoading(false);
     }
@@ -208,7 +209,7 @@ export default function SearchScreen(props: any) {
     ids?: string;
   } = {}) => {
     await getExercise(params).then(() => {
-      if (!isSearch) {
+      if (!isSearchRef.current) {
         if (params.isFilter) {
           // done
         } else {
@@ -216,7 +217,12 @@ export default function SearchScreen(props: any) {
         }
       }
     });
-  }, [page, isSearch]);
+    // getExercise (recreado en cada render) lee `searchValue` directamente;
+    // searchValue tiene que seguir en las deps para que este callback no se
+    // quede pegado a un `getExercise` con una búsqueda vieja. page/isSearch
+    // salieron de aquí porque ahora son refs (siempre leen el valor actual,
+    // no hace falta recrear el callback cuando cambian).
+  }, [searchValue]);
 
   const getEquipmentBasedData = async () => {
     try {
@@ -263,15 +269,15 @@ export default function SearchScreen(props: any) {
     setHeaderTitle('');
 
     if (list[index].id === 0) {
-      setSelectedFilterList(0);
+      selectedFilterListRef.current = 0;
       setMuscleId(null);
       setMuscleName('');
-      setIsSearch(false);
+      isSearchRef.current = false;
       getExerciseData({ isFilter: true });
     } else if (list[index].id === 3) {
       setShowMuscleSheet(true);
     } else {
-      setSelectedFilterList(list[index].id);
+      selectedFilterListRef.current = list[index].id;
       setBottomSheetListId(list[index].id);
       setShowBottomSheet(true);
     }
@@ -279,12 +285,12 @@ export default function SearchScreen(props: any) {
 
   const handleBottomSheetApply = (mList: (number | string)[]) => {
     const idsStr = mList.join(',');
-    setSelectedId(idsStr);
+    selectedIdRef.current = idsStr;
     setMuscleId(null);
     setMuscleName('');
-    setIsSearch(false);
+    isSearchRef.current = false;
     setExerciseList([]);
-    setPage(1);
+    pageRef.current = 1;
     getExerciseData({
       isFilter: true,
       ids: idsStr,
@@ -301,43 +307,43 @@ export default function SearchScreen(props: any) {
       // "Quitar filtro" — vuelve a Todos.
       setMuscleId(null);
       setMuscleName('');
-      setSelectedFilterList(0);
+      selectedFilterListRef.current = 0;
       setList((prev) => prev.map((item) => ({ ...item, select: item.id === 0 })));
-      setIsSearch(false);
+      isSearchRef.current = false;
       setExerciseList([]);
-      setPage(1);
+      pageRef.current = 1;
       getExerciseData({ isFilter: true });
       return;
     }
     setMuscleId(id);
     setMuscleName(name);
-    setSelectedFilterList(3);
-    setSelectedId(String(id));
+    selectedFilterListRef.current = 3;
+    selectedIdRef.current = String(id);
     setList((prev) => prev.map((item) => ({ ...item, select: item.id === 3 })));
-    setIsSearch(false);
+    isSearchRef.current = false;
     setExerciseList([]);
-    setPage(1);
+    pageRef.current = 1;
     getExerciseData({ isFilter: true, isBodyPart: true, ids: String(id) });
   };
 
   const handleClear = () => {
     searchRef.current?.blur();
     setSearchValue('');
-    setPage(1);
-    setIsSearch(true);
+    pageRef.current = 1;
+    isSearchRef.current = true;
     getExerciseData();
   };
 
   const handleExerciseListEndReached = () => {
-    if (page < (numPage ?? 1) && !isLoading) {
-      setPage((prev) => prev + 1);
+    if (pageRef.current < (numPageRef.current ?? 1) && !isLoading) {
+      pageRef.current = pageRef.current + 1;
       getExercise({
-        isFilter: selectedFilterList !== 0,
-        isEquipment: selectedFilterList === 1,
-        isLevel: selectedFilterList === 2,
-        isBodyPart: selectedFilterList === 3,
-        isExerciseType: selectedFilterList === 4,
-        ids: selectedId,
+        isFilter: selectedFilterListRef.current !== 0,
+        isEquipment: selectedFilterListRef.current === 1,
+        isLevel: selectedFilterListRef.current === 2,
+        isBodyPart: selectedFilterListRef.current === 3,
+        isExerciseType: selectedFilterListRef.current === 4,
+        ids: selectedIdRef.current,
       });
     }
   };

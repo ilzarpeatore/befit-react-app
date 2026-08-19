@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,7 +9,7 @@ import { useAuth } from "@store/AuthContext";
 const CONFETTI_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
 
 function ConfettiDot({ delay, color, left }: { delay: number; color: string; left: `${number}%` }) {
-  const anim = useRef(new Animated.Value(0)).current;
+  const [anim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.loop(
@@ -19,7 +19,7 @@ function ConfettiDot({ delay, color, left }: { delay: number; color: string; lef
         Animated.timing(anim, { toValue: 0, duration: 0, useNativeDriver: true }),
       ])
     ).start();
-  }, []);
+  }, [delay, anim]);
 
   return (
     <Animated.View
@@ -39,7 +39,7 @@ function ConfettiDot({ delay, color, left }: { delay: number; color: string; lef
 }
 
 export default function OnboardingCompleteScreen({ navigation, route }: any) {
-  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const [scaleAnim] = useState(() => new Animated.Value(0));
   const { completeOnboarding, state } = useAuth();
   const isPersonalClient = !!state.user?.is_personal_client;
   const profile = state.user?.user_profile;
@@ -53,7 +53,7 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
 
   useEffect(() => {
     Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 40, useNativeDriver: true }).start();
-  }, []);
+  }, [scaleAnim]);
 
   return (
     <SafeAreaView style={localStyles.container}>

@@ -61,8 +61,8 @@ export default function WorkoutDetailScreen(props: any) {
   const [workoutDayList, setWorkoutDayList] = useState<Workoutday[]>([]);
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | null>(null);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const numPageRef = useRef<number | null>(null);
+  const isLastPageRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(true);
 
@@ -73,7 +73,7 @@ export default function WorkoutDetailScreen(props: any) {
   }, []);
 
   useEffect(() => {
-    if (numPage && page > 1) {
+    if (numPageRef.current && page > 1) {
       getDayExerciseData(workoutDayList[currentTabIndex]?.id);
     }
   }, [page]);

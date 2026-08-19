@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Animated } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -18,7 +18,7 @@ function ProgressBar({
   colors = [Colors.ACCENT_START, Colors.ACCENT_END],
 }: Props) {
   const styles = useStyle();
-  const animatedWidth = useRef(new Animated.Value(0)).current;
+  const [animatedWidth] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.timing(animatedWidth, {
@@ -26,7 +26,7 @@ function ProgressBar({
       duration: 600,
       useNativeDriver: false,
     }).start();
-  }, [progress]);
+  }, [progress, animatedWidth]);
 
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
 

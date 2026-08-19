@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -12,6 +12,10 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { NavigationTabOptionsInterface } from "./_types/NavigationTab.i";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+// Modulo-scope: Animated.createAnimatedComponent(Image) solo depende del
+// import estatico de Image, no de props/estado del componente -- crearlo
+// aqui evita reconstruirlo (y su wrapper interno) en cada render.
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 /**
  * NavigationTab
  * reactnative navigation tabBar function
@@ -29,8 +33,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   const [navlocations, set_navlocations] = useState([0, 0, 0, 0]);
   /* set navigation avtive page */
   const [activepage, set_activepage] = useState(state.index);
-  const navigationbtnactiveX = useRef(new Animated.Value(0)).current;
-  const AnimatedImage = useRef(Animated.createAnimatedComponent(Image)).current;
+  const [navigationbtnactiveX] = useState(() => new Animated.Value(0));
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
     /* save navigation tab x positions */
