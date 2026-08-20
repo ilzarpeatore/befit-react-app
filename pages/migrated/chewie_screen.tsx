@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Image, Dimensions } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -20,21 +20,27 @@ export default function ChewieScreen({ route }: any) {
   const isPlayingRef = useRef(autoPlay);
   const videoRef = useRef<any>(null);
 
-  useEffect(() => {
-    initializePlayer();
-    return () => {
-      videoRef.current?.unloadAsync();
-    };
-  }, []);
-
-  const initializePlayer = async () => {
+  const initializePlayer = useCallback(async () => {
     if (url) {
       setIsLoading(false);
       setIsInitialized(true);
     } else {
       setIsLoading(false);
     }
-  };
+  }, [url]);
+
+  // videoRef.current se lee al desmontar a proposito, no se captura antes:
+  // en el momento en que este efecto se monta, isInitialized todavia es
+  // false y el <Video> ni existe (videoRef.current seria null) -- solo
+  // llega a apuntar al nodo real despues de que initializePlayer confirme
+  // la URL. Capturarlo antes descargaria "null" en vez del video real.
+  // react-doctor-disable-next-line exhaustive-deps
+  useEffect(() => {
+    initializePlayer();
+    return () => {
+      videoRef.current?.unloadAsync();
+    };
+  }, [initializePlayer]);
 
   const handlePlaybackStatusUpdate = (status: any) => {
     if (status.isLoaded) {

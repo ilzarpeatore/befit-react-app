@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { ScrollView, Image, Alert, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Box } from '@components/ui/box';
@@ -29,18 +29,16 @@ export default function AddPostScreen({ navigation, route }: any) {
   const flow = route?.params?.flow;
   const postData = route?.params?.postData;
 
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(() =>
+    flow === 'EditFlow' && postData ? (postData.description ?? '') : ''
+  );
   const [selectedImages, setSelectedImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(() =>
+    flow === 'EditFlow' && postData
+      ? (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url)
+      : []
+  );
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (flow === 'EditFlow' && postData) {
-      setDescription(postData.description ?? '');
-      const mediaUrls = (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url);
-      setExistingImages(mediaUrls);
-    }
-  }, []);
 
   const removedMediaIdsRef = useRef<number[]>([]);
 

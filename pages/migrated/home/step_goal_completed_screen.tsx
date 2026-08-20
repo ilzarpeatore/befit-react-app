@@ -98,7 +98,7 @@ export default function StepGoalCompletedScreen({ navigation, route }: any) {
         if (latest?.value) setGoal(latest.value);
       })
       .catch(() => {});
-  }, []);
+  }, [route?.params?.goal]);
 
   const confirmGoal = async () => {
     setSaving(true);
