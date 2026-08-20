@@ -89,16 +89,25 @@ export default function WorkoutMinimizedBar({ navigationRef }: Props) {
       }}
     >
       <Pressable onPress={restore}>
-        <GlassView
-          glassEffectStyle="regular"
-          style={{
-            borderRadius: 20,
-            overflow: 'hidden',
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            ...(hasGlass ? null : { backgroundColor: '#1C1C1E' }),
-          }}
-        >
+        {/* GlassView (expo-glass-effect) solo aplica su borderRadius nativo
+            al UIVisualEffectView interno cuando el Liquid Glass real esta
+            disponible Y ya se monto (ver su propio TODO "Glass effect does
+            not work sometimes if view has not been laid out yet"). Cuando
+            falla ese timing o se usa el fallback, el borderRadius/overflow
+            del style no recorta nada y se ve la esquina cuadrada detras del
+            contenido redondeado. Se envuelve en un Box con overflow:hidden
+            propio (recorte 100% fiable de RN, independiente del native
+            module) como red de seguridad. */}
+        <Box style={{ borderRadius: 20, overflow: 'hidden' }}>
+          <GlassView
+            glassEffectStyle="regular"
+            style={{
+              borderRadius: 20,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              ...(hasGlass ? null : { backgroundColor: '#1C1C1E' }),
+            }}
+          >
           {/* Nota 2026-08-19: "el minimizador al estar en glass effect y con
               texto blanco no se ve nada. Pon el texto en negro". El
               GlassView real (hasGlass, Liquid Glass de iOS 26+) sale claro
@@ -127,7 +136,8 @@ export default function WorkoutMinimizedBar({ navigationRef }: Props) {
           <Box style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.18)', marginTop: 10, overflow: 'hidden' }}>
             <Box style={{ height: 3, borderRadius: 2, width: `${Math.round(progress * 100)}%`, backgroundColor: '#34C759' }} />
           </Box>
-        </GlassView>
+          </GlassView>
+        </Box>
       </Pressable>
     </Box>
   );

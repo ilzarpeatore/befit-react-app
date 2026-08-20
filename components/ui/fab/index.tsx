@@ -5,7 +5,7 @@ import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { tva, useStyleContext, withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
 import { styled } from 'nativewind';
 import React from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
 
 const SCOPE = 'FAB';
@@ -124,7 +124,15 @@ const Fab = React.forwardRef<React.ComponentRef<typeof UIFab>, IFabProps>(
         })}
         context={{ size }}
       >
-        <GlassView glassEffectStyle="regular" className="absolute inset-0 rounded-full" />
+        {/* Wrapper propio con overflow:hidden (no en el Pressable Root, que
+            lleva shadow-hard-2 -- overflow:hidden ahi recortaria la sombra).
+            GlassView solo aplica su borderRadius nativo si el Liquid Glass
+            real esta disponible y ya se monto (misma nota que en
+            WorkoutMinimizedBar/Card); sin este wrapper se veian las
+            esquinas cuadradas del GlassView sobresaliendo del circulo. */}
+        <View className="absolute inset-0 rounded-full overflow-hidden">
+          <GlassView glassEffectStyle="regular" className="flex-1" />
+        </View>
         {children}
       </UIFab>
     );

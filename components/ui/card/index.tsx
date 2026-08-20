@@ -43,14 +43,22 @@ const Card = React.forwardRef<React.ComponentRef<typeof View>, ICardProps>(
   ) {
     const resolvedClassName = cardStyle({ variant, class: className });
     if (variant === 'glass') {
+      // GlassView (expo-glass-effect) solo aplica su borderRadius nativo
+      // cuando el Liquid Glass real esta disponible y ya se monto -- sin
+      // este wrapper, la esquina de la card se ve cuadrada por detras
+      // cuando falla ese timing (ver misma nota en WorkoutMinimizedBar.tsx).
+      // radius-md del design system (global.css) duplicado aqui a proposito
+      // como red de seguridad -- el className original sigue intacto abajo.
       return (
-        <GlassView
-          glassEffectStyle={glassEffectStyle}
-          tintColor={tintColor}
-          className={resolvedClassName}
-          {...props}
-          ref={ref}
-        />
+        <View style={{ borderRadius: 20, overflow: 'hidden' }}>
+          <GlassView
+            glassEffectStyle={glassEffectStyle}
+            tintColor={tintColor}
+            className={resolvedClassName}
+            {...props}
+            ref={ref}
+          />
+        </View>
       );
     }
     return (
