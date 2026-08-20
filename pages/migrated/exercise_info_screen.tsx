@@ -647,6 +647,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: FONT.extraBold,
     fontSize: 30,
+    lineHeight: 36,
     color: C.white,
     marginBottom: 18,
   },

@@ -512,7 +512,7 @@ const s = StyleSheet.create({
     marginBottom: 12,
     ...SHADOW.card,
   },
-  headerTitle: { fontFamily: FONT.black, fontSize: 26, color: C.textPrimary, textAlign: 'center' },
+  headerTitle: { fontFamily: FONT.black, fontSize: 26, lineHeight: 31, color: C.textPrimary, textAlign: 'center' },
   headerSubtitle: { fontFamily: FONT.regular, fontSize: 13.5, color: C.textSecondary, textAlign: 'center', marginTop: 6 },
 
   pagerWrap: { flex: 1 },
@@ -551,7 +551,7 @@ const s = StyleSheet.create({
   statColLabel: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
 
   // Pantalla 3 — rutina + grid 2x2
-  routineTitle: { fontFamily: FONT.extraBold, fontSize: 20, color: C.textPrimary, marginBottom: 20 },
+  routineTitle: { fontFamily: FONT.extraBold, fontSize: 20, lineHeight: 24, color: C.textPrimary, marginBottom: 20 },
   gridCell: { width: '50%', marginBottom: 32 },
   gridValue: { fontFamily: FONT.black, fontSize: 28, lineHeight: 34, color: C.textPrimary },
   gridLabel: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },

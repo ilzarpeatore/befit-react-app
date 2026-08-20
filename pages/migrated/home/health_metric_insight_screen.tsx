@@ -158,7 +158,7 @@ const cpStyles = StyleSheet.create({
   wrapper: { alignItems: "center", justifyContent: "center" },
   circle: { position: "absolute" },
   label: { alignItems: "center" },
-  score: { fontSize: 32, fontFamily: FONT.bold, color: C.white },
+  score: { fontSize: 32, lineHeight: 38, fontFamily: FONT.bold, color: C.white },
   of: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
 });
 

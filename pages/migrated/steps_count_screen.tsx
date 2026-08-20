@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   goalInfoText: { fontSize: 14, fontFamily: FONT.semiBold, color: C.textPrimary, textAlign: 'center' },
   progressContainer: { alignItems: 'center', marginVertical: 20 },
   progressInner: { alignItems: 'center' },
-  stepCount: { color: C.textPrimary, fontSize: 40, fontFamily: FONT.bold, marginTop: 8 },
+  stepCount: { color: C.textPrimary, fontSize: 40, lineHeight: 47, fontFamily: FONT.bold, marginTop: 8 },
   stepsLabel: { fontSize: 16, color: C.gray40, fontFamily: FONT.regular },
   dailyGoalCard: { borderRadius: 16, padding: 16, marginVertical: 20 },
   dailyGoalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

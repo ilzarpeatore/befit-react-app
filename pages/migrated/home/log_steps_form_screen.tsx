@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    lineHeight: 29,
     fontFamily: FONT.bold,
     color: C.text,
     marginBottom: 24,
@@ -165,6 +166,7 @@ const styles = StyleSheet.create({
   },
   stepCount: {
     fontSize: 48,
+    lineHeight: 57,
     fontFamily: FONT.bold,
     color: C.text,
   },

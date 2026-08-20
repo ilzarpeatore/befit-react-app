@@ -80,6 +80,7 @@ function useStyle() {
     bpmCenter: { alignItems: "center", marginBottom: 32 },
     bpmValue: {
       fontSize: 72,
+      lineHeight: 86,
       fontFamily: FONT.extraBold,
       color: C.white,
       marginTop: 8,

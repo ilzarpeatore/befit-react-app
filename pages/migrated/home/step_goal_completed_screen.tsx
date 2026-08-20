@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
   },
   congratsText: {
     fontSize: 28,
+    lineHeight: 33,
     fontFamily: FONT.bold,
     color: C.text,
     marginBottom: 8,
@@ -288,6 +289,7 @@ const styles = StyleSheet.create({
   },
   sheetGoal: {
     fontSize: 32,
+    lineHeight: 38,
     fontFamily: FONT.bold,
     color: C.textPrimary,
     textAlign: "center",

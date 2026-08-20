@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
   },
   headerValue: {
     fontSize: 40,
+    lineHeight: 47,
     fontFamily: FONT.bold,
     color: '#FFFFFF',
   },

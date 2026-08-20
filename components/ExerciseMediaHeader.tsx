@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Pressable, StyleSheet, Platform } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '../pages/migrated/theme';
 
 export const HEADER_HEIGHT_RATIO = 0.45;
@@ -62,16 +63,23 @@ interface FloatingIconsProps {
 }
 
 export function ExerciseHeaderFloatingIcons({ onBack, isFavourite, onToggleFavourite }: FloatingIconsProps) {
+  // insets.top en vez del offset fijo que llevaba esto antes (50/40 segun
+  // plataforma) -- ese numero solo era correcto en dispositivos sin Dynamic
+  // Island; en iPhone 14 Pro+/15/16 el inset real de status bar es mayor,
+  // así que los botones flotantes quedaban demasiado arriba, pegados o
+  // tapados por la isla.
+  const insets = useSafeAreaInsets();
+  const top = insets.top + 8;
   return (
     <>
       <Pressable
-        style={({ pressed }) => [styles.floatingBtn, styles.backBtn, pressed && { opacity: 0.2 }]}
+        style={({ pressed }) => [styles.floatingBtn, styles.backBtn, { top }, pressed && { opacity: 0.2 }]}
         onPress={onBack}
       >
         <Ionicons name="chevron-back" size={22} color={C.white} />
       </Pressable>
       <Pressable
-        style={({ pressed }) => [styles.floatingBtn, styles.favBtn, pressed && { opacity: 0.2 }]}
+        style={({ pressed }) => [styles.floatingBtn, styles.favBtn, { top }, pressed && { opacity: 0.2 }]}
         onPress={onToggleFavourite}
       >
         <Ionicons name={isFavourite ? 'star' : 'star-outline'} size={20} color={C.white} />
@@ -115,7 +123,6 @@ const styles = StyleSheet.create({
   },
   floatingBtn: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 40,
     width: 40,
     height: 40,
     borderRadius: 20,
