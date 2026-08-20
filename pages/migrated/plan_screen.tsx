@@ -18,9 +18,10 @@ import { HStack } from '@components/ui/hstack';
 import { VStack } from '@components/ui/vstack';
 import { Divider } from '@components/ui/divider';
 import ScreenHeader from '@components/ScreenHeader';
+import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C, FONT } from './theme';
 import { dietApi, AssignedMealsSummary, AssignedMealRecipe } from '../../api/diet';
 import { recipesApi, RecipeListItem } from '../../api/recipes';
@@ -138,6 +139,7 @@ export default function PlanScreen(props: any) {
   const [savingRecipeId, setSavingRecipeId] = useState<number | null>(null);
 
   const insets = useSafeAreaInsets();
+  const hasGlass = isGlassEffectAPIAvailable();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   // Guardamos la posición de scroll en un shared value (hilo de UI) en vez de
   // en un setState directo dentro de onScroll, y solo avisamos a React cuando
@@ -281,6 +283,13 @@ export default function PlanScreen(props: any) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openAssignedMeals = (key: string) => {
+    // Enlace directo a la sección correspondiente (desayuno/comida/cena/
+    // snacks) de MigratedAssignedMeals -- lee este mismo `mealType` para
+    // arrancar en la pestaña correcta en vez de siempre en "breakfast".
+    props.navigation?.navigate('MigratedAssignedMeals', { mealType: key });
   };
 
   const openRecipeDetail = (recipe: DailyPlanRecipeItem) => {
@@ -473,9 +482,13 @@ export default function PlanScreen(props: any) {
     return (
       <Card key={key} variant="ghost" style={s.mealSection}>
         <HStack style={s.mealHeader}>
-          <Box>
+          <Box style={{ flex: 1 }}>
             <Text style={s.mealTitle}>{displayName}</Text>
             <Text style={s.mealCalories}>{total.totalCalories ?? 0} kcal | P: {total.totalProtein ?? 0}g | C: {total.totalCarbs ?? 0}g | F: {total.totalFats ?? 0}g</Text>
+            <Pressable style={s.assignedLink} onPress={() => openAssignedMeals(key)}>
+              <Text style={s.assignedLinkText}>Ver opciones asignadas</Text>
+              <Icon name="chevron-forward" size={12} color={C.orange} />
+            </Pressable>
           </Box>
           <Pressable style={s.addMealBtn} onPress={() => openAddMeal(key, displayName)}>
             <Icon name="add-circle-outline" size={24} color={C.textPrimary} />
@@ -530,8 +543,26 @@ export default function PlanScreen(props: any) {
     );
   };
 
+  const weekdayPickerContent = (
+    <HStack style={[s.weekdayPicker, hasGlass && s.weekdayPickerGlass]}>
+      <Pressable onPress={() => setWeekOffset(prev => prev - 1)} style={s.weekNavBtn}>
+        <Icon name="chevron-back" size={20} color={C.gray30} />
+      </Pressable>
+      {renderWeekDays(weekOffset)}
+      <Pressable onPress={() => setWeekOffset(prev => prev + 1)} style={s.weekNavBtn}>
+        <Icon name="chevron-forward" size={20} color={C.gray30} />
+      </Pressable>
+    </HStack>
+  );
+
   return (
-    <Box style={s.container}>
+    // edges=['top']: antes esta pantalla no tenia SafeAreaView y el
+    // ScreenHeader se pintaba pegado a y=0 -- el calendario quedaba debajo de
+    // la dynamic island y el icono de borrar (rightAction del header) caia
+    // justo al lado del icono de bateria del sistema, casi imposible de
+    // pulsar sin querer. Con el inset real aplicado ambos bajan a la misma
+    // zona segura que usa el resto de pantallas migradas.
+    <SafeAreaView style={s.container} edges={['top']}>
       <ScreenHeader
         title="Plan diario"
         onBack={() => props.navigation?.goBack()}
@@ -541,15 +572,15 @@ export default function PlanScreen(props: any) {
           </Pressable>
         }
       />
-      <HStack style={s.weekdayPicker}>
-        <Pressable onPress={() => setWeekOffset(prev => prev - 1)} style={s.weekNavBtn}>
-          <Icon name="chevron-back" size={20} color={C.gray30} />
-        </Pressable>
-        {renderWeekDays(weekOffset)}
-        <Pressable onPress={() => setWeekOffset(prev => prev + 1)} style={s.weekNavBtn}>
-          <Icon name="chevron-forward" size={20} color={C.gray30} />
-        </Pressable>
-      </HStack>
+      {/* Calendario semanal fijo (fuera del ScrollView) con material glass real
+          en iOS 26+ (mismo patron que ScreenHeader) al hacer scroll debajo. */}
+      {hasGlass ? (
+        <GlassView glassEffectStyle="regular" style={s.weekdayPickerGlassWrap}>
+          {weekdayPickerContent}
+        </GlassView>
+      ) : (
+        weekdayPickerContent
+      )}
       {showCompactSummary && (
         <Card variant="ghost" className="flex-row justify-between" style={s.compactBar}>
           {renderCompactStat('Kcal', `${kcalCurrent}/${kcalTarget}`, kcalProgress)}
@@ -657,7 +688,7 @@ export default function PlanScreen(props: any) {
           )}
         </KeyboardAvoidingView>
       </Modal>
-    </Box>
+    </SafeAreaView>
   );
 }
 
@@ -667,7 +698,11 @@ const s = StyleSheet.create({
   backBtn: { padding: 4 },
   appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   clearBtn: { padding: 4 },
-  weekdayPicker: { alignItems: 'center', backgroundColor: C.surface, paddingBottom: 8 },
+  weekdayPicker: { alignItems: 'center', backgroundColor: C.surface, paddingTop: 10, paddingBottom: 10 },
+  // Con GlassView real (iOS 26+) el material translucido ya aporta el fondo:
+  // quitamos el backgroundColor solido para que se vea el efecto glass.
+  weekdayPickerGlass: { backgroundColor: 'transparent' },
+  weekdayPickerGlassWrap: { width: '100%' },
   weekNavBtn: { paddingHorizontal: 4, paddingVertical: 8 },
   weekStrip: { flex: 1, justifyContent: 'space-around' },
   weekDayItem: { alignItems: 'center', paddingVertical: 8, paddingHorizontal: 6, borderRadius: 12 },
@@ -677,7 +712,7 @@ const s = StyleSheet.create({
   weekDayNum: { fontSize: 16, fontFamily: FONT.semiBold, color: C.gray40 },
   weekDayNumSelected: { color: C.white },
   weekDayToday: { color: C.textPrimary },
-  compactBar: { marginHorizontal: 16, marginBottom: 8 },
+  compactBar: { marginHorizontal: 16, marginTop: 8, marginBottom: 8 },
   compactStat: { alignItems: 'flex-start' },
   compactStatLabel: { fontSize: 10, color: C.gray40, fontFamily: FONT.regular },
   compactStatValue: { fontSize: 11, fontFamily: FONT.bold, color: C.white, marginTop: 2 },
@@ -699,6 +734,8 @@ const s = StyleSheet.create({
   mealHeader: { alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   mealTitle: { fontSize: 16, fontFamily: FONT.bold, color: C.white },
   mealCalories: { fontSize: 12, color: C.gray40, marginTop: 2 },
+  assignedLink: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 4, alignSelf: 'flex-start' },
+  assignedLinkText: { fontSize: 11.5, fontFamily: FONT.semiBold, color: C.orange },
   addMealBtn: { padding: 4 },
   recipeItem: { alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
   recipeItemTouchable: { flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 8 },
