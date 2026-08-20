@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { View, Text, Pressable, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -41,9 +41,12 @@ export default function ParqScreen({ navigation }: any) {
     <View style={styles.root}>
       <SafeAreaView style={{ flex: 0 }} edges={["top"]}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Encuesta PAR-Q</Text>
           <Text style={styles.counter}>{currentQ + 1}/{QUESTIONS.length}</Text>
         </View>
@@ -67,14 +70,20 @@ export default function ParqScreen({ navigation }: any) {
             <Text style={styles.qText}>{q}</Text>
 
             <View style={styles.btnRow}>
-              <TouchableOpacity style={styles.noBtn} onPress={() => handleAnswer(false)}>
+              <Pressable
+                style={({ pressed }) => [styles.noBtn, pressed && { opacity: 0.2 }]}
+                onPress={() => handleAnswer(false)}
+              >
                 <Ionicons name="checkmark-circle-outline" size={22} color={C.success50} />
                 <Text style={styles.noText}>No</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.yesBtn} onPress={() => handleAnswer(true)}>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.yesBtn, pressed && { opacity: 0.2 }]}
+                onPress={() => handleAnswer(true)}
+              >
                 <Ionicons name="close-circle-outline" size={22} color={C.destructive50} />
                 <Text style={styles.yesText}>Sí</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         ))}

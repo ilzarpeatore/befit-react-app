@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -44,17 +44,20 @@ export default function ParqResultScreen({ navigation, route }: any) {
             <ProfileRow icon={cleared ? "checkmark-circle-outline" : "alert-circle-outline"} label="PAR-Q" value={cleared ? "Aprobado" : "Requiere revisión"} />
           </View>
 
-          <TouchableOpacity
-            style={styles.primaryBtn}
+          <Pressable
+            style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.2 }]}
             onPress={() => navigation.replace("FitnessAssessment")}
           >
             <Text style={styles.primaryBtnText}>{cleared ? "Siguiente" : "Entendido, continuar"}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           {!cleared && (
-            <TouchableOpacity style={styles.retryLink} onPress={() => navigation.replace("Parq")}>
+            <Pressable
+              style={({ pressed }) => [styles.retryLink, pressed && { opacity: 0.2 }]}
+              onPress={() => navigation.replace("Parq")}
+            >
               <Text style={styles.retryText}>Repetir encuesta PAR-Q</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </ScrollView>
       </SafeAreaView>
