@@ -13,6 +13,8 @@ import {
 import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS } from 'react-native-reanimated';
 import { Box } from '@components/ui/box';
 import { HStack } from '@components/ui/hstack';
 import { Text } from '@components/ui/text';
@@ -37,6 +39,8 @@ import {
   updateActiveWorkoutSession,
   setWorkoutSessionMinimized,
   clearActiveWorkoutSession,
+  getActiveWorkoutSession,
+  ActiveWorkoutSession,
 } from '../../helper/workoutSessionBus';
 import {
   fetchUnifiedWorkout,
@@ -46,7 +50,19 @@ import {
 } from './workoutViewShared';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const ADHOC_DEFAULT_METRICS = ['carga', 'reps'];
+// Petición 2026-08-19: al añadir un ejercicio nuevo con "Añadir ejercicio +"
+// debe venir SIEMPRE con series/reps/descanso/rir (o rpe) por defecto, no
+// vacío. Se mantiene 'carga' (peso) aunque la nota no lo mencione
+// explícitamente -- ya estaba antes y quitarlo sería una regresión no
+// pedida (sin carga no se puede registrar el peso levantado). 'series' no
+// es una columna en sí (ver buildInitialRows: decide el NÚMERO de filas a
+// partir de prescribed.series, no un valor por fila), así que su default
+// vive en ADHOC_DEFAULT_SERIES, aplicado a `prescribed` en onAddExercise.
+// Mismas keys que usa el resto de la app (ver exercise_info_screen.tsx,
+// prioridad ['series','carga','reps','rir','rpe','tiempo']) — se elige
+// 'rir' como default único entre "rir o rpe" que pide la nota.
+const ADHOC_DEFAULT_METRICS = ['carga', 'reps', 'descanso', 'rir'];
+const ADHOC_DEFAULT_SERIES = 3;
 // Estilos del renderItem del picker de "Añadir ejercicio", fuera del
 // componente para no reconstruirlos en cada fila del FlatList.
 const PICKER_RESULT_IMAGE_STYLE = { width: 44, height: 44, borderRadius: 8, marginRight: 12 };
@@ -210,6 +226,14 @@ export default function WorkoutSessionScreen(props: Props) {
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [emptyFinishConfirmVisible, setEmptyFinishConfirmVisible] = useState(false);
   const [painReportTarget, setPainReportTarget] = useState<SessionExercise | null>(null);
+  // Guard "no se puede empezar un workout si ya hay uno empezado" (petición
+  // 2026-08-19) -- si al montar esta pantalla YA hay una sesión activa con
+  // un identityKey DISTINTO al que se pide aquí, se bloquea por completo
+  // (nunca se llama a load()) y se ofrece continuar con la sesión existente
+  // en su lugar. Cualquier forma de "empezar/abrir" un workout pasa por el
+  // montaje de esta misma pantalla (preview o minimizador), así que este es
+  // el único sitio que hace falta para cubrir todos los casos.
+  const [conflictingSession, setConflictingSession] = useState<ActiveWorkoutSession | null>(null);
   // Popup de descanso: segundos restantes, o null si no hay ninguno activo.
   // Se dispara al marcar una serie como hecha (nunca al desmarcarla) si esa
   // serie concreta tiene un valor de "descanso" (metrica real del catalogo
@@ -314,6 +338,19 @@ export default function WorkoutSessionScreen(props: Props) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Guard "no empezar un workout si ya hay uno empezado": si la sesión
+      // activa global es de OTRO workout (identityKey distinto), se bloquea
+      // aquí mismo, antes de tocar AsyncStorage o llamar a load() -- nunca
+      // llega a pisar/mezclar el progreso del que ya estaba en curso.
+      const active = getActiveWorkoutSession();
+      if (active && identityKey && active.identityKey !== identityKey) {
+        if (!cancelled) {
+          setConflictingSession(active);
+          setIsLoading(false);
+        }
+        return;
+      }
+
       let persisted: PersistedSession | null = null;
       if (identityKey) {
         try {
@@ -382,10 +419,16 @@ export default function WorkoutSessionScreen(props: Props) {
   // minimizar, gesto de swipe-back, boton fisico Atras) desmonta esta
   // pantalla y dispara este cleanup por igual, asi que no hace falta
   // repetir la llamada en cada handler de salida por separado.
+  // Si esta pantalla esta bloqueada por conflictingSession (punto e), NO se
+  // toca el estado global de minimizado -- esta instancia no es la sesion
+  // activa real, y ocultar la barra aqui la dejaria sin forma de volver a
+  // la sesion que SI esta en curso (justo el bug del punto d: "el
+  // minimizador desaparece").
   useEffect(() => {
+    if (conflictingSession) return;
     setWorkoutSessionMinimized(false);
     return () => setWorkoutSessionMinimized(true);
-  }, []);
+  }, [conflictingSession]);
 
   const metricLabel = useCallback(
     (key: string) => {
@@ -693,7 +736,9 @@ export default function WorkoutSessionScreen(props: Props) {
         image: item.exercise_image,
         bodyPartId: item.bodypart_name?.[0]?.id ?? null,
         videoUrl: item.video_url,
-        prescribed: {},
+        // series: solo define el NÚMERO de filas iniciales (ver
+        // buildInitialRows) -- no es una columna de enabledMetrics.
+        prescribed: { series: ADHOC_DEFAULT_SERIES },
         enabledMetrics: ADHOC_DEFAULT_METRICS,
         coachNotes: null,
         lastPerformance: null,
@@ -804,6 +849,83 @@ export default function WorkoutSessionScreen(props: Props) {
   const onMinimize = () => {
     navigation?.goBack();
   };
+
+  // Punto (a): deslizar hacia abajo desde la zona de cabecera (título +
+  // stats + puntos de bloque + fila de añadir ejercicio, ver JSX del
+  // return) minimiza el entrenamiento -- misma acción que el botón
+  // chevron-down, solo que accesible desde un área mucho más grande que
+  // antes. activeOffsetY(15) de un único valor positivo = solo activa con
+  // desplazamiento hacia ABAJO mayor a 15px (nunca con gestos hacia arriba,
+  // ver docs de react-native-gesture-handler); failOffsetX cede de
+  // inmediato ante cualquier intento de gesto horizontal.
+  const MINIMIZE_DRAG_THRESHOLD = 90;
+  const dragY = useSharedValue(0);
+  const minimizeGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetY(15)
+        .failOffsetX([-15, 15])
+        .onUpdate((e) => {
+          if (e.translationY > 0) dragY.value = e.translationY;
+        })
+        .onEnd((e) => {
+          if (e.translationY > MINIMIZE_DRAG_THRESHOLD || e.velocityY > 800) {
+            runOnJS(onMinimize)();
+          }
+          dragY.value = withSpring(0);
+        }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  const dragStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: dragY.value }],
+  }));
+
+  // Punto (e): ya hay OTRO workout en curso -- se bloquea el arranque de
+  // este por completo (nunca se llegó a llamar load()) y se ofrece
+  // continuar con el que ya estaba activo, en vez de arrancar dos sesiones
+  // en paralelo.
+  if (conflictingSession) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        <Box
+          className="flex-row items-center px-5"
+          style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+        >
+          <Pressable onPress={() => navigation?.goBack()}>
+            <Icon name="close" size={26} color={C.textPrimary} />
+          </Pressable>
+        </Box>
+        <Box className="flex-1 items-center justify-center px-8">
+          <Icon name="alert-circle-outline" size={44} color={C.warning60} />
+          <Heading size="md" className="text-center" style={{ marginTop: 16 }}>
+            Ya tienes un entrenamiento en curso
+          </Heading>
+          <Text muted className="text-center" style={{ marginTop: 8, fontSize: 14 }}>
+            Termina o continúa &ldquo;{conflictingSession.mTitle || 'tu entrenamiento'}&rdquo; antes de empezar uno nuevo.
+          </Text>
+          <Button
+            radius="pill"
+            style={{ marginTop: 24, alignSelf: 'stretch' }}
+            onPress={() => {
+              const params = {
+                programDayAssignmentId: conflictingSession.programDayAssignmentId,
+                workoutTemplateId: conflictingSession.workoutTemplateId,
+                mTitle: conflictingSession.mTitle,
+              };
+              if (navigation?.replace) navigation.replace('MigratedWorkoutSession', params);
+              else navigation?.navigate('MigratedWorkoutSession', params);
+            }}
+          >
+            <ButtonText>Continuar con ese entrenamiento</ButtonText>
+          </Button>
+          <Pressable style={{ marginTop: 16 }} onPress={() => navigation?.goBack()}>
+            <Text muted style={{ fontSize: 13 }}>Cancelar</Text>
+          </Pressable>
+        </Box>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -1053,87 +1175,103 @@ export default function WorkoutSessionScreen(props: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <Box
-        className="flex-row items-center justify-between px-5"
-        style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
-      >
-        <Pressable onPress={onClose}>
-          <Icon name="close" size={26} className="text-foreground" />
-        </Pressable>
-        <Heading size="sm" className="flex-1 text-center mx-3" numberOfLines={1}>
-          {mTitle || 'Entrenamiento'}
-        </Heading>
-        <Pressable
-          onPress={onMinimize}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel="Minimizar entrenamiento"
-        >
-          <Icon name="chevron-down-circle-outline" size={24} className="text-muted-foreground" />
-        </Pressable>
-      </Box>
-
-      {/* Live stats */}
-      <HStack className="px-5 py-4">
-        <Box className="flex-1 items-center">
-          <HStack space="xs" className="items-center">
-            <Box className="w-2 h-2 rounded-pill bg-success" />
-            <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
-              {formatTimer(elapsedSeconds)}
-            </Text>
-          </HStack>
-          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
-            Duración
-          </Text>
-        </Box>
-        <Box className="flex-1 items-center">
-          <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
-            {liveCalories}
-          </Text>
-          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
-            Calorías (est.)
-          </Text>
-        </Box>
-        <Box className="flex-1 items-center">
-          <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
-            {volumeKg}
-          </Text>
-          <Text muted style={{ fontSize: 12, marginTop: 4 }}>
-            Volumen (kg)
-          </Text>
-        </Box>
-      </HStack>
-
-      {/* Block progress dots + count/add row */}
-      {blocks.length > 1 && (
-        <HStack space="sm" className="justify-center items-center" style={{ marginBottom: 8 }}>
-          {blocks.map((b, idx) => (
-            <Pressable key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-              <Box
-                className="rounded-pill"
-                style={{
-                  width: idx === pageIndex ? 18 : 7,
-                  height: 7,
-                  backgroundColor: idx === pageIndex ? C.textPrimary : C.border,
-                }}
-              />
+      {/* Punto (a) de la nota 2026-08-19: antes solo se podía deslizar para
+          minimizar desde el bloque de título — el gesto nativo de "volver
+          atrás" del stack lo capta ahí porque es la única zona que no es un
+          FlatList/ScrollView (el propio pager horizontal de bloques se
+          queda con cualquier gesto sobre el contenido). En vez de pelear
+          por la prioridad de gesto contra ese FlatList/las ScrollView
+          horizontales de la tabla de métricas (alto riesgo de romper el
+          paso entre bloques o el scroll de la tabla), se añade aquí un
+          gesto propio de "deslizar hacia ABAJO para minimizar" sobre TODA
+          la zona de cabecera (título + stats en vivo + puntos de bloque +
+          fila de añadir ejercicio) — mucha más área que antes, sin tocar en
+          absoluto el pager ni las listas de ejercicios. */}
+      <GestureDetector gesture={minimizeGesture}>
+        <Animated.View style={dragStyle}>
+          {/* Header */}
+          <Box
+            className="flex-row items-center justify-between px-5"
+            style={{ paddingTop: Platform.OS === 'ios' ? 12 : 16, paddingBottom: 12 }}
+          >
+            <Pressable onPress={onClose}>
+              <Icon name="close" size={26} className="text-foreground" />
             </Pressable>
-          ))}
-        </HStack>
-      )}
+            <Heading size="sm" className="flex-1 text-center mx-3" numberOfLines={1}>
+              {mTitle || 'Entrenamiento'}
+            </Heading>
+            <Pressable
+              onPress={onMinimize}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Minimizar entrenamiento"
+            >
+              <Icon name="chevron-down-circle-outline" size={24} className="text-muted-foreground" />
+            </Pressable>
+          </Box>
 
-      <HStack space="md" className="items-center justify-between px-5" style={{ marginBottom: 12 }}>
-        <Text weight="bold" muted className="flex-1" style={{ fontSize: 13, letterSpacing: 0.5 }} numberOfLines={1}>
-          {blocks.length > 1
-            ? `${blocks[pageIndex]?.title || `BLOQUE ${pageIndex + 1}`} · ${blocks[pageIndex]?.exercises.length ?? 0} EJERCICIOS`
-            : `${allExercises.length} EJERCICIOS`}
-        </Text>
-        <Pressable onPress={openExercisePicker}>
-          <Text weight="semibold" className="text-foreground" style={{ fontSize: 13 }}>
-            Añadir ejercicio +
-          </Text>
-        </Pressable>
-      </HStack>
+          {/* Live stats */}
+          <HStack className="px-5 py-4">
+            <Box className="flex-1 items-center">
+              <HStack space="xs" className="items-center">
+                <Box className="w-2 h-2 rounded-pill bg-success" />
+                <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+                  {formatTimer(elapsedSeconds)}
+                </Text>
+              </HStack>
+              <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+                Duración
+              </Text>
+            </Box>
+            <Box className="flex-1 items-center">
+              <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+                {liveCalories}
+              </Text>
+              <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+                Calorías (est.)
+              </Text>
+            </Box>
+            <Box className="flex-1 items-center">
+              <Text weight="bold" className="text-foreground" style={{ fontSize: 17 }}>
+                {volumeKg}
+              </Text>
+              <Text muted style={{ fontSize: 12, marginTop: 4 }}>
+                Volumen (kg)
+              </Text>
+            </Box>
+          </HStack>
+
+          {/* Block progress dots + count/add row */}
+          {blocks.length > 1 && (
+            <HStack space="sm" className="justify-center items-center" style={{ marginBottom: 8 }}>
+              {blocks.map((b, idx) => (
+                <Pressable key={b.id} onPress={() => goToPage(idx)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+                  <Box
+                    className="rounded-pill"
+                    style={{
+                      width: idx === pageIndex ? 18 : 7,
+                      height: 7,
+                      backgroundColor: idx === pageIndex ? C.textPrimary : C.border,
+                    }}
+                  />
+                </Pressable>
+              ))}
+            </HStack>
+          )}
+
+          <HStack space="md" className="items-center justify-between px-5" style={{ marginBottom: 12 }}>
+            <Text weight="bold" muted className="flex-1" style={{ fontSize: 13, letterSpacing: 0.5 }} numberOfLines={1}>
+              {blocks.length > 1
+                ? `${blocks[pageIndex]?.title || `BLOQUE ${pageIndex + 1}`} · ${blocks[pageIndex]?.exercises.length ?? 0} EJERCICIOS`
+                : `${allExercises.length} EJERCICIOS`}
+            </Text>
+            <Pressable onPress={openExercisePicker}>
+              <Text weight="semibold" className="text-foreground" style={{ fontSize: 13 }}>
+                Añadir ejercicio +
+              </Text>
+            </Pressable>
+          </HStack>
+        </Animated.View>
+      </GestureDetector>
 
       {/* Horizontal pager — una página por bloque */}
       <FlatList

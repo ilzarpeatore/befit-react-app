@@ -42,6 +42,20 @@ export default function WorkoutMinimizedBar({ navigationRef }: Props) {
     return () => clearInterval(id);
   }, [session, minimized]);
 
+  // Guard contra doble-toque / toque accidental (nota 2026-08-19: "el
+  // minimizador ha desaparecido al pulsarlo... que no desaparezca si se
+  // pulsa erroneamente algun boton") -- restoringRef evita disparar
+  // navigate() dos veces seguidas si el cliente toca rápido dos veces la
+  // barra, que podía dejar la navegación en un estado inconsistente (la
+  // barra se oculta al entrar a la pantalla completa, pero un segundo
+  // navigate() concurrente podía no completar el mount y dejar la barra sin
+  // reaparecer ni la pantalla completa visible). Nunca oculta la barra por
+  // su cuenta -- solo el propio mount/unmount de workout_session_screen
+  // (via setWorkoutSessionMinimized) decide su visibilidad. Declarado ANTES
+  // del early-return de abajo -- los Hooks de React deben llamarse siempre
+  // en el mismo orden en cada render.
+  const restoringRef = React.useRef(false);
+
   if (!session || !minimized) return null;
 
   const elapsedSeconds = Math.max(0, Math.floor((nowTick - session.startedAt) / 1000));
@@ -49,12 +63,17 @@ export default function WorkoutMinimizedBar({ navigationRef }: Props) {
   const hasGlass = isGlassEffectAPIAvailable();
 
   const restore = () => {
+    if (restoringRef.current) return;
     if (!navigationRef?.current?.isReady?.()) return;
+    restoringRef.current = true;
     navigationRef.current.navigate('MigratedWorkoutSession', {
       programDayAssignmentId: session.programDayAssignmentId,
       workoutTemplateId: session.workoutTemplateId,
       mTitle: session.mTitle,
     });
+    setTimeout(() => {
+      restoringRef.current = false;
+    }, 800);
   };
 
   return (
@@ -80,21 +99,30 @@ export default function WorkoutMinimizedBar({ navigationRef }: Props) {
             ...(hasGlass ? null : { backgroundColor: '#1C1C1E' }),
           }}
         >
+          {/* Nota 2026-08-19: "el minimizador al estar en glass effect y con
+              texto blanco no se ve nada. Pon el texto en negro". El
+              GlassView real (hasGlass, Liquid Glass de iOS 26+) sale claro
+              sobre el fondo del app (tema claro) -- texto blanco encima
+              queda invisible. El fallback (!hasGlass, backgroundColor
+              '#1C1C1E' sólido y oscuro) sigue necesitando texto claro. Color
+              explícito en vez de una clase de tema para que quede
+              garantizado tal cual se pidió, sin depender de tokens que
+              puedan cambiar. */}
           <HStack className="items-center justify-between">
             <HStack space="sm" className="items-center flex-1" style={{ marginRight: 10 }}>
               <Box className="items-center justify-center rounded-pill" style={{ width: 34, height: 34, backgroundColor: 'rgba(255,255,255,0.14)' }}>
-                <Icon name="barbell-outline" size={17} className="text-background" />
+                <Icon name="barbell-outline" size={17} color={hasGlass ? '#1C1C1E' : '#FFFFFF'} />
               </Box>
               <Box className="flex-1">
-                <Text weight="bold" className="text-background" numberOfLines={1} style={{ fontSize: 14 }}>
+                <Text weight="bold" numberOfLines={1} style={{ fontSize: 14, color: hasGlass ? '#1C1C1E' : '#FFFFFF' }}>
                   {session.mTitle || 'Entrenamiento'}
                 </Text>
-                <Text className="text-background" style={{ fontSize: 12, opacity: 0.75, marginTop: 2 }}>
+                <Text style={{ fontSize: 12, opacity: 0.75, marginTop: 2, color: hasGlass ? '#1C1C1E' : '#FFFFFF' }}>
                   {formatTimer(elapsedSeconds)} · {session.completedSets}/{session.totalSets} series
                 </Text>
               </Box>
             </HStack>
-            <Icon name="chevron-up-circle" size={26} className="text-background" />
+            <Icon name="chevron-up-circle" size={26} color={hasGlass ? '#1C1C1E' : '#FFFFFF'} />
           </HStack>
           <Box style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.18)', marginTop: 10, overflow: 'hidden' }}>
             <Box style={{ height: 3, borderRadius: 2, width: `${Math.round(progress * 100)}%`, backgroundColor: '#34C759' }} />
