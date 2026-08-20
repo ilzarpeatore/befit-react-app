@@ -4,8 +4,6 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
-import { Button } from '@components/ui/button';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
 import {
@@ -16,6 +14,7 @@ import {
   AccordionTitleText,
   AccordionContent,
 } from '@components/ui/accordion';
+import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { recipesApi } from '../../api/recipes';
 
@@ -168,14 +167,8 @@ export default function RecipeTagListScreen(props: any) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
-      <Box className="flex-row items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm">Tags</Heading>
-        <Box className="w-10" />
-      </Box>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader title="Etiquetas" onBack={() => props.navigation.goBack()} />
 
       <Box className="flex-1">
         {isLoading ? (
@@ -185,7 +178,7 @@ export default function RecipeTagListScreen(props: any) {
         ) : mTagList.length === 0 ? (
           <Box className="flex-1 items-center justify-center">
             <Icon name="pricetags-outline" size={64} className="text-muted-foreground" />
-            <Text weight="medium" muted style={{ marginTop: 12 }}>No tags found</Text>
+            <Text weight="medium" muted style={{ marginTop: 12 }}>No se encontraron etiquetas</Text>
           </Box>
         ) : (
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">

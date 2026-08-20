@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FlatList, Alert, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button } from '@components/ui/button';
@@ -136,20 +137,18 @@ export default function ChattingScreen({ navigation }: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title="FitBot"
-          onBack={() => navigation.goBack()}
-          rightAction={
-            messages.length > 0 ? (
-              <Button variant="ghost" size="icon" onPress={showClearDialog}>
-                <Icon name="refresh-outline" size={22} className="text-foreground" />
-              </Button>
-            ) : undefined
-          }
-        />
-      </Box>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <ScreenHeader
+        title="FitBot"
+        onBack={() => navigation.goBack()}
+        rightAction={
+          messages.length > 0 ? (
+            <Button variant="ghost" size="icon" onPress={showClearDialog}>
+              <Icon name="refresh-outline" size={22} className="text-foreground" />
+            </Button>
+          ) : undefined
+        }
+      />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -209,6 +208,6 @@ export default function ChattingScreen({ navigation }: any) {
           </Pressable>
         </Box>
       </KeyboardAvoidingView>
-    </Box>
+    </SafeAreaView>
   );
 }

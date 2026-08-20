@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Image, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Card } from '@components/ui/card';
 import { Text } from '@components/ui/text';
@@ -69,14 +70,14 @@ export default function PostDetailsScreen(props: any) {
 
   if (!postData) {
     return (
-      <Box className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         <ScreenHeader title="" onBack={() => props.navigation?.goBack()} />
         <Box className="flex-1 items-center justify-center">
           <Text muted weight="medium">
             No hay datos disponibles de la publicación
           </Text>
         </Box>
-      </Box>
+      </SafeAreaView>
     );
   }
 
@@ -125,7 +126,7 @@ export default function PostDetailsScreen(props: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -294,6 +295,6 @@ export default function PostDetailsScreen(props: any) {
           </Button>
         </Box>
       </KeyboardAvoidingView>
-    </Box>
+    </SafeAreaView>
   );
 }

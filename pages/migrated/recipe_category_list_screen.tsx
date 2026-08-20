@@ -4,11 +4,10 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
-import { Button } from '@components/ui/button';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
 import { Spinner } from '@components/ui/spinner';
+import ScreenHeader from '@components/ScreenHeader';
 import { recipesApi } from '../../api/recipes';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -63,14 +62,8 @@ export default function RecipeCategoryListScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
-      <Box className="flex-row items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm">Categories</Heading>
-        <Box className="w-10" />
-      </Box>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader title="Categorías" onBack={() => props.navigation.goBack()} />
 
       <Box className="flex-1">
         {isLoading ? (
@@ -80,7 +73,7 @@ export default function RecipeCategoryListScreen(props: any) {
         ) : mCategoryList.length === 0 ? (
           <Box className="flex-1 items-center justify-center">
             <Icon name="folder-open-outline" size={64} className="text-muted-foreground" />
-            <Text weight="medium" style={{ marginTop: 12 }}>No categories found</Text>
+            <Text weight="medium" style={{ marginTop: 12 }}>No se encontraron categorías</Text>
           </Box>
         ) : (
           <ScrollView contentContainerStyle={{ padding: 16 }}>

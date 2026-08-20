@@ -84,9 +84,17 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
   const goToIngredients = () => setSelect(true);
   const goToInstructions = () => setSelect(false);
 
+  // activeOffsetX debe ser MENOR que failOffsetY: si no, un swipe real (que
+  // casi nunca es perfectamente horizontal) supera el umbral vertical de
+  // fallo antes de llegar al umbral de activación horizontal y el gesto se
+  // cancela casi siempre -- exactamente el bug reportado ("no es posible
+  // navegar deslizando"). Con activeOffsetX pequeño y failOffsetY holgado el
+  // swipe horizontal gana incluso con el desvío diagonal natural del dedo,
+  // mientras que un scroll claramente vertical sigue fallando el pan y cede
+  // al ScrollView.
   const contentSwipeGesture = Gesture.Pan()
-    .activeOffsetX([-15, 15])
-    .failOffsetY([-12, 12])
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-20, 20])
     .onUpdate((e) => {
       swipeX.value = e.translationX;
     })

@@ -18,6 +18,7 @@ import {
   ActionsheetDragIndicator,
   ActionsheetDragIndicatorWrapper,
 } from '@components/ui/actionsheet';
+import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { recipesApi } from '../../api/recipes';
 
@@ -184,25 +185,25 @@ export default function RecipeListScreenV2(props: any) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
-      <HStack className="items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm" className="flex-1 text-center">{title}</Heading>
-        <HStack className="items-center">
-          <Button variant="ghost" size="icon" onPress={toggleFavourite}>
-            <Icon
-              name={filter.isFavourite === 1 ? 'heart' : 'heart-outline'}
-              size={24}
-              className={filter.isFavourite === 1 ? 'text-destructive' : 'text-foreground'}
-            />
-          </Button>
-          <Button variant="ghost" size="icon" onPress={() => setShowFilterSheet(true)}>
-            <Icon name="filter-outline" size={24} className="text-foreground" />
-          </Button>
-        </HStack>
-      </HStack>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader
+        title={title}
+        onBack={() => props.navigation.goBack()}
+        rightAction={
+          <HStack className="items-center">
+            <Button variant="ghost" size="icon" onPress={toggleFavourite}>
+              <Icon
+                name={filter.isFavourite === 1 ? 'heart' : 'heart-outline'}
+                size={24}
+                className={filter.isFavourite === 1 ? 'text-destructive' : 'text-foreground'}
+              />
+            </Button>
+            <Button variant="ghost" size="icon" onPress={() => setShowFilterSheet(true)}>
+              <Icon name="filter-outline" size={24} className="text-foreground" />
+            </Button>
+          </HStack>
+        }
+      />
 
       <Box className="flex-1">
         {isLoading && page === 1 ? (

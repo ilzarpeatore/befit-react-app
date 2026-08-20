@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';
@@ -177,13 +178,11 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title={isEditMode ? 'Editar lista de la compra' : 'Añadir lista de la compra'}
-          onBack={() => navigation.goBack()}
-        />
-      </Box>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <ScreenHeader
+        title={isEditMode ? 'Editar lista de la compra' : 'Añadir lista de la compra'}
+        onBack={() => navigation.goBack()}
+      />
 
       <ScrollView
         className="flex-1"
@@ -280,6 +279,6 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
           <ButtonText>{isEditMode ? 'Actualizar lista' : 'Generar lista'}</ButtonText>
         </Button>
       </Box>
-    </Box>
+    </SafeAreaView>
   );
 }

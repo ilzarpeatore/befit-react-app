@@ -694,9 +694,6 @@ export default function PlanScreen(props: any) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  appBar: { alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, backgroundColor: C.surface },
-  backBtn: { padding: 4 },
-  appBarTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   clearBtn: { padding: 4 },
   weekdayPicker: { alignItems: 'center', backgroundColor: C.surface, paddingTop: 10, paddingBottom: 10 },
   // Con GlassView real (iOS 26+) el material translucido ya aporta el fondo:
@@ -721,7 +718,7 @@ const s = StyleSheet.create({
   scrollContent: { padding: 6, paddingBottom: 24 },
   nutrientCard: { marginBottom: 16 },
   kcalSection: { alignItems: 'center', marginBottom: 16 },
-  kcalValue: { fontSize: 32, fontFamily: FONT.extraBold, color: C.white },
+  kcalValue: { fontSize: 32, lineHeight: 38, fontFamily: FONT.extraBold, color: C.white },
   kcalTarget: { fontSize: 14, color: C.gray40, marginTop: 4 },
   nutrientRow: { justifyContent: 'space-between' },
   nutrientItem: { flex: 1, alignItems: 'center' },

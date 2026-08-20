@@ -4,10 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
-import { Button } from '@components/ui/button';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
+import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { resourcesApi, ResourceListItem, ResourceCategory } from '../../api/resources';
 
@@ -89,14 +88,8 @@ export default function ResourcesListScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
-      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
-        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm">Recursos</Heading>
-        <Box className="w-10" />
-      </Box>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top', 'bottom']}>
+      <ScreenHeader title="Recursos" onBack={() => navigation?.goBack()} />
 
       <Box className="flex-row gap-2 px-5" style={{ marginBottom: 16 }}>
         <Pressable
