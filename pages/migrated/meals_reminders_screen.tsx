@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
@@ -157,17 +157,16 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
           />
         </View>
         <View style={styles.divider} />
-        <TouchableOpacity
-          style={styles.settingRow}
+        <Pressable
+          style={({ pressed }) => [styles.settingRow, enabled && pressed && { opacity: 0.7 }]}
           onPress={enabled ? onPickTime : undefined}
-          activeOpacity={enabled ? 0.7 : 1}
         >
           <Text style={styles.settingLabel}>Hora</Text>
           <View style={styles.timeRow}>
             <Text style={styles.timeText}>{formatTimeDisplay(time)}</Text>
             <Ionicons name="chevron-forward" size={20} color={C.gray40} />
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );
@@ -176,9 +175,9 @@ export default function MealsRemindersScreen(props: MealsRemindersScreenProps) {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <Text style={styles.header}>Recordatorios de comidas</Text>
-        <TouchableOpacity onPress={saveSettings} disabled={isSaving}>
+        <Pressable onPress={saveSettings} disabled={isSaving} style={({ pressed }) => pressed && { opacity: 0.2 }}>
           <Text style={styles.saveBtn}>Guardar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         {renderMealSection('Desayuno', breakfastEnabled, setBreakfastEnabled, breakfastTime, () =>

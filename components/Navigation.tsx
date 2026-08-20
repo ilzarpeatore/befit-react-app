@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   View,
   Image,
-  TouchableOpacity,
+  Pressable,
   Animated,
   StyleSheet,
   LayoutChangeEvent,
@@ -107,54 +107,54 @@ export default function Navigation({ activepageindex }: NavigationInterface) {
       />
       {/*navigation bg end*/}
       {/*navigation icons start*/}
-      <TouchableOpacity
+      <Pressable
         onLayout={(event) => set_nav_positions(event, 0)}
         onPress={() => {
           navigation_press(0);
         }}
-        style={styles.navigationbtn}
+        style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
       >
         <Image
           source={require("./../assets/icons/nav1.png")}
           style={styles.navigationicon}
         />
-      </TouchableOpacity>
-      <TouchableOpacity
+      </Pressable>
+      <Pressable
         onLayout={(event) => set_nav_positions(event, 1)}
         onPress={() => {
           navigation_press(1);
         }}
-        style={styles.navigationbtn}
+        style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
       >
         <Image
           source={require("./../assets/icons/nav2.png")}
           style={styles.navigationicon}
         />
-      </TouchableOpacity>
-      <TouchableOpacity
+      </Pressable>
+      <Pressable
         onLayout={(event) => set_nav_positions(event, 2)}
         onPress={() => {
           navigation_press(2);
         }}
-        style={styles.navigationbtn}
+        style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
       >
         <Image
           source={require("./../assets/icons/nav3.png")}
           style={styles.navigationicon}
         />
-      </TouchableOpacity>
-      <TouchableOpacity
+      </Pressable>
+      <Pressable
         onLayout={(event) => set_nav_positions(event, 3)}
         onPress={() => {
           navigation_press(3);
         }}
-        style={styles.navigationbtn}
+        style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
       >
         <Image
           source={require("./../assets/icons/nav4.png")}
           style={styles.navigationicon}
         />
-      </TouchableOpacity>
+      </Pressable>
       {/*navigation icons end*/}
     </View>
   );

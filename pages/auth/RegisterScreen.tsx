@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -111,12 +111,12 @@ export default function RegisterScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.goBack()}
-            style={styles.backBtn}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
           >
             <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
 
           <Text style={styles.title}>Crear cuenta</Text>
           <Text style={styles.subtitle}>Regístrate para empezar</Text>
@@ -166,13 +166,16 @@ export default function RegisterScreen() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={({ pressed }) => [styles.eyeBtn, pressed && { opacity: 0.2 }]}
+              >
                 <Ionicons
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={20}
                   color={Colors.TEXT_SECONDARY}
                 />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
 
@@ -219,8 +222,8 @@ export default function RegisterScreen() {
             )}
           </View>
 
-          <TouchableOpacity
-            style={[styles.btn, loading && styles.btnDisabled]}
+          <Pressable
+            style={({ pressed }) => [styles.btn, loading && styles.btnDisabled, pressed && { opacity: 0.2 }]}
             onPress={handleRegister}
             disabled={loading}
           >
@@ -229,13 +232,16 @@ export default function RegisterScreen() {
             ) : (
               <Text style={styles.btnText}>Crear cuenta</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>¿Ya tienes una cuenta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("LoginAuth")}>
+            <Pressable
+              onPress={() => navigation.navigate("LoginAuth")}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
+            >
               <Text style={styles.footerLink}>Inicia sesión</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

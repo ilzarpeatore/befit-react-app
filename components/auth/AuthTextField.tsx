@@ -3,7 +3,7 @@ import {
   View,
   TextInput,
   Text,
-  TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -69,13 +69,13 @@ export function AuthTextField({
             onBlur={() => { focusedRef.current = false; }}
           />
           {secureTextEntry && (
-            <TouchableOpacity onPress={() => setHidden(!hidden)}>
+            <Pressable onPress={() => setHidden(!hidden)} style={({ pressed }) => pressed && { opacity: 0.2 }}>
               <Ionicons
                 name={hidden ? "eye-off-outline" : "eye-outline"}
                 size={20}
                 color={Colors.TEXT_SECONDARY}
               />
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </LinearGradient>

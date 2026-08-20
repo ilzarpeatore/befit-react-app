@@ -3,7 +3,7 @@ import {
   FlatList,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   Alert,
 } from "react-native";
@@ -135,9 +135,15 @@ export default function CommunityFeed({ navigation }: Props) {
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -155,9 +161,15 @@ export default function CommunityFeed({ navigation }: Props) {
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -172,9 +184,15 @@ export default function CommunityFeed({ navigation }: Props) {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+              pressed && { opacity: 0.2 },
+            ]}
+          >
             <Ionicons name="chevron-back" size={22} color="#000000" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
           <View style={{ width: 40 }} />
         </View>
@@ -205,9 +223,8 @@ export default function CommunityFeed({ navigation }: Props) {
           />
         )}
 
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={styles.fab}
+        <Pressable
+          style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}
           onPress={() => Alert.alert("Coming Soon", "Post creation will be available soon!")}
         >
           <LinearGradient
@@ -218,7 +235,7 @@ export default function CommunityFeed({ navigation }: Props) {
           >
             <Ionicons name="add" size={28} color={Colors.TEXT_PRIMARY} />
           </LinearGradient>
-        </TouchableOpacity>
+        </Pressable>
       </SafeAreaView>
       <StatusBar style="dark" />
     </View>

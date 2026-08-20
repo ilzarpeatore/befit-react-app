@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { C, FONT } from '../pages/migrated/theme';
 
 export interface DaySelectorItem {
@@ -25,7 +25,11 @@ export default function DaySelectorStrip({ days, selectedDate, onSelect }: DaySe
       {days.map((d) => {
         const isSelected = d.date === selectedDate;
         return (
-          <TouchableOpacity key={d.date} style={s.item} activeOpacity={0.75} onPress={() => onSelect(d.date)}>
+          <Pressable
+            key={d.date}
+            style={({ pressed }) => [s.item, pressed && { opacity: 0.75 }]}
+            onPress={() => onSelect(d.date)}
+          >
             <Text style={s.letter}>{d.dayLetter}</Text>
             {isSelected ? (
               <View style={s.selectedCircle}>
@@ -36,7 +40,7 @@ export default function DaySelectorStrip({ days, selectedDate, onSelect }: DaySe
                 <Text style={s.number}>{d.dayNumber}</Text>
               </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
     </View>

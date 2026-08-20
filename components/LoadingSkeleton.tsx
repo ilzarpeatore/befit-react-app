@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Animated } from "react-native";
+import React, { useEffect } from "react";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 
 interface Props {
@@ -10,26 +16,20 @@ interface Props {
 
 function LoadingSkeleton({ width, height, borderRadius }: Props) {
   const styles = useStyle();
-  const [pulse] = useState(() => new Animated.Value(0.3));
+  const pulse = useSharedValue(0.3);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 0.7,
-          duration: 800,
-          useNativeDriver: false,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0.3,
-          duration: 800,
-          useNativeDriver: false,
-        }),
-      ])
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(0.7, { duration: 800 }),
+        withTiming(0.3, { duration: 800 })
+      ),
+      -1,
+      false
     );
-    animation.start();
-    return () => animation.stop();
   }, [pulse]);
+
+  const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
   const containerStyle = [
     styles.skeleton,
@@ -38,7 +38,7 @@ function LoadingSkeleton({ width, height, borderRadius }: Props) {
     borderRadius != null ? { borderRadius } : undefined,
   ];
 
-  return <Animated.View style={[containerStyle, { opacity: pulse }]} />;
+  return <Animated.View style={[containerStyle, pulseStyle]} />;
 }
 
 export const LoadingSkeletonMem = React.memo(LoadingSkeleton);

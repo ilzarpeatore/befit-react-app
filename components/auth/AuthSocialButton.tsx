@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -34,13 +34,13 @@ export function AuthSocialButton({ variant, label, onPress }: Props) {
   const fg = FG_COLORS[variant];
 
   return (
-    <TouchableOpacity
-      style={[styles.container, { backgroundColor: bg }]}
+    <Pressable
+      style={({ pressed }) => [styles.container, { backgroundColor: bg }, pressed && { opacity: 0.2 }]}
       onPress={onPress}
     >
       <Ionicons name={ICONS[variant]} size={22} color={fg} />
       <Text style={[styles.label, { color: fg }]}>{label}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

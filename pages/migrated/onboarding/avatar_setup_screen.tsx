@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -50,12 +50,13 @@ export default function AvatarSetupScreen({ navigation }: any) {
 
         <View style={localStyles.avatarGrid}>
           {PRESET_AVATARS.map((avatar) => (
-            <TouchableOpacity
+            <Pressable
               key={avatar.id}
-              style={[
+              style={({ pressed }) => [
                 localStyles.avatarOption,
                 { backgroundColor: C.surface, borderColor: selectedAvatar === avatar.id ? C.primary : C.border },
                 selectedAvatar === avatar.id && { borderColor: C.primary, backgroundColor: C.primary + "10" },
+                pressed && { opacity: 0.2 },
               ]}
               onPress={() => selectAvatar(avatar.id)}
             >
@@ -65,21 +66,28 @@ export default function AvatarSetupScreen({ navigation }: any) {
                   <Ionicons name="checkmark" size={12} color={C.white} />
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity style={localStyles.skipBtn} onPress={() => navigation.navigate("MigratedPrivacyPolicyOnboard")}>
+        <Pressable
+          style={({ pressed }) => [localStyles.skipBtn, pressed && { opacity: 0.2 }]}
+          onPress={() => navigation.navigate("MigratedPrivacyPolicyOnboard")}
+        >
           <Text style={[localStyles.skipBtnText, { color: C.gray }]}>Omitir</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: C.primary }]}
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: C.primary },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={() => navigation.navigate("MigratedPrivacyPolicyOnboard")}
         >
           <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

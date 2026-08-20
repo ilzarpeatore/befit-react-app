@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
@@ -66,13 +66,16 @@ export default function ActivityTrackerScreen({ navigation }: any) {
   return (
     <View style={styles_local.container}>
       <View style={styles_local.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles_local.backBtn}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={({ pressed }) => [styles_local.backBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles_local.headerTitle}>Activity Tracker</Text>
-        <TouchableOpacity style={styles_local.backBtn}>
+        <Pressable style={({ pressed }) => [styles_local.backBtn, pressed && { opacity: 0.2 }]}>
           <Ionicons name="options-outline" size={22} color={C.gray30} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView style={styles_local.body} showsVerticalScrollIndicator={false}>
@@ -82,16 +85,19 @@ export default function ActivityTrackerScreen({ navigation }: any) {
             {periods.map((period) => {
               const isSelected = period === selectedPeriod;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={period}
-                  style={[styles_local.periodBtn, isSelected && styles_local.periodBtnActive]}
+                  style={({ pressed }) => [
+                    styles_local.periodBtn,
+                    isSelected && styles_local.periodBtnActive,
+                    pressed && { opacity: 0.7 },
+                  ]}
                   onPress={() => setSelectedPeriod(period)}
-                  activeOpacity={0.7}
                 >
                   <Text style={[styles_local.periodText, isSelected && styles_local.periodTextActive]}>
                     {period}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>

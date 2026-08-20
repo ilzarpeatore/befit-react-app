@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -65,21 +65,30 @@ export default function ReminderScreen(props: any) {
   return (
     <SafeAreaView style={s.container}>
       <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
+        <Pressable
+          onPress={() => props.navigation.goBack()}
+          style={({ pressed }) => [s.backBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={[s.headerTitle, styles.fontBold]}>Daily Reminders</Text>
-        <TouchableOpacity onPress={handleAddReminder} style={s.backBtn}>
+        <Pressable
+          onPress={handleAddReminder}
+          style={({ pressed }) => [s.backBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="add" size={28} color={C.textPrimary} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View style={s.body}>
         {/* Meals & Water */}
-        <TouchableOpacity style={s.mealsCard} onPress={handleMealsWater}>
+        <Pressable
+          style={({ pressed }) => [s.mealsCard, pressed && { opacity: 0.2 }]}
+          onPress={handleMealsWater}
+        >
           <Text style={[s.mealsTitle, styles.fontRegular]}>Meals & Water</Text>
           <Ionicons name="chevron-forward" size={20} color={C.gray30} />
-        </TouchableOpacity>
+        </Pressable>
 
         {remindList.length === 0 ? (
           <View style={s.emptyContainer}>
@@ -98,12 +107,12 @@ export default function ReminderScreen(props: any) {
                         {formatDays(item)} {formatTime(item)} | {item.description}
                       </Text>
                     </View>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => handleDeleteReminder(item)}
-                      style={s.deleteBtn}
+                      style={({ pressed }) => [s.deleteBtn, pressed && { opacity: 0.2 }]}
                     >
                       <Ionicons name="trash-outline" size={22} color={C.gray30} />
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 </View>
               );

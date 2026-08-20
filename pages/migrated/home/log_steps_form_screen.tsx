@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
   Alert,
@@ -44,43 +44,45 @@ export default function LogStepsFormScreen({ navigation }: any) {
         <View style={styles.datePickerRow}>
           <Ionicons name="calendar-outline" size={20} color={C.textPrimary} />
           <Text style={styles.dateText}>{formatDate(selectedDate)}</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               const d = new Date(selectedDate);
               d.setDate(d.getDate() - 1);
               setSelectedDate(d);
             }}
+            style={({ pressed }) => pressed && { opacity: 0.2 }}
           >
             <Ionicons name="chevron-back" size={20} color={C.gray} />
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={() => {
               const d = new Date(selectedDate);
               d.setDate(d.getDate() + 1);
               setSelectedDate(d);
             }}
+            style={({ pressed }) => pressed && { opacity: 0.2 }}
           >
             <Ionicons name="chevron-forward" size={20} color={C.gray} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <View style={styles.stepCounter}>
-          <TouchableOpacity
-            style={styles.stepButton}
+          <Pressable
+            style={({ pressed }) => [styles.stepButton, pressed && { opacity: 0.2 }]}
             onPress={() => setStepCount(Math.max(0, stepCount - 100))}
           >
             <Ionicons name="remove" size={24} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
           <View style={styles.stepDisplay}>
             <Text style={styles.stepCount}>{stepCount.toLocaleString()}</Text>
             <Text style={styles.stepLabel}>pasos</Text>
           </View>
-          <TouchableOpacity
-            style={styles.stepButton}
+          <Pressable
+            style={({ pressed }) => [styles.stepButton, pressed && { opacity: 0.2 }]}
             onPress={() => setStepCount(stepCount + 100)}
           >
             <Ionicons name="add" size={24} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <View style={styles.fieldContainer}>
@@ -106,9 +108,9 @@ export default function LogStepsFormScreen({ navigation }: any) {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <Pressable style={({ pressed }) => [styles.saveButton, pressed && { opacity: 0.2 }]} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Guardar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

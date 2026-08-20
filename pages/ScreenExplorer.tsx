@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   SectionList,
   StyleSheet,
   TextInput,
@@ -226,8 +226,8 @@ export default function ScreenExplorer({ navigation }: any) {
 
   const renderScreenItem = useCallback(
     ({ item }: { item: ScreenItem }) => (
-      <TouchableOpacity
-        style={styles.screenItem}
+      <Pressable
+        style={({ pressed }) => [styles.screenItem, pressed && { opacity: 0.2 }]}
         onPress={() => handleScreenPress(item.route)}
         disabled={!item.route}
       >
@@ -247,7 +247,7 @@ export default function ScreenExplorer({ navigation }: any) {
           </View>
         </View>
         <Ionicons name="chevron-forward" size={18} color="#8A8CB2" />
-      </TouchableOpacity>
+      </Pressable>
     ),
     [handleScreenPress]
   );
@@ -255,9 +255,12 @@ export default function ScreenExplorer({ navigation }: any) {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+        </Pressable>
         <View style={styles.headerTitle}>
           <Text style={styles.title}>Screen Explorer</Text>
           <Text style={styles.subtitle}>
@@ -276,9 +279,9 @@ export default function ScreenExplorer({ navigation }: any) {
           onChangeText={setSearch}
         />
         {search.length > 0 && (
-          <TouchableOpacity onPress={() => setSearch('')}>
+          <Pressable onPress={() => setSearch('')} style={({ pressed }) => pressed && { opacity: 0.2 }}>
             <Ionicons name="close-circle" size={18} color="#8A8CB2" />
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 

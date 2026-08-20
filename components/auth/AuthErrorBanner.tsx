@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -17,9 +17,9 @@ export function AuthErrorBanner({ message, onDismiss }: Props) {
       <Ionicons name="information-circle-outline" size={20} color={Colors.DANGER} />
       <Text style={styles.message} numberOfLines={3}>{message}</Text>
       {onDismiss && (
-        <TouchableOpacity onPress={onDismiss}>
+        <Pressable onPress={onDismiss} style={({ pressed }) => pressed && { opacity: 0.2 }}>
           <Ionicons name="close" size={18} color={Colors.DANGER} />
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT, SHADOW } from '../pages/migrated/theme';
 
@@ -49,16 +49,22 @@ function ConfirmDialog({
           <Text style={styles.message}>{message}</Text>
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.75} onPress={onCancel}>
+            <Pressable
+              style={({ pressed }) => [styles.cancelBtn, pressed && { opacity: 0.75 }]}
+              onPress={onCancel}
+            >
               <Text style={styles.cancelBtnText}>{cancelText}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.confirmBtn, destructive && styles.confirmBtnDestructive]}
-              activeOpacity={0.85}
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.confirmBtn,
+                destructive && styles.confirmBtnDestructive,
+                pressed && { opacity: 0.85 },
+              ]}
               onPress={onConfirm}
             >
               <Text style={styles.confirmBtnText}>{confirmText}</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </Pressable>
       </Pressable>

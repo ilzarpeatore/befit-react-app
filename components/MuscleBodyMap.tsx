@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { FRONT_MUSCLES, BACK_MUSCLES, FRONT_VIEW_BOX, BACK_VIEW_BOX, ViewSide } from '../constants/bodyMusclesPaths';
 import { bodyMusclesIdsFor } from '../constants/bodyMusclesMap';
@@ -75,20 +75,26 @@ export default function MuscleBodyMap({
     <View style={styles.container}>
       {showToggle && (
         <View style={styles.toggleRow}>
-          <TouchableOpacity
-            style={[styles.toggleBtn, view === ViewSide.FRONT && styles.toggleBtnActive]}
+          <Pressable
+            style={({ pressed }) => [
+              styles.toggleBtn,
+              view === ViewSide.FRONT && styles.toggleBtnActive,
+              pressed && { opacity: 0.75 },
+            ]}
             onPress={() => setView(ViewSide.FRONT)}
-            activeOpacity={0.75}
           >
             <Text style={[styles.toggleText, view === ViewSide.FRONT && styles.toggleTextActive]}>Frontal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleBtn, view === ViewSide.BACK && styles.toggleBtnActive]}
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.toggleBtn,
+              view === ViewSide.BACK && styles.toggleBtnActive,
+              pressed && { opacity: 0.75 },
+            ]}
             onPress={() => setView(ViewSide.BACK)}
-            activeOpacity={0.75}
           >
             <Text style={[styles.toggleText, view === ViewSide.BACK && styles.toggleTextActive]}>Trasera</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
       <Svg width={width} height={height} viewBox={viewBox}>

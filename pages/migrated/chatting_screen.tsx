@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FlatList, Alert, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback, Platform } from 'react-native';
+import { FlatList, Alert, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button } from '@components/ui/button';
@@ -156,7 +156,7 @@ export default function ChattingScreen({ navigation }: any) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <Pressable onPress={Keyboard.dismiss} accessible={false} style={{ flex: 1 }}>
           <Box className="flex-1">
             {isLoadingHistory ? (
               <Box className="flex-1 items-center justify-center" style={{ gap: 12 }}>
@@ -182,7 +182,7 @@ export default function ChattingScreen({ navigation }: any) {
               </Box>
             )}
           </Box>
-        </TouchableWithoutFeedback>
+        </Pressable>
 
         <Box
           className="flex-row items-end bg-card"

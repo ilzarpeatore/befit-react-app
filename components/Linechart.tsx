@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Animated, Easing, Platform } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { Easing, Platform } from "react-native";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import {
   Svg,
   Line,
@@ -22,7 +23,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
   /* chart data */
   const chartviewboxworkingwidth = styles.chartviewbox.width; //chart working area width (because of spacing, it's different from view box width)
   const chartviewboxworkingheight = styles.chartviewbox.height; //chart working area height (because of spacing, it's different from view box height)
-  const [PathAnim] = useState(() => new Animated.Value(1000)); // chart path anime
+  const PathAnim = useSharedValue(1000); // chart path anime
   const Ystartpoint = styles.chartviewbox.top; //starting Y position for chart to render
   const cropfixh = styles.chartviewbox.padding; // fixing line croping height
   const startX = styles.chartviewbox.left; // start x position for chart to render from viewbox
@@ -63,12 +64,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
 
   }, [chartdatamaxvalue, chartdata, chartviewboxworkingheight, chartviewboxworkingwidth, startX, cropfixh, Ystartpoint]);
   useEffect(() => {
-    Animated.timing(PathAnim, {
-      toValue: 0,
-      duration: 5000,
-      useNativeDriver: true,
-      easing: Easing.linear,
-    }).start();
+    PathAnim.value = withTiming(0, { duration: 5000, easing: Easing.linear });
   }, [PathAnim])
   return (
     <Svg

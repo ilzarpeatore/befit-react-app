@@ -1,5 +1,5 @@
-﻿import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -74,9 +74,12 @@ export default function HeartRateZoneScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => navigation.goBack()}
+            >
               <Ionicons name="arrow-back" size={22} color={C.white} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Heart Rate Zones</Text>
           </View>
 
@@ -94,10 +97,9 @@ export default function HeartRateZoneScreen({ navigation }: any) {
           </View>
 
           {ZONES.map((zone, i) => (
-            <TouchableOpacity
+            <Pressable
               key={zone.name}
-              style={styles.zoneCard}
-              activeOpacity={0.7}
+              style={({ pressed }) => [styles.zoneCard, pressed && { opacity: 0.7 }]}
               onPress={() => setExpanded(expanded === i ? null : i)}
             >
               <View style={styles.zoneHeader}>
@@ -128,7 +130,7 @@ export default function HeartRateZoneScreen({ navigation }: any) {
                   ))}
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </ScrollView>
       </SafeAreaView>

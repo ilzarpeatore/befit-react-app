@@ -3,7 +3,7 @@ import {
   FlatList,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   TextInput,
 } from "react-native";
@@ -166,9 +166,9 @@ export default function WorkoutList({ navigation }: Props) {
   const renderTypeChip = (type: WorkoutType) => {
     const isActive = selectedType === type.id;
     return (
-      <TouchableOpacity
+      <Pressable
         key={type.id}
-        activeOpacity={0.85}
+        style={({ pressed }) => pressed && { opacity: 0.85 }}
         onPress={() => handleTypeFilter(isActive ? null : type.id)}
       >
         <LinearGradient
@@ -185,16 +185,16 @@ export default function WorkoutList({ navigation }: Props) {
             {type.title}
           </Text>
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   const renderLevelChip = (level: WorkoutLevel) => {
     const isActive = selectedLevel === level.id;
     return (
-      <TouchableOpacity
+      <Pressable
         key={level.id}
-        activeOpacity={0.85}
+        style={({ pressed }) => pressed && { opacity: 0.85 }}
         onPress={() => handleLevelFilter(isActive ? null : level.id)}
       >
         <LinearGradient
@@ -211,7 +211,7 @@ export default function WorkoutList({ navigation }: Props) {
             {level.title}
           </Text>
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -238,12 +238,12 @@ export default function WorkoutList({ navigation }: Props) {
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.container2}>
           <View style={styles.topbar}>
-            <TouchableOpacity
-              style={styles.backBtn}
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.goBack()}
             >
               <Ionicons name="chevron-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Workouts</Text>
             <View style={styles.backBtn} />
           </View>
@@ -258,9 +258,12 @@ export default function WorkoutList({ navigation }: Props) {
               onChangeText={handleSearchChange}
             />
             {searchText.length > 0 && (
-              <TouchableOpacity onPress={() => handleSearchChange("")}>
+              <Pressable
+                onPress={() => handleSearchChange("")}
+                style={({ pressed }) => pressed && { opacity: 0.2 }}
+              >
                 <Ionicons name="close-circle" size={18} color={Colors.TEXT_SECONDARY} />
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
 
@@ -270,8 +273,8 @@ export default function WorkoutList({ navigation }: Props) {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chipScroll}
             >
-              <TouchableOpacity
-                activeOpacity={0.85}
+              <Pressable
+                style={({ pressed }) => pressed && { opacity: 0.85 }}
                 onPress={() => handleTypeFilter(null)}
               >
                 <LinearGradient
@@ -293,7 +296,7 @@ export default function WorkoutList({ navigation }: Props) {
                     All
                   </Text>
                 </LinearGradient>
-              </TouchableOpacity>
+              </Pressable>
               {types.map(renderTypeChip)}
             </ScrollView>
           </View>
@@ -305,8 +308,8 @@ export default function WorkoutList({ navigation }: Props) {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.chipScroll}
               >
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <Pressable
+                  style={({ pressed }) => pressed && { opacity: 0.85 }}
                   onPress={() => handleLevelFilter(null)}
                 >
                   <LinearGradient
@@ -328,7 +331,7 @@ export default function WorkoutList({ navigation }: Props) {
                       All levels
                     </Text>
                   </LinearGradient>
-                </TouchableOpacity>
+                </Pressable>
                 {levels.map(renderLevelChip)}
               </ScrollView>
             </View>

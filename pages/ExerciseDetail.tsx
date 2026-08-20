@@ -3,7 +3,7 @@ import {
   ScrollView,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -66,12 +66,12 @@ export default function ExerciseDetail() {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backBtn}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
             >
               <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Exercise</Text>
             <View style={styles.backBtn} />
           </View>
@@ -86,12 +86,12 @@ export default function ExerciseDetail() {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backBtn}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
             >
               <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Exercise</Text>
             <View style={styles.backBtn} />
           </View>
@@ -110,12 +110,12 @@ export default function ExerciseDetail() {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.goBack()}
-            style={styles.backBtn}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
           >
             <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Exercise</Text>
           <View style={styles.backBtn} />
         </View>
@@ -203,8 +203,8 @@ export default function ExerciseDetail() {
             </View>
           ) : null}
 
-          <TouchableOpacity
-            activeOpacity={0.85}
+          <Pressable
+            style={({ pressed }) => pressed && { opacity: 0.85 }}
             onPress={() =>
               navigation.navigate("WorkoutSession", {
                 exercises: [exercise],
@@ -222,7 +222,7 @@ export default function ExerciseDetail() {
               <Ionicons name="play" size={20} color={Colors.TEXT_PRIMARY} />
               <Text style={styles.startBtnText}>Start Exercise</Text>
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       </SafeAreaView>
     </View>

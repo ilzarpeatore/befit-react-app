@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, ActivityIndicator, Modal, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch, ActivityIndicator, Modal, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
@@ -17,13 +17,17 @@ function formatTime(hour: number, minute: number) {
 }
 
 const renderRow = (title: string, value: string, onPress?: () => void) => (
-  <TouchableOpacity style={styles.row} onPress={onPress} disabled={!onPress}>
+  <Pressable
+    style={({ pressed }) => [styles.row, !!onPress && pressed && { opacity: 0.2 }]}
+    onPress={onPress}
+    disabled={!onPress}
+  >
     <Text style={styles.rowTitle}>{title}</Text>
     <View style={styles.rowTrailing}>
       <Text style={styles.rowValue}>{value}</Text>
       <Ionicons name="chevron-forward" size={20} color={C.gray30} />
     </View>
-  </TouchableOpacity>
+  </Pressable>
 );
 
 // Fuera del componente para no reconstruir el array en cada render del picker.
@@ -143,8 +147,8 @@ export default function WaterRemindersScreen(props: any) {
   };
 
   const renderEveryPickerItem = ({ item }: { item: number }) => (
-    <TouchableOpacity
-      style={styles.pickerItem}
+    <Pressable
+      style={({ pressed }) => [styles.pickerItem, pressed && { opacity: 0.2 }]}
       onPress={() => {
         setEveryHours(item);
         setShowEveryPicker(false);
@@ -154,19 +158,23 @@ export default function WaterRemindersScreen(props: any) {
         {item === 1 ? '1 hora' : `${item} horas`}
       </Text>
       {item === everyHours && <Ionicons name="checkmark" size={22} color={C.textPrimary} />}
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
+        <Pressable onPress={() => props.navigation?.goBack()} style={({ pressed }) => pressed && { opacity: 0.2 }}>
           <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.headerTitle}>Recordatorios de agua</Text>
-        <TouchableOpacity onPress={saveSettings} disabled={isSaving}>
+        <Pressable
+          onPress={saveSettings}
+          disabled={isSaving}
+          style={({ pressed }) => pressed && { opacity: 0.2 }}
+        >
           <Text style={styles.saveBtn}>Guardar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View style={styles.body}>
@@ -221,9 +229,8 @@ export default function WaterRemindersScreen(props: any) {
 
       {/* Every Hours Picker Modal */}
       <Modal visible={showEveryPicker} transparent animationType="slide">
-        <TouchableOpacity
+        <Pressable
           style={styles.modalOverlay}
-          activeOpacity={1}
           onPress={() => setShowEveryPicker(false)}
         >
           <View style={styles.modalContent}>
@@ -236,56 +243,58 @@ export default function WaterRemindersScreen(props: any) {
               style={{ maxHeight: 400 }}
             />
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </Modal>
 
       {/* Time Picker Modal */}
       <Modal visible={showTimePicker !== null} transparent animationType="slide">
-        <TouchableOpacity
+        <Pressable
           style={styles.modalOverlay}
-          activeOpacity={1}
           onPress={() => setShowTimePicker(null)}
         >
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Seleccionar hora</Text>
             <View style={styles.timePickerRow}>
               <View style={styles.timeColumn}>
-                <TouchableOpacity
-                  style={styles.timeArrow}
+                <Pressable
+                  style={({ pressed }) => [styles.timeArrow, pressed && { opacity: 0.2 }]}
                   onPress={() => setPickerHour((prev) => (prev + 1) % 24)}
                 >
                   <Ionicons name="chevron-up" size={28} color={C.white} />
-                </TouchableOpacity>
+                </Pressable>
                 <Text style={styles.timeValue}>{pickerHour.toString().padStart(2, '0')}</Text>
-                <TouchableOpacity
-                  style={styles.timeArrow}
+                <Pressable
+                  style={({ pressed }) => [styles.timeArrow, pressed && { opacity: 0.2 }]}
                   onPress={() => setPickerHour((prev) => (prev + 23) % 24)}
                 >
                   <Ionicons name="chevron-down" size={28} color={C.white} />
-                </TouchableOpacity>
+                </Pressable>
               </View>
               <Text style={styles.timeSeparator}>:</Text>
               <View style={styles.timeColumn}>
-                <TouchableOpacity
-                  style={styles.timeArrow}
+                <Pressable
+                  style={({ pressed }) => [styles.timeArrow, pressed && { opacity: 0.2 }]}
                   onPress={() => setPickerMinute((prev) => (prev + 5) % 60)}
                 >
                   <Ionicons name="chevron-up" size={28} color={C.white} />
-                </TouchableOpacity>
+                </Pressable>
                 <Text style={styles.timeValue}>{pickerMinute.toString().padStart(2, '0')}</Text>
-                <TouchableOpacity
-                  style={styles.timeArrow}
+                <Pressable
+                  style={({ pressed }) => [styles.timeArrow, pressed && { opacity: 0.2 }]}
                   onPress={() => setPickerMinute((prev) => (prev + 55) % 60)}
                 >
                   <Ionicons name="chevron-down" size={28} color={C.white} />
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
-            <TouchableOpacity style={styles.confirmBtn} onPress={confirmTimePicker}>
+            <Pressable
+              style={({ pressed }) => [styles.confirmBtn, pressed && { opacity: 0.2 }]}
+              onPress={confirmTimePicker}
+            >
               <Text style={styles.confirmBtnText}>Confirmar</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );

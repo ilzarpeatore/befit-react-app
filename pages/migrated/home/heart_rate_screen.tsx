@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -33,9 +33,12 @@ export default function HeartRateScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => navigation.goBack()}
+            >
               <Ionicons name="arrow-back" size={22} color={C.white} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Heart Rate</Text>
           </View>
 
@@ -47,13 +50,17 @@ export default function HeartRateScreen({ navigation }: any) {
 
           <View style={styles.periodRow}>
             {PERIODS.map((p) => (
-              <TouchableOpacity
+              <Pressable
                 key={p}
-                style={[styles.periodBtn, period === p && styles.periodBtnActive]}
+                style={({ pressed }) => [
+                  styles.periodBtn,
+                  period === p && styles.periodBtnActive,
+                  pressed && { opacity: 0.2 },
+                ]}
                 onPress={() => setPeriod(p)}
               >
                 <Text style={[styles.periodText, period === p && styles.periodTextActive]}>{p}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
 
@@ -74,14 +81,14 @@ export default function HeartRateScreen({ navigation }: any) {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.alertCard}>
+          <Pressable style={({ pressed }) => [styles.alertCard, pressed && { opacity: 0.2 }]}>
             <Ionicons name="warning" size={20} color={C.warning40} />
             <View style={{ flex: 1 }}>
               <Text style={styles.alertTitle}>Abnormality Detected</Text>
               <Text style={styles.alertText}>Elevated heart rate on Jun 23 during rest</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={C.gray50} />
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.highlightsRow}>
             <View style={styles.highlightCard}>
@@ -96,9 +103,9 @@ export default function HeartRateScreen({ navigation }: any) {
 
           <Text style={styles.sectionTitle}>Recent Readings</Text>
           {RECENT.map((r) => (
-            <TouchableOpacity
+            <Pressable
               key={r.time}
-              style={styles.entry}
+              style={({ pressed }) => [styles.entry, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.navigate("MigratedHeartRateDetails")}
             >
               <View style={styles.entryLeft}>
@@ -106,7 +113,7 @@ export default function HeartRateScreen({ navigation }: any) {
                 <Text style={styles.entryTime}>{r.time}</Text>
               </View>
               <Text style={styles.entryBpm}>{r.bpm} bpm</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
 
           <View style={styles.deviceInfo}>
@@ -126,27 +133,27 @@ export default function HeartRateScreen({ navigation }: any) {
           </View>
 
           <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={styles.actionBtn}
+            <Pressable
+              style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.navigate("MigratedHeartRateZones")}
             >
               <Ionicons name="color-filter" size={18} color={C.textPrimary} />
               <Text style={styles.actionBtnText}>Zones</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionBtn}
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.navigate("MigratedHeartRateInsight")}
             >
               <Ionicons name="eye" size={18} color={C.textPrimary} />
               <Text style={styles.actionBtnText}>Insight</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionBtn}
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.navigate("MigratedHeartRateHistory")}
             >
               <Ionicons name="time" size={18} color={C.textPrimary} />
               <Text style={styles.actionBtnText}>History</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>
