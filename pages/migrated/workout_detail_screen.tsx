@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, ScrollView, Image, Dimensions, Platform, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -62,43 +62,7 @@ export default function WorkoutDetailScreen(props: any) {
 
   const scrollRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    init();
-  }, []);
-
-  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
-  // getDayExerciseData (llamada por referencia, no inline): si el fetch
-  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
-  // datos viejos.
-  // react-doctor-disable-next-line no-set-state-after-await-in-effect
-  useEffect(() => {
-    if (!numPageRef.current || page <= 1) return;
-    const ignoreRef = { current: false };
-    getDayExerciseData(workoutDayList[currentTabIndex]?.id, ignoreRef);
-    return () => {
-      ignoreRef.current = true;
-    };
-  }, [page]);
-
-  const init = async () => {
-    setIsDetailLoading(true);
-    try {
-      await workoutsApi.getDetail(workoutId).then((res) => {
-        const value: any = res.data;
-        setWorkoutDetail(value.data);
-        const days = value.data?.workout_day || [];
-        setWorkoutDayList(days);
-        if (days.length > 0) {
-          getDayExerciseData(days[0].id);
-        }
-      });
-    } catch (e) {
-    } finally {
-      setIsDetailLoading(false);
-    }
-  };
-
-  const getDayExerciseData = async (dayId?: number, ignoreRef?: { current: boolean }) => {
+  const getDayExerciseData = useCallback(async (dayId?: number, ignoreRef?: { current: boolean }) => {
     setIsLoading(true);
     try {
       await workoutsApi.getDayExercises(dayId!).then((res) => {
@@ -114,7 +78,43 @@ export default function WorkoutDetailScreen(props: any) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
+
+  const init = useCallback(async () => {
+    setIsDetailLoading(true);
+    try {
+      await workoutsApi.getDetail(workoutId).then((res) => {
+        const value: any = res.data;
+        setWorkoutDetail(value.data);
+        const days = value.data?.workout_day || [];
+        setWorkoutDayList(days);
+        if (days.length > 0) {
+          getDayExerciseData(days[0].id);
+        }
+      });
+    } catch (e) {
+    } finally {
+      setIsDetailLoading(false);
+    }
+  }, [workoutId, getDayExerciseData]);
+
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getDayExerciseData (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getDayExerciseData(workoutDayList[currentTabIndex]?.id, ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [page, getDayExerciseData, workoutDayList, currentTabIndex]);
 
   const setWorkoutFav = async (id?: number) => {
     setIsDetailLoading(true);

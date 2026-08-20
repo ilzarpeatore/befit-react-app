@@ -74,15 +74,6 @@ export default function RecipeListScreenV2(props: any) {
   const [calMaxDraft, setCalMaxDraft] = useState('');
   const scrollRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    loadRecipes();
-  }, [page, filter]);
-
-  useEffect(() => {
-    const scrollListener = scrollRef.current;
-    // In React Native we handle infinite scroll via onScroll
-  }, []);
-
   const loadRecipes = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -124,6 +115,15 @@ export default function RecipeListScreenV2(props: any) {
       setIsLoading(false);
     }
   }, [page, filter, categoryId, tagId]);
+
+  useEffect(() => {
+    loadRecipes();
+  }, [page, filter, loadRecipes]);
+
+  useEffect(() => {
+    const scrollListener = scrollRef.current;
+    // In React Native we handle infinite scroll via onScroll
+  }, []);
 
   const handleScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;

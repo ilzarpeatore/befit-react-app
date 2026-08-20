@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image as ExpoImage } from 'expo-image';
@@ -26,11 +26,7 @@ export default function SessionHistoryDetailScreen(props: any) {
   const [detail, setDetail] = useState<SessionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    load();
-  }, []);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await workoutHistoryApi.getMySessionDetail({
@@ -44,7 +40,11 @@ export default function SessionHistoryDetailScreen(props: any) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [programDayAssignmentId, workoutTemplateId, date]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>

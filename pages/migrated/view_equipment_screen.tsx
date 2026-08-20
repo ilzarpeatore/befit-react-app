@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollView, Image, ActivityIndicator } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -23,21 +23,14 @@ export default function ViewEquipmentScreen(props: any) {
 
   useEffect(() => {
     getEquipmentData();
+    // getEquipmentData lee `page`, pero solo se llama aqui, una vez al
+    // montar (siempre con page=1) -- getEquipmentDataPagination es la
+    // funcion dedicada a re-fetchear cuando page > 1 (ver el efecto de
+    // abajo). Añadir getEquipmentData a estas deps duplicaria el fetch
+    // cada vez que cambia page.
+    // react-doctor-disable-next-line exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
-  // getEquipmentDataPagination (llamada por referencia, no inline): si el
-  // fetch queda obsoleto, ignoreRef.current corta antes de tocar el estado
-  // con datos viejos.
-  // react-doctor-disable-next-line no-set-state-after-await-in-effect
-  useEffect(() => {
-    if (!numPageRef.current || page <= 1) return;
-    const ignoreRef = { current: false };
-    getEquipmentDataPagination(ignoreRef);
-    return () => {
-      ignoreRef.current = true;
-    };
-  }, [page]);
 
   const getEquipmentData = async () => {
     setIsLoading(true);
@@ -59,7 +52,7 @@ export default function ViewEquipmentScreen(props: any) {
     }
   };
 
-  const getEquipmentDataPagination = async (ignoreRef: { current: boolean }) => {
+  const getEquipmentDataPagination = useCallback(async (ignoreRef: { current: boolean }) => {
     setIsLoading(true);
     try {
       const value = await exercisesApi.getEquipment(page);
@@ -77,7 +70,21 @@ export default function ViewEquipmentScreen(props: any) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getEquipmentDataPagination (llamada por referencia, no inline): si el
+  // fetch queda obsoleto, ignoreRef.current corta antes de tocar el estado
+  // con datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getEquipmentDataPagination(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [page, getEquipmentDataPagination]);
 
   const handleScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;

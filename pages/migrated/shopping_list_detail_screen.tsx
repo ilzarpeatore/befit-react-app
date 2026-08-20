@@ -28,10 +28,6 @@ export default function ShoppingListDetailScreen(props: any) {
   const [checkedMap, setCheckedMap] = useState<Map<number, boolean>>(new Map());
   const [showAddSheet, setShowAddSheet] = useState(false);
 
-  useEffect(() => {
-    fetchDetail();
-  }, []);
-
   const fetchDetail = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -49,6 +45,10 @@ export default function ShoppingListDetailScreen(props: any) {
       setIsLoading(false);
     }
   }, [shoppingListId]);
+
+  useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
 
   const toggleItem = async (item: ShoppingListItemDetail) => {
     if (item.id == null) return;

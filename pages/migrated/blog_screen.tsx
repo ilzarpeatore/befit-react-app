@@ -52,64 +52,6 @@ export default function BlogScreen({ navigation }: any) {
   const [sortSheetVisible, setSortSheetVisible] = useState(false);
   const [categorySheetVisible, setCategorySheetVisible] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
-  // loadFilteredPosts (llamada por referencia, no inline): si el fetch
-  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
-  // datos viejos.
-  // react-doctor-disable-next-line no-set-state-after-await-in-effect
-  useEffect(() => {
-    if (isSearching || loading) return;
-    const ignoreRef = { current: false };
-    loadFilteredPosts(ignoreRef);
-    return () => {
-      ignoreRef.current = true;
-    };
-    // isSearching/loading se quedan fuera a proposito: son solo una guarda
-    // de "no dispares mientras hay otra carga en curso", no una condicion
-    // que deba re-disparar el efecto (eso causaria una carga duplicada
-    // justo despues del mount, cuando loading pasa de true a false).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, sortBy, orderDir, loadFilteredPosts]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const postsRes = await blogApi.getList(1, { per_page: 100, order_by: sortBy, order_dir: orderDir });
-      const raw = postsRes.data;
-      const posts: BlogListItem[] = (raw?.data ?? []).filter((p: any) => p.status === 'publish');
-
-      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
-      buildSections(posts);
-
-      try {
-        const catsRes = await blogApi.getCategories();
-        setCategories(catsRes.data?.data ?? []);
-      } catch {}
-    } catch (e: any) {
-      Alert.alert('Blog Error', e?.message || String(e));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadFilteredPosts = useCallback(async (ignoreRef: { current: boolean }) => {
-    try {
-      const params: any = { per_page: 100, order_by: sortBy, order_dir: orderDir };
-      if (selectedCategory) params.blog_category_id = selectedCategory;
-
-      const res = await blogApi.getList(1, params);
-      if (ignoreRef.current) return;
-      const posts: BlogListItem[] = (res.data?.data ?? []).filter((p: any) => p.status === 'publish');
-
-      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
-      buildSections(posts);
-    } catch {}
-  }, [sortBy, orderDir, selectedCategory, buildSections]);
-
   const buildSections = useCallback((posts: BlogListItem[]) => {
     if (selectedCategory) {
       const cat = categories.find((c) => c.id === selectedCategory);
@@ -134,6 +76,64 @@ export default function BlogScreen({ navigation }: any) {
       setSections(newSections);
     }
   }, [selectedCategory, categories]);
+
+  const loadFilteredPosts = useCallback(async (ignoreRef: { current: boolean }) => {
+    try {
+      const params: any = { per_page: 100, order_by: sortBy, order_dir: orderDir };
+      if (selectedCategory) params.blog_category_id = selectedCategory;
+
+      const res = await blogApi.getList(1, params);
+      if (ignoreRef.current) return;
+      const posts: BlogListItem[] = (res.data?.data ?? []).filter((p: any) => p.status === 'publish');
+
+      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
+      buildSections(posts);
+    } catch {}
+  }, [sortBy, orderDir, selectedCategory, buildSections]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const postsRes = await blogApi.getList(1, { per_page: 100, order_by: sortBy, order_dir: orderDir });
+      const raw = postsRes.data;
+      const posts: BlogListItem[] = (raw?.data ?? []).filter((p: any) => p.status === 'publish');
+
+      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
+      buildSections(posts);
+
+      try {
+        const catsRes = await blogApi.getCategories();
+        setCategories(catsRes.data?.data ?? []);
+      } catch {}
+    } catch (e: any) {
+      Alert.alert('Blog Error', e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadFilteredPosts (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (isSearching || loading) return;
+    const ignoreRef = { current: false };
+    loadFilteredPosts(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+    // isSearching/loading se quedan fuera a proposito: son solo una guarda
+    // de "no dispares mientras hay otra carga en curso", no una condicion
+    // que deba re-disparar el efecto (eso causaria una carga duplicada
+    // justo despues del mount, cuando loading pasa de true a false).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, sortBy, orderDir, loadFilteredPosts]);
 
   const handleSearch = async (text: string) => {
     setSearchText(text);
