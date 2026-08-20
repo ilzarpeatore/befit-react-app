@@ -141,12 +141,19 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     ringSubLabel: { fontSize: r(9), lineHeight: r(13), color: 'rgba(255,255,255,0.5)' },
     // Degradado de transición entre el bloque superior y "Mi plan de hoy" —
     // sustituye el borde redondeado que había antes (petición 2026-08-19).
-    seamGradient: { height: r(64), marginTop: r(-1) },
-    // Sueño / Balance de carga — a caballo entre los dos bloques (mitad sobre
-    // el degradado del header, mitad sobre "Mi plan de hoy") para que la
-    // costura entre ambos fondos sea menos visible. marginTop negativo tira
-    // la fila hacia arriba, sobre la mitad del seamGradient.
-    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-32), marginBottom: r(8) },
+    // Revisión 2026-08-20: el degradado quedaba "cutre" (salto duro de solo 2
+    // colores planos, naranja -> bg) y terminaba antes de llegar a la altura
+    // de las tarjetas de Sueño/Balance de carga. Se sube la altura para que
+    // el tramo visible llegue hasta, aproximadamente, la mitad vertical de
+    // esas tarjetas (ver miniCardsRow) — mismo marginTop = -altura/2 de
+    // antes, solo escalado hacia arriba para cubrir más superficie.
+    seamGradient: { height: r(104), marginTop: r(-1) },
+    // Sueño / Balance de carga — a caballo entre los dos bloques (la mitad
+    // superior de la tarjeta queda sobre el degradado del header, la mitad
+    // inferior sobre "Mi plan de hoy") para que la costura entre ambos
+    // fondos sea menos visible. marginTop negativo (~mitad de la altura de
+    // seamGradient) tira la fila hacia arriba, hasta la mitad de la tarjeta.
+    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-52), marginBottom: r(8) },
     heroPhrase: { fontSize: r(14), color: 'rgba(255,255,255,0.92)', textAlign: 'center' as const, lineHeight: r(20), marginBottom: r(16) },
     bannerCard: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: r(18), padding: r(16), alignItems: 'center' as const, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
     bannerTitle: { fontSize: r(14), fontFamily: FONT.bold, color: '#FFFFFF', marginTop: r(8) },
@@ -565,8 +572,19 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
         </LinearGradient>
 
         {/* Degradado de transición hacia "Mi plan de hoy" (petición
-            2026-08-19: fusión por color, no por borde redondeado) */}
-        <LinearGradient colors={[C.orange, C.bg]} style={styles.seamGradient} />
+            2026-08-19: fusión por color, no por borde redondeado).
+            Revisión 2026-08-20: en vez de saltar de golpe entre 2 colores
+            planos (naranja opaco -> bg opaco, que se veía como un corte
+            duro), se desvanece la opacidad del mismo naranja de marca hasta
+            0 en varios pasos intermedios — así el naranja se "disuelve"
+            sobre el bg real de la pantalla en vez de mezclarse a un tono
+            intermedio marrón/grisáceo feo, y la transición queda mucho más
+            suave. */}
+        <LinearGradient
+          colors={[C.orange, 'rgba(255,107,53,0.85)', 'rgba(255,107,53,0.55)', 'rgba(255,107,53,0.25)', 'rgba(255,107,53,0)']}
+          locations={[0, 0.25, 0.5, 0.75, 1]}
+          style={styles.seamGradient}
+        />
 
         {/* Sueño / Balance de carga — a caballo entre el bloque superior y
             "Mi plan de hoy" (mitad sobre el degradado, mitad sobre el
