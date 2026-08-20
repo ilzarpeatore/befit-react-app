@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -36,9 +36,12 @@ export default function HeartRateInsightScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView>
           <LinearGradient colors={[C.gray60, C.bg]} style={styles.header}>
-            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => navigation.goBack()}
+            >
               <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
-            </TouchableOpacity>
+            </Pressable>
             <Ionicons name="heart" size={24} color={C.destructive50} />
             <Text style={styles.headerTitle}>Heart Rate Insight</Text>
           </LinearGradient>

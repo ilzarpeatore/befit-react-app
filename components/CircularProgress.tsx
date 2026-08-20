@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { View, Image, Animated, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
+import Animated, { useSharedValue, withTiming, useAnimatedProps } from "react-native-reanimated";
+import { Image } from "expo-image";
 import {
   Svg,
   Defs,
@@ -16,22 +18,22 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 function CircularProgress({ width, height, percent, icon }: CircularProgressInterface) {
   const styles = useStyle();
   /* chart data */
-  const weightpercentageanime = useRef(new Animated.Value(100)).current;
+  const weightpercentageanime = useSharedValue(100);
   /* chart animation */
   useEffect(() => {
-    Animated.timing(weightpercentageanime, {
-      toValue: 100 - percent,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  }, [percent])
+    weightpercentageanime.value = withTiming(100 - percent, { duration: 500 });
+  }, [percent, weightpercentageanime])
+  const animatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: weightpercentageanime.value,
+  }));
   return (
     <View>
       <Image
         source={require("./../assets/challenges/progressbg.png")}
+        contentFit="contain"
         style={styles.chartdataprogressbg}
       />
-      <Image source={icon} style={styles.chartdataprogressicon} />
+      <Image source={icon} contentFit="contain" style={styles.chartdataprogressicon} />
       <Svg
         width={width}
         height={height}
@@ -48,7 +50,7 @@ function CircularProgress({ width, height, percent, icon }: CircularProgressInte
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray="98"
-          strokeDashoffset={weightpercentageanime}
+          animatedProps={animatedProps}
         />
         <Defs>
           <SlinearGradient
@@ -83,7 +85,6 @@ function useStyle() {
       height: '56@ratio',
       top: 0,
       right: 0,
-      resizeMode: "contain",
     },
     chartdataprogresssvg: {
       marginTop: '-2@ratio',
@@ -97,7 +98,6 @@ function useStyle() {
       left: "50%",
       marginLeft: '-12@ratio',
       marginTop: '-12@ratio',
-      resizeMode: "contain",
     },
   });
   return styles

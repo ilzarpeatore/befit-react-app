@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { ScrollView, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';
@@ -33,22 +34,20 @@ interface PostData {
 }
 
 export default function OtherUserProfileScreen(props: any) {
+  const { height: windowHeight } = useWindowDimensions();
   const userDetails: UserDetails = props.route?.params?.userDetails ?? {};
 
-  const [firstName, setFirstName] = useState(userDetails.firstName ?? '');
-  const [lastName, setLastName] = useState(userDetails.lastName ?? '');
-  const [profileImg, setProfileImg] = useState(userDetails.profileImage ?? '');
+  const firstName = userDetails.firstName ?? '';
+  const lastName = userDetails.lastName ?? '';
+  const profileImg = userDetails.profileImage ?? '';
   const [postList, setPostList] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState(1);
+  const pageRef = useRef(1);
+  const numPageRef = useRef(1);
   const [stats, setStats] = useState<UserSocialStats | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    setFirstName(userDetails.firstName ?? '');
-    setLastName(userDetails.lastName ?? '');
-    setProfileImg(userDetails.profileImage ?? '');
     getPostList(1);
     getStats();
   }, [userDetails.id]);
@@ -68,7 +67,7 @@ export default function OtherUserProfileScreen(props: any) {
     setIsLoading(true);
     try {
       const res = await postsApi.getList(pageNum, userDetails.id);
-      setNumPage(res.data.pagination?.totalPages ?? 1);
+      numPageRef.current = res.data.pagination?.totalPages ?? 1;
       const list: PostData[] = (res.data.data ?? []).map((p: any) => ({
         id: p.id,
         content: p.description,
@@ -80,7 +79,7 @@ export default function OtherUserProfileScreen(props: any) {
         isBookmarked: p.is_bookmark,
       }));
       setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
-      setPage(pageNum);
+      pageRef.current = pageNum;
     } catch (e) {
       logger.error('Error fetching user posts', e);
     } finally {
@@ -127,16 +126,16 @@ export default function OtherUserProfileScreen(props: any) {
     });
   };
 
-  const renderPostItem = (item: PostData, index: number) => (
+  const renderPostItem = (item: PostData) => (
     <Pressable
-      key={index}
+      key={item.id}
       className="bg-card rounded-lg p-4"
       style={{ marginBottom: 12 }}
       onPress={() => openPostDetail(item)}
     >
       <HStack className="items-center" style={{ marginBottom: 12 }}>
         {profileImg ? (
-          <Image source={{ uri: profileImg }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+          <Image source={{ uri: profileImg }} contentFit="cover" style={{ width: 40, height: 40, borderRadius: 20 }} />
         ) : (
           <Box className="bg-muted rounded-pill items-center justify-center" style={{ width: 40, height: 40 }}>
             <Icon name="person" size={20} color={C.gray30} />
@@ -150,8 +149,8 @@ export default function OtherUserProfileScreen(props: any) {
       {item.content ? <Text size="sm" style={{ color: C.gray50, marginBottom: 12, lineHeight: 20 }}>{item.content}</Text> : null}
       {item.images && item.images.length > 0 ? (
         <HStack style={{ marginBottom: 12 }}>
-          {item.images.map((img, i) => (
-            <Image key={i} source={{ uri: img }} style={{ width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight }} />
+          {item.images.map((img) => (
+            <Image key={img} source={{ uri: img }} contentFit="cover" style={{ width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight }} />
           ))}
         </HStack>
       ) : null}
@@ -181,18 +180,18 @@ export default function OtherUserProfileScreen(props: any) {
     <Box className="flex-1 bg-background">
       <Box
         className="absolute top-0 left-0 right-0"
-        style={{ height: Dimensions.get('window').height * 0.3, backgroundColor: C.brand5 }}
+        style={{ height: windowHeight * 0.3, backgroundColor: C.brand5 }}
       />
       <ScrollView ref={scrollRef} className="flex-1">
         <ScreenHeader title="Profile" onBack={() => props.navigation?.goBack()} />
         <Box
           className="bg-card rounded-lg items-center"
-          style={{ marginTop: Dimensions.get('window').height * 0.15, paddingTop: 60, paddingBottom: 24 }}
+          style={{ marginTop: windowHeight * 0.15, paddingTop: 60, paddingBottom: 24 }}
         >
           <Box className="absolute self-center" style={{ top: -48 }}>
             <Box className="bg-muted items-center justify-center overflow-hidden" style={{ width: 96, height: 96, borderRadius: 48 }}>
               {profileImg ? (
-                <Image source={{ uri: profileImg }} style={{ width: 96, height: 96, borderRadius: 48 }} />
+                <Image source={{ uri: profileImg }} contentFit="cover" style={{ width: 96, height: 96, borderRadius: 48 }} />
               ) : (
                 <Icon name="person" size={40} color={C.gray30} />
               )}
@@ -213,7 +212,7 @@ export default function OtherUserProfileScreen(props: any) {
         </Box>
         <Box style={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 24 }}>
           {postList.length > 0 ? (
-            postList.map((item, index) => renderPostItem(item, index))
+            postList.map((item) => renderPostItem(item))
           ) : !isLoading ? (
             <Box className="items-center justify-center" style={{ paddingVertical: 48 }}>
               <Icon name="document-text-outline" size={64} color={C.gray50} />

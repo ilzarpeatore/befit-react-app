@@ -40,7 +40,8 @@ import { habitsApi, Habit } from '../../api/habits';
 import { healthApi, HealthReading, HealthDataSource } from '../../api/health';
 import { isHealthAvailable, getHealthSnapshot } from '../../helper/health';
 import { habitIoniconFor } from '../../constants/habitIcons';
-import WeekComplianceRow, { computeWeekCompliance } from '@components/WeekComplianceRow';
+import WeekComplianceRow from '@components/WeekComplianceRow';
+import { computeWeekCompliance } from '@components/weekCompliance';
 import { useAuth } from '../../store/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -73,7 +74,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const firstLoadDone = useRef(false);
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
-  const r = (n: number) => Math.round(n * sc);
+  const r = useCallback((n: number) => Math.round(n * sc), [sc]);
   const insets = useSafeAreaInsets();
 
   const [showMenu, setShowMenu] = useState(false);
@@ -180,7 +181,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     menuCloseBtn: { width: r(32), height: r(32), borderRadius: r(16), backgroundColor: C.surfaceLight, alignItems: 'center' as const, justifyContent: 'center' as const },
     menuItemText: { flex: 1, fontSize: r(15), fontFamily: FONT.semiBold, color: C.white },
     menuItemTextDanger: { color: C.destructive },
-  }), [sc]);
+  }), [sc, r]);
 
   const fetchData = useCallback(async (mode?: 'initial' | 'silent') => {
     if (mode !== 'silent') {
@@ -226,7 +227,8 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
       if (calendarRes.status === 'fulfilled') {
         const calData: any = calendarRes.value.data.data;
         const days = calData?.days ?? [];
-        const today = days.find((day: any) => day.date === todayStr);
+        const daysByDate = new Map<string, any>(days.map((day: any) => [day.date, day]));
+        const today = daysByDate.get(todayStr);
         setTodayWorkouts(today?.workouts ?? []);
 
         const dayOfWeek = now.getDay();
@@ -238,7 +240,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           const d = new Date(monday);
           d.setDate(monday.getDate() + i);
           const dateStr = d.toISOString().split('T')[0];
-          const dayData = days.find((day: any) => day.date === dateStr);
+          const dayData: any = daysByDate.get(dateStr);
           weekBools.push(!!(dayData?.workouts && dayData.workouts.length > 0));
         }
         setWeeklyWorkouts(weekBools);
@@ -918,7 +920,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
 
       <Pressable
         onPress={() => navigation?.navigate('ScreenExplorer')}
-        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#E5E5EA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(229, 229, 234, 0.3)', zIndex: 999 }}
       >
         <Text style={{ fontSize: 28, color: '#000000', marginTop: -2 }}>+</Text>
       </Pressable>

@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
-  ImageBackground,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   TextInput,
 } from "react-native";
@@ -42,11 +41,11 @@ export default function WorkoutList({ navigation }: Props) {
   const [selectedType, setSelectedType] = useState<number | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [page, setPage] = useState(1);
+  const pageRef = useRef(1);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const hasMoreRef = useRef(true);
 
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -73,7 +72,7 @@ export default function WorkoutList({ navigation }: Props) {
         } else {
           setWorkouts((prev) => [...prev, ...data]);
         }
-        setHasMore(pageNum < (res.data?.pagination?.total_pages ?? 1));
+        hasMoreRef.current = pageNum < (res.data?.pagination?.total_pages ?? 1);
       } catch (e: any) {
         setError(e?.message || "Failed to load workouts");
       }
@@ -104,23 +103,23 @@ export default function WorkoutList({ navigation }: Props) {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    setPage(1);
+    pageRef.current = 1;
     await fetchWorkouts(1);
     setRefreshing(false);
   }, [fetchWorkouts]);
 
   const handleLoadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
+    if (!loading && hasMoreRef.current) {
+      const nextPage = pageRef.current + 1;
+      pageRef.current = nextPage;
       fetchWorkouts(nextPage);
     }
-  }, [loading, hasMore, page, fetchWorkouts]);
+  }, [loading, fetchWorkouts]);
 
   const handleTypeFilter = useCallback(
     (typeId: number | null) => {
       setSelectedType(typeId);
-      setPage(1);
+      pageRef.current = 1;
       setLoading(true);
       fetchWorkouts(1, typeId, selectedLevel, searchText).finally(() => setLoading(false));
     },
@@ -130,7 +129,7 @@ export default function WorkoutList({ navigation }: Props) {
   const handleLevelFilter = useCallback(
     (levelId: number | null) => {
       setSelectedLevel(levelId);
-      setPage(1);
+      pageRef.current = 1;
       setLoading(true);
       fetchWorkouts(1, selectedType, levelId, searchText).finally(() => setLoading(false));
     },
@@ -142,7 +141,7 @@ export default function WorkoutList({ navigation }: Props) {
       setSearchText(text);
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
       searchDebounceRef.current = setTimeout(() => {
-        setPage(1);
+        pageRef.current = 1;
         setLoading(true);
         fetchWorkouts(1, selectedType, selectedLevel, text).finally(() => setLoading(false));
       }, 400);
@@ -167,9 +166,9 @@ export default function WorkoutList({ navigation }: Props) {
   const renderTypeChip = (type: WorkoutType) => {
     const isActive = selectedType === type.id;
     return (
-      <TouchableOpacity
+      <Pressable
         key={type.id}
-        activeOpacity={0.85}
+        style={({ pressed }) => pressed && { opacity: 0.85 }}
         onPress={() => handleTypeFilter(isActive ? null : type.id)}
       >
         <LinearGradient
@@ -186,16 +185,16 @@ export default function WorkoutList({ navigation }: Props) {
             {type.title}
           </Text>
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   const renderLevelChip = (level: WorkoutLevel) => {
     const isActive = selectedLevel === level.id;
     return (
-      <TouchableOpacity
+      <Pressable
         key={level.id}
-        activeOpacity={0.85}
+        style={({ pressed }) => pressed && { opacity: 0.85 }}
         onPress={() => handleLevelFilter(isActive ? null : level.id)}
       >
         <LinearGradient
@@ -212,7 +211,7 @@ export default function WorkoutList({ navigation }: Props) {
             {level.title}
           </Text>
         </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -239,12 +238,12 @@ export default function WorkoutList({ navigation }: Props) {
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.container2}>
           <View style={styles.topbar}>
-            <TouchableOpacity
-              style={styles.backBtn}
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.goBack()}
             >
               <Ionicons name="chevron-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Workouts</Text>
             <View style={styles.backBtn} />
           </View>
@@ -259,9 +258,12 @@ export default function WorkoutList({ navigation }: Props) {
               onChangeText={handleSearchChange}
             />
             {searchText.length > 0 && (
-              <TouchableOpacity onPress={() => handleSearchChange("")}>
+              <Pressable
+                onPress={() => handleSearchChange("")}
+                style={({ pressed }) => pressed && { opacity: 0.2 }}
+              >
                 <Ionicons name="close-circle" size={18} color={Colors.TEXT_SECONDARY} />
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
 
@@ -271,8 +273,8 @@ export default function WorkoutList({ navigation }: Props) {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chipScroll}
             >
-              <TouchableOpacity
-                activeOpacity={0.85}
+              <Pressable
+                style={({ pressed }) => pressed && { opacity: 0.85 }}
                 onPress={() => handleTypeFilter(null)}
               >
                 <LinearGradient
@@ -294,7 +296,7 @@ export default function WorkoutList({ navigation }: Props) {
                     All
                   </Text>
                 </LinearGradient>
-              </TouchableOpacity>
+              </Pressable>
               {types.map(renderTypeChip)}
             </ScrollView>
           </View>
@@ -306,8 +308,8 @@ export default function WorkoutList({ navigation }: Props) {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.chipScroll}
               >
-                <TouchableOpacity
-                  activeOpacity={0.85}
+                <Pressable
+                  style={({ pressed }) => pressed && { opacity: 0.85 }}
                   onPress={() => handleLevelFilter(null)}
                 >
                   <LinearGradient
@@ -329,7 +331,7 @@ export default function WorkoutList({ navigation }: Props) {
                       All levels
                     </Text>
                   </LinearGradient>
-                </TouchableOpacity>
+                </Pressable>
                 {levels.map(renderLevelChip)}
               </ScrollView>
             </View>

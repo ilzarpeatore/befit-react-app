@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, TouchableOpacity, View, Image } from "react-native";
+import { Text, Pressable, View } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -33,7 +34,7 @@ function PostCard({
   const styles = useStyle();
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+    <Pressable style={({ pressed }) => pressed && { opacity: 0.9 }} onPress={onPress}>
       <View style={styles.container}>
         <View style={styles.header}>
           <AvatarMem uri={avatar} name={username} size={40} />
@@ -50,12 +51,12 @@ function PostCard({
         <Text style={styles.content}>{content}</Text>
 
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} contentFit="cover" style={styles.image} />
         ) : null}
 
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.actionBtn}
+          <Pressable
+            style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.2 }]}
             onPress={onLike}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -65,10 +66,10 @@ function PostCard({
               color={Colors.TEXT_SECONDARY}
             />
             <Text style={styles.actionText}>{likes}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity
-            style={styles.actionBtn}
+          <Pressable
+            style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.2 }]}
             onPress={onComment}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -78,10 +79,10 @@ function PostCard({
               color={Colors.TEXT_SECONDARY}
             />
             <Text style={styles.actionText}>{comments}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -126,7 +127,6 @@ function useStyle() {
       width: "100%",
       height: "200@ratio",
       borderRadius: "12@ratio",
-      resizeMode: "cover",
       marginBottom: "12@ratio",
     },
     actions: {

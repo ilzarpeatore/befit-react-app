@@ -1,11 +1,20 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Alert, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, TextInput, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@store/AuthContext";
 import { authApi } from "@api/auth";
 
 import { C, FONT } from "../theme";
+
+const GENEROS = ["Masculino", "Femenino", "Otro", "Prefiero no decir"];
+
+const GENDER_KEY_MAP: Record<string, string> = {
+  Masculino: "male",
+  Femenino: "female",
+  Otro: "other",
+  "Prefiero no decir": "not_specified",
+};
 
 export default function ProfileSetupFormScreen({ navigation }: any) {
   const { state, updateUser } = useAuth();
@@ -41,14 +50,8 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
     setAlergias(alergias.filter((_, i) => i !== index));
   };
 
-  const generos = ["Masculino", "Femenino", "Otro", "Prefiero no decir"];
-
-  const genderKeyMap: Record<string, string> = {
-    Masculino: "male",
-    Femenino: "female",
-    Otro: "other",
-    "Prefiero no decir": "not_specified",
-  };
+  const generos = GENEROS;
+  const genderKeyMap = GENDER_KEY_MAP;
 
   const handleContinue = async () => {
     setSaving(true);
@@ -101,16 +104,32 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
 
         <View style={localStyles.field}>
           <Text style={[localStyles.label, { color: C.white }]}>GÃ©nero</Text>
-          <TouchableOpacity style={[localStyles.input, localStyles.pickerInput, { borderColor: C.border }]} onPress={() => setShowGenero(!showGenero)}>
+          <Pressable
+            style={({ pressed }) => [
+              localStyles.input,
+              localStyles.pickerInput,
+              { borderColor: C.border },
+              pressed && { opacity: 0.2 },
+            ]}
+            onPress={() => setShowGenero(!showGenero)}
+          >
             <Text style={{ color: genero ? C.white : C.textMuted }}>{genero || "Seleccionar gÃ©nero"}</Text>
             <Ionicons name={showGenero ? "chevron-up" : "chevron-down"} size={18} color={C.gray} />
-          </TouchableOpacity>
+          </Pressable>
           {showGenero && (
             <View style={localStyles.dropdown}>
               {generos.map((g) => (
-                <TouchableOpacity key={g} style={[localStyles.dropdownItem, { borderBottomColor: C.border }]} onPress={() => { setGenero(g); setShowGenero(false); }}>
+                <Pressable
+                  key={g}
+                  style={({ pressed }) => [
+                    localStyles.dropdownItem,
+                    { borderBottomColor: C.border },
+                    pressed && { opacity: 0.2 },
+                  ]}
+                  onPress={() => { setGenero(g); setShowGenero(false); }}
+                >
                   <Text style={[localStyles.dropdownText, { color: C.white }]}>{g}</Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           )}
@@ -138,17 +157,24 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
           <Text style={[localStyles.label, { color: C.white }]}>Alergias</Text>
           <View style={localStyles.tagInputRow}>
             <TextInput style={[localStyles.input, { borderColor: C.border, color: C.white, flex: 1 }]} value={alergiaInput} onChangeText={setAlergiaInput} placeholder="Agregar alergia" placeholderTextColor={C.textMuted} onSubmitEditing={addAlergia} />
-            <TouchableOpacity style={[localStyles.addTagBtn, { backgroundColor: C.primary }]} onPress={addAlergia}>
+            <Pressable
+              style={({ pressed }) => [
+                localStyles.addTagBtn,
+                { backgroundColor: C.primary },
+                pressed && { opacity: 0.2 },
+              ]}
+              onPress={addAlergia}
+            >
               <Ionicons name="add" size={20} color={C.white} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
           <View style={localStyles.tagsContainer}>
             {alergias.map((a, idx) => (
               <View key={idx} style={[localStyles.tag, { backgroundColor: C.primary + "15" }]}>
                 <Text style={[localStyles.tagText, { color: C.textPrimary }]}>{a}</Text>
-                <TouchableOpacity onPress={() => removeAlergia(idx)}>
+                <Pressable onPress={() => removeAlergia(idx)} style={({ pressed }) => pressed && { opacity: 0.2 }}>
                   <Ionicons name="close-circle" size={16} color={C.textPrimary} />
-                </TouchableOpacity>
+                </Pressable>
               </View>
             ))}
           </View>
@@ -182,8 +208,12 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: C.primary, opacity: saving ? 0.7 : 1 }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: C.primary, opacity: saving ? 0.7 : 1 },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={handleContinue}
           disabled={saving}
         >
@@ -192,7 +222,7 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
           ) : (
             <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
           )}
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

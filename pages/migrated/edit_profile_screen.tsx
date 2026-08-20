@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Image, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, ScrollView, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -19,6 +20,21 @@ interface EditProfileScreenProps {
   navigation: any;
 }
 
+function getGender() {
+  const genderList = [
+    { id: 0, label: 'Hombre', key: 'male' },
+    { id: 1, label: 'Mujer', key: 'female' },
+  ];
+  return genderList;
+}
+
+ 
+async function pickImage() {
+  // ImagePicker logic
+  // const result = await ImagePicker.launchImageLibraryAsync({...});
+  // if (!result.canceled) setImageUri(result.assets[0].uri);
+}
+
 export default function EditProfileScreen(props: EditProfileScreenProps) {
 
   const { updateUser, state } = useAuth();
@@ -29,7 +45,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [weight, setWeight] = useState('');
   const [heightVal, setHeightVal] = useState('');
-  const [gender, setGender] = useState('female');
+  const genderRef = useRef('female');
   const [selectGender, setSelectGender] = useState(0);
   const [profileImage, setProfileImage] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -48,18 +64,10 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
       setLName(state.user.last_name ?? '');
       setEmail(state.user.email ?? '');
       setPhoneNumber(state.user.phone_number ?? '');
-      setGender(state.user.gender || 'female');
+      genderRef.current = state.user.gender || 'female';
       setProfileImage(state.user.profile_image ?? '');
       setSelectGender(state.user.gender === 'male' ? 0 : 1);
     }
-  };
-
-  const getGender = () => {
-    const genderList = [
-      { id: 0, label: 'Hombre', key: 'male' },
-      { id: 1, label: 'Mujer', key: 'female' },
-    ];
-    return genderList;
   };
 
   const convertFeetToCm = () => {
@@ -86,12 +94,6 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
     if (weight) setWeight(lbs.toFixed(2));
   };
 
-  const pickImage = async () => {
-    // ImagePicker logic
-    // const result = await ImagePicker.launchImageLibraryAsync({...});
-    // if (!result.canceled) setImageUri(result.assets[0].uri);
-  };
-
   const save = async () => {
     setIsLoading(true);
     try {
@@ -110,7 +112,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
         email: email.trim(),
         username: state.user?.username,
         phone_number: phoneNumber.trim(),
-        gender,
+        gender: genderRef.current,
         user_profile: {
           age: age.trim(),
           weight: weight.trim(),
@@ -142,14 +144,14 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
     if (imageUri) {
       return (
         <Box style={localStyles.profileImageContainer}>
-          <Image source={{ uri: imageUri }} style={localStyles.profileImage} />
+          <Image source={{ uri: imageUri }} contentFit="cover" style={localStyles.profileImage} />
         </Box>
       );
     }
     if (profileImage) {
       return (
         <Box style={localStyles.profileImageContainer}>
-          <Image source={{ uri: profileImage }} style={localStyles.profileImage} />
+          <Image source={{ uri: profileImage }} contentFit="cover" style={localStyles.profileImage} />
         </Box>
       );
     }
@@ -289,7 +291,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
                     style={[localStyles.genderBtn, selectGender === g.id && localStyles.genderBtnActive] as any}
                     onPress={() => {
                       setSelectGender(g.id);
-                      setGender(g.key);
+                      genderRef.current = g.key;
                     }}
                   >
                     <ButtonText style={[localStyles.genderText, selectGender === g.id && localStyles.genderTextActive] as any}>

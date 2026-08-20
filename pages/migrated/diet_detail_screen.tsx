@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -48,6 +49,14 @@ interface DietDetailScreenProps {
   };
 }
 
+const getVitamins = (icon: string, title: string, subTitle: string) => (
+  <VStack className="items-center flex-1">
+    <Icon name={icon as any} size={26} color={C.textPrimary} />
+    <Text style={localStyles.vitaminTitle}>{title}</Text>
+    <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
+  </VStack>
+);
+
 export default function DietDetailScreen(props: DietDetailScreenProps) {
   const dietModel = props.route.params?.dietModel ?? {};
   const fallbackId = props.route.params?.id;
@@ -89,7 +98,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
-  }, [fallbackId]);
+  }, [fallbackId, dietModel?.id]);
 
   useEffect(() => {
     // Recipe mode: fetch a real recipe (with structured ingredients/steps) instead
@@ -123,7 +132,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
-  }, [recipeId]);
+  }, [recipeId, recipeImageParam]);
 
   const setDiet = async (id?: number) => {
     if (!id) return;
@@ -144,14 +153,6 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
       setIsLoading(false);
     }
   };
-
-  const getVitamins = (icon: string, title: string, subTitle: string) => (
-    <VStack className="items-center flex-1">
-      <Icon name={icon as any} size={26} color={C.textPrimary} />
-      <Text style={localStyles.vitaminTitle}>{title}</Text>
-      <Text style={localStyles.vitaminSubtitle}>{subTitle}</Text>
-    </VStack>
-  );
 
   const isLockedRecipe = isRecipeMode && dietState.isPremium === 1 && dietState.isAccessible === 0;
 
@@ -216,7 +217,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         <Image
           source={{ uri: dietState.dietImage || '' }}
           style={localStyles.headerImage}
-          resizeMode="cover"
+          contentFit="cover"
         />
         <Box style={localStyles.headerOverlay} />
 

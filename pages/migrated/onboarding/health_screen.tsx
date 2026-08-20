@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+import React from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -56,7 +56,7 @@ export default function HealthScreen({ navigation }: any) {
           </View>
           <View style={localStyles.chartContainer}>
             {SLEEP_DATA.map((item, idx) => (
-              <View key={idx} style={localStyles.barColumn}>
+              <View key={item.day} style={localStyles.barColumn}>
                 <Text style={[localStyles.barHours, { color: C.white }]}>{item.hours}h</Text>
                 <View style={localStyles.barTrack}>
                   <View style={[localStyles.barFill, { height: `${(item.hours / maxSleep) * 100}%`, backgroundColor: idx === 5 ? C.primary : C.primary + "60" }]} />
@@ -68,8 +68,8 @@ export default function HealthScreen({ navigation }: any) {
         </View>
 
         <Text style={[localStyles.tipsTitle, { color: C.white }]}>Consejos de salud</Text>
-        {TIPS.map((tip, idx) => (
-          <View key={idx} style={localStyles.tipCard}>
+        {TIPS.map((tip) => (
+          <View key={tip.title} style={localStyles.tipCard}>
             <View style={[localStyles.tipIcon, { backgroundColor: C.primary + "15" }]}>
               <Ionicons name={tip.icon} size={24} color={C.textPrimary} />
             </View>
@@ -82,12 +82,16 @@ export default function HealthScreen({ navigation }: any) {
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: C.primary }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: C.primary },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={() => navigation.navigate("MigratedArticles")}
         >
           <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

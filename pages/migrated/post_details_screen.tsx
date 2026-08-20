@@ -36,8 +36,8 @@ export default function PostDetailsScreen(props: any) {
   const postData: PostData | undefined = props.route?.params?.postData;
   const isFromLink: boolean = props.route?.params?.isFromLink ?? false;
 
-  const [likeChange, setLikeChange] = useState(0);
-  const [bookMarkChange, setBookMarkChange] = useState(0);
+  const likeChangeRef = useRef(0);
+  const bookMarkChangeRef = useRef(0);
   const [heartVisible, setHeartVisible] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(postData?.isLiked ?? false);
@@ -82,22 +82,22 @@ export default function PostDetailsScreen(props: any) {
 
   const toggleLike = () => {
     setIsLiked((prev) => !prev);
-    setLikeChange((prev) => prev + 1);
+    likeChangeRef.current += 1;
     if (postData.id) {
       postsApi.like(postData.id).catch(() => {
         setIsLiked((prev) => !prev);
-        setLikeChange((prev) => prev - 1);
+        likeChangeRef.current -= 1;
       });
     }
   };
 
   const toggleBookmark = () => {
     setIsBookmarked((prev) => !prev);
-    setBookMarkChange((prev) => prev + 1);
+    bookMarkChangeRef.current += 1;
     if (postData.id) {
       postsApi.bookmark(postData.id).catch(() => {
         setIsBookmarked((prev) => !prev);
-        setBookMarkChange((prev) => prev - 1);
+        bookMarkChangeRef.current -= 1;
       });
     }
   };
@@ -155,9 +155,9 @@ export default function PostDetailsScreen(props: any) {
             {postData.content ? <Text muted style={{ lineHeight: 22, marginBottom: 12 }}>{postData.content}</Text> : null}
             {postData.images && postData.images.length > 0 ? (
               <Box className="flex-row flex-wrap" style={{ marginBottom: 12 }}>
-                {postData.images.map((img, i) => (
+                {postData.images.map((img) => (
                   <Image
-                    key={i}
+                    key={img}
                     source={{ uri: img }}
                     className="rounded-md bg-secondary"
                     style={[

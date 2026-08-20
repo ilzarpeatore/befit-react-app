@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Text,
   View,
-  ImageBackground,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   Alert,
 } from "react-native";
@@ -30,8 +29,8 @@ export default function CommunityFeed({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(1);
+  const hasMoreRef = useRef(true);
 
   const fetchPosts = useCallback(
     async (pageNum: number = 1, isRefresh: boolean = false) => {
@@ -49,8 +48,8 @@ export default function CommunityFeed({ navigation }: Props) {
         } else {
           setPosts((prev) => [...prev, ...newData]);
         }
-        setHasMore(pagination ? pageNum < pagination.totalPages : false);
-        setPage(pageNum);
+        hasMoreRef.current = pagination ? pageNum < pagination.totalPages : false;
+        pageRef.current = pageNum;
       } catch (e) {
         if (pageNum === 1) setError("Failed to load posts. Please try again.");
       } finally {
@@ -70,10 +69,10 @@ export default function CommunityFeed({ navigation }: Props) {
   }, [fetchPosts]);
 
   const handleLoadMore = useCallback(() => {
-    if (hasMore && !loading && !refreshing) {
-      fetchPosts(page + 1);
+    if (hasMoreRef.current && !loading && !refreshing) {
+      fetchPosts(pageRef.current + 1);
     }
-  }, [hasMore, loading, refreshing, page, fetchPosts]);
+  }, [loading, refreshing, fetchPosts]);
 
   const handlePostPress = useCallback(
     (id: number) => {
@@ -136,9 +135,15 @@ export default function CommunityFeed({ navigation }: Props) {
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -156,9 +161,15 @@ export default function CommunityFeed({ navigation }: Props) {
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -173,9 +184,15 @@ export default function CommunityFeed({ navigation }: Props) {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+              pressed && { opacity: 0.2 },
+            ]}
+          >
             <Ionicons name="chevron-back" size={22} color="#000000" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Community</Text>
           <View style={{ width: 40 }} />
         </View>
@@ -206,9 +223,8 @@ export default function CommunityFeed({ navigation }: Props) {
           />
         )}
 
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={styles.fab}
+        <Pressable
+          style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}
           onPress={() => Alert.alert("Coming Soon", "Post creation will be available soon!")}
         >
           <LinearGradient
@@ -219,7 +235,7 @@ export default function CommunityFeed({ navigation }: Props) {
           >
             <Ionicons name="add" size={28} color={Colors.TEXT_PRIMARY} />
           </LinearGradient>
-        </TouchableOpacity>
+        </Pressable>
       </SafeAreaView>
       <StatusBar style="dark" />
     </View>

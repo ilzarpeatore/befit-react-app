@@ -19,6 +19,36 @@ const HEALTH_APP_NAME = Platform.OS === "ios" ? "Apple Salud" : "Health Connect"
 // Health Connect en Android no tiene esta restricción, se deja activo.
 const HEALTH_INTEGRATION_AVAILABLE = Platform.OS === "android";
 
+const renderOption = (
+  icon: string,
+  iconBg: string,
+  iconColor: string,
+  title: string,
+  desc: string,
+  onPress: () => void,
+  opts?: { disabled?: boolean; loading?: boolean }
+) => (
+  <Pressable
+    className="flex-row items-center bg-card rounded-lg border border-border"
+    style={{ padding: 20, gap: 16 }}
+    onPress={onPress}
+    disabled={opts?.disabled}
+  >
+    <Box className={`w-14 h-14 rounded-sm items-center justify-center ${iconBg}`}>
+      {opts?.loading ? (
+        <Spinner color={C.textPrimary} />
+      ) : (
+        <Icon name={icon as any} size={32} className={iconColor} />
+      )}
+    </Box>
+    <VStack className="flex-1" space="xs">
+      <Text weight="semibold">{title}</Text>
+      <Text size="xs" muted>{desc}</Text>
+    </VStack>
+    <Icon name="chevron-forward" size={20} className="text-muted-foreground" />
+  </Pressable>
+);
+
 export default function LinkDeviceChoiceScreen({ navigation }: any) {
   const [connecting, setConnecting] = useState(false);
 
@@ -48,36 +78,6 @@ export default function LinkDeviceChoiceScreen({ navigation }: any) {
       setConnecting(false);
     }
   };
-
-  const renderOption = (
-    icon: string,
-    iconBg: string,
-    iconColor: string,
-    title: string,
-    desc: string,
-    onPress: () => void,
-    opts?: { disabled?: boolean; loading?: boolean }
-  ) => (
-    <Pressable
-      className="flex-row items-center bg-card rounded-lg border border-border"
-      style={{ padding: 20, gap: 16 }}
-      onPress={onPress}
-      disabled={opts?.disabled}
-    >
-      <Box className={`w-14 h-14 rounded-sm items-center justify-center ${iconBg}`}>
-        {opts?.loading ? (
-          <Spinner color={C.textPrimary} />
-        ) : (
-          <Icon name={icon as any} size={32} className={iconColor} />
-        )}
-      </Box>
-      <VStack className="flex-1" space="xs">
-        <Text weight="semibold">{title}</Text>
-        <Text size="xs" muted>{desc}</Text>
-      </VStack>
-      <Icon name="chevron-forward" size={20} className="text-muted-foreground" />
-    </Pressable>
-  );
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background">

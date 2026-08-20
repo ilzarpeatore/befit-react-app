@@ -1,5 +1,5 @@
-﻿import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -53,21 +53,28 @@ export default function HeartRateHistoryScreen({ navigation }: any) {
     <View style={styles.root}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Pressable
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+            onPress={() => navigation.goBack()}
+          >
             <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Heart Rate History</Text>
         </View>
 
         <View style={styles.filterRow}>
           {FILTERS.map((f) => (
-            <TouchableOpacity
+            <Pressable
               key={f}
-              style={[styles.filterBtn, filter === f && styles.filterBtnActive]}
+              style={({ pressed }) => [
+                styles.filterBtn,
+                filter === f && styles.filterBtnActive,
+                pressed && { opacity: 0.2 },
+              ]}
               onPress={() => setFilter(f)}
             >
               <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -76,10 +83,10 @@ export default function HeartRateHistoryScreen({ navigation }: any) {
             entries.length > 0 ? (
               <View key={date} style={styles.group}>
                 <Text style={styles.dateLabel}>{date}</Text>
-                {entries.map((entry, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.entry}
+                {entries.map((entry) => (
+                  <Pressable
+                    key={entry.time}
+                    style={({ pressed }) => [styles.entry, pressed && { opacity: 0.2 }]}
                     onPress={() => navigation.navigate("MigratedHeartRateDetails")}
                   >
                     <View style={styles.entryLeft}>
@@ -87,7 +94,7 @@ export default function HeartRateHistoryScreen({ navigation }: any) {
                       <Text style={styles.entryTime}>{entry.time}</Text>
                     </View>
                     <Text style={styles.entryBpm}>{entry.bpm} bpm</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             ) : null

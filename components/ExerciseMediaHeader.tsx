@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Pressable, StyleSheet, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../pages/migrated/theme';
 
@@ -27,7 +28,7 @@ interface Props {
  */
 function ExerciseMediaHeader({ headerHeight, thumbnailUrl, onPlayPress }: Props) {
   const media = thumbnailUrl ? (
-    <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
+    <Image source={{ uri: thumbnailUrl }} style={styles.image} contentFit="cover" />
   ) : (
     <View style={[styles.image, styles.imageFallback]}>
       <Ionicons name="barbell-outline" size={72} color={C.gray30} />
@@ -38,16 +39,15 @@ function ExerciseMediaHeader({ headerHeight, thumbnailUrl, onPlayPress }: Props)
     <View style={[styles.wrap, { height: headerHeight }]}>
       {media}
       {onPlayPress ? (
-        <TouchableOpacity
-          style={styles.playOverlay}
-          activeOpacity={0.8}
+        <Pressable
+          style={({ pressed }) => [styles.playOverlay, pressed && { opacity: 0.8 }]}
           onPress={onPlayPress}
           accessibilityLabel="Reproducir vídeo del ejercicio"
         >
           <View style={styles.playButton}>
             <Ionicons name="play" size={30} color={C.white} style={styles.playIcon} />
           </View>
-        </TouchableOpacity>
+        </Pressable>
       ) : null}
     </View>
   );
@@ -64,12 +64,18 @@ interface FloatingIconsProps {
 export function ExerciseHeaderFloatingIcons({ onBack, isFavourite, onToggleFavourite }: FloatingIconsProps) {
   return (
     <>
-      <TouchableOpacity style={[styles.floatingBtn, styles.backBtn]} onPress={onBack}>
+      <Pressable
+        style={({ pressed }) => [styles.floatingBtn, styles.backBtn, pressed && { opacity: 0.2 }]}
+        onPress={onBack}
+      >
         <Ionicons name="chevron-back" size={22} color={C.white} />
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.floatingBtn, styles.favBtn]} onPress={onToggleFavourite}>
+      </Pressable>
+      <Pressable
+        style={({ pressed }) => [styles.floatingBtn, styles.favBtn, pressed && { opacity: 0.2 }]}
+        onPress={onToggleFavourite}
+      >
         <Ionicons name={isFavourite ? 'star' : 'star-outline'} size={20} color={C.white} />
-      </TouchableOpacity>
+      </Pressable>
     </>
   );
 }

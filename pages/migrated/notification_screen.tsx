@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ActivityIndicator, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Box } from '@components/ui/box';
@@ -79,7 +79,7 @@ export default function NotificationScreen(props: any) {
   const [notifications, setNotifications] = useState<DisplayNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const pageRef = useRef(1);
 
   const loadNotifications = useCallback(async (p: number = 1) => {
     try {
@@ -112,8 +112,8 @@ export default function NotificationScreen(props: any) {
   };
 
   const loadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
+    const nextPage = pageRef.current + 1;
+    pageRef.current = nextPage;
     loadNotifications(nextPage);
   };
 
@@ -148,7 +148,7 @@ export default function NotificationScreen(props: any) {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ padding: 20 }}
           ItemSeparatorComponent={() => <Box className="h-2" />}
-          renderItem={({ item }) => <NotificationCard item={item} />}
+          renderItem={NotificationCard}
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           ListFooterComponent={isLoading ? (

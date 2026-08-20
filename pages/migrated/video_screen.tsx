@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FlatList, Image } from 'react-native';
+import { FlatList } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -13,7 +14,7 @@ function VideoComponent({ item }: { item: any }) {
       <Image
         source={{ uri: item.image || '' }}
         style={{ width: 120, height: 80 }}
-        resizeMode="cover"
+        contentFit="cover"
       />
       <Box className="flex-1 p-3 justify-center">
         <Text size="sm" weight="semibold" numberOfLines={2} style={{ marginBottom: 4 }}>
@@ -34,9 +35,9 @@ function VideoComponent({ item }: { item: any }) {
 export default function VideoScreen(props: any) {
   const [videoList, setVideoList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const pageRef = useRef(1);
   const [numPage, setNumPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const isLastPageRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
@@ -52,14 +53,14 @@ export default function VideoScreen(props: any) {
       // setVideoList(prev => [...prev, ...value.data]);
       setIsLoading(false);
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
       setIsLoading(false);
     }
   };
 
   const handleLoadMore = () => {
-    if (!isLastPage && !isLoading && page < numPage) {
-      setPage(page + 1);
+    if (!isLastPageRef.current && !isLoading && pageRef.current < numPage) {
+      pageRef.current = pageRef.current + 1;
       getVideoData();
     }
   };
@@ -81,7 +82,7 @@ export default function VideoScreen(props: any) {
         ref={flatListRef}
         data={videoList}
         keyExtractor={(item, i) => String(item.id || i)}
-        renderItem={({ item }) => <VideoComponent item={item} />}
+        renderItem={VideoComponent}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}

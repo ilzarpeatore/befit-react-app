@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   TextInput,
   Text,
-  TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -34,7 +34,7 @@ export function AuthTextField({
   editable = true,
 }: Props) {
   const styles = useStyle();
-  const [focused, setFocused] = useState(false);
+  const focusedRef = useRef(false);
   const [hidden, setHidden] = useState(secureTextEntry);
 
   return (
@@ -65,17 +65,17 @@ export function AuthTextField({
             placeholderTextColor={Colors.TEXT_MUTED}
             placeholder={hint}
             editable={editable}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
+            onFocus={() => { focusedRef.current = true; }}
+            onBlur={() => { focusedRef.current = false; }}
           />
           {secureTextEntry && (
-            <TouchableOpacity onPress={() => setHidden(!hidden)}>
+            <Pressable onPress={() => setHidden(!hidden)} style={({ pressed }) => pressed && { opacity: 0.2 }}>
               <Ionicons
                 name={hidden ? "eye-off-outline" : "eye-outline"}
                 size={20}
                 color={Colors.TEXT_SECONDARY}
               />
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </LinearGradient>

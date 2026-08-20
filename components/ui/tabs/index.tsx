@@ -15,8 +15,8 @@ import Animated, {
   useSharedValue,
   withSpring,
   useAnimatedScrollHandler,
-  runOnJS,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { TabsAnimatedIndicator } from './TabsAnimatedIndicator';
 
 const SCOPE = 'TABS';
@@ -212,7 +212,7 @@ const TabsList = React.forwardRef<
       'worklet';
       const x = event.contentOffset.x;
       animatedScrollOffset.value = x;
-      if (setScrollOffset) runOnJS(setScrollOffset)(x);
+      if (setScrollOffset) scheduleOnRN(setScrollOffset, x);
     },
   });
 

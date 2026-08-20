@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Text, Pressable, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -15,10 +15,10 @@ export function AuthPrimaryButton({ label, onPress, loading = false, disabled = 
   const styles = useStyle();
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={[styles.container, disabled && styles.disabled]}
+      style={({ pressed }) => [styles.container, disabled && styles.disabled, pressed && { opacity: 0.2 }]}
     >
       <LinearGradient
         start={{ x: 0.24, y: -0.09 }}
@@ -32,7 +32,7 @@ export function AuthPrimaryButton({ label, onPress, loading = false, disabled = 
           <Text style={styles.label}>{label}</Text>
         )}
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
   FlatList,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   TextInput,
-  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,16 +22,23 @@ interface Props {
   navigation: any;
 }
 
+// Constantes del gradiente del chip activo, fuera del componente para no
+// reconstruir el objeto/array en cada render de cada fila del FlatList.
+const CHIP_GRADIENT_START = { x: 0.24, y: -0.09 };
+const CHIP_GRADIENT_END = { x: 0.78, y: 0.93 };
+const CHIP_GRADIENT_COLORS: [string, string] = [Colors.ACCENT_START, Colors.ACCENT_END];
+const ALL_CATEGORY: DietCategory = { id: 0, title: "All", categorydiet_image: "" } as DietCategory;
+
 export default function DietList({ navigation }: Props) {
   const styles = useStyle();
   const [data, setData] = useState<DietListItem[]>([]);
   const [categories, setCategories] = useState<DietCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const pageRef = useRef(1);
+  const totalPagesRef = useRef(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const loadingMoreRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [categoryFilterOpen, setCategoryFilterOpen] = useState(false);
@@ -57,12 +63,12 @@ export default function DietList({ navigation }: Props) {
         } else {
           setData((prev) => [...prev, ...(res.data?.data ?? [])]);
         }
-        setTotalPages(res.data?.pagination?.totalPages ?? 1);
+        totalPagesRef.current = res.data?.pagination?.totalPages ?? 1;
       } catch {
         setError("Failed to load diet list.");
       } finally {
         setLoading(false);
-        setLoadingMore(false);
+        loadingMoreRef.current = false;
       }
     },
     []
@@ -78,13 +84,18 @@ export default function DietList({ navigation }: Props) {
   }, []);
 
   useEffect(() => {
-    fetchData(selectedCategory, searchQuery, 1);
+    // Carga inicial: usa los valores por defecto directamente (no
+    // selectedCategory/searchQuery, que siempre valen null/'' en este punto)
+    // para no depender de estado y evitar que este efecto de montaje se
+    // repita cuando el usuario cambia de categoria o busca (eso ya lo
+    // disparan onCategoryPress/onSearchChange).
+    fetchData(null, "", 1);
     fetchCategories();
-  }, []);
+  }, [fetchData, fetchCategories]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setPage(1);
+    pageRef.current = 1;
     await fetchData(selectedCategory, searchQuery, 1);
     setRefreshing(false);
   }, [selectedCategory, searchQuery, fetchData]);
@@ -92,7 +103,7 @@ export default function DietList({ navigation }: Props) {
   const onCategoryPress = useCallback(
     (catId: number | null) => {
       setSelectedCategory(catId);
-      setPage(1);
+      pageRef.current = 1;
       setSearchQuery("");
       fetchData(catId, "", 1);
     },
@@ -104,7 +115,7 @@ export default function DietList({ navigation }: Props) {
       setSearchQuery(text);
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
       searchTimeout.current = setTimeout(() => {
-        setPage(1);
+        pageRef.current = 1;
         fetchData(selectedCategory, text, 1);
       }, 500);
     },
@@ -112,12 +123,78 @@ export default function DietList({ navigation }: Props) {
   );
 
   const loadMore = useCallback(() => {
-    if (loadingMore || page >= totalPages) return;
-    setLoadingMore(true);
-    const nextPage = page + 1;
-    setPage(nextPage);
+    if (loadingMoreRef.current || pageRef.current >= totalPagesRef.current) return;
+    loadingMoreRef.current = true;
+    const nextPage = pageRef.current + 1;
+    pageRef.current = nextPage;
     fetchData(selectedCategory, searchQuery, nextPage);
-  }, [loadingMore, page, totalPages, selectedCategory, searchQuery, fetchData]);
+  }, [selectedCategory, searchQuery, fetchData]);
+
+  const categoryFilterData = useMemo(
+    () => [ALL_CATEGORY, ...categories],
+    [categories]
+  );
+
+  const handleCategoryChipPress = useCallback(
+    (catId: number) => {
+      onCategoryPress(catId === 0 ? null : catId);
+      setCategoryFilterOpen(false);
+    },
+    [onCategoryPress]
+  );
+
+  const renderCategoryItem = useCallback(
+    ({ item }: { item: DietCategory }) => {
+      const isActive =
+        item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
+      return (
+        <Pressable
+          onPress={() => handleCategoryChipPress(item.id)}
+          style={({ pressed }) => pressed && { opacity: 0.85 }}
+        >
+          {isActive ? (
+            <LinearGradient
+              start={CHIP_GRADIENT_START}
+              end={CHIP_GRADIENT_END}
+              colors={CHIP_GRADIENT_COLORS}
+              style={styles.chip}
+            >
+              <Text style={styles.chipTextActive}>{item.title}</Text>
+            </LinearGradient>
+          ) : (
+            <View style={styles.chipInactive}>
+              <Text style={styles.chipText}>{item.title}</Text>
+            </View>
+          )}
+        </Pressable>
+      );
+    },
+    [selectedCategory, handleCategoryChipPress, styles]
+  );
+
+  const handleDietPress = useCallback(
+    (dietId: number, dietTitle: string) => {
+      navigation.navigate("Migrated", {
+        screen: "MigratedAssignedMeals",
+        params: { dietId, dietTitle },
+      });
+    },
+    [navigation]
+  );
+
+  const renderDietItem = useCallback(
+    ({ item }: { item: DietListItem }) => (
+      <View style={styles.cardWrap}>
+        <DietCardMem
+          title={item.title}
+          calories={Number(item.calories)}
+          image={item.diet_image}
+          onPress={() => handleDietPress(item.id, item.title)}
+        />
+      </View>
+    ),
+    [styles, handleDietPress]
+  );
 
   const renderHeader = () => (
     <View style={styles.searchContainer}>
@@ -131,15 +208,14 @@ export default function DietList({ navigation }: Props) {
           onChangeText={onSearchChange}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange("")}>
+          <Pressable onPress={() => onSearchChange("")} style={({ pressed }) => pressed && { opacity: 0.2 }}>
             <Ionicons name="close-circle" size={20} color={Colors.TEXT_MUTED} />
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.filterToggle}
-        activeOpacity={0.85}
+      <Pressable
+        style={({ pressed }) => [styles.filterToggle, pressed && { opacity: 0.85 }]}
         onPress={() => setCategoryFilterOpen((v) => !v)}
       >
         <Ionicons name="filter-outline" size={16} color={Colors.TEXT_PRIMARY} />
@@ -153,7 +229,7 @@ export default function DietList({ navigation }: Props) {
           size={16}
           color={Colors.TEXT_MUTED}
         />
-      </TouchableOpacity>
+      </Pressable>
       {/* Nota: no hay filtro por país/etiqueta aquí a propósito — `diets` (modelo
           legacy que alimenta esta pantalla) no tiene ningún campo de tag/país en
           el backend (columnas reales: id/title/slug/categorydiet_id/calories/
@@ -163,39 +239,12 @@ export default function DietList({ navigation }: Props) {
           inventó un filtro sin datos reales detrás de él. */}
       {categoryFilterOpen && (
         <FlatList
-          data={[{ id: 0, title: "All", categorydiet_image: "" } as DietCategory, ...categories]}
+          data={categoryFilterData}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.chipList}
-          renderItem={({ item }) => {
-            const isActive =
-              item.id === 0 ? selectedCategory === null : selectedCategory === item.id;
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  onCategoryPress(item.id === 0 ? null : item.id);
-                  setCategoryFilterOpen(false);
-                }}
-                activeOpacity={0.85}
-              >
-                {isActive ? (
-                  <LinearGradient
-                    start={{ x: 0.24, y: -0.09 }}
-                    end={{ x: 0.78, y: 0.93 }}
-                    colors={[Colors.ACCENT_START, Colors.ACCENT_END]}
-                    style={styles.chip}
-                  >
-                    <Text style={styles.chipTextActive}>{item.title}</Text>
-                  </LinearGradient>
-                ) : (
-                  <View style={styles.chipInactive}>
-                    <Text style={styles.chipText}>{item.title}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          }}
+          renderItem={renderCategoryItem}
         />
       )}
     </View>
@@ -206,9 +255,15 @@ export default function DietList({ navigation }: Props) {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -230,9 +285,15 @@ export default function DietList({ navigation }: Props) {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -246,9 +307,15 @@ export default function DietList({ navigation }: Props) {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+              pressed && { opacity: 0.2 },
+            ]}
+          >
             <Ionicons name="chevron-back" size={22} color="#000000" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet List</Text>
           <View style={{ width: 40 }} />
         </View>
@@ -263,21 +330,7 @@ export default function DietList({ navigation }: Props) {
               message="Try a different search or category."
             />
           }
-          renderItem={({ item }) => (
-            <View style={styles.cardWrap}>
-              <DietCardMem
-                title={item.title}
-                calories={Number(item.calories)}
-                image={item.diet_image}
-                onPress={() =>
-                  navigation.navigate("Migrated", {
-                    screen: "MigratedAssignedMeals",
-                    params: { dietId: item.id, dietTitle: item.title },
-                  })
-                }
-              />
-            </View>
-          )}
+          renderItem={renderDietItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={

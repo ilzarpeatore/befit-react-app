@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
   Animated,
@@ -24,7 +24,7 @@ function Confetti() {
     delay: Math.random() * 2000,
   }));
 
-  const anims = useRef(pieces.map(() => new Animated.Value(0))).current;
+  const [anims] = useState(() => pieces.map(() => new Animated.Value(0)));
 
   useEffect(() => {
     anims.forEach((anim, i) => {
@@ -39,7 +39,12 @@ function Confetti() {
         ])
       ).start();
     });
-  }, []);
+    // `pieces` se queda fuera a propósito: se recalcula (Math.random) en cada
+    // render y este efecto solo debe correr una vez al montar, usando los
+    // delays de las piezas iniciales (las mismas que capturó `anims`).
+    // Añadirlo reiniciaría todos los loops de confeti en cada re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anims]);
 
   return (
     <View style={styles.confettiContainer}>
@@ -93,7 +98,7 @@ export default function StepGoalCompletedScreen({ navigation, route }: any) {
         if (latest?.value) setGoal(latest.value);
       })
       .catch(() => {});
-  }, []);
+  }, [route?.params?.goal]);
 
   const confirmGoal = async () => {
     setSaving(true);
@@ -126,19 +131,19 @@ export default function StepGoalCompletedScreen({ navigation, route }: any) {
           <Text style={styles.streakText}>3 días seguidos</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.editGoalButton}
+        <Pressable
+          style={({ pressed }) => [styles.editGoalButton, pressed && { opacity: 0.2 }]}
           onPress={() => setShowEditSheet(true)}
         >
           <Text style={styles.editGoalText}>Editar meta</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          style={styles.backButton}
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.2 }]}
           onPress={() => navigation.goBack()}
         >
           <Text style={styles.backButtonText}>Volver</Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
 
       {showEditSheet && (
@@ -147,9 +152,12 @@ export default function StepGoalCompletedScreen({ navigation, route }: any) {
           <Text style={styles.sheetTitle}>Editar meta</Text>
           <Text style={styles.sheetGoal}>{goal.toLocaleString()} pasos</Text>
           <View style={styles.sliderRow}>
-            <TouchableOpacity onPress={() => setGoal(Math.max(1000, goal - 1000))}>
+            <Pressable
+              onPress={() => setGoal(Math.max(1000, goal - 1000))}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
+            >
               <Ionicons name="remove-circle" size={32} color={C.textPrimary} />
-            </TouchableOpacity>
+            </Pressable>
             <View style={styles.sliderTrack}>
               <View
                 style={[
@@ -158,17 +166,20 @@ export default function StepGoalCompletedScreen({ navigation, route }: any) {
                 ]}
               />
             </View>
-            <TouchableOpacity onPress={() => setGoal(Math.min(20000, goal + 1000))}>
+            <Pressable
+              onPress={() => setGoal(Math.min(20000, goal + 1000))}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
+            >
               <Ionicons name="add-circle" size={32} color={C.textPrimary} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
-          <TouchableOpacity
-            style={styles.sheetConfirmBtn}
+          <Pressable
+            style={({ pressed }) => [styles.sheetConfirmBtn, pressed && { opacity: 0.2 }]}
             onPress={confirmGoal}
             disabled={saving}
           >
             <Text style={styles.sheetConfirmText}>{saving ? "Guardando..." : "Confirmar"}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
     </SafeAreaView>
@@ -186,7 +197,7 @@ const styles = StyleSheet.create({
     pointerEvents: "none",
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",

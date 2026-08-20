@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { View, Animated } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
@@ -18,38 +19,35 @@ function ProgressBar({
   colors = [Colors.ACCENT_START, Colors.ACCENT_END],
 }: Props) {
   const styles = useStyle();
-  const animatedWidth = useRef(new Animated.Value(0)).current;
+  const animatedWidth = useSharedValue(0);
 
   useEffect(() => {
-    Animated.timing(animatedWidth, {
-      toValue: Math.min(Math.max(progress, 0), 100),
+    animatedWidth.value = withTiming(Math.min(Math.max(progress, 0), 100), {
       duration: 600,
-      useNativeDriver: false,
-    }).start();
-  }, [progress]);
+    });
+  }, [progress, animatedWidth]);
 
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
+  const fillAnimatedStyle = useAnimatedStyle(() => ({
+    width: `${animatedWidth.value}%`,
+  }));
 
   return (
     <View>
       {showLabel && (
-        <Animated.View style={styles.labelRow}>
-          <Animated.Text style={styles.label}>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>
             {Math.round(clampedProgress)}%
-          </Animated.Text>
-        </Animated.View>
+          </Text>
+        </View>
       )}
       <View style={[styles.track, { height }]}>
         <Animated.View
           style={[
             styles.fillWrapper,
-            {
-              width: animatedWidth.interpolate({
-                inputRange: [0, 100],
-                outputRange: ["0%", "100%"],
-              }),
-              height,
-            },
+            fillAnimatedStyle,
+            { height },
           ]}
         >
           <LinearGradient

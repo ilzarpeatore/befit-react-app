@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, ScrollView, Image, TextInput, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -159,7 +161,7 @@ export default function RecipeMainScreen(props: any) {
     <Pressable key={item.id} style={[s.recipeCard, containerStyle]} onPress={() => navigateToRecipeDetail(item)}>
       <Box style={s.recipeImageWrap}>
         {item.image ? (
-          <Image source={{ uri: item.image }} style={s.recipeImage} resizeMode="cover" />
+          <Image source={{ uri: item.image }} style={s.recipeImage} contentFit="cover" />
         ) : (
           <Box style={[s.recipeImage, { backgroundColor: C.surfaceLight }]} />
         )}
@@ -251,7 +253,7 @@ export default function RecipeMainScreen(props: any) {
               {displayCategories.map((item) => (
                 <Pressable key={item.id} style={s.categoryTile} onPress={() => navigateToCategory(item)}>
                   {item.recipeCategoryImage ? (
-                    <Image source={{ uri: item.recipeCategoryImage }} style={s.categoryImage} resizeMode="cover" />
+                    <Image source={{ uri: item.recipeCategoryImage }} style={s.categoryImage} contentFit="cover" />
                   ) : (
                     <Box style={[s.categoryImage, { backgroundColor: C.surfaceLight }]} />
                   )}

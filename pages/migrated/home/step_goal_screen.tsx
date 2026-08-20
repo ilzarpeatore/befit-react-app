@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,7 +10,7 @@ export default function StepGoalScreen({ navigation }: any) {
 
   const [showEditSheet, setShowEditSheet] = useState(false);
   const [goal, setGoal] = useState(10000);
-  const [savedGoal, setSavedGoal] = useState<number | null>(null);
+  const savedGoalRef = useRef<number | null>(null);
   const [saving, setSaving] = useState(false);
   const current = 3000;
   const percentage = Math.round((current / goal) * 100);
@@ -22,7 +22,7 @@ export default function StepGoalScreen({ navigation }: any) {
         const latest = res.data?.data?.[0];
         if (latest?.value) {
           setGoal(latest.value);
-          setSavedGoal(latest.value);
+          savedGoalRef.current = latest.value;
         }
       })
       .catch(() => {});
@@ -33,7 +33,7 @@ export default function StepGoalScreen({ navigation }: any) {
     try {
       const today = new Date().toISOString().slice(0, 10);
       await stepsApi.saveGoal(goal, today);
-      setSavedGoal(goal);
+      savedGoalRef.current = goal;
     } catch {
       // deja el valor local visible aunque el guardado falle; el usuario puede reintentar
     } finally {
@@ -58,21 +58,21 @@ export default function StepGoalScreen({ navigation }: any) {
         </Text>
         <Text style={styles.progressLabel}>Progress</Text>
 
-        <TouchableOpacity
-          style={styles.editButton}
+        <Pressable
+          style={({ pressed }) => [styles.editButton, pressed && { opacity: 0.2 }]}
           onPress={() => setShowEditSheet(true)}
         >
           <Ionicons name="create-outline" size={18} color={C.textPrimary} />
           <Text style={styles.editButtonText}>Editar meta</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          style={styles.insightsButton}
+        <Pressable
+          style={({ pressed }) => [styles.insightsButton, pressed && { opacity: 0.2 }]}
           onPress={() => navigation.navigate("MigratedStepsInsight")}
         >
           <Ionicons name="bar-chart-outline" size={18} color={C.white} />
           <Text style={styles.insightsButtonText}>Ver insights</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {showEditSheet && (
@@ -81,9 +81,12 @@ export default function StepGoalScreen({ navigation }: any) {
           <Text style={styles.sheetTitle}>Editar meta</Text>
           <Text style={styles.sheetGoal}>{goal.toLocaleString()} pasos</Text>
           <View style={styles.sliderRow}>
-            <TouchableOpacity onPress={() => setGoal(Math.max(1000, goal - 1000))}>
+            <Pressable
+              onPress={() => setGoal(Math.max(1000, goal - 1000))}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
+            >
               <Ionicons name="remove-circle" size={32} color={C.textPrimary} />
-            </TouchableOpacity>
+            </Pressable>
             <View style={styles.sliderTrack}>
               <View
                 style={[
@@ -92,17 +95,20 @@ export default function StepGoalScreen({ navigation }: any) {
                 ]}
               />
             </View>
-            <TouchableOpacity onPress={() => setGoal(Math.min(20000, goal + 1000))}>
+            <Pressable
+              onPress={() => setGoal(Math.min(20000, goal + 1000))}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
+            >
               <Ionicons name="add-circle" size={32} color={C.textPrimary} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
-          <TouchableOpacity
-            style={styles.sheetConfirmBtn}
+          <Pressable
+            style={({ pressed }) => [styles.sheetConfirmBtn, pressed && { opacity: 0.2 }]}
             onPress={confirmGoal}
             disabled={saving}
           >
             <Text style={styles.sheetConfirmText}>{saving ? "Guardando..." : "Confirmar"}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
     </SafeAreaView>

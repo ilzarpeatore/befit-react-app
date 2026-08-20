@@ -3,9 +3,8 @@ import {
   ScrollView,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
-  ImageBackground,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -81,9 +80,15 @@ export default function DietDashboard({ navigation }: Props) {
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -104,9 +109,15 @@ export default function DietDashboard({ navigation }: Props) {
       >
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => [
+                { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+                pressed && { opacity: 0.2 },
+              ]}
+            >
               <Ionicons name="chevron-back" size={22} color="#000000" />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet</Text>
             <View style={{ width: 40 }} />
           </View>
@@ -120,9 +131,15 @@ export default function DietDashboard({ navigation }: Props) {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+              pressed && { opacity: 0.2 },
+            ]}
+          >
             <Ionicons name="chevron-back" size={22} color="#000000" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ flex: 1, fontSize: 18, fontFamily: 'Gilroy-Bold', color: '#000000' }}>Diet</Text>
           <View style={{ width: 40 }} />
         </View>
@@ -143,8 +160,8 @@ export default function DietDashboard({ navigation }: Props) {
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Assigned to Me</Text>
               </View>
-              <TouchableOpacity
-                activeOpacity={0.85}
+              <Pressable
+                style={({ pressed }) => pressed && { opacity: 0.85 }}
                 onPress={() => navigation.navigate("Migrated", { screen: "MigratedAssignedMeals" })}
               >
                 <LinearGradient
@@ -179,15 +196,18 @@ export default function DietDashboard({ navigation }: Props) {
                     <Ionicons name="arrow-forward" size={14} color={Colors.TEXT_PRIMARY} />
                   </View>
                 </LinearGradient>
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Otras dietas</Text>
-                <TouchableOpacity onPress={() => navigation.navigate("DietList")}>
+                <Pressable
+                  onPress={() => navigation.navigate("DietList")}
+                  style={({ pressed }) => pressed && { opacity: 0.2 }}
+                >
                   <Text style={styles.viewAll}>View All</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
               {otherDiets.length === 0 ? (
                 <EmptyStateMem

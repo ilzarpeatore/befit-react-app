@@ -1,4 +1,4 @@
-import React, { forwardRef, startTransition, useRef } from "react";
+import React, { forwardRef, startTransition, useState } from "react";
 import {
     View,
     TextInput,
@@ -16,8 +16,8 @@ const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
  */
 export const Input = forwardRef(({ name, label, style, inputLabelBgStyle, inputstyle, ...props }: InputInterface, ref: React.ForwardedRef<TextInput>) => {
     const styles = useStyle();
-    const translateY = useRef(new Animated.Value(30)).current;
-    const scale = useRef(new Animated.Value(1)).current;
+    const [translateY] = useState(() => new Animated.Value(30));
+    const [scale] = useState(() => new Animated.Value(1));
     const focusAnimation = () => {
         startTransition(() => {
             Animated.parallel([

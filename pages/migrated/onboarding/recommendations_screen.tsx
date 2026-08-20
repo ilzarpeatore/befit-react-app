@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -52,7 +52,7 @@ export default function RecommendationsScreen({ navigation }: any) {
         {isPersonalClient && (
           <>
             <Text style={[localStyles.sectionTitle, { color: C.white }]}>Tu entrenamiento</Text>
-            <View style={[localStyles.card]}>
+            <View style={localStyles.card}>
               <Text style={[localStyles.planText, { color: C.white }]}>
                 Como cliente de entrenamiento personal, tu coach revisará tu perfil y te asignará tu plan real desde el panel — lo verás en "Mi Programa" en cuanto esté listo.
               </Text>
@@ -98,12 +98,16 @@ export default function RecommendationsScreen({ navigation }: any) {
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: C.primary }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: C.primary },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={() => navigation.navigate("MigratedHealth")}
         >
           <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

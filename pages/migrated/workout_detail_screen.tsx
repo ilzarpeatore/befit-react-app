@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet,
-  ScrollView,
-  Image,
-  SafeAreaView,
-  Dimensions,
+  ScrollView, Dimensions,
   Platform,
   StatusBar,
 } from 'react-native';
+import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -53,6 +52,27 @@ interface WorkoutDetailData {
   [key: string]: any;
 }
 
+const renderDataItem = (img: string, title: string, value: string) => (
+  <Box style={styles.dataItem}>
+    <Text style={styles.dataTitle}>{title}</Text>
+    <Text style={styles.dataValue}>{value}</Text>
+  </Box>
+);
+
+const renderSets = (exercise: DayExerciseModel) => {
+  const sets: string[] = [];
+  if (exercise.exercise?.type === 'sets' && exercise.exercise?.sets?.length) {
+    exercise.exercise.sets.forEach((set) => {
+      if (exercise.exercise?.based === 'time') {
+        sets.push(`${set.time}s`);
+      } else {
+        sets.push(`${set.reps}x`);
+      }
+    });
+  }
+  return sets;
+};
+
 export default function WorkoutDetailScreen(props: any) {
   const workoutId = props.route?.params?.id;
   const onCall = props.route?.params?.onCall;
@@ -62,24 +82,32 @@ export default function WorkoutDetailScreen(props: any) {
   const [workoutDayList, setWorkoutDayList] = useState<Workoutday[]>([]);
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | null>(null);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const numPageRef = useRef<number | null>(null);
+  const isLastPageRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(true);
 
   const scrollRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    init();
-  }, []);
-
-  useEffect(() => {
-    if (numPage && page > 1) {
-      getDayExerciseData(workoutDayList[currentTabIndex]?.id);
+  const getDayExerciseData = useCallback(async (dayId?: number, ignoreRef?: { current: boolean }) => {
+    setIsLoading(true);
+    try {
+      await workoutsApi.getDayExercises(dayId!).then((res) => {
+        if (ignoreRef?.current) return;
+        const value: any = res.data;
+        numPageRef.current = value.pagination?.total_pages ?? null;
+        isLastPageRef.current = false;
+        if (page === 1) setDayExerciseList([]);
+        setDayExerciseList((prev) => [...prev, ...value.data]);
+      });
+    } catch (e) {
+      isLastPageRef.current = true;
+    } finally {
+      setIsLoading(false);
     }
   }, [page]);
 
-  const init = async () => {
+  const init = useCallback(async () => {
     setIsDetailLoading(true);
     try {
       await workoutsApi.getDetail(workoutId).then((res) => {
@@ -95,24 +123,25 @@ export default function WorkoutDetailScreen(props: any) {
     } finally {
       setIsDetailLoading(false);
     }
-  };
+  }, [workoutId, getDayExerciseData]);
 
-  const getDayExerciseData = async (dayId?: number) => {
-    setIsLoading(true);
-    try {
-      await workoutsApi.getDayExercises(dayId!).then((res) => {
-        const value: any = res.data;
-        setNumPage(value.pagination?.total_pages ?? null);
-        setIsLastPage(false);
-        if (page === 1) setDayExerciseList([]);
-        setDayExerciseList((prev) => [...prev, ...value.data]);
-      });
-    } catch (e) {
-      setIsLastPage(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getDayExerciseData (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getDayExerciseData(workoutDayList[currentTabIndex]?.id, ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [page, getDayExerciseData, workoutDayList, currentTabIndex]);
 
   const setWorkoutFav = async (id?: number) => {
     setIsDetailLoading(true);
@@ -136,32 +165,11 @@ export default function WorkoutDetailScreen(props: any) {
     getDayExerciseData(workoutDayList[index]?.id);
   };
 
-  const renderDataItem = (img: string, title: string, value: string) => (
-    <Box style={styles.dataItem}>
-      <Text style={styles.dataTitle}>{title}</Text>
-      <Text style={styles.dataValue}>{value}</Text>
-    </Box>
-  );
-
-  const renderSets = (exercise: DayExerciseModel) => {
-    const sets: string[] = [];
-    if (exercise.exercise?.type === 'sets' && exercise.exercise?.sets?.length) {
-      exercise.exercise.sets.forEach((set) => {
-        if (exercise.exercise?.based === 'time') {
-          sets.push(`${set.time}s`);
-        } else {
-          sets.push(`${set.reps}x`);
-        }
-      });
-    }
-    return sets;
-  };
-
-  const renderExerciseItem = (item: DayExerciseModel, index: number) => {
+  const renderExerciseItem = (item: DayExerciseModel) => {
     const sets = renderSets(item);
     return (
       <Pressable
-        key={item.id?.toString() || index.toString()}
+        key={item.id}
         onPress={() => {
           props.navigation?.navigate('MigratedExerciseInfo', {
             mExerciseId: item.exercise?.id,
@@ -171,7 +179,7 @@ export default function WorkoutDetailScreen(props: any) {
         <Card variant="ghost" className="p-3" style={{ marginHorizontal: 16, marginBottom: 12 }}>
           <HStack space="md" className="items-center">
             {item.exercise?.exercise_image ? (
-              <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} resizeMode="cover" />
+              <Image source={{ uri: item.exercise.exercise_image }} style={styles.exerciseImage} contentFit="cover" />
             ) : null}
             <VStack className="flex-1">
               <Text style={styles.exerciseTitle} numberOfLines={1}>
@@ -207,7 +215,7 @@ export default function WorkoutDetailScreen(props: any) {
           <Image
             source={{ uri: workoutDetail.workout_image }}
             style={styles.heroImage}
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : (
           <Box style={[styles.heroImage, { backgroundColor: C.surface }]} />
@@ -279,7 +287,7 @@ export default function WorkoutDetailScreen(props: any) {
             >
               {workoutDayList.map((day, index) => (
                 <Pressable
-                  key={day.id?.toString() || index.toString()}
+                  key={day.id}
                   style={[styles.tab, currentTabIndex === index && styles.tabActive]}
                   onPress={() => onTabTap(index)}
                 >
@@ -297,7 +305,7 @@ export default function WorkoutDetailScreen(props: any) {
 
         {/* Exercise List */}
         {dayExerciseList.length > 0 ? (
-          dayExerciseList.map((item, index) => renderExerciseItem(item, index))
+          dayExerciseList.map((item) => renderExerciseItem(item))
         ) : (
           !isLoading &&
           workoutDayList.length > 0 && (

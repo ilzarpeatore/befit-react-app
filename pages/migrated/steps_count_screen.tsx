@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedRing from '@components/AnimatedRing';
@@ -84,15 +84,16 @@ export default function StepsCountScreen(props: any) {
               <Ionicons name="water" size={20} color="#FFFFFF" />
               <Text style={styles.dailyGoalTitle}>Objetivo diario</Text>
             </View>
-            <TouchableOpacity
+            <Pressable
               onPress={() => setEditingGoal(!editingGoal)}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
             >
               <Ionicons
                 name={dailyGoal === 0 ? 'add' : 'create'}
                 size={22}
                 color="#FFFFFF"
               />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {editingGoal ? (
@@ -100,11 +101,12 @@ export default function StepsCountScreen(props: any) {
               <View style={styles.pickerContainer}>
                 <ScrollView style={styles.pickerScroll} showsVerticalScrollIndicator={false}>
                   {Array.from({ length: 100 }, (_, i) => (i + 1) * 1000).map((val) => (
-                    <TouchableOpacity
+                    <Pressable
                       key={val}
-                      style={[
+                      style={({ pressed }) => [
                         styles.pickerItem,
                         selectedPickerIndex === Math.floor(val / 1000) - 1 && styles.pickerItemActive,
+                        pressed && { opacity: 0.2 },
                       ]}
                       onPress={() => {
                         setSelectedPickerIndex(Math.floor(val / 1000) - 1);
@@ -112,13 +114,16 @@ export default function StepsCountScreen(props: any) {
                       }}
                     >
                       <Text style={styles.pickerItemText}>{val}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </ScrollView>
               </View>
-              <TouchableOpacity style={styles.saveButton} onPress={handleSaveGoal}>
+              <Pressable
+                style={({ pressed }) => [styles.saveButton, pressed && { opacity: 0.2 }]}
+                onPress={handleSaveGoal}
+              >
                 <Text style={styles.saveButtonText}>Guardar</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           ) : (
             <Text style={styles.dailyGoalValue}>
@@ -134,15 +139,19 @@ export default function StepsCountScreen(props: any) {
               <Text style={styles.chartTitle}>Pasos</Text>
               <View style={styles.filterRow}>
                 {CHART_FILTERS.map((f) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={f}
-                    style={[styles.filterChip, currentFilter === f && styles.filterChipActive]}
+                    style={({ pressed }) => [
+                      styles.filterChip,
+                      currentFilter === f && styles.filterChipActive,
+                      pressed && { opacity: 0.2 },
+                    ]}
                     onPress={() => setCurrentFilter(f)}
                   >
                     <Text style={[styles.filterText, currentFilter === f && styles.filterTextActive]}>
                       {f}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -206,11 +215,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.surface,
     borderRadius: 16,
     padding: 12,
-    shadowColor: 'rgba(0,0,0,0.15)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
   },
   chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   chartTitle: { fontSize: 17, fontFamily: FONT.bold, color: C.textPrimary },

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -43,18 +43,25 @@ export default function NotificationsScreen({ navigation }: any) {
       </View>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.activateBtn, { backgroundColor: C.primary, opacity: requesting ? 0.7 : 1 }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.activateBtn,
+            { backgroundColor: C.primary, opacity: requesting ? 0.7 : 1 },
+            pressed && { opacity: 0.2 },
+          ]}
           disabled={requesting}
           onPress={handleActivate}
         >
           <Ionicons name="notifications-outline" size={18} color={C.white} />
           <Text style={localStyles.activateBtnText}>Activar todas</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity style={localStyles.skipBtn} onPress={() => navigation.navigate("MigratedAssessmentResult")}>
+        <Pressable
+          style={({ pressed }) => [localStyles.skipBtn, pressed && { opacity: 0.2 }]}
+          onPress={() => navigation.navigate("MigratedAssessmentResult")}
+        >
           <Text style={[localStyles.skipBtnText, { color: C.gray }]}>Omitir</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

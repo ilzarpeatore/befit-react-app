@@ -48,7 +48,7 @@ export default function MuscleProgressScreen(props: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const days = RANGES.find((r) => r.key === range)!.days;
+    const days = RANGES.find((r) => r.key === range)?.days ?? RANGES[0].days;
     let active = true;
     setIsLoading(true);
     muscleVolumeApi

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, Pressable, View } from "react-native";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
 
@@ -15,9 +15,9 @@ export function AuthLinkRow({ prefix, linkText, onPress }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.prefix}>{prefix} </Text>
-      <TouchableOpacity onPress={onPress}>
+      <Pressable onPress={onPress} style={({ pressed }) => pressed && { opacity: 0.2 }}>
         <Text style={styles.link}>{linkText}</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   Text,
   View,
-  Image,
-  TouchableOpacity,
-  ImageBackground,
+  Pressable,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -27,7 +26,11 @@ export default function ExerciseDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDetail = async () => {
+  // isIgnored() vuelve true cuando el efecto que disparo este fetch ya se
+  // desmonto/reejecuto (id cambio) mientras el await seguia en vuelo -- evita
+  // que una respuesta vieja pise el estado de un fetch mas nuevo. El boton de
+  // reintentar manual no pasa nada, por eso el default siempre-false.
+  const fetchDetail = useCallback(async (isIgnored: () => boolean = () => false) => {
     if (!id) {
       setError("No exercise ID provided.");
       return;
@@ -36,29 +39,39 @@ export default function ExerciseDetail() {
       setLoading(true);
       setError(null);
       const res = await exercisesApi.getDetail(id);
+      if (isIgnored()) return;
       setExercise(res.data?.data ?? null);
     } catch (e: any) {
+      if (isIgnored()) return;
       setError(e?.message || "Failed to load exercise");
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchDetail();
   }, [id]);
+
+  // react-doctor no reconoce la guarda de ignore porque vive dentro de
+  // fetchDetail (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, isIgnored() corta antes de tocar el estado con datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    let ignore = false;
+    fetchDetail(() => ignore);
+    return () => {
+      ignore = true;
+    };
+  }, [fetchDetail]);
 
   if (error) {
     return (
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backBtn}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
             >
               <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Exercise</Text>
             <View style={styles.backBtn} />
           </View>
@@ -73,12 +86,12 @@ export default function ExerciseDetail() {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backBtn}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
             >
               <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Exercise</Text>
             <View style={styles.backBtn} />
           </View>
@@ -97,12 +110,12 @@ export default function ExerciseDetail() {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.goBack()}
-            style={styles.backBtn}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
           >
             <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Exercise</Text>
           <View style={styles.backBtn} />
         </View>
@@ -114,6 +127,7 @@ export default function ExerciseDetail() {
           {exercise.exercise_image ? (
             <Image
               source={{ uri: exercise.exercise_image }}
+              contentFit="cover"
               style={styles.heroImage}
             />
           ) : (
@@ -189,8 +203,8 @@ export default function ExerciseDetail() {
             </View>
           ) : null}
 
-          <TouchableOpacity
-            activeOpacity={0.85}
+          <Pressable
+            style={({ pressed }) => pressed && { opacity: 0.85 }}
             onPress={() =>
               navigation.navigate("WorkoutSession", {
                 exercises: [exercise],
@@ -208,7 +222,7 @@ export default function ExerciseDetail() {
               <Ionicons name="play" size={20} color={Colors.TEXT_PRIMARY} />
               <Text style={styles.startBtnText}>Start Exercise</Text>
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -250,7 +264,6 @@ function useStyle() {
       width: "100%",
       height: "220@ratio",
       borderRadius: "16@ratio",
-      resizeMode: "cover",
       marginBottom: "20@ratio",
     },
     heroPlaceholder: {

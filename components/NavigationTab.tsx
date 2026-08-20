@@ -1,17 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
-  Image,
-  TouchableOpacity,
+  Pressable,
   Animated,
   StyleSheet,
   LayoutChangeEvent,
 } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { NavigationTabOptionsInterface } from "./_types/NavigationTab.i";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+// Modulo-scope: Animated.createAnimatedComponent(Image) solo depende del
+// import estatico de Image, no de props/estado del componente -- crearlo
+// aqui evita reconstruirlo (y su wrapper interno) en cada render.
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 /**
  * NavigationTab
  * reactnative navigation tabBar function
@@ -27,9 +31,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   );
   /* save navigation nav x location */
   const [navlocations, set_navlocations] = useState([0, 0, 0, 0]);
-  /* set navigation avtive page */
-  const [activepage, set_activepage] = useState(state.index);
-  const navigationbtnactiveX = useRef(new Animated.Value(0)).current;
+  const [navigationbtnactiveX] = useState(() => new Animated.Value(0));
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
     /* save navigation tab x positions */
@@ -38,7 +40,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
     locations[index] = x;
     set_navlocations(locations);
     /* if is the active page move navigation btn ellipse to it location and show it */
-    if (index == activepage) {
+    if (index == state.index) {
       navigationbtnactiveX.setValue(x + ((styles.navigationbtn.width / 2) - 4.5));
       set_navigation_ellipse_show(true);
     }
@@ -58,9 +60,6 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
       onPress();
     });
   };
-  useEffect(() => {
-    set_activepage(state.index)
-  }, [state.index])
   /* hide if tabBarVisible is false */
   if (focusedOptions.tabBarVisible === false) {
     return null;
@@ -83,8 +82,9 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
         locations={[0, 0.515625, 1]}
         style={styles.navigationglow}
       ></LinearGradient>
-      <Animated.Image
+      <AnimatedImage
         source={require("./../assets/icons/navigationellipse.png")}
+        contentFit="contain"
         style={[
           styles.navigationbtnactive,
           {
@@ -122,8 +122,8 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
         };
 
         return (
-          <TouchableOpacity
-            key={index}
+          <Pressable
+            key={route.key}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={typedOptions.tabBarAccessibilityLabel}
@@ -133,16 +133,17 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
               navigation_press(index, onPress);
             }}
             onLongPress={onLongPress}
-            style={styles.navigationbtn}
+            style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
           >
             <Image
               source={typedOptions.icon}
+              contentFit="contain"
               style={[
                 styles.navigationicon,
                 { tintColor: isFocused ? "#000000" : "#AEAEB2" },
               ]}
             />
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
       {/*navigation icons end*/}
@@ -188,7 +189,6 @@ function useStyle() {
     navigationicon: {
       width: '28@ratio',
       height: '28@ratio',
-      resizeMode: "contain",
     },
     navigationbtnactive: {
       position: "absolute",
@@ -196,7 +196,6 @@ function useStyle() {
       left: 0,
       width: '9@ratio',
       height: '5@ratio',
-      resizeMode: "contain",
     },
   });
   return styles

@@ -85,6 +85,19 @@ const injectResizeScript = (html: string): string => {
   return html + RESIZE_SCRIPT;
 };
 
+// Solo el documento que generamos nosotros mismos (source.html, origin "about:blank")
+// y el iframe de YouTube que pueda contener deben poder navegar en este WebView.
+const onShouldStartLoadWithRequest = (request: any) => {
+  const url: string = request?.url ?? '';
+  if (url === 'about:blank' || url.startsWith('data:')) return true;
+  try {
+    const host = new URL(url).hostname;
+    return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
+  } catch {
+    return false;
+  }
+};
+
 interface Props {
   navigation?: any;
   route?: any;
@@ -116,19 +129,6 @@ export default function ResourceDetailScreen(props: Props) {
         setWebViewHeight(msg.height + 24);
       }
     } catch {}
-  };
-
-  // Solo el documento que generamos nosotros mismos (source.html, origin "about:blank")
-  // y el iframe de YouTube que pueda contener deben poder navegar en este WebView.
-  const onShouldStartLoadWithRequest = (request: any) => {
-    const url: string = request?.url ?? '';
-    if (url === 'about:blank' || url.startsWith('data:')) return true;
-    try {
-      const host = new URL(url).hostname;
-      return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
-    } catch {
-      return false;
-    }
   };
 
   const openExternal = () => {

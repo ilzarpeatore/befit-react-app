@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, SafeAreaView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';
@@ -27,10 +28,6 @@ export default function ShoppingListDetailScreen(props: any) {
   const [checkedMap, setCheckedMap] = useState<Map<number, boolean>>(new Map());
   const [showAddSheet, setShowAddSheet] = useState(false);
 
-  useEffect(() => {
-    fetchDetail();
-  }, []);
-
   const fetchDetail = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -48,6 +45,10 @@ export default function ShoppingListDetailScreen(props: any) {
       setIsLoading(false);
     }
   }, [shoppingListId]);
+
+  useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
 
   const toggleItem = async (item: ShoppingListItemDetail) => {
     if (item.id == null) return;
@@ -171,8 +172,8 @@ export default function ShoppingListDetailScreen(props: any) {
     }
     return (
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 90 }}>
-        {categories.map((category, index) => (
-          <Box key={index}>
+        {categories.map((category) => (
+          <Box key={category.ingredient_category_id ?? 'uncategorized'}>
             <Text weight="bold" size="lg" style={{ marginBottom: 12 }}>
               {category.ingredient_category_title || 'Otros'}
             </Text>
@@ -263,21 +264,32 @@ function AddItemSheet({
 }) {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [units, setUnits] = useState<MeasurementUnit[]>([]);
+  const unitsRef = useRef<MeasurementUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<MeasurementUnit | null>(null);
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadUnits (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    if (visible) loadUnits();
+    if (!visible) return;
+    const ignoreRef = { current: false };
+    loadUnits(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [visible]);
 
-  const loadUnits = async () => {
+  const loadUnits = async (ignoreRef: { current: boolean }) => {
     setLoadingUnits(true);
     try {
       const res = await shoppingApi.getMeasurementUnits();
+      if (ignoreRef.current) return;
       const list = res.data?.data ?? [];
-      setUnits(list);
+      unitsRef.current = list;
       setSelectedUnit(list[0] ?? null);
     } catch (e) {
       logger.error('Error loading measurement units:', e);

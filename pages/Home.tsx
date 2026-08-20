@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   ScrollView,
 
   Text,
   View,
-  Image,
-  TouchableOpacity,
+  Pressable,
   Animated,
   ImageBackground,
   Platform,
@@ -16,6 +15,7 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
@@ -52,7 +52,10 @@ const Activitybox = ({
   styles
 }: ActivityboxPropsInterface) => {
   return (
-    <TouchableOpacity style={styles.activityboxborder} onPress={onPress}>
+    <Pressable
+      style={({ pressed }) => [styles.activityboxborder, pressed && { opacity: 0.2 }]}
+      onPress={onPress}
+    >
       <LinearGradient
         start={{ x: 0.11, y: -0.21 }}
         end={{ x: 0.71, y: 0.38 }}
@@ -66,7 +69,7 @@ const Activitybox = ({
           style={styles.activitybox}
         >
           <Image source={cover} style={[styles.activityboxcover, coverstyle]} />
-          <Image source={bg} style={styles.activityboxbg} />
+          <Image source={bg} contentFit="cover" style={styles.activityboxbg} />
           <LinearGradient
             start={{ x: 0.24, y: -0.09 }}
             end={{ x: 0.78, y: 0.93 }}
@@ -76,6 +79,7 @@ const Activitybox = ({
           <View style={styles.activityiconbox}>
             <Image
               source={icon}
+              contentFit="contain"
               style={[styles.activityicon, { width: iconwidth }]}
             />
           </View>
@@ -110,7 +114,7 @@ const Activitybox = ({
           </LinearGradient>
         </LinearGradient>
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 /**
@@ -124,8 +128,8 @@ export default function Home({ navigation }: HomePropsInterface) {
   const [slider_tabs_active, setSliderTabsActive] = useState<number>(0);
   const [side_menu_open, setSideMenuOpen] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const slider_tab_underline_AnimX = useRef(new Animated.Value(0)).current; // slider tab underline animation
-  const side_menu_Anim = useRef(new Animated.Value(0)).current; // side menu animation
+  const [slider_tab_underline_AnimX] = useState(() => new Animated.Value(0)); // slider tab underline animation
+  const [side_menu_Anim] = useState(() => new Animated.Value(0)); // side menu animation
   const _imageslider = useRef<FlatList<any>>(null)
   const [slider_tab_items, setSliderTabItems] = useState(sliderTabItemsData);
   const [sidemenu, setSidemenu] = useState(sidemenuData);
@@ -169,12 +173,12 @@ export default function Home({ navigation }: HomePropsInterface) {
       handleBackButtonClick
     );
     return subscribe.remove();
-  }, [side_menu_open])
+  }, [side_menu_open, side_menu_Anim])
 
-  const slider_tab_item_press = (item: SliderTabItemInterface) => {
+  const slider_tab_item_press = useCallback((item: SliderTabItemInterface) => {
     if (slider_items.length === 0) return;
     _imageslider.current?.scrollToIndex({ index: item.sliderkey }); // scroll slider to ne item index*/
-  }
+  }, [slider_items.length]);
   const slider_viewable_items_changed = ({ viewableItems }: { viewableItems: any[] }) => {
     if (!viewableItems || viewableItems.length === 0) return;
     let item = viewableItems[0].item;
@@ -191,7 +195,7 @@ export default function Home({ navigation }: HomePropsInterface) {
     }).start();
     setSliderTabsActive(item.key);// set active slider tab
   };
-  const set_slider_tabs_width = (event: LayoutChangeEvent, item: SliderTabItemInterface) => {
+  const set_slider_tabs_width = useCallback((event: LayoutChangeEvent, item: SliderTabItemInterface) => {
     //find slider tab item width and save it for later animation
     let { width } = event.nativeEvent.layout;
     setSliderTabItems((prev) => {
@@ -201,7 +205,7 @@ export default function Home({ navigation }: HomePropsInterface) {
       }
       return copy;
     });
-  };
+  }, []);
   const toggle_sidemenu = () => {
     /**
      * toggle_sidemenu
@@ -223,7 +227,7 @@ export default function Home({ navigation }: HomePropsInterface) {
       }).start();
     }
   }
-  const toggle_sidemenu_switchstate = (item: MenuItemInterface) => {
+  const toggle_sidemenu_switchstate = useCallback((item: MenuItemInterface) => {
     /**
      * toggle_sidemenu_switchstate
      * toggle sidemenu switchstate on_toggle
@@ -231,14 +235,14 @@ export default function Home({ navigation }: HomePropsInterface) {
     let sidemenutmp = [...sidemenu];
     sidemenutmp[item.id - 1].switchstate = !sidemenutmp[item.id - 1].switchstate;
     setSidemenu(sidemenutmp);
-  }
-  const _render_slider_items = (item: SliderItemInterface) => {
+  }, [sidemenu]);
+  const _render_slider_items = useCallback((item: SliderItemInterface) => {
     /**
      * _render_side_menu_item
      */
     return (
-      <TouchableOpacity
-        activeOpacity={0.9}
+      <Pressable
+        style={({ pressed }) => pressed && { opacity: 0.9 }}
         onPress={() => navigation.navigate("WorkoutList")}
       >
       <LinearGradient
@@ -248,12 +252,13 @@ export default function Home({ navigation }: HomePropsInterface) {
         style={styles.slidercard}
       >
         {/* slider image */}
-        <Image source={item.image} style={styles.slidercardimage} />
+        <Image source={item.image} contentFit="cover" style={styles.slidercardimage} />
         {/* slider overlay mask */}
-        <Image source={item.mask} style={styles.slidercardmask} />
+        <Image source={item.mask} contentFit="cover" style={styles.slidercardmask} />
         {/* slider card cover ( those patterns on the image ) */}
         <Image
           source={require("@assets/cardcover.png")}
+          contentFit="cover"
           style={[
             styles.slidercardcover,
             item.coverleft ? styles.slidercardcoverleft : {}, // card cover position (left or right)  flip the image
@@ -265,17 +270,17 @@ export default function Home({ navigation }: HomePropsInterface) {
           <Text style={styles.slidercardlabel2}>{item.lableline2}</Text>
         </View>
       </LinearGradient>
-      </TouchableOpacity>
+      </Pressable>
     );
-  };
-  const _render_side_menu_item = (item: MenuItemInterface) => {
+  }, [navigation]);
+  const _render_side_menu_item = useCallback((item: MenuItemInterface) => {
     /**
      * _render_side_menu_item
      * @param item menu item
      */
     return (
-      <TouchableOpacity
-        style={styles.sidemenulistitem}
+      <Pressable
+        style={({ pressed }) => [styles.sidemenulistitem, pressed && { opacity: 0.2 }]}
         key={item.id}
         onPress={() => {
           if (item.id == 1) navigation.navigate("Profile");
@@ -291,7 +296,7 @@ export default function Home({ navigation }: HomePropsInterface) {
         }}
       >
         {/* menu icon */}
-        <Image source={item.icon} style={styles.sidemenulisticon} />
+        <Image source={item.icon} contentFit="contain" style={styles.sidemenulisticon} />
         {/* menu text */}
         <Text style={styles.sidemenulisttext}>{item.title}</Text>
         {/* menu switch */}
@@ -310,9 +315,9 @@ export default function Home({ navigation }: HomePropsInterface) {
             trackOffStyle={styles.sidemenutrackoff}
           />
         ) : null}
-      </TouchableOpacity>
+      </Pressable>
     );
-  }
+  }, [navigation, logout, toggle_sidemenu_switchstate]);
   const _render_side_menu = () => {
     /**
      * side menu
@@ -374,26 +379,26 @@ export default function Home({ navigation }: HomePropsInterface) {
             ]}
             data={extendedSidemenu}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => _render_side_menu_item(item)}
+            renderItem={renderSideMenuItem}
             keyExtractor={(item) => item.id.toString()}
           />
         </View>
       </View>
     );
   }
-  const _render_slider_tab_item = (item: SliderTabItemInterface) => {
+  const _render_slider_tab_item = useCallback((item: SliderTabItemInterface) => {
     /**
      * _render_slider_tab_item
      */
     return (
-      <TouchableOpacity
+      <Pressable
         onLayout={(event) => {
           set_slider_tabs_width(event, item); // set item width for animation
         }}
         onPress={() => {
           slider_tab_item_press(item);
         }}
-        style={styles.tab}
+        style={({ pressed }) => [styles.tab, pressed && { opacity: 0.2 }]}
       >
         <Text
           style={[
@@ -405,9 +410,23 @@ export default function Home({ navigation }: HomePropsInterface) {
         >
           {item.value}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
-  }
+  }, [slider_tabs_active, set_slider_tabs_width, slider_tab_item_press]);
+
+  const renderSideMenuItem = useCallback(
+    ({ item }: { item: MenuItemInterface }) => _render_side_menu_item(item),
+    [_render_side_menu_item]
+  );
+  const renderSliderTabItem = useCallback(
+    ({ item }: { item: SliderTabItemInterface }) => _render_slider_tab_item(item),
+    [_render_slider_tab_item]
+  );
+  const renderSliderItem = useCallback(
+    ({ item }: { item: SliderItemInterface }) => _render_slider_items(item),
+    [_render_slider_items]
+  );
+
   return (
     <ImageBackground source={require("@assets/bg.png")} style={styles.bg}>
       {/* home page background shadow */}
@@ -433,9 +452,8 @@ export default function Home({ navigation }: HomePropsInterface) {
         ]}
       />
       {_render_side_menu()}
-      <TouchableOpacity
+      <Pressable
         disabled={!side_menu_open}
-        activeOpacity={1}
         onPress={() => {
           toggle_sidemenu();
         }}
@@ -473,33 +491,35 @@ export default function Home({ navigation }: HomePropsInterface) {
             <View style={styles.container2}>
               {/*toolbar start*/}
               <View style={styles.topbar}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => {
                     toggle_sidemenu();
                   }}
-                  style={styles.menu}
+                  style={({ pressed }) => [styles.menu, pressed && { opacity: 0.2 }]}
                 >
                   <Image
                     source={require("@assets/menu.png")}
+                    contentFit="contain"
                     style={styles.menuicon}
                   />
-                </TouchableOpacity>
+                </Pressable>
                 <View style={styles.logo}>
                   <Image
                     source={require("@assets/logo.png")}
                     style={styles.logoicon}
                   />
                 </View>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => {
                     navigation.navigate("Profile"); //navigate to profile page
                   }}
+                  style={({ pressed }) => pressed && { opacity: 0.2 }}
                 >
                   <Image
                     source={require("@assets/profile.png")}
                     style={styles.profileicon}
                   />
-                </TouchableOpacity>
+                </Pressable>
               </View>
               {/*toolbar end*/}
               {/*scrollview start*/}
@@ -591,9 +611,8 @@ export default function Home({ navigation }: HomePropsInterface) {
                   {/*activities end*/}
                   {/*quick links start*/}
                   <View style={styles.quickLinksRow}>
-                    <TouchableOpacity
-                      style={styles.quickLinkCard}
-                      activeOpacity={0.85}
+                    <Pressable
+                      style={({ pressed }) => [styles.quickLinkCard, pressed && { opacity: 0.85 }]}
                       onPress={() =>
                         navigation.navigate("Migrated", { screen: "MigratedMyProgramCalendar" })
                       }
@@ -607,10 +626,9 @@ export default function Home({ navigation }: HomePropsInterface) {
                         <Text style={styles.quickLinkTitle}>Mi Programa</Text>
                         <Text style={styles.quickLinkSubtitle}>Ver calendario asignado</Text>
                       </LinearGradient>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.quickLinkCard}
-                      activeOpacity={0.85}
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [styles.quickLinkCard, pressed && { opacity: 0.85 }]}
                       onPress={() =>
                         navigation.navigate("Migrated", { screen: "MigratedViewAllBlog" })
                       }
@@ -624,7 +642,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                         <Text style={styles.quickLinkTitle}>Blog</Text>
                         <Text style={styles.quickLinkSubtitle}>Consejos y artículos</Text>
                       </LinearGradient>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   {/*quick links end*/}
                   {/*slider start*/}
@@ -635,9 +653,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                       data={slider_tab_items}
                       horizontal={true}
                       keyExtractor={(item) => item.key.toString()}
-                      renderItem={({ item }) =>
-                        _render_slider_tab_item(item)
-                      }
+                      renderItem={renderSliderTabItem}
                     />
                     {/*slider tabs end*/}
                     {/*slider tabsunderline animation start*/}
@@ -671,9 +687,7 @@ export default function Home({ navigation }: HomePropsInterface) {
                       pagingEnabled
                       horizontal={true}
                       keyExtractor={(item) => item.key.toString()}
-                      renderItem={({ item }) =>
-                        _render_slider_items(item)
-                      }
+                      renderItem={renderSliderItem}
                       onViewableItemsChanged={
                         slider_viewable_items_changed
                       }
@@ -693,17 +707,20 @@ export default function Home({ navigation }: HomePropsInterface) {
             <View style={styles.navigationbgfix} />
             {/*navigation end*/}
 
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.navigate("ScreenExplorer")}
-              style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#7773FA', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, zIndex: 999 }}
+              style={({ pressed }) => [
+                { position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#7773FA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(119, 115, 250, 0.3)', zIndex: 999 },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <Text style={{ fontSize: 28, color: '#fff', marginTop: -2 }}>+</Text>
-            </TouchableOpacity>
+            </Pressable>
 
           </SafeAreaView>
           <StatusBar style="dark" />
         </AnimatedImageBackground>
-      </TouchableOpacity>
+      </Pressable>
     </ImageBackground>
   );
 }
@@ -755,7 +772,6 @@ function useStyle() {
     menuicon: {
       width: '24@ratio',
       height: '11@ratio',
-      resizeMode: "contain",
     },
     logo: {
       flex: 1,
@@ -846,7 +862,6 @@ function useStyle() {
       position: "absolute",
       top: 0,
       left: 0,
-      resizeMode: "cover",
       opacity: 0.15,
     },
     activityboxoverlay: {
@@ -866,7 +881,6 @@ function useStyle() {
     },
     activityicon: {
       maxWidth: '64@ratio',
-      resizeMode: "contain",
     },
     activitydata: {
       flexDirection: "row",
@@ -965,7 +979,6 @@ function useStyle() {
       top: 0,
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       zIndex: 3,
     },
     slidercardcoverleft: {
@@ -977,7 +990,6 @@ function useStyle() {
       top: 0,
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
       zIndex: 2,
     },
     slidercardoverlay: {
@@ -992,7 +1004,6 @@ function useStyle() {
     slidercardimage: {
       width: "100%",
       height: "100%",
-      resizeMode: "cover",
     },
     slidercardlabel: {
       position: "absolute",
@@ -1090,7 +1101,6 @@ function useStyle() {
     sidemenulisticon: {
       width: '24@ratio',
       height: '24@ratio',
-      resizeMode: "contain",
       marginRight: '22@ratio',
     },
     sidemenulisttext: {

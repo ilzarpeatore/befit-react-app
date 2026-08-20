@@ -12,22 +12,71 @@ import { C } from './theme';
 
 let selectedImageIndex = -1;
 
+const renderMessage = ({ item, index }: { item: any; index: number }) => (
+  <Box className="px-4">
+    {/* User message */}
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.brand60,
+        borderBottomRightRadius: 4,
+        padding: 12,
+        marginLeft: 48,
+        marginBottom: 4,
+        gap: 8,
+      }}
+    >
+      {item.imageUri ? (
+        <Box
+          className="items-center justify-center"
+          style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.2)' }}
+        >
+          <Icon name="image" size={16} className="text-muted-foreground" />
+        </Box>
+      ) : null}
+      <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
+    </Box>
+
+    {/* Bot response */}
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.surfaceLight,
+        borderBottomLeftRadius: 4,
+        padding: 12,
+        marginRight: 48,
+        gap: 8,
+      }}
+    >
+      <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
+      {item.isLoading ? (
+        <Box className="flex-row items-center" style={{ gap: 8 }}>
+          <Spinner size="small" color={C.orange} />
+          <Text size="sm" muted>Thinking...</Text>
+        </Box>
+      ) : (
+        <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
+      )}
+    </Box>
+  </Box>
+);
+
 export default function ChattingImageScreen({ navigation }: any) {
 
   const [questionAnswers, setQuestionAnswers] = useState<any[]>([]);
-  const [myMessages, setMyMessages] = useState<any[]>([]);
+  const myMessagesRef = useRef<any[]>([]);
   const [msgController, setMsgController] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoadingRef = useRef(false);
   const [showUI, setShowUI] = useState(true);
-  const [isScroll, setIsScroll] = useState(false);
+  const isScrollRef = useRef(false);
   const [showResponse, setShowResponse] = useState(false);
-  const [imageSelected, setImageSelected] = useState('');
+  const imageSelectedRef = useRef('');
   const [selectedText, setSelectedText] = useState('');
   const [firstQuestion, setFirstQuestion] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    setIsLoading(false);
+    isLoadingRef.current = false;
     // TODO: Initialize OpenAI and auto-send first message
     setShowUI(true);
   }, []);
@@ -36,22 +85,22 @@ export default function ChattingImageScreen({ navigation }: any) {
     if (!msgController.trim()) return;
     Keyboard.dismiss();
     setShowResponse(true);
-    setIsLoading(true);
+    isLoadingRef.current = true;
 
     const question = selectedText ? selectedText + msgController : msgController;
     setMsgController('');
 
     const newQA = {
       question,
-      imageUri: imageSelected,
+      imageUri: imageSelectedRef.current,
       answer: '',
       isLoading: true,
       smartCompose: selectedText,
     };
     setQuestionAnswers((prev) => [newQA, ...prev]);
 
-    const newMsgs = [...myMessages, { role: 'user', content: question }];
-    setMyMessages(newMsgs);
+    const newMsgs = [...myMessagesRef.current, { role: 'user', content: question }];
+    myMessagesRef.current = newMsgs;
 
     try {
       // TODO: Replace with actual OpenAI API call
@@ -65,8 +114,8 @@ export default function ChattingImageScreen({ navigation }: any) {
         }
         return updated;
       });
-      setMyMessages((prev) => [...prev, { role: 'assistant', content: answer }]);
-      setImageSelected('');
+      myMessagesRef.current = [...myMessagesRef.current, { role: 'assistant', content: answer }];
+      imageSelectedRef.current = '';
       selectedImageIndex = -1;
     } catch (error) {
       setQuestionAnswers((prev) => {
@@ -76,11 +125,11 @@ export default function ChattingImageScreen({ navigation }: any) {
         }
         return updated;
       });
-      setImageSelected('');
+      imageSelectedRef.current = '';
       selectedImageIndex = -1;
     }
 
-    setIsLoading(false);
+    isLoadingRef.current = false;
     setShowResponse(false);
   };
 
@@ -91,60 +140,11 @@ export default function ChattingImageScreen({ navigation }: any) {
         text: 'Yes',
         onPress: () => {
           setQuestionAnswers([]);
-          setMyMessages([]);
+          myMessagesRef.current = [];
         },
       },
     ]);
   };
-
-  const renderMessage = ({ item, index }: { item: any; index: number }) => (
-    <Box className="px-4">
-      {/* User message */}
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.brand60,
-          borderBottomRightRadius: 4,
-          padding: 12,
-          marginLeft: 48,
-          marginBottom: 4,
-          gap: 8,
-        }}
-      >
-        {item.imageUri ? (
-          <Box
-            className="items-center justify-center"
-            style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.2)' }}
-          >
-            <Icon name="image" size={16} className="text-muted-foreground" />
-          </Box>
-        ) : null}
-        <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
-      </Box>
-
-      {/* Bot response */}
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.surfaceLight,
-          borderBottomLeftRadius: 4,
-          padding: 12,
-          marginRight: 48,
-          gap: 8,
-        }}
-      >
-        <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
-        {item.isLoading ? (
-          <Box className="flex-row items-center" style={{ gap: 8 }}>
-            <Spinner size="small" color={C.orange} />
-            <Text size="sm" muted>Thinking...</Text>
-          </Box>
-        ) : (
-          <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
-        )}
-      </Box>
-    </Box>
-  );
 
   if (!showUI) {
     return (
@@ -203,7 +203,7 @@ export default function ChattingImageScreen({ navigation }: any) {
               onChangeText={setMsgController}
               onSubmitEditing={sendMessage}
               multiline
-              onFocus={() => setIsScroll(true)}
+              onFocus={() => { isScrollRef.current = true; }}
             />
           </Input>
           <Pressable

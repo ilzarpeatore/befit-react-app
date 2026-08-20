@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -8,9 +8,22 @@ import { Divider } from '@components/ui/divider';
 import ScreenHeader from '@components/ScreenHeader';
 import logger from '@helper/logger';
 
+const mOption = (icon: string, title: string, onPress: () => void) => (
+  <Pressable
+    className="flex-row items-center gap-3 px-4 py-4 bg-card"
+    onPress={onPress}
+  >
+    <Box className="w-9 h-9 rounded-md bg-secondary items-center justify-center">
+      <Icon name={icon as any} size={20} className="text-foreground" />
+    </Box>
+    <Text className="flex-1">{title}</Text>
+    <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
+  </Pressable>
+);
+
 export default function AboutAppScreen({ navigation }: any) {
   const [aboutPages, setAboutPages] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(true);
 
   useEffect(() => {
     loadAppSettings();
@@ -23,25 +36,12 @@ export default function AboutAppScreen({ navigation }: any) {
       // let pages = response.pages ?? [];
       // pages.sort((a: any, b: any) => (a.title ?? '').localeCompare(b.title ?? ''));
       // setAboutPages(pages);
-      setLoading(false);
+      loadingRef.current = false;
     } catch (e) {
       logger.error('Error loading settings:', e);
-      setLoading(false);
+      loadingRef.current = false;
     }
   }
-
-  const mOption = (icon: string, title: string, onPress: () => void) => (
-    <Pressable
-      className="flex-row items-center gap-3 px-4 py-4 bg-card"
-      onPress={onPress}
-    >
-      <Box className="w-9 h-9 rounded-md bg-secondary items-center justify-center">
-        <Icon name={icon as any} size={20} className="text-foreground" />
-      </Box>
-      <Text className="flex-1">{title}</Text>
-      <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
-    </Pressable>
-  );
 
   return (
     <Box className="flex-1 bg-background">

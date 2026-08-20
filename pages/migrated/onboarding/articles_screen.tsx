@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Image, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -39,10 +40,13 @@ export default function ArticlesScreen({ navigation }: any) {
         )}
 
         {featured && (
-          <TouchableOpacity style={localStyles.featuredCard} onPress={() => openArticle(featured)}>
+          <Pressable
+            style={({ pressed }) => [localStyles.featuredCard, pressed && { opacity: 0.2 }]}
+            onPress={() => openArticle(featured)}
+          >
             <View style={localStyles.featuredImage}>
               {featured.post_image ? (
-                <Image source={{ uri: featured.post_image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                <Image source={{ uri: featured.post_image }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
               ) : (
                 <Ionicons name="newspaper-outline" size={48} color={C.textPrimary} />
               )}
@@ -53,15 +57,19 @@ export default function ArticlesScreen({ navigation }: any) {
                 <Text style={[localStyles.featuredAuthor, { color: C.gray }]}>{featured.blog_category.title}</Text>
               )}
             </View>
-          </TouchableOpacity>
+          </Pressable>
         )}
 
         <View style={localStyles.grid}>
           {gridArticles.map((article) => (
-            <TouchableOpacity key={article.id} style={localStyles.gridCard} onPress={() => openArticle(article)}>
+            <Pressable
+              key={article.id}
+              style={({ pressed }) => [localStyles.gridCard, pressed && { opacity: 0.2 }]}
+              onPress={() => openArticle(article)}
+            >
               <View style={localStyles.gridImage}>
                 {article.post_image ? (
-                  <Image source={{ uri: article.post_image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                  <Image source={{ uri: article.post_image }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
                 ) : (
                   <Ionicons name="document-text-outline" size={32} color={C.textPrimary} />
                 )}
@@ -72,20 +80,24 @@ export default function ArticlesScreen({ navigation }: any) {
                     <Text style={[localStyles.categoryText, { color: C.textPrimary }]}>{article.blog_category.title}</Text>
                   </View>
                 )}
-                <Text style={[localStyles.gridTitle]} numberOfLines={2}>{article.title}</Text>
+                <Text style={localStyles.gridTitle} numberOfLines={2}>{article.title}</Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: C.primary }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: C.primary },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={() => navigation.navigate("MigratedOnboardingComplete")}
         >
           <Text style={[localStyles.continueBtnText, { color: C.white }]}>Continuar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

@@ -79,8 +79,8 @@ export default function ResourcesListScreen(props: Props) {
       label: s.label,
       data: activeList.filter((i) => i.category === s.key),
     }));
-    const knownKeys = sectionDefs.map((s) => s.key);
-    const rest = activeList.filter((i) => !knownKeys.includes(i.category as ResourceCategory));
+    const knownKeys = new Set(sectionDefs.map((s) => s.key));
+    const rest = activeList.filter((i) => !knownKeys.has(i.category as ResourceCategory));
     return rest.length > 0 ? [...known, { label: OTHER_LABEL, data: rest }] : known;
   }, [activeList, sectionDefs]);
 

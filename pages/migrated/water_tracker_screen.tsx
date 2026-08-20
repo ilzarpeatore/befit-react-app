@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  SafeAreaView,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedRing from '@components/AnimatedRing';
@@ -24,6 +15,12 @@ const FILTER_LABELS: Record<WaterChartFilter, string> = {
   year: 'Año',
   every: 'Todo',
 };
+
+const roundBtn = (icon: string, onPress: () => void) => (
+  <Pressable style={({ pressed }) => [styles.roundBtn, pressed && { opacity: 0.2 }]} onPress={onPress}>
+    <Ionicons name={icon as any} size={24} color={C.blue} />
+  </Pressable>
+);
 
 export default function WaterTrackerScreen(props: any) {
   const [logValue, setLogValue] = useState(0);
@@ -106,18 +103,12 @@ export default function WaterTrackerScreen(props: any) {
 
   const progress = dailyGoal > 0 ? Math.min(consumed / dailyGoal, 1) : 0;
 
-  const roundBtn = (icon: string, onPress: () => void) => (
-    <TouchableOpacity style={styles.roundBtn} onPress={onPress}>
-      <Ionicons name={icon as any} size={24} color={C.blue} />
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => props.navigation?.goBack()}>
+        <Pressable onPress={() => props.navigation?.goBack()} style={({ pressed }) => pressed && { opacity: 0.2 }}>
           <Ionicons name="chevron-back" size={24} color={C.textPrimary} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.headerTitle}>Seguimiento de agua</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -149,9 +140,9 @@ export default function WaterTrackerScreen(props: any) {
         </View>
 
         {/* Log Now Button */}
-        <TouchableOpacity style={styles.logBtn} onPress={logNow}>
+        <Pressable style={({ pressed }) => [styles.logBtn, pressed && { opacity: 0.2 }]} onPress={logNow}>
           <Text style={styles.logBtnText}>Registrar ahora</Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* Daily Goal Card */}
         <LinearGradient
@@ -165,9 +156,9 @@ export default function WaterTrackerScreen(props: any) {
               <Ionicons name="water" size={22} color="#FFFFFF" />
               <Text style={styles.goalTitle}>Objetivo diario</Text>
             </View>
-            <TouchableOpacity onPress={() => setEditingGoal(!editingGoal)}>
+            <Pressable onPress={() => setEditingGoal(!editingGoal)} style={({ pressed }) => pressed && { opacity: 0.2 }}>
               <Ionicons name="pencil" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {editingGoal ? (
@@ -180,9 +171,12 @@ export default function WaterTrackerScreen(props: any) {
                 placeholder="Introduce los vasos"
                 placeholderTextColor={C.gray40}
               />
-              <TouchableOpacity style={styles.goalSaveBtn} onPress={saveGoal}>
+              <Pressable
+                style={({ pressed }) => [styles.goalSaveBtn, pressed && { opacity: 0.2 }]}
+                onPress={saveGoal}
+              >
                 <Text style={styles.goalSaveBtnText}>Guardar</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           ) : (
             <Text style={styles.goalValue}>{dailyGoal} vasos</Text>
@@ -196,11 +190,12 @@ export default function WaterTrackerScreen(props: any) {
               <Text style={styles.chartTitle}>Consumo diario de agua</Text>
               <View style={styles.filterRow}>
                 {(['week', 'month', 'year', 'every'] as WaterChartFilter[]).map((filter) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={filter}
-                    style={[
+                    style={({ pressed }) => [
                       styles.filterChip,
                       currentFilter === filter && styles.filterChipActive,
+                      pressed && { opacity: 0.2 },
                     ]}
                     onPress={() => setCurrentFilter(filter)}
                   >
@@ -212,7 +207,7 @@ export default function WaterTrackerScreen(props: any) {
                     >
                       {FILTER_LABELS[filter]}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -376,11 +371,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginTop: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
   },
   chartHeader: {
     flexDirection: 'row',

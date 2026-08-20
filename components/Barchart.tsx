@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Animated, Platform } from "react-native";
 import {
   Svg,
@@ -21,7 +21,7 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
   /* chart data */
   const chartviewboxworkingwidth = styles.chartviewbox.width; //chart working area width (because of spacing, it's different from view box width)
   const chartviewboxworkingheight = styles.chartviewbox.height; //chart working area height (because of spacing, it's different from view box height)
-  const avglinestartAnimY = useRef(new Animated.Value(64)).current // chart avg line anime
+  const [avglinestartAnimY] = useState(() => new Animated.Value(64)); // chart avg line anime
   const startpoint = styles.chartviewbox.borderLeftWidth; //starting x position for chart to render
   const chart = useMemo(() => {
     const max = chartdata
@@ -46,7 +46,7 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
       roundcropingfix,
       spacingX
     }
-  }, [chartdata, chartBarstrokeWidth])
+  }, [chartdata, chartBarstrokeWidth, chartviewboxworkingwidth, chartviewboxworkingheight])
 
   useEffect(() => {
     Animated.timing(avglinestartAnimY, {
@@ -54,7 +54,7 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
       duration: 500,
       useNativeDriver: true,
     }).start();
-  }, [chart.avglinestartY])
+  }, [chart.avglinestartY, avglinestartAnimY])
 
   return (
     <Svg

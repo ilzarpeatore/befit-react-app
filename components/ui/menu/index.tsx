@@ -108,7 +108,7 @@ const Separator = React.forwardRef<
 const StyledAnimatedView = styled(AnimatedView, {
   className: 'style',
 });
-export const UIMenu = createMenu({
+const UIMenu = createMenu({
   Root: StyledAnimatedView,
   Item: Item,
   Label: Text,

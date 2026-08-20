@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   ScrollView,
-  Image,
   Dimensions,
   LayoutAnimation,
   Platform,
   UIManager,
   RefreshControl,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -52,7 +52,11 @@ function metricMeta(key: string) {
   return METRIC_META[key] ?? { label: key.charAt(0).toUpperCase() + key.slice(1), unit: '', color: C.textSecondary };
 }
 function bestValueForMetric(session: ExerciseAnalysisSession, key: string): number | null {
-  const nums = session.sets.map((s) => Number(s[key])).filter((n) => Number.isFinite(n));
+  const nums = session.sets.reduce<number[]>((acc, s) => {
+    const n = Number(s[key]);
+    if (Number.isFinite(n)) acc.push(n);
+    return acc;
+  }, []);
   return nums.length > 0 ? Math.max(...nums) : null;
 }
 function formatShortDate(dateStr: string): string {
@@ -90,7 +94,7 @@ export default function ExerciseInfoScreen(props: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
-  const [isSavingFeedback, setIsSavingFeedback] = useState(false);
+  const isSavingFeedbackRef = useRef(false);
 
   const [analysis, setAnalysis] = useState<ExerciseAnalysisData | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -164,17 +168,17 @@ export default function ExerciseInfoScreen(props: Props) {
   };
 
   const onFeedback = async (value: 'like' | 'dislike') => {
-    if (!detail || isSavingFeedback) return;
+    if (!detail || isSavingFeedbackRef.current) return;
     const next = detail.user_feedback === value ? null : value;
     const prev = detail.user_feedback;
     setDetail({ ...detail, user_feedback: next });
-    setIsSavingFeedback(true);
+    isSavingFeedbackRef.current = true;
     try {
       await exerciseInfoApi.sendFeedback(detail.id, next);
     } catch (e) {
       setDetail((d) => (d ? { ...d, user_feedback: prev } : d));
     } finally {
-      setIsSavingFeedback(false);
+      isSavingFeedbackRef.current = false;
     }
   };
 
@@ -354,7 +358,7 @@ function MuscleTab({
         <Box style={styles.muscleSection}>
           <Text style={styles.muscleSectionTitle}>SECUNDARIA</Text>
           {secondary.map((m, idx) => (
-            <Box key={`${m.name}-${idx}`}>
+            <Box key={m.name}>
               <MuscleRow name={m.name} />
               {idx < secondary.length - 1 && <Divider />}
             </Box>
@@ -437,7 +441,7 @@ function EquipmentTab({ equipment }: { equipment: ExerciseDetailData['equipment'
   return (
     <HStack className="items-center py-3">
       {equipment.image_url ? (
-        <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} resizeMode="cover" />
+        <Image source={{ uri: equipment.image_url }} style={styles.equipmentImage} contentFit="cover" />
       ) : (
         <Box style={[styles.equipmentImage, styles.equipmentImageFallback]}>
           <Icon name="barbell-outline" size={32} color={C.gray30} />
@@ -527,19 +531,22 @@ function ProgressChartSection({ sessions }: { sessions: ExerciseAnalysisSession[
       <Text style={styles.chartSectionTitle}>Evolución</Text>
 
       <HStack space="sm" className="flex-wrap" style={{ marginBottom: 14 }}>
-        {numericMetricKeys.map((key) => {
-          const meta = metricMeta(key);
-          const active = selectedMetrics.includes(key);
-          return (
-            <Pressable
-              key={key}
-              style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
-              onPress={() => toggleMetric(key)}
-            >
-              <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
-            </Pressable>
-          );
-        })}
+        {(() => {
+          const selectedMetricsSet = new Set(selectedMetrics);
+          return numericMetricKeys.map((key) => {
+            const meta = metricMeta(key);
+            const active = selectedMetricsSet.has(key);
+            return (
+              <Pressable
+                key={key}
+                style={[styles.metricChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
+                onPress={() => toggleMetric(key)}
+              >
+                <Text style={[styles.metricChipText, active && styles.metricChipTextActive]}>{meta.label}</Text>
+              </Pressable>
+            );
+          });
+        })()}
       </HStack>
 
       {chronoSessions.length < 2 ? (
@@ -599,8 +606,8 @@ function AnalysisTab({
   return (
     <Box>
       <ProgressChartSection sessions={data.sessions} />
-      {data.sessions.map((session, idx) => (
-        <AnalysisHistoryCardMem key={`${session.date}-${idx}`} session={session} />
+      {data.sessions.map((session) => (
+        <AnalysisHistoryCardMem key={session.date} session={session} />
       ))}
     </Box>
   );

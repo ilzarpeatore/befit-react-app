@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useReducer, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi, LoginPayload, RegisterPayload } from '../api/auth';
 import { UserData } from '../api/profile';
@@ -145,8 +145,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isPaidTier = state.user?.access_tier !== undefined && state.user.access_tier !== 'free';
 
+  const contextValue = useMemo(
+    () => ({ state, login, register, logout, updateUser, restoreToken, completeOnboarding, isPaidTier }),
+    [state, login, register, logout, updateUser, restoreToken, completeOnboarding, isPaidTier]
+  );
+
   return (
-    <AuthContext.Provider value={{ state, login, register, logout, updateUser, restoreToken, completeOnboarding, isPaidTier }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

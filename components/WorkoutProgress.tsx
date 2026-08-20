@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Animated, Easing } from "react-native";
 import { Svg, Path, Circle } from "react-native-svg";
 import { WorkoutProgressInterface } from "./_types/WorkoutProgress.i";
@@ -29,7 +29,7 @@ export default function WorkoutProgress({
     return { properties, length }
   }, [])
 
-  const progress_Anim = useRef(new Animated.Value(-550)).current; // circle progress animation
+  const [progress_Anim] = useState(() => new Animated.Value(-550)); // circle progress animation
   const chart = useMemo(() => {
     const progress_dash_offset = -1 * (((100 - percent) * 550) / 100); // convert percentage to dash offset
     const progress_length = ((100 - percent) * svg.length) / 100; // convert percentage to circle length
@@ -49,19 +49,19 @@ export default function WorkoutProgress({
       useNativeDriver: true,
       easing: Easing.linear,
     }).start();
-  }, [chart.progress_dash_offset])
+  }, [chart.progress_dash_offset, progress_Anim])
   return (
     <Svg width={width} height={height} viewBox="0 0 229 250" fill="none">
       {/* workout progress bg */}
       <Path
-        d="M183.268 205C208.105 185.122 224 154.633 224 120.45C224 60.5549 175.199 12 115 12C54.801 12 6 60.5549 6 120.45C6 154.633 21.8947 185.122 46.7316 205"
+        d="M183.27 205C208.11 185.12 224 154.63 224 120.45C224 60.55 175.2 12 115 12C54.8 12 6 60.55 6 120.45C6 154.63 21.89 185.12 46.73 205"
         stroke="#E5E5EA"
         strokeWidth="10"
         strokeLinecap="round"
       />
       {/* workout progress path */}
       <AnimatedPath
-        d="M183.268 205C208.105 185.122 224 154.633 224 120.45C224 60.5549 175.199 12 115 12C54.801 12 6 60.5549 6 120.45C6 154.633 21.8947 185.122 46.7316 205"
+        d="M183.27 205C208.11 185.12 224 154.63 224 120.45C224 60.55 175.2 12 115 12C54.8 12 6 60.55 6 120.45C6 154.63 21.89 185.12 46.73 205"
         stroke="#1C1C1E"
         strokeWidth="12"
         strokeLinecap="round"

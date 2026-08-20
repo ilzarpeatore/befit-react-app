@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, Image, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScrollView, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { WebView } from 'react-native-webview';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -86,6 +87,20 @@ const WRAPPER_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+// Only the WRAPPER_HTML we generate (loaded as source.html, origin "about:blank") and the
+// YouTube embed iframe it may contain should ever load in this WebView — block navigation
+// to any other origin (e.g. a malicious link/redirect inside sanitized blog content).
+const onShouldStartLoadWithRequest = (request: any) => {
+  const url: string = request?.url ?? '';
+  if (url === 'about:blank' || url.startsWith('data:')) return true;
+  try {
+    const host = new URL(url).hostname;
+    return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
+  } catch {
+    return false;
+  }
+};
+
 export default function BlogDetailScreen({ navigation, route }: any) {
   const mBlogModel = route?.params?.mBlogModel;
   // home_screen_modern.tsx navigates with { id } instead of { mBlogModel }; support both
@@ -97,22 +112,33 @@ export default function BlogDetailScreen({ navigation, route }: any) {
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
   const [bibliographyOpen, setBibliographyOpen] = useState(false);
 
-  const loadDetail = async () => {
+  const loadDetail = useCallback(async (ignoreRef: { current: boolean }) => {
     setLoading(true);
     try {
       const res = await blogApi.getDetail(blogId);
+      if (ignoreRef.current) return;
       setBlog(res.data?.data ?? mBlogModel ?? null);
     } catch (e) {
       logger.error('Error loading blog detail:', e);
+      if (ignoreRef.current) return;
       setBlog(mBlogModel ?? null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [blogId, mBlogModel]);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadDetail (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    loadDetail();
-  }, [blogId]);
+    const ignoreRef = { current: false };
+    loadDetail(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [loadDetail]);
 
   const onWebViewMessage = (event: any) => {
     try {
@@ -129,20 +155,6 @@ export default function BlogDetailScreen({ navigation, route }: any) {
     return WRAPPER_HTML.replace('__CONTENT__', withEmbeds);
   };
 
-  // Only the WRAPPER_HTML we generate (loaded as source.html, origin "about:blank") and the
-  // YouTube embed iframe it may contain should ever load in this WebView — block navigation
-  // to any other origin (e.g. a malicious link/redirect inside sanitized blog content).
-  const onShouldStartLoadWithRequest = (request: any) => {
-    const url: string = request?.url ?? '';
-    if (url === 'about:blank' || url.startsWith('data:')) return true;
-    try {
-      const host = new URL(url).hostname;
-      return host === 'www.youtube.com' || host === 'youtube.com' || host.endsWith('.googlevideo.com') || host.endsWith('.ytimg.com');
-    } catch {
-      return false;
-    }
-  };
-
   if (loading) {
     return (
       <Box className="flex-1 items-center justify-center bg-background">
@@ -157,7 +169,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
         {/* Hero */}
         <Box style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.42, position: 'relative' }}>
           {blog?.post_image ? (
-            <Image source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <Image source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           ) : (
             <Box className="bg-card" style={{ width: '100%', height: '100%' }} />
           )}
@@ -230,9 +242,9 @@ export default function BlogDetailScreen({ navigation, route }: any) {
               className="flex-row flex-wrap"
               style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 8 }}
             >
-              {blog.tags_name.map((tag: any, index: number) => (
+              {blog.tags_name.map((tag: any) => (
                 <Box
-                  key={index}
+                  key={tag.id}
                   className="bg-card rounded-pill"
                   style={{ paddingHorizontal: 12, paddingVertical: 5, borderWidth: 0.5, borderColor: C.brand5 }}
                 >

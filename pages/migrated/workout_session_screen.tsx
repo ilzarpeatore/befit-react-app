@@ -5,12 +5,12 @@ import {
   Platform,
   Modal,
   FlatList,
-  Image,
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Vibration,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Box } from '@components/ui/box';
@@ -47,6 +47,11 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ADHOC_DEFAULT_METRICS = ['carga', 'reps'];
+// Estilos del renderItem del picker de "Añadir ejercicio", fuera del
+// componente para no reconstruirlos en cada fila del FlatList.
+const PICKER_RESULT_IMAGE_STYLE = { width: 44, height: 44, borderRadius: 8, marginRight: 12 };
+const PICKER_RESULT_PLACEHOLDER_STYLE = { width: 44, height: 44, marginRight: 12 };
+const PICKER_RESULT_TITLE_STYLE = { fontSize: 14, marginRight: 8 };
 const RESISTANCE_TRAINING_MET = 5.0;
 const FALLBACK_WEIGHT_KG = 70;
 // Sesion activa sin guardar (punto 3/4/5 del encargo): se persiste el
@@ -158,6 +163,20 @@ function formatTimer(totalSeconds: number): string {
   return `${m}:${s}`;
 }
 
+// Acepta "90" (segundos) o "1:30" (mm:ss) -- el catalogo real no fija un
+// formato unico para "descanso", asi que se manejan los dos sin asumir.
+function parseRestSeconds(raw?: string): number | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (trimmed.includes(':')) {
+    const [m, s] = trimmed.split(':').map(Number);
+    if (Number.isFinite(m) && Number.isFinite(s)) return m * 60 + s;
+    return null;
+  }
+  const n = Number(trimmed);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 export default function WorkoutSessionScreen(props: Props) {
   const { navigation, route } = props;
   const { state } = useAuth();
@@ -184,8 +203,8 @@ export default function WorkoutSessionScreen(props: Props) {
   const [pickerResults, setPickerResults] = useState<ExerciseItem[]>([]);
   const [pickerLoading, setPickerLoading] = useState(false);
   const [pickerLoadingMore, setPickerLoadingMore] = useState(false);
-  const [pickerPage, setPickerPage] = useState(1);
-  const [pickerIsLastPage, setPickerIsLastPage] = useState(false);
+  const pickerPageRef = useRef(1);
+  const pickerIsLastPageRef = useRef(false);
   const [bodyParts, setBodyParts] = useState<BodyPartItem[]>([]);
   const [selectedBodyPartId, setSelectedBodyPartId] = useState<number | null>(null);
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
@@ -427,15 +446,15 @@ export default function WorkoutSessionScreen(props: Props) {
 
   const syncExerciseLog = useCallback(
     (ex: SessionExercise) => {
-      const loggedSets = ex.rows
-        .filter((r) => r.completed)
-        .map((r) => {
-          const clean: Record<string, any> = {};
-          ex.enabledMetrics.forEach((key) => {
-            if (r.values[key] != null && r.values[key] !== '') clean[key] = r.values[key];
-          });
-          return clean;
+      const loggedSets = ex.rows.reduce<Record<string, any>[]>((acc, r) => {
+        if (!r.completed) return acc;
+        const clean: Record<string, any> = {};
+        ex.enabledMetrics.forEach((key) => {
+          if (r.values[key] != null && r.values[key] !== '') clean[key] = r.values[key];
         });
+        acc.push(clean);
+        return acc;
+      }, []);
       if (loggedSets.length === 0) return;
       workoutHistoryApi
         .logCalendarSets({
@@ -478,36 +497,11 @@ export default function WorkoutSessionScreen(props: Props) {
     updateExercise(blockIdx, exIdx, (ex) => ({ ...ex, note }));
   };
 
-  // Acepta "90" (segundos) o "1:30" (mm:ss) -- el catalogo real no fija un
-  // formato unico para "descanso", asi que se manejan los dos sin asumir.
-  const parseRestSeconds = (raw?: string): number | null => {
-    if (!raw) return null;
-    const trimmed = raw.trim();
-    if (trimmed.includes(':')) {
-      const [m, s] = trimmed.split(':').map(Number);
-      if (Number.isFinite(m) && Number.isFinite(s)) return m * 60 + s;
-      return null;
-    }
-    const n = Number(trimmed);
-    return Number.isFinite(n) && n > 0 ? n : null;
-  };
-
   const startRestCountdown = (seconds: number) => {
     if (restIntervalRef.current) clearInterval(restIntervalRef.current);
     setRestCountdown(seconds);
     restIntervalRef.current = setInterval(() => {
-      setRestCountdown((prev) => {
-        if (prev == null) return null;
-        if (prev <= 1) {
-          if (restIntervalRef.current) {
-            clearInterval(restIntervalRef.current);
-            restIntervalRef.current = null;
-          }
-          Vibration.vibrate([0, 400, 200, 400]);
-          return null;
-        }
-        return prev - 1;
-      });
+      setRestCountdown((prev) => (prev != null && prev > 1 ? prev - 1 : null));
     }, 1000);
   };
 
@@ -519,6 +513,18 @@ export default function WorkoutSessionScreen(props: Props) {
     setRestCountdown(null);
   };
 
+  // fires once when the countdown reaches zero on its own (the ref guard
+  // distinguishes that from dismissRestCountdown, which already clears the
+  // ref before setting restCountdown to null). Kept out of setRestCountdown's
+  // updater above: React may re-invoke that updater, and it must stay pure.
+  useEffect(() => {
+    if (restCountdown === null && restIntervalRef.current) {
+      clearInterval(restIntervalRef.current);
+      restIntervalRef.current = null;
+      Vibration.vibrate([0, 400, 200, 400]);
+    }
+  }, [restCountdown]);
+
   useEffect(() => {
     return () => {
       if (restIntervalRef.current) clearInterval(restIntervalRef.current);
@@ -526,27 +532,31 @@ export default function WorkoutSessionScreen(props: Props) {
   }, []);
 
   const toggleRowComplete = (blockIdx: number, exIdx: number, rowIndex: number) => {
+    const currentEx = blocks[blockIdx].exercises[exIdx];
+    const wasCompleted = currentEx.rows[rowIndex].completed;
+    const rows = [...currentEx.rows];
+    rows[rowIndex] = { ...rows[rowIndex], completed: !wasCompleted };
+    const ex = { ...currentEx, rows };
+
+    // side effects live outside the updater below: setBlocks's updater must
+    // stay pure since React may re-invoke it, which would duplicate the
+    // network sync and could start overlapping rest timers.
     setBlocks((prev) => {
       const next = [...prev];
       const block = { ...next[blockIdx] };
       const exercisesList = [...block.exercises];
-      const ex = { ...exercisesList[exIdx] };
-      const rows = [...ex.rows];
-      const wasCompleted = rows[rowIndex].completed;
-      rows[rowIndex] = { ...rows[rowIndex], completed: !wasCompleted };
-      ex.rows = rows;
       exercisesList[exIdx] = ex;
       block.exercises = exercisesList;
       next[blockIdx] = block;
-      syncExerciseLog(ex);
-      // Solo al MARCAR (no al desmarcar) y solo si esta serie concreta tiene
-      // un valor de descanso real configurado -- sin dato, no se inventa.
-      if (!wasCompleted && ex.enabledMetrics.includes('descanso')) {
-        const seconds = parseRestSeconds(rows[rowIndex].values.descanso);
-        if (seconds != null) startRestCountdown(seconds);
-      }
       return next;
     });
+    syncExerciseLog(ex);
+    // Solo al MARCAR (no al desmarcar) y solo si esta serie concreta tiene
+    // un valor de descanso real configurado -- sin dato, no se inventa.
+    if (!wasCompleted && ex.enabledMetrics.includes('descanso')) {
+      const seconds = parseRestSeconds(rows[rowIndex].values.descanso);
+      if (seconds != null) startRestCountdown(seconds);
+    }
   };
 
   const addRow = (blockIdx: number, exIdx: number) => {
@@ -558,18 +568,19 @@ export default function WorkoutSessionScreen(props: Props) {
   };
 
   const markAllRows = (blockIdx: number, exIdx: number) => {
+    const currentEx = blocks[blockIdx].exercises[exIdx];
+    const ex = { ...currentEx, rows: currentEx.rows.map((r) => ({ ...r, completed: true })) };
+
     setBlocks((prev) => {
       const next = [...prev];
       const block = { ...next[blockIdx] };
       const exercisesList = [...block.exercises];
-      const ex = { ...exercisesList[exIdx] };
-      ex.rows = ex.rows.map((r) => ({ ...r, completed: true }));
       exercisesList[exIdx] = ex;
       block.exercises = exercisesList;
       next[blockIdx] = block;
-      syncExerciseLog(ex);
       return next;
     });
+    syncExerciseLog(ex);
   };
 
   const openExerciseInfo = (ex: SessionExercise) => {
@@ -630,7 +641,7 @@ export default function WorkoutSessionScreen(props: Props) {
       const items = res.data?.data ?? [];
       setPickerResults((prev) => (page === 1 ? items : [...prev, ...items]));
       const totalPages = res.data?.pagination?.totalPages ?? 1;
-      setPickerIsLastPage(page >= totalPages);
+      pickerIsLastPageRef.current = page >= totalPages;
     } catch (e) {
       if (page === 1) setPickerResults([]);
     } finally {
@@ -642,8 +653,8 @@ export default function WorkoutSessionScreen(props: Props) {
   const openExercisePicker = () => {
     setPickerQuery('');
     setSelectedBodyPartId(null);
-    setPickerPage(1);
-    setPickerIsLastPage(false);
+    pickerPageRef.current = 1;
+    pickerIsLastPageRef.current = false;
     setIsPickerVisible(true);
     runPickerSearch('', null, 1);
     if (bodyParts.length === 0) {
@@ -657,8 +668,8 @@ export default function WorkoutSessionScreen(props: Props) {
   useEffect(() => {
     if (!isPickerVisible) return;
     const timeout = setTimeout(() => {
-      setPickerPage(1);
-      setPickerIsLastPage(false);
+      pickerPageRef.current = 1;
+      pickerIsLastPageRef.current = false;
       runPickerSearch(pickerQuery, selectedBodyPartId, 1);
     }, 350);
     return () => clearTimeout(timeout);
@@ -666,45 +677,65 @@ export default function WorkoutSessionScreen(props: Props) {
   }, [pickerQuery, selectedBodyPartId, isPickerVisible]);
 
   const onPickerEndReached = () => {
-    if (pickerIsLastPage || pickerLoading || pickerLoadingMore) return;
-    const nextPage = pickerPage + 1;
-    setPickerPage(nextPage);
+    if (pickerIsLastPageRef.current || pickerLoading || pickerLoadingMore) return;
+    const nextPage = pickerPageRef.current + 1;
+    pickerPageRef.current = nextPage;
     runPickerSearch(pickerQuery, selectedBodyPartId, nextPage);
   };
 
-  const onAddExercise = (item: ExerciseItem) => {
-    const targetBlockIdx = Math.min(pageIndex, blocks.length - 1);
-    const baseExercise: UnifiedExercise = {
-      id: -item.id, // synthetic, solo para key de React - no se envia al backend
-      exerciseId: item.id,
-      title: item.title,
-      image: item.exercise_image,
-      bodyPartId: item.bodypart_name?.[0]?.id ?? null,
-      videoUrl: item.video_url,
-      prescribed: {},
-      enabledMetrics: ADHOC_DEFAULT_METRICS,
-      coachNotes: null,
-      lastPerformance: null,
-      sequence: (blocks[targetBlockIdx]?.exercises.length ?? 0) + 1,
-    };
-    const newExercise: SessionExercise = {
-      ...baseExercise,
-      rows: buildInitialRows(baseExercise),
-      note: '',
-      isAdhoc: true,
-    };
-    setBlocks((prev) => {
-      const next = [...prev];
-      const block = { ...next[targetBlockIdx] };
-      const newIdx = block.exercises.length;
-      block.exercises = [...block.exercises, newExercise];
-      next[targetBlockIdx] = block;
+  const onAddExercise = useCallback(
+    (item: ExerciseItem) => {
+      const targetBlockIdx = Math.min(pageIndex, blocks.length - 1);
+      const baseExercise: UnifiedExercise = {
+        id: -item.id, // synthetic, solo para key de React - no se envia al backend
+        exerciseId: item.id,
+        title: item.title,
+        image: item.exercise_image,
+        bodyPartId: item.bodypart_name?.[0]?.id ?? null,
+        videoUrl: item.video_url,
+        prescribed: {},
+        enabledMetrics: ADHOC_DEFAULT_METRICS,
+        coachNotes: null,
+        lastPerformance: null,
+        sequence: (blocks[targetBlockIdx]?.exercises.length ?? 0) + 1,
+      };
+      const newExercise: SessionExercise = {
+        ...baseExercise,
+        rows: buildInitialRows(baseExercise),
+        note: '',
+        isAdhoc: true,
+      };
+      const newIdx = blocks[targetBlockIdx]?.exercises.length ?? 0;
+      setBlocks((prev) => {
+        const next = [...prev];
+        const block = { ...next[targetBlockIdx] };
+        block.exercises = [...block.exercises, newExercise];
+        next[targetBlockIdx] = block;
+        return next;
+      });
       setActiveIndexByBlock((prevActive) => ({ ...prevActive, [targetBlockIdx]: newIdx }));
-      return next;
-    });
-    fetchLoadSuggestion(newExercise);
-    setIsPickerVisible(false);
-  };
+      fetchLoadSuggestion(newExercise);
+      setIsPickerVisible(false);
+    },
+    [pageIndex, blocks, fetchLoadSuggestion]
+  );
+
+  const renderPickerResultItem = useCallback(
+    ({ item }: { item: ExerciseItem }) => (
+      <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
+        {item.exercise_image ? (
+          <Image source={{ uri: item.exercise_image }} contentFit="cover" style={PICKER_RESULT_IMAGE_STYLE} />
+        ) : (
+          <Box className="rounded-md bg-card" style={PICKER_RESULT_PLACEHOLDER_STYLE} />
+        )}
+        <Text weight="semibold" className="flex-1 text-foreground" style={PICKER_RESULT_TITLE_STYLE} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <Icon name="add-circle-outline" size={22} className="text-foreground" />
+      </Pressable>
+    ),
+    [onAddExercise]
+  );
 
   const onPagerScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -725,9 +756,11 @@ export default function WorkoutSessionScreen(props: Props) {
     // Solo ejercicios con al menos una serie completada, en el orden en que
     // aparecen en la sesion — para la lista de ejercicios del carrusel de
     // resumen (pantallas 4 y 6 de Pantallas_Resumen_Entrenamiento.md).
-    const exercisesSummary = allExercises
-      .map((ex) => ({ title: ex.title, sets: ex.rows.filter((r) => r.completed).length }))
-      .filter((ex) => ex.sets > 0);
+    const exercisesSummary = allExercises.reduce<{ title: string; sets: number }[]>((acc, ex) => {
+      const sets = ex.rows.filter((r) => r.completed).length;
+      if (sets > 0) acc.push({ title: ex.title, sets });
+      return acc;
+    }, []);
     navigation?.navigate('MigratedWorkoutFeedback', {
       programDayAssignmentId,
       workoutTemplateId,
@@ -1234,19 +1267,7 @@ export default function WorkoutSessionScreen(props: Props) {
                   <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
                 ) : null
               }
-              renderItem={({ item }) => (
-                <Pressable className="flex-row items-center py-2.5" onPress={() => onAddExercise(item)}>
-                  {item.exercise_image ? (
-                    <Image source={{ uri: item.exercise_image }} style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }} />
-                  ) : (
-                    <Box className="rounded-md bg-card" style={{ width: 44, height: 44, marginRight: 12 }} />
-                  )}
-                  <Text weight="semibold" className="flex-1 text-foreground" style={{ fontSize: 14, marginRight: 8 }} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Icon name="add-circle-outline" size={22} className="text-foreground" />
-                </Pressable>
-              )}
+              renderItem={renderPickerResultItem}
             />
           )}
         </SafeAreaView>

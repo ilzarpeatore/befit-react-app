@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Image, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Spinner } from '@components/ui/spinner';
@@ -17,39 +18,45 @@ export default function ChewieScreen({ route }: any) {
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const isPlayingRef = useRef(autoPlay);
   const videoRef = useRef<any>(null);
 
-  useEffect(() => {
-    initializePlayer();
-    return () => {
-      videoRef.current?.unloadAsync();
-    };
-  }, []);
-
-  const initializePlayer = async () => {
+  const initializePlayer = useCallback(async () => {
     if (url) {
       setIsLoading(false);
       setIsInitialized(true);
     } else {
       setIsLoading(false);
     }
-  };
+  }, [url]);
+
+  // videoRef.current se lee al desmontar a proposito, no se captura antes:
+  // en el momento en que este efecto se monta, isInitialized todavia es
+  // false y el <Video> ni existe (videoRef.current seria null) -- solo
+  // llega a apuntar al nodo real despues de que initializePlayer confirme
+  // la URL. Capturarlo antes descargaria "null" en vez del video real.
+  // react-doctor-disable-next-line exhaustive-deps
+  useEffect(() => {
+    initializePlayer();
+    return () => {
+      videoRef.current?.unloadAsync();
+    };
+  }, [initializePlayer]);
 
   const handlePlaybackStatusUpdate = (status: any) => {
     if (status.isLoaded) {
-      setIsPlaying(status.isPlaying);
+      isPlayingRef.current = status.isPlaying;
     }
   };
 
   const handleVisibility = (visible: boolean) => {
     if (!videoRef.current) return;
     if (visible) {
-      if (!isPlaying) {
+      if (!isPlayingRef.current) {
         videoRef.current.playAsync();
       }
     } else {
-      if (isPlaying) {
+      if (isPlayingRef.current) {
         videoRef.current.pauseAsync();
       }
     }
@@ -82,7 +89,7 @@ export default function ChewieScreen({ route }: any) {
         <Image
           source={{ uri: image }}
           style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
+          contentFit="cover"
         />
       ) : (
         <Box className="flex-1 items-center justify-center bg-background">

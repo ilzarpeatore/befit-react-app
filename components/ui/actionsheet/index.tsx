@@ -45,7 +45,7 @@ const AnimatedPressable = createMotionAnimatedComponent(
 
 const StyledUIIcon = styled(UIIcon, { className: "style" });
 
-export const UIActionsheet = createActionsheet({
+const UIActionsheet = createActionsheet({
   Root: View,
   Content: MotionView,
   Item: ItemWrapper,

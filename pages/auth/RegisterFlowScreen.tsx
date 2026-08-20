@@ -4,7 +4,7 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   FlatList,
@@ -145,9 +145,12 @@ export default function RegisterFlowScreen() {
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+            <Pressable
+              onPress={handleBack}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+            >
               <Ionicons name="chevron-back" size={24} color={Colors.TEXT_PRIMARY} />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Sign Up</Text>
             <Text style={styles.stepCounter}>{step + 1}/{TOTAL_STEPS}</Text>
           </View>
@@ -209,31 +212,34 @@ function StepAccount({ data, update }: { data: UserRegistrationData; update: (p:
   );
 }
 
+const PASSWORD_STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Excellent"];
+const PASSWORD_STRENGTH_COLORS = ["", Colors.DANGER, Colors.TEXT_PRIMARY, Colors.SUCCESS, Colors.SUCCESS];
+
 function PasswordStrengthInline({ password }: { password: string }) {
   const styles = useStyle();
   const strength = calcStrength(password);
-  const labels = ["", "Weak", "Fair", "Good", "Excellent"];
-  const colors = ["", Colors.DANGER, Colors.TEXT_PRIMARY, Colors.SUCCESS, Colors.SUCCESS];
   if (!password) return null;
   return (
     <View style={stepStyles.strengthRow}>
       <View style={stepStyles.strengthTrack}>
         {[1, 2, 3, 4].map((i) => (
-          <View key={i} style={[stepStyles.strengthSeg, i <= strength && { backgroundColor: colors[strength] }]} />
+          <View key={i} style={[stepStyles.strengthSeg, i <= strength && { backgroundColor: PASSWORD_STRENGTH_COLORS[strength] }]} />
         ))}
       </View>
-      <Text style={[stepStyles.strengthLabel, { color: colors[strength] }]}>{labels[strength]}</Text>
+      <Text style={[stepStyles.strengthLabel, { color: PASSWORD_STRENGTH_COLORS[strength] }]}>{PASSWORD_STRENGTH_LABELS[strength]}</Text>
     </View>
   );
 }
 
 /* ─── Step 1: Gender ─── */
+const GENDER_OPTIONS: { key: UserRegistrationData["gender"]; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: "male", label: "Male", icon: "male" },
+  { key: "female", label: "Female", icon: "female" },
+  { key: "other", label: "Other", icon: "male-female" },
+];
+
 function StepGender({ data, update }: { data: UserRegistrationData; update: (p: Partial<UserRegistrationData>) => void }) {
-  const options: { key: UserRegistrationData["gender"]; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { key: "male", label: "Male", icon: "male" },
-    { key: "female", label: "Female", icon: "female" },
-    { key: "other", label: "Other", icon: "male-female" },
-  ];
+  const options = GENDER_OPTIONS;
   return (
     <View>
       <Text style={stepStyles.title}>What's your gender?</Text>
@@ -242,7 +248,11 @@ function StepGender({ data, update }: { data: UserRegistrationData; update: (p: 
         {options.map((opt) => {
           const selected = data.gender === opt.key;
           return (
-            <TouchableOpacity key={opt.key} onPress={() => update({ gender: opt.key })} style={stepStyles.genderCard}>
+            <Pressable
+              key={opt.key}
+              onPress={() => update({ gender: opt.key })}
+              style={({ pressed }) => [stepStyles.genderCard, pressed && { opacity: 0.2 }]}
+            >
               <LinearGradient
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                 colors={selected ? [Colors.ACCENT_START, Colors.ACCENT_END] : [Colors.CARD_START, Colors.CARD_END]}
@@ -251,7 +261,7 @@ function StepGender({ data, update }: { data: UserRegistrationData; update: (p: 
                 <Ionicons name={opt.icon} size={32} color={Colors.TEXT_PRIMARY} />
                 <Text style={stepStyles.genderLabel}>{opt.label}</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>
@@ -266,13 +276,19 @@ function StepAge({ data, update }: { data: UserRegistrationData; update: (p: Par
       <Text style={stepStyles.title}>How old are you?</Text>
       <Text style={stepStyles.subtitle}>We use this to tailor your plan.</Text>
       <View style={stepStyles.pickerContainer}>
-        <TouchableOpacity onPress={() => update({ age: Math.max(16, data.age - 1) })} style={stepStyles.pickerBtn}>
+        <Pressable
+          onPress={() => update({ age: Math.max(16, data.age - 1) })}
+          style={({ pressed }) => [stepStyles.pickerBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="remove" size={28} color={Colors.TEXT_PRIMARY} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={stepStyles.pickerValue}>{data.age}</Text>
-        <TouchableOpacity onPress={() => update({ age: Math.min(100, data.age + 1) })} style={stepStyles.pickerBtn}>
+        <Pressable
+          onPress={() => update({ age: Math.min(100, data.age + 1) })}
+          style={({ pressed }) => [stepStyles.pickerBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="add" size={28} color={Colors.TEXT_PRIMARY} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
       <Text style={stepStyles.hint}>Age: {data.age} years</Text>
     </View>
@@ -293,13 +309,19 @@ function StepMetrics({ data, update }: { data: UserRegistrationData; update: (p:
       <View style={stepStyles.metricBox}>
         <Text style={stepStyles.metricLabel}>Weight (kg)</Text>
         <View style={stepStyles.metricRow}>
-          <TouchableOpacity onPress={() => update({ weightKg: Math.max(30, data.weightKg - 1) })} style={stepStyles.metricBtn}>
+          <Pressable
+            onPress={() => update({ weightKg: Math.max(30, data.weightKg - 1) })}
+            style={({ pressed }) => [stepStyles.metricBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="remove" size={22} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={stepStyles.metricValue}>{data.weightKg}</Text>
-          <TouchableOpacity onPress={() => update({ weightKg: Math.min(200, data.weightKg + 1) })} style={stepStyles.metricBtn}>
+          <Pressable
+            onPress={() => update({ weightKg: Math.min(200, data.weightKg + 1) })}
+            style={({ pressed }) => [stepStyles.metricBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="add" size={22} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -307,13 +329,19 @@ function StepMetrics({ data, update }: { data: UserRegistrationData; update: (p:
       <View style={stepStyles.metricBox}>
         <Text style={stepStyles.metricLabel}>Height (cm)</Text>
         <View style={stepStyles.metricRow}>
-          <TouchableOpacity onPress={() => update({ heightCm: Math.max(120, data.heightCm - 1) })} style={stepStyles.metricBtn}>
+          <Pressable
+            onPress={() => update({ heightCm: Math.max(120, data.heightCm - 1) })}
+            style={({ pressed }) => [stepStyles.metricBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="remove" size={22} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={stepStyles.metricValue}>{data.heightCm}</Text>
-          <TouchableOpacity onPress={() => update({ heightCm: Math.min(220, data.heightCm + 1) })} style={stepStyles.metricBtn}>
+          <Pressable
+            onPress={() => update({ heightCm: Math.min(220, data.heightCm + 1) })}
+            style={({ pressed }) => [stepStyles.metricBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="add" size={22} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -335,7 +363,11 @@ function StepGoal({ data, update }: { data: UserRegistrationData; update: (p: Pa
       {Object.entries(GOALS).map(([key, label]) => {
         const selected = data.goal === key;
         return (
-          <TouchableOpacity key={key} onPress={() => update({ goal: key })} style={stepStyles.optionCard}>
+          <Pressable
+            key={key}
+            onPress={() => update({ goal: key })}
+            style={({ pressed }) => [stepStyles.optionCard, pressed && { opacity: 0.2 }]}
+          >
             <LinearGradient
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               colors={selected ? [Colors.ACCENT_START, Colors.ACCENT_END] : [Colors.CARD_START, Colors.CARD_END]}
@@ -344,7 +376,7 @@ function StepGoal({ data, update }: { data: UserRegistrationData; update: (p: Pa
               <Text style={stepStyles.optionLabel}>{label}</Text>
               {selected && <Ionicons name="checkmark-circle" size={22} color={Colors.TEXT_PRIMARY} />}
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
     </View>
@@ -360,7 +392,11 @@ function StepExperience({ data, update }: { data: UserRegistrationData; update: 
       {Object.entries(EXPERIENCE_LEVELS).map(([key, label]) => {
         const selected = data.experienceLevel === key;
         return (
-          <TouchableOpacity key={key} onPress={() => update({ experienceLevel: key })} style={stepStyles.optionCard}>
+          <Pressable
+            key={key}
+            onPress={() => update({ experienceLevel: key })}
+            style={({ pressed }) => [stepStyles.optionCard, pressed && { opacity: 0.2 }]}
+          >
             <LinearGradient
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               colors={selected ? [Colors.ACCENT_START, Colors.ACCENT_END] : [Colors.CARD_START, Colors.CARD_END]}
@@ -369,7 +405,7 @@ function StepExperience({ data, update }: { data: UserRegistrationData; update: 
               <Text style={stepStyles.optionLabel}>{label}</Text>
               {selected && <Ionicons name="checkmark-circle" size={22} color={Colors.TEXT_PRIMARY} />}
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
     </View>
@@ -385,7 +421,11 @@ function StepEquipment({ data, update }: { data: UserRegistrationData; update: (
       {Object.entries(EQUIPMENT_OPTIONS).map(([key, label]) => {
         const selected = data.equipment === key;
         return (
-          <TouchableOpacity key={key} onPress={() => update({ equipment: key })} style={stepStyles.optionCard}>
+          <Pressable
+            key={key}
+            onPress={() => update({ equipment: key })}
+            style={({ pressed }) => [stepStyles.optionCard, pressed && { opacity: 0.2 }]}
+          >
             <LinearGradient
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               colors={selected ? [Colors.ACCENT_START, Colors.ACCENT_END] : [Colors.CARD_START, Colors.CARD_END]}
@@ -394,7 +434,7 @@ function StepEquipment({ data, update }: { data: UserRegistrationData; update: (
               <Text style={stepStyles.optionLabel}>{label}</Text>
               {selected && <Ionicons name="checkmark-circle" size={22} color={Colors.TEXT_PRIMARY} />}
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
     </View>
@@ -402,8 +442,10 @@ function StepEquipment({ data, update }: { data: UserRegistrationData; update: (
 }
 
 /* ─── Step 7: Frequency ─── */
+const FREQUENCY_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+
 function StepFrequency({ data, update }: { data: UserRegistrationData; update: (p: Partial<UserRegistrationData>) => void }) {
-  const days = ["M", "T", "W", "T", "F", "S", "S"];
+  const days = FREQUENCY_DAYS;
 
   return (
     <View>
@@ -411,13 +453,19 @@ function StepFrequency({ data, update }: { data: UserRegistrationData; update: (
       <Text style={stepStyles.subtitle}>How many days per week can you train?</Text>
 
       <View style={stepStyles.pickerContainer}>
-        <TouchableOpacity onPress={() => update({ workoutFrequency: Math.max(1, data.workoutFrequency - 1) })} style={stepStyles.pickerBtn}>
+        <Pressable
+          onPress={() => update({ workoutFrequency: Math.max(1, data.workoutFrequency - 1) })}
+          style={({ pressed }) => [stepStyles.pickerBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="remove" size={28} color={Colors.TEXT_PRIMARY} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={stepStyles.pickerValue}>{data.workoutFrequency}</Text>
-        <TouchableOpacity onPress={() => update({ workoutFrequency: Math.min(7, data.workoutFrequency + 1) })} style={stepStyles.pickerBtn}>
+        <Pressable
+          onPress={() => update({ workoutFrequency: Math.min(7, data.workoutFrequency + 1) })}
+          style={({ pressed }) => [stepStyles.pickerBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="add" size={28} color={Colors.TEXT_PRIMARY} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View style={stepStyles.daysRow}>

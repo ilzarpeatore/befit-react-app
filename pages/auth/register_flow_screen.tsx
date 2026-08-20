@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -46,14 +46,17 @@ const prStyles = StyleSheet.create({
   segOn: { backgroundColor: C.brand50 },
 });
 
+const PASSWORD_STRENGTH_COLORS = [C.destructive50, C.orange, C.warning40, C.success50, C.success60];
+const PASSWORD_STRENGTH_LABELS = ["Muy débil", "Débil", "Regular", "Fuerte", "Muy fuerte"];
+
 function PasswordStrength({ password }: { password: string }) {
   let strength = 0;
   if (password.length >= 6) strength++;
   if (/[A-Z]/.test(password)) strength++;
   if (/[0-9]/.test(password)) strength++;
   if (/[^A-Za-z0-9]/.test(password)) strength++;
-  const colors = [C.destructive50, C.orange, C.warning40, C.success50, C.success60];
-  const labels = ["Muy débil", "Débil", "Regular", "Fuerte", "Muy fuerte"];
+  const colors = PASSWORD_STRENGTH_COLORS;
+  const labels = PASSWORD_STRENGTH_LABELS;
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 }}>
       {[0, 1, 2, 3].map(i => (
@@ -114,7 +117,7 @@ export default function RegisterFlowScreen({ navigation }: any) {
             <Text style={styles.label}>Teléfono</Text>
             <View style={styles.inputWrap}><Ionicons name="call-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="+34 600 000 000" placeholderTextColor={C.gray40} value={phone} onChangeText={setPhone} keyboardType="phone-pad" /></View>
             <Text style={styles.label}>Contraseña</Text>
-            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="••••••••" placeholderTextColor={C.gray40} value={password} onChangeText={setPassword} secureTextEntry={!showPass} /><TouchableOpacity onPress={() => setShowPass(!showPass)}><Ionicons name={showPass ? "eye-off-outline" : "eye-outline"} size={20} color={C.gray50} /></TouchableOpacity></View>
+            <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="••••••••" placeholderTextColor={C.gray40} value={password} onChangeText={setPassword} secureTextEntry={!showPass} /><Pressable onPress={() => setShowPass(!showPass)} style={({ pressed }) => pressed && { opacity: 0.2 }}><Ionicons name={showPass ? "eye-off-outline" : "eye-outline"} size={20} color={C.gray50} /></Pressable></View>
             <PasswordStrength password={password} />
             <Text style={styles.label}>Confirmar contraseña</Text>
             <View style={styles.inputWrap}><Ionicons name="lock-closed-outline" size={20} color={C.gray50} /><TextInput style={styles.input} placeholder="••••••••" placeholderTextColor={C.gray40} value={confirm} onChangeText={setConfirm} secureTextEntry /></View>
@@ -125,10 +128,14 @@ export default function RegisterFlowScreen({ navigation }: any) {
         return (
           <View style={{ gap: 12 }}>
             {GOALS.map(g => (
-              <TouchableOpacity key={g.key} style={[styles.optionCard, gender === g.key && styles.optionOn]} onPress={() => setGender(g.key)}>
+              <Pressable
+                key={g.key}
+                style={({ pressed }) => [styles.optionCard, gender === g.key && styles.optionOn, pressed && { opacity: 0.2 }]}
+                onPress={() => setGender(g.key)}
+              >
                 <Ionicons name={g.icon} size={28} color={gender === g.key ? C.white : C.gray50} />
                 <Text style={[styles.optionLabel, gender === g.key && { color: C.white }]}>{g.label}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         );
@@ -141,10 +148,14 @@ export default function RegisterFlowScreen({ navigation }: any) {
               {Array.from({ length: 85 }).map((_, i) => {
                 const v = i + 16;
                 return (
-                  <TouchableOpacity key={v} onPress={() => setAge(v)} style={{ alignItems: "center", marginHorizontal: 10 }}>
+                  <Pressable
+                    key={v}
+                    onPress={() => setAge(v)}
+                    style={({ pressed }) => [{ alignItems: "center", marginHorizontal: 10 }, pressed && { opacity: 0.2 }]}
+                  >
                     <View style={[styles.tickMark, v === age && styles.tickOn]} />
                     {v % 5 === 0 && <Text style={[styles.tickLabel, v === age && { color: C.white }]}>{v}</Text>}
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
             </ScrollView>
@@ -162,8 +173,8 @@ export default function RegisterFlowScreen({ navigation }: any) {
               </View>
               <Text style={styles.sliderMax}>200</Text>
             </View>
-            <TouchableOpacity style={styles.sliderBtn} onPress={() => setWeight(Math.max(30, weight - 1))}><Ionicons name="remove" size={20} color={C.white} /></TouchableOpacity>
-            <TouchableOpacity style={styles.sliderBtn} onPress={() => setWeight(Math.min(200, weight + 1))}><Ionicons name="add" size={20} color={C.white} /></TouchableOpacity>
+            <Pressable style={({ pressed }) => [styles.sliderBtn, pressed && { opacity: 0.2 }]} onPress={() => setWeight(Math.max(30, weight - 1))}><Ionicons name="remove" size={20} color={C.white} /></Pressable>
+            <Pressable style={({ pressed }) => [styles.sliderBtn, pressed && { opacity: 0.2 }]} onPress={() => setWeight(Math.min(200, weight + 1))}><Ionicons name="add" size={20} color={C.white} /></Pressable>
 
             <Text style={[styles.label, { marginTop: 24 }]}>Altura: {height} cm</Text>
             <View style={styles.sliderWrap}>
@@ -174,8 +185,8 @@ export default function RegisterFlowScreen({ navigation }: any) {
               </View>
               <Text style={styles.sliderMax}>220</Text>
             </View>
-            <TouchableOpacity style={styles.sliderBtn} onPress={() => setHeight(Math.max(120, height - 1))}><Ionicons name="remove" size={20} color={C.white} /></TouchableOpacity>
-            <TouchableOpacity style={styles.sliderBtn} onPress={() => setHeight(Math.min(220, height + 1))}><Ionicons name="add" size={20} color={C.white} /></TouchableOpacity>
+            <Pressable style={({ pressed }) => [styles.sliderBtn, pressed && { opacity: 0.2 }]} onPress={() => setHeight(Math.max(120, height - 1))}><Ionicons name="remove" size={20} color={C.white} /></Pressable>
+            <Pressable style={({ pressed }) => [styles.sliderBtn, pressed && { opacity: 0.2 }]} onPress={() => setHeight(Math.min(220, height + 1))}><Ionicons name="add" size={20} color={C.white} /></Pressable>
 
             <View style={styles.bmiCard}>
               <Text style={styles.bmiLabel}>IMC</Text>
@@ -187,10 +198,14 @@ export default function RegisterFlowScreen({ navigation }: any) {
         return (
           <View style={{ gap: 12 }}>
             {GOALS.map(g => (
-              <TouchableOpacity key={g.key} style={[styles.optionCard, goal === g.key && styles.optionOn]} onPress={() => setGoal(g.key)}>
+              <Pressable
+                key={g.key}
+                style={({ pressed }) => [styles.optionCard, goal === g.key && styles.optionOn, pressed && { opacity: 0.2 }]}
+                onPress={() => setGoal(g.key)}
+              >
                 <Ionicons name={g.icon} size={28} color={goal === g.key ? C.white : C.gray50} />
                 <Text style={[styles.optionLabel, goal === g.key && { color: C.white }]}>{g.label}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         );
@@ -198,12 +213,16 @@ export default function RegisterFlowScreen({ navigation }: any) {
         return (
           <View style={{ gap: 12 }}>
             {ACTIVITIES.map(a => (
-              <TouchableOpacity key={a.key} style={[styles.optionCard, activity === a.key && styles.optionOn]} onPress={() => setActivity(a.key)}>
+              <Pressable
+                key={a.key}
+                style={({ pressed }) => [styles.optionCard, activity === a.key && styles.optionOn, pressed && { opacity: 0.2 }]}
+                onPress={() => setActivity(a.key)}
+              >
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.optionLabel, activity === a.key && { color: C.white }]}>{a.label}</Text>
                   <Text style={styles.optionDesc}>{a.desc}</Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         );
@@ -212,9 +231,13 @@ export default function RegisterFlowScreen({ navigation }: any) {
           <>
             <View style={{ gap: 12, marginBottom: 20 }}>
               {DIETS.map(d => (
-                <TouchableOpacity key={d.key} style={[styles.optionCard, diet === d.key && styles.optionOn]} onPress={() => setDiet(d.key)}>
+                <Pressable
+                  key={d.key}
+                  style={({ pressed }) => [styles.optionCard, diet === d.key && styles.optionOn, pressed && { opacity: 0.2 }]}
+                  onPress={() => setDiet(d.key)}
+                >
                   <Text style={[styles.optionLabel, diet === d.key && { color: C.white }]}>{d.label}</Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
             {diet === "custom" && (
@@ -236,9 +259,12 @@ export default function RegisterFlowScreen({ navigation }: any) {
     <View style={styles.root}>
       <SafeAreaView style={{ flex: 0 }} edges={["top"]}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => (step > 0 ? setStep(step - 1) : navigation.goBack())} style={styles.backBtn}>
+          <Pressable
+            onPress={() => (step > 0 ? setStep(step - 1) : navigation.goBack())}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Crear Cuenta</Text>
           <Text style={styles.stepCounter}>{step + 1}/7</Text>
         </View>
@@ -252,10 +278,14 @@ export default function RegisterFlowScreen({ navigation }: any) {
 
       <SafeAreaView style={{ flex: 0 }} edges={["bottom"]}>
         <View style={styles.footer}>
-          <TouchableOpacity style={[styles.nextBtn, !canNext() && { opacity: 0.5 }]} disabled={!canNext()} onPress={handleNext}>
+          <Pressable
+            style={({ pressed }) => [styles.nextBtn, !canNext() && { opacity: 0.5 }, pressed && { opacity: 0.2 }]}
+            disabled={!canNext()}
+            onPress={handleNext}
+          >
             <Text style={styles.nextBtnText}>{step === 6 ? "Continuar a PAR-Q" : "Continuar"}</Text>
             <Ionicons name="arrow-forward" size={20} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     </View>
@@ -273,8 +303,8 @@ function MacroSlider({ label, value, color, onChange }: { label: string; value: 
         <View style={{ height: 4, backgroundColor: color, borderRadius: 2, width: `${value}%` }} />
       </View>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
-        <TouchableOpacity onPress={() => onChange(Math.max(0, value - 5))}><Ionicons name="remove-circle" size={28} color={C.gray50} /></TouchableOpacity>
-        <TouchableOpacity onPress={() => onChange(Math.min(100, value + 5))}><Ionicons name="add-circle" size={28} color={C.gray50} /></TouchableOpacity>
+        <Pressable onPress={() => onChange(Math.max(0, value - 5))} style={({ pressed }) => pressed && { opacity: 0.2 }}><Ionicons name="remove-circle" size={28} color={C.gray50} /></Pressable>
+        <Pressable onPress={() => onChange(Math.min(100, value + 5))} style={({ pressed }) => pressed && { opacity: 0.2 }}><Ionicons name="add-circle" size={28} color={C.gray50} /></Pressable>
       </View>
     </View>
   );

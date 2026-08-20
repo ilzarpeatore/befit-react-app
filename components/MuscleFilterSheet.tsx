@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from '../pages/migrated/theme';
 import SimpleBottomSheet from './SimpleBottomSheet';
@@ -26,16 +26,16 @@ export default function MuscleFilterSheet({ visible, onClose, onSelect, selected
       <Text style={s.title}>Filtrar por grupo muscular</Text>
       <ScrollView style={s.scroll}>
         {selectedId ? (
-          <TouchableOpacity style={s.row} onPress={() => onSelect(0, '')}>
+          <Pressable style={({ pressed }) => [s.row, pressed && { opacity: 0.2 }]} onPress={() => onSelect(0, '')}>
             <Text style={[s.rowText, s.clearText]}>Quitar filtro</Text>
             <Ionicons name="close-circle-outline" size={18} color={C.textSecondary} />
-          </TouchableOpacity>
+          </Pressable>
         ) : null}
         {OPTIONS.map((opt) => (
-          <TouchableOpacity key={opt.id} style={s.row} onPress={() => onSelect(opt.id, opt.name)}>
+          <Pressable key={opt.id} style={({ pressed }) => [s.row, pressed && { opacity: 0.2 }]} onPress={() => onSelect(opt.id, opt.name)}>
             <Text style={s.rowText}>{opt.name}</Text>
             {selectedId === opt.id ? <Ionicons name="checkmark" size={18} color={C.orange} /> : null}
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </ScrollView>
     </SimpleBottomSheet>

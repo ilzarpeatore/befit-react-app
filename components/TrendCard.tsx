@@ -4,7 +4,7 @@
 // layout de card sí debe reconstruirse con el nuevo componente Card de
 // Fase 1 cuando se retome.
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Polyline, Circle } from "react-native-svg";
 import { C, RADIUS, SPACING, SHADOW } from "@pages/migrated/theme";
@@ -71,10 +71,17 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 // gráfico. Sin datos → EmptyStateCard, no esta.
 export default function TrendCard({ icon, label, value, statusText, status = "neutral", data = [], onPress }: Props) {
   const color = STATUS_COLOR[status];
-  const Wrapper = onPress ? TouchableOpacity : View;
+  const Wrapper = onPress ? Pressable : View;
 
   return (
-    <Wrapper style={styles.card} onPress={onPress} activeOpacity={onPress ? 0.7 : undefined}>
+    <Wrapper
+      style={
+        onPress
+          ? ({ pressed }: { pressed: boolean }) => [styles.card, pressed && { opacity: 0.7 }]
+          : styles.card
+      }
+      onPress={onPress}
+    >
       <View style={styles.left}>
         <View style={styles.labelRow}>
           <Ionicons name={icon} size={16} color={C.textSecondary} />

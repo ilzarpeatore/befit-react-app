@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { FlatList, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -22,11 +23,13 @@ interface BookmarkPost {
 export default function BookmarkScreen({ navigation }: any) {
 
   const [postList, setPostList] = useState<BookmarkPost[]>([]);
+  // page/numPage stay as state (not refs): both are read during render below
+  // to drive the loading indicators, so they need to trigger a re-render.
   const [page, setPage] = useState(1);
   const [numPage, setNumPage] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getPostList(1);
@@ -60,7 +63,15 @@ export default function BookmarkScreen({ navigation }: any) {
     getPostList(1);
   };
 
-  const toggleLike = (item: BookmarkPost) => {
+  const handleBookmarksEndReached = () => {
+    if (!loading && numPage != null && page < numPage) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      getPostList(nextPage);
+    }
+  };
+
+  const toggleLike = useCallback((item: BookmarkPost) => {
     const wasLiked = !!item.isLiked;
     setPostList((prev) =>
       prev.map((p) => (p.id === item.id ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) } : p))
@@ -69,17 +80,17 @@ export default function BookmarkScreen({ navigation }: any) {
       logger.error('Error toggling like', e);
       setPostList((prev) => prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p)));
     });
-  };
+  }, []);
 
-  const unbookmark = (item: BookmarkPost) => {
+  const unbookmark = useCallback((item: BookmarkPost) => {
     setPostList((prev) => prev.filter((p) => p.id !== item.id));
     postsApi.bookmark(item.id).catch((e) => {
       logger.error('Error removing bookmark', e);
       getPostList(1);
     });
-  };
+  }, [getPostList]);
 
-  const openDetail = (item: BookmarkPost) => {
+  const openDetail = useCallback((item: BookmarkPost) => {
     navigation.navigate('MigratedPostDetails', {
       postData: {
         id: item.id,
@@ -98,15 +109,15 @@ export default function BookmarkScreen({ navigation }: any) {
         createdAt: item.createdAt,
       },
     });
-  };
+  }, [navigation]);
 
-  const renderPostCard = (item: BookmarkPost, index: number) => {
+  const renderPostCard = useCallback(({ item }: { item: BookmarkPost }) => {
     return (
-      <Pressable key={index} className="bg-card rounded-md overflow-hidden mx-4 my-1.5" onPress={() => openDetail(item)}>
+      <Pressable className="bg-card rounded-md overflow-hidden mx-4 my-1.5" onPress={() => openDetail(item)}>
         {/* User header */}
         <Box className="flex-row items-center gap-2.5 p-3">
           {item.users?.profileImage ? (
-            <Image source={{ uri: item.users.profileImage }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+            <Image source={{ uri: item.users.profileImage }} contentFit="cover" style={{ width: 36, height: 36, borderRadius: 18 }} />
           ) : (
             <Box className="w-9 h-9 rounded-full bg-secondary items-center justify-center">
               <Icon name="person" size={20} className="text-muted-foreground" />
@@ -131,32 +142,50 @@ export default function BookmarkScreen({ navigation }: any) {
             <Image
               source={{ uri: item.postImage }}
               style={{ width: '100%', height: 200, borderRadius: 8 }}
-              resizeMode="cover"
+              contentFit="cover"
             />
           </Box>
         ) : null}
 
         {/* Actions */}
         <Box className="flex-row items-center gap-6 px-3 py-2.5 border-t border-border">
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => toggleLike(item)}>
+          <Pressable
+            style={({ pressed }: { pressed: boolean }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 6 },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => toggleLike(item)}
+          >
             <Icon
               name={item.isLiked ? 'heart' : 'heart-outline'}
               size={22}
               className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
             />
             <Text size="sm" muted>{item.likesCount ?? 0}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => openDetail(item)}>
+          </Pressable>
+          <Pressable
+            style={({ pressed }: { pressed: boolean }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 6 },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => openDetail(item)}
+          >
             <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
             <Text size="sm" muted>{item.commentsCount ?? 0}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => unbookmark(item)}>
+          </Pressable>
+          <Pressable
+            style={({ pressed }: { pressed: boolean }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 6 },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => unbookmark(item)}
+          >
             <Icon name="bookmark" size={22} className="text-foreground" />
-          </TouchableOpacity>
+          </Pressable>
         </Box>
       </Pressable>
     );
-  };
+  }, [openDetail, toggleLike, unbookmark]);
 
   return (
     <Box className="flex-1 bg-background">
@@ -165,18 +194,28 @@ export default function BookmarkScreen({ navigation }: any) {
       </Box>
 
       <Box className="flex-1">
-        {loading ? (
+        {loading && page === 1 ? (
           <Box className="flex-1 items-center justify-center gap-3">
             <ActivityIndicator size="large" color="#000000" />
           </Box>
         ) : postList.length > 0 ? (
-          <ScrollView
+          <FlatList
             ref={scrollRef}
+            data={postList}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderPostCard}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingVertical: 8 }}
-          >
-            {postList.map((item, index) => renderPostCard(item, index))}
-          </ScrollView>
+            onEndReached={handleBookmarksEndReached}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              loading && page > 1 ? (
+                <Box className="items-center py-4">
+                  <ActivityIndicator size="small" color="#000000" />
+                </Box>
+              ) : null
+            }
+          />
         ) : (
           <Box className="flex-1 items-center justify-center gap-3">
             <Icon name="bookmark-outline" size={56} className="text-muted-foreground" />

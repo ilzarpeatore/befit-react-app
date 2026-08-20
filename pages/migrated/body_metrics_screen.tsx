@@ -66,7 +66,10 @@ export default function BodyMetricsScreen(props: any) {
   }, []);
 
   const meta = types.find((t) => t.value === selectedType) ?? null;
-  const entries: BodyMetricChartPoint[] = selectedType ? chartData[selectedType]?.data ?? [] : [];
+  const entries: BodyMetricChartPoint[] = useMemo(
+    () => (selectedType ? chartData[selectedType]?.data ?? [] : []),
+    [selectedType, chartData]
+  );
   const unit = (selectedType && chartData[selectedType]?.unit) || meta?.unit || '';
   const sortedAsc = useMemo(() => [...entries].sort((a, b) => a.date.localeCompare(b.date)), [entries]);
   const sortedDesc = useMemo(() => [...sortedAsc].reverse(), [sortedAsc]);
@@ -153,11 +156,7 @@ export default function BodyMetricsScreen(props: any) {
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                   backgroundColor: selectedType === t.value ? C.accentBlack : C.surface,
-                  shadowColor: '#000',
-                  shadowOpacity: 0.04,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 2 },
-                  elevation: 1,
+                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.04)',
                 }}
                 onPress={() => setSelectedType(t.value)}
               >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FlatList, ActivityIndicator, Image } from 'react-native';
+import { FlatList, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -60,21 +61,33 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   const [posts, setPosts] = useState<BlogListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const pageRef = useRef(1);
+  const isLastPageRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     blogApi.getCategories().then((res) => setCategories(res.data?.data ?? [])).catch(() => {});
   }, []);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadPosts (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    setPage(1);
-    loadPosts(1);
+    pageRef.current = 1;
+    const ignoreRef = { current: false };
+    loadPosts(1, ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, sortBy, orderDir]);
 
-  const loadPosts = async (pageNum: number) => {
+  // ignoreRef solo lo pasa el efecto de arriba (cambia de categoria/orden y
+  // puede solapar peticiones); handleLoadMore no lo necesita, es un fetch
+  // unico disparado por el usuario.
+  const loadPosts = async (pageNum: number, ignoreRef?: { current: boolean }) => {
     if (pageNum === 1) setLoading(true);
     else setLoadingMore(true);
 
@@ -88,12 +101,13 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       if (selectedCategory) params.blog_category_id = selectedCategory;
 
       const res = await blogApi.getList(pageNum, params);
+      if (ignoreRef?.current) return;
       const data = res.data.data ?? [];
       const filtered = data.filter((p: BlogListItem) => p.status === 'publish');
       const pagination = res.data.pagination;
 
       setPosts((prev) => (pageNum === 1 ? filtered : [...prev, ...filtered]));
-      setIsLastPage(pageNum >= (pagination.totalPages || 1));
+      isLastPageRef.current = pageNum >= (pagination.totalPages || 1);
     } catch (e) {
       logger.error('Error loading posts:', e);
     } finally {
@@ -103,13 +117,13 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   };
 
   const handleLoadMore = useCallback(() => {
-    if (!isLastPage && !loadingMore && !isSearching) {
-      const nextPage = page + 1;
-      setPage(nextPage);
+    if (!isLastPageRef.current && !loadingMore && !isSearching) {
+      const nextPage = pageRef.current + 1;
+      pageRef.current = nextPage;
       loadPosts(nextPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, isLastPage, loadingMore, isSearching]);
+  }, [loadingMore, isSearching]);
 
   const handleSearch = async (text: string) => {
     setSearchText(text);
@@ -136,7 +150,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
-        <Image source={{ uri: item.post_image }} style={{ width: '100%', height: 160 }} resizeMode="cover" />
+        <Image source={{ uri: item.post_image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
       ) : (
         <Box className="bg-secondary" style={{ width: '100%', height: 160 }} />
       )}

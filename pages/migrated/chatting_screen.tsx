@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FlatList, Alert, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback, Platform } from 'react-native';
+import { FlatList, Alert, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button } from '@components/ui/button';
@@ -18,6 +18,44 @@ interface DisplayMessage {
   isLoading: boolean;
   time?: string;
 }
+
+const renderMessage = ({ item }: { item: DisplayMessage }) => (
+  <Box className="px-4">
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.brand60,
+        borderBottomRightRadius: 4,
+        padding: 12,
+        marginLeft: 48,
+        marginBottom: 4,
+      }}
+    >
+      <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
+    </Box>
+
+    <Box
+      className="flex-row items-start rounded-md"
+      style={{
+        backgroundColor: C.surfaceLight,
+        borderBottomLeftRadius: 4,
+        padding: 12,
+        marginRight: 48,
+        gap: 8,
+      }}
+    >
+      <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
+      {item.isLoading ? (
+        <Box className="flex-row items-center" style={{ gap: 8 }}>
+          <Spinner size="small" color={C.orange} />
+          <Text size="sm" muted>Pensando...</Text>
+        </Box>
+      ) : (
+        <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
+      )}
+    </Box>
+  </Box>
+);
 
 export default function ChattingScreen({ navigation }: any) {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -97,44 +135,6 @@ export default function ChattingScreen({ navigation }: any) {
     ]);
   };
 
-  const renderMessage = ({ item }: { item: DisplayMessage }) => (
-    <Box className="px-4">
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.brand60,
-          borderBottomRightRadius: 4,
-          padding: 12,
-          marginLeft: 48,
-          marginBottom: 4,
-        }}
-      >
-        <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
-      </Box>
-
-      <Box
-        className="flex-row items-start rounded-md"
-        style={{
-          backgroundColor: C.surfaceLight,
-          borderBottomLeftRadius: 4,
-          padding: 12,
-          marginRight: 48,
-          gap: 8,
-        }}
-      >
-        <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
-        {item.isLoading ? (
-          <Box className="flex-row items-center" style={{ gap: 8 }}>
-            <Spinner size="small" color={C.orange} />
-            <Text size="sm" muted>Pensando...</Text>
-          </Box>
-        ) : (
-          <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
-        )}
-      </Box>
-    </Box>
-  );
-
   return (
     <Box className="flex-1 bg-background">
       <Box style={{ paddingTop: 40 }}>
@@ -156,7 +156,7 @@ export default function ChattingScreen({ navigation }: any) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <Pressable onPress={Keyboard.dismiss} accessible={false} style={{ flex: 1 }}>
           <Box className="flex-1">
             {isLoadingHistory ? (
               <Box className="flex-1 items-center justify-center" style={{ gap: 12 }}>
@@ -182,7 +182,7 @@ export default function ChattingScreen({ navigation }: any) {
               </Box>
             )}
           </Box>
-        </TouchableWithoutFeedback>
+        </Pressable>
 
         <Box
           className="flex-row items-end bg-card"

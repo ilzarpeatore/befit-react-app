@@ -4,11 +4,10 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  Image,
+  Pressable,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
@@ -103,7 +102,11 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
   };
 
   const renderGoalCard = (item: { title: string; description: string; icon: any }, isSelected: boolean, onPress: () => void) => (
-    <TouchableOpacity key={item.title} style={[styles.goalCard, isSelected && styles.goalCardSelected]} onPress={onPress} activeOpacity={0.7}>
+    <Pressable
+      key={item.title}
+      style={({ pressed }) => [styles.goalCard, isSelected && styles.goalCardSelected, pressed && { opacity: 0.7 }]}
+      onPress={onPress}
+    >
       <View style={styles.goalCardRow}>
         <View style={styles.goalIconBox}>
           <Ionicons name={item.icon} size={28} color={isSelected ? C.orange : C.gray40} />
@@ -111,16 +114,16 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
         <Text style={[styles.goalTitle, { color: isSelected ? C.white : C.white }]}>{item.title}</Text>
       </View>
       <Text style={[styles.goalDesc, isSelected && styles.goalDescSelected]}>{item.description}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       {/* AppBar */}
       <View style={styles.appBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+        <Pressable style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]} onPress={handleBack}>
           <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.appBarTitle}>MightyFitness AI</Text>
       </View>
 
@@ -178,17 +181,20 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
             <View style={{ marginHorizontal: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 {[1, 2, 3, 4, 5, 6, 7].map((v) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={v}
                     onPress={() => setSliderValue(v)}
-                    style={{
-                      width: 36, height: 36, borderRadius: 18,
-                      backgroundColor: v === sliderValue ? C.brand5 : C.surfaceLight,
-                      alignItems: 'center', justifyContent: 'center',
-                    }}
+                    style={({ pressed }) => [
+                      {
+                        width: 36, height: 36, borderRadius: 18,
+                        backgroundColor: v === sliderValue ? C.brand5 : C.surfaceLight,
+                        alignItems: 'center', justifyContent: 'center',
+                      },
+                      pressed && { opacity: 0.2 },
+                    ]}
                   >
                     <Text style={{ color: C.white, fontFamily: FONT.bold }}>{v}</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -197,9 +203,9 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
           </View>
         )}
 
-        <TouchableOpacity style={styles.continueBtn} onPress={handleContinue}>
+        <Pressable style={({ pressed }) => [styles.continueBtn, pressed && { opacity: 0.2 }]} onPress={handleContinue}>
           <Text style={styles.continueBtnText}>{selectedScreen === 3 ? 'Finish' : 'Continue'}</Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

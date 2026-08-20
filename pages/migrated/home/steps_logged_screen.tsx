@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -25,9 +25,9 @@ export default function StepsLoggedScreen({ navigation }: any) {
           Registra tus pasos maÃ±ana tambiÃ©n
         </Text>
 
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <Pressable style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.2 }]} onPress={handleBack}>
           <Text style={styles.backButtonText}>Volver</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

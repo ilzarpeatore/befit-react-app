@@ -1,11 +1,6 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
@@ -34,29 +29,27 @@ export default function MealsWaterReminderScreen(props: MealsWaterReminderScreen
       <Text style={styles.header}>Meals & Water</Text>
       <View style={styles.body}>
         <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.row}
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
             onPress={() => navigation?.navigate('MigratedMealsReminders')}
-            activeOpacity={0.7}
           >
             <View style={styles.rowIcon}>
               <Ionicons name="create-outline" size={24} color={C.orange} />
             </View>
             <Text style={styles.rowLabel}>Meals</Text>
             <Ionicons name="chevron-forward" size={20} color={C.gray40} />
-          </TouchableOpacity>
+          </Pressable>
           <View style={styles.divider} />
-          <TouchableOpacity
-            style={styles.row}
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
             onPress={() => navigation?.navigate('MigratedWaterReminders')}
-            activeOpacity={0.7}
           >
             <View style={styles.rowIcon}>
               <Ionicons name="water-outline" size={24} color={C.orange} />
             </View>
             <Text style={styles.rowLabel}>Water</Text>
             <Ionicons name="chevron-forward" size={20} color={C.gray40} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>

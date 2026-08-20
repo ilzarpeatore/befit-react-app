@@ -1,5 +1,5 @@
-﻿import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -26,38 +26,48 @@ export default function PrivacyPolicyScreen({ navigation }: any) {
         </View>
         <Text style={[localStyles.title, { color: C.textPrimary }]}>PolÃ­tica de privacidad</Text>
 
-        {SECTIONS.map((section, idx) => (
-          <View key={idx} style={localStyles.section}>
+        {SECTIONS.map((section) => (
+          <View key={section.title} style={localStyles.section}>
             <Text style={[localStyles.sectionTitle, { color: C.white }]}>{section.title}</Text>
             <Text style={[localStyles.sectionText, { color: C.gray }]}>{section.text}</Text>
           </View>
         ))}
 
         <View style={localStyles.checkboxes}>
-          <TouchableOpacity style={localStyles.checkRow} onPress={() => setAcceptedPrivacy(!acceptedPrivacy)}>
+          <Pressable
+            style={({ pressed }) => [localStyles.checkRow, pressed && { opacity: 0.2 }]}
+            onPress={() => setAcceptedPrivacy(!acceptedPrivacy)}
+          >
             <View style={[localStyles.checkbox, { borderColor: acceptedPrivacy ? C.primary : C.border }, acceptedPrivacy && { backgroundColor: C.primary }]}>
               {acceptedPrivacy && <Ionicons name="checkmark" size={14} color={C.white} />}
             </View>
             <Text style={[localStyles.checkLabel, { color: C.white }]}>Acepto la polÃ­tica de privacidad</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity style={localStyles.checkRow} onPress={() => setAcceptedTerms(!acceptedTerms)}>
+          <Pressable
+            style={({ pressed }) => [localStyles.checkRow, pressed && { opacity: 0.2 }]}
+            onPress={() => setAcceptedTerms(!acceptedTerms)}
+          >
             <View style={[localStyles.checkbox, { borderColor: acceptedTerms ? C.primary : C.border }, acceptedTerms && { backgroundColor: C.primary }]}>
               {acceptedTerms && <Ionicons name="checkmark" size={14} color={C.white} />}
             </View>
             <Text style={[localStyles.checkLabel, { color: C.white }]}>Acepto los tÃ©rminos y condiciones</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: canContinue ? C.primary : C.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: canContinue ? C.primary : C.border },
+            pressed && { opacity: 0.2 },
+          ]}
           disabled={!canContinue}
           onPress={() => navigation.navigate("MigratedNotificationsOnboard")}
         >
           <Text style={[localStyles.continueBtnText, { color: canContinue ? C.white : C.textMuted }]}>Continuar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

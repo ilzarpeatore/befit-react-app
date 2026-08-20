@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, FONT } from '../pages/migrated/theme';
 import SimpleBottomSheet from './SimpleBottomSheet';
@@ -130,19 +130,26 @@ export default function PainReportSheet({
             </Text>
           ) : null}
         </View>
-        <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <Pressable
+          onPress={onClose}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={({ pressed }) => pressed && { opacity: 0.2 }}
+        >
           <Ionicons name="close" size={22} color={C.textSecondary} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         <Text style={s.question}>¿Qué tipo de molestia es?</Text>
         <View style={s.tipoList}>
           {TIPO_OPTIONS.map((opt) => (
-            <TouchableOpacity
+            <Pressable
               key={opt.value}
-              style={[s.tipoRow, tipo === opt.value && s.tipoRowActive]}
-              activeOpacity={0.75}
+              style={({ pressed }) => [
+                s.tipoRow,
+                tipo === opt.value && s.tipoRowActive,
+                pressed && { opacity: 0.75 },
+              ]}
               onPress={() => setTipo(opt.value)}
             >
               <View style={s.tipoRowText}>
@@ -154,21 +161,24 @@ export default function PainReportSheet({
                 size={20}
                 color={tipo === opt.value ? C.accentBlack : C.gray30}
               />
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
         <Text style={s.question}>¿Dónde?</Text>
         <View style={s.chipRow}>
           {LOCATION_OPTIONS.map((loc) => (
-            <TouchableOpacity
+            <Pressable
               key={loc}
-              style={[s.chip, locationChip === loc && s.chipActive]}
-              activeOpacity={0.75}
+              style={({ pressed }) => [
+                s.chip,
+                locationChip === loc && s.chipActive,
+                pressed && { opacity: 0.75 },
+              ]}
               onPress={() => setLocationChip(loc)}
             >
               <Text style={[s.chipText, locationChip === loc && s.chipTextActive]}>{loc}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
         {locationChip === 'Otro' ? (
@@ -185,14 +195,17 @@ export default function PainReportSheet({
         <Text style={s.question}>Intensidad</Text>
         <View style={s.scaleRow}>
           {[1, 2, 3, 4, 5].map((n) => (
-            <TouchableOpacity
+            <Pressable
               key={n}
-              style={[s.scaleChip, intensidad === n && s.scaleChipActive]}
+              style={({ pressed }) => [
+                s.scaleChip,
+                intensidad === n && s.scaleChipActive,
+                pressed && { opacity: 0.75 },
+              ]}
               onPress={() => setIntensidad(n)}
-              activeOpacity={0.75}
             >
               <Text style={[s.scaleChipText, intensidad === n && s.scaleChipTextActive]}>{n}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
           {intensidad ? <Text style={s.scaleHint}>{INTENSITY_LABELS[intensidad - 1]}</Text> : null}
         </View>
@@ -200,22 +213,28 @@ export default function PainReportSheet({
         <Text style={s.question}>¿Cuándo?</Text>
         <View style={s.chipRow}>
           {MOMENTO_OPTIONS.map((opt) => (
-            <TouchableOpacity
+            <Pressable
               key={opt.value}
-              style={[s.chip, momento === opt.value && s.chipActive]}
-              activeOpacity={0.75}
+              style={({ pressed }) => [
+                s.chip,
+                momento === opt.value && s.chipActive,
+                pressed && { opacity: 0.75 },
+              ]}
               onPress={() => setMomento(opt.value)}
             >
               <Text style={[s.chipText, momento === opt.value && s.chipTextActive]}>{opt.label}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
 
       <View style={s.footer}>
-        <TouchableOpacity
-          style={[s.submitBtn, !canSubmit && s.submitBtnDisabled]}
-          activeOpacity={0.85}
+        <Pressable
+          style={({ pressed }) => [
+            s.submitBtn,
+            !canSubmit && s.submitBtnDisabled,
+            pressed && { opacity: 0.85 },
+          ]}
           onPress={onSubmit}
           disabled={!canSubmit}
         >
@@ -224,7 +243,7 @@ export default function PainReportSheet({
           ) : (
             <Text style={s.submitBtnText}>REPORTAR</Text>
           )}
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SimpleBottomSheet>
   );

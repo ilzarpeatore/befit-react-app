@@ -4,28 +4,9 @@ import { C, FONT } from '../pages/migrated/theme';
 
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-export interface HabitLogLike {
-  date: string;
-  is_completed: boolean;
-}
-
-/** 7 booleanos (Lunes..Domingo de la semana en curso) a partir de un array de logs con fecha + is_completed. */
-export function computeWeekCompliance(logs: HabitLogLike[]): boolean[] {
-  const now = new Date();
-  const dow = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
-
-  const completedDates = new Set(
-    logs.filter((l) => l.is_completed).map((l) => l.date.slice(0, 10))
-  );
-
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return completedDates.has(d.toISOString().slice(0, 10));
-  });
-}
+// HabitLogLike/computeWeekCompliance viven en ./weekCompliance.ts (no en este
+// archivo) para que este módulo solo exporte el componente y así Fast Refresh
+// pueda preservar su estado.
 
 interface Props {
   /** 7 booleanos, Lunes a Domingo de la semana actual. */

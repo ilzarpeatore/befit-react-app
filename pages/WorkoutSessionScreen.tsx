@@ -2,18 +2,17 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   ScrollView,
   Alert,
   useWindowDimensions,
-} from "react-native";
+ ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { ImageBackground } from "react-native";
 import { C, FONT, GRADIENT } from "./migrated/theme";
 import { workoutHistoryApi } from "../api/workoutHistory";
 
@@ -42,6 +41,12 @@ interface RouteParams {
   workoutDayId: number;
 }
 
+function formatTime(sec: number) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export default function WorkoutSessionScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -51,7 +56,7 @@ export default function WorkoutSessionScreen() {
   const r = (n: number) => Math.round(n * sc);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [allExerciseData, setAllExerciseData] = useState<ExerciseData[]>(
+  const [allExerciseData, setAllExerciseData] = useState<ExerciseData[]>(() =>
     exercises.map((ex) => ({
       sets: Array.from({ length: ex.sets }, () => ({
         reps: String(ex.reps),
@@ -65,7 +70,7 @@ export default function WorkoutSessionScreen() {
   const [isRestMode, setIsRestMode] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startTimeRef = useRef(Date.now());
+  const [startTime] = useState(() => Date.now());
 
   const exercise = exercises[currentIndex];
   const exerciseData = allExerciseData[currentIndex];
@@ -75,30 +80,29 @@ export default function WorkoutSessionScreen() {
   // elapsed workout timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
+  }, [startTime]);
 
-  // rest timer countdown
+  // rest timer countdown. Side effects (stopping the timer, exiting rest mode)
+  // live in this effect body, not in setRestTimer's updater: React can
+  // re-invoke a functional updater, so it must stay pure.
   useEffect(() => {
-    if (!isRestMode || restTimer <= 0) return;
+    if (!isRestMode) return;
+    if (restTimer <= 0) {
+      setIsRestMode(false);
+      return;
+    }
     restRef.current = setInterval(() => {
-      setRestTimer((prev) => {
-        if (prev <= 1) {
-          if (restRef.current) clearInterval(restRef.current);
-          setIsRestMode(false);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setRestTimer((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => {
       if (restRef.current) clearInterval(restRef.current);
     };
-  }, [isRestMode, restTimer > 0]);
+  }, [isRestMode, restTimer]);
 
   if (exercises.length === 0 || !exercise || !exerciseData) {
     return (
@@ -111,12 +115,6 @@ export default function WorkoutSessionScreen() {
       </SafeAreaView>
     );
   }
-
-  const formatTime = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
 
   const updateSet = (setIndex: number, field: "reps" | "weight", value: string) => {
     setAllExerciseData((prev) => {
@@ -167,25 +165,29 @@ export default function WorkoutSessionScreen() {
   const finishWorkout = async () => {
     if (!workoutId) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    const totalTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    const totalTime = Math.floor((Date.now() - startTime) / 1000);
 
     try {
       const today = new Date().toISOString().split("T")[0];
-      for (let i = 0; i < exercises.length; i++) {
-        const ex = exercises[i];
-        const data = allExerciseData[i];
-        const completedSets = data.sets
-          .filter((s) => s.completed)
-          .map((s) => ({ reps: s.reps, weight: s.weight }));
-        if (completedSets.length === 0) continue;
-        await workoutHistoryApi.storeWorkoutExercise({
-          workout_id: workoutId,
-          exercise_id: ex.id,
-          sets: completedSets,
-          date: today,
-          workout_day_id: workoutDayId,
-        });
-      }
+      const saves = exercises
+        .map((ex, i) => {
+          const data = allExerciseData[i];
+          const completedSets = data.sets.reduce<{ reps: string; weight: string }[]>((acc, s) => {
+            if (s.completed) acc.push({ reps: s.reps, weight: s.weight });
+            return acc;
+          }, []);
+          if (completedSets.length === 0) return null;
+          return workoutHistoryApi.storeWorkoutExercise({
+            workout_id: workoutId,
+            exercise_id: ex.id,
+            sets: completedSets,
+            date: today,
+            workout_day_id: workoutDayId,
+          });
+        })
+        .filter((p): p is ReturnType<typeof workoutHistoryApi.storeWorkoutExercise> => p !== null);
+      // Guardar cada ejercicio es independiente (exercise_id distinto), sin orden requerido.
+      await Promise.all(saves);
       navigation.replace("WorkoutSummary", {
         exercises: exercises.map((ex, i) => ({
           ...ex,
@@ -230,12 +232,15 @@ export default function WorkoutSessionScreen() {
             paddingVertical: r(10),
           }}
         >
-          <TouchableOpacity
+          <Pressable
             onPress={handleBack}
-            style={{ width: r(44), height: r(44), alignItems: "center", justifyContent: "center" }}
+            style={({ pressed }) => [
+              { width: r(44), height: r(44), alignItems: "center", justifyContent: "center" },
+              pressed && { opacity: 0.2 },
+            ]}
           >
             <Ionicons name="chevron-back" size={r(24)} color={C.textWhite} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ fontFamily: FONT.bold, fontSize: r(14), color: C.textSecondary }}>
             Exercise {currentIndex + 1}/{exercises.length}
           </Text>
@@ -275,19 +280,22 @@ export default function WorkoutSessionScreen() {
             <Text style={{ fontFamily: FONT.medium, fontSize: r(13), color: C.textSecondary, marginBottom: r(12) }}>
               Rest Timer
             </Text>
-            <TouchableOpacity
+            <Pressable
               onPress={skipRest}
-              style={{
-                backgroundColor: C.gray40,
-                borderRadius: r(12),
-                paddingVertical: r(10),
-                paddingHorizontal: r(24),
-              }}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: C.gray40,
+                  borderRadius: r(12),
+                  paddingVertical: r(10),
+                  paddingHorizontal: r(24),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <Text style={{ fontFamily: FONT.semiBold, fontSize: r(14), color: C.textWhite }}>
                 Skip Rest
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
 
@@ -437,49 +445,58 @@ export default function WorkoutSessionScreen() {
                 {set.completed ? (
                   <Ionicons name="checkmark-circle" size={r(24)} color={C.success} />
                 ) : (
-                  <TouchableOpacity onPress={() => markSetDone(setIndex)}>
+                  <Pressable
+                    onPress={() => markSetDone(setIndex)}
+                    style={({ pressed }) => pressed && { opacity: 0.2 }}
+                  >
                     <Ionicons name="ellipse-outline" size={r(24)} color={C.gray30} />
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
             </View>
           ))}
 
           {/* Add Set Button */}
-          <TouchableOpacity
+          <Pressable
             onPress={addSet}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: r(6),
-              backgroundColor: C.surfaceLight,
-              borderRadius: r(12),
-              paddingVertical: r(12),
-              marginBottom: r(16),
-              borderWidth: 1,
-              borderColor: C.border,
-              borderStyle: "dashed",
-            }}
+            style={({ pressed }) => [
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: r(6),
+                backgroundColor: C.surfaceLight,
+                borderRadius: r(12),
+                paddingVertical: r(12),
+                marginBottom: r(16),
+                borderWidth: 1,
+                borderColor: C.border,
+                borderStyle: "dashed",
+              },
+              pressed && { opacity: 0.2 },
+            ]}
           >
             <Ionicons name="add-circle-outline" size={r(18)} color={C.textSecondary} />
             <Text style={{ fontFamily: FONT.semiBold, fontSize: r(14), color: C.textSecondary }}>
               Add Set
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
           {/* Mark Set Done Button */}
           {!allSetsCompleted && (
-            <TouchableOpacity
+            <Pressable
               onPress={() => {
                 const firstIncomplete = exerciseData.sets.findIndex((s) => !s.completed);
                 if (firstIncomplete !== -1) markSetDone(firstIncomplete);
               }}
-              style={{
-                borderRadius: r(14),
-                overflow: "hidden",
-                marginBottom: r(12),
-              }}
+              style={({ pressed }) => [
+                {
+                  borderRadius: r(14),
+                  overflow: "hidden",
+                  marginBottom: r(12),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <LinearGradient
                 start={{ x: 0, y: 0 }}
@@ -495,18 +512,21 @@ export default function WorkoutSessionScreen() {
                   Mark Set Done
                 </Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* Next Exercise Button */}
           {allSetsCompleted && !isLastExercise && (
-            <TouchableOpacity
+            <Pressable
               onPress={goToNextExercise}
-              style={{
-                borderRadius: r(14),
-                overflow: "hidden",
-                marginBottom: r(12),
-              }}
+              style={({ pressed }) => [
+                {
+                  borderRadius: r(14),
+                  overflow: "hidden",
+                  marginBottom: r(12),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <LinearGradient
                 start={{ x: 0, y: 0 }}
@@ -526,18 +546,21 @@ export default function WorkoutSessionScreen() {
                 </Text>
                 <Ionicons name="arrow-forward" size={r(18)} color="#FFFFFF" />
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* Finish Workout Button */}
           {allSetsCompleted && isLastExercise && (
-            <TouchableOpacity
+            <Pressable
               onPress={finishWorkout}
-              style={{
-                borderRadius: r(14),
-                overflow: "hidden",
-                marginBottom: r(12),
-              }}
+              style={({ pressed }) => [
+                {
+                  borderRadius: r(14),
+                  overflow: "hidden",
+                  marginBottom: r(12),
+                },
+                pressed && { opacity: 0.2 },
+              ]}
             >
               <LinearGradient
                 start={{ x: 0, y: 0 }}
@@ -557,7 +580,7 @@ export default function WorkoutSessionScreen() {
                   Finish Workout
                 </Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </ScrollView>
       </SafeAreaView>

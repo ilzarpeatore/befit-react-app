@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
 import { Actionsheet, ActionsheetBackdrop, ActionsheetContent } from '@components/ui/actionsheet';
 import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
@@ -33,7 +33,7 @@ interface SimpleBottomSheetProps {
 // fondo real (Liquid Glass o C.surface de reserva) lo pone el GlassView de
 // dentro, que también lleva el radio/padding que antes tenía este nodo.
 export default function SimpleBottomSheet({ visible, onClose, children }: SimpleBottomSheetProps) {
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const keyboardVisibleRef = useRef(false);
   // Solo iOS 26+ real (dispositivo + compilado con Xcode 26+) renderiza el
   // material Liquid Glass de verdad — en cualquier otro caso GlassView cae a
   // una View normal y quedaría transparente sin este fondo de reserva.
@@ -43,17 +43,17 @@ export default function SimpleBottomSheet({ visible, onClose, children }: Simple
     if (!visible) return;
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const showSub = Keyboard.addListener(showEvt, () => setKeyboardVisible(true));
-    const hideSub = Keyboard.addListener(hideEvt, () => setKeyboardVisible(false));
+    const showSub = Keyboard.addListener(showEvt, () => { keyboardVisibleRef.current = true; });
+    const hideSub = Keyboard.addListener(hideEvt, () => { keyboardVisibleRef.current = false; });
     return () => {
       showSub.remove();
       hideSub.remove();
-      setKeyboardVisible(false);
+      keyboardVisibleRef.current = false;
     };
   }, [visible]);
 
   const onBackdropPress = () => {
-    if (keyboardVisible) {
+    if (keyboardVisibleRef.current) {
       Keyboard.dismiss();
       return;
     }

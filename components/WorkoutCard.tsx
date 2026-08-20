@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, TouchableOpacity, View, Image } from "react-native";
+import { Text, Pressable, View } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -29,7 +30,7 @@ function WorkoutCard({
   const styles = useStyle();
 
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
+    <Pressable style={({ pressed }) => pressed && { opacity: 0.85 }} onPress={onPress}>
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -37,7 +38,7 @@ function WorkoutCard({
         style={styles.container}
       >
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} contentFit="cover" style={styles.image} />
         ) : null}
 
         <View style={styles.content}>
@@ -54,9 +55,9 @@ function WorkoutCard({
             </View>
 
             {onFavourite ? (
-              <TouchableOpacity
+              <Pressable
                 onPress={onFavourite}
-                style={styles.favBtn}
+                style={({ pressed }) => [styles.favBtn, pressed && { opacity: 0.2 }]}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Ionicons
@@ -64,7 +65,7 @@ function WorkoutCard({
                   size={22}
                   color={isFavourite ? Colors.PINK_ACCENT : Colors.TEXT_SECONDARY}
                 />
-              </TouchableOpacity>
+              </Pressable>
             ) : null}
           </View>
 
@@ -92,7 +93,7 @@ function WorkoutCard({
           </View>
         </View>
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -108,7 +109,6 @@ function useStyle() {
     image: {
       width: "100%",
       height: "160@ratio",
-      resizeMode: "cover",
     },
     content: {
       padding: "16@ratio",

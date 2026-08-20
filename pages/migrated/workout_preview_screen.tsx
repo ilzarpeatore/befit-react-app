@@ -2,12 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet,
   ScrollView,
-  Image,
   Dimensions,
   Platform,
   StatusBar,
   Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Box } from '@components/ui/box';
@@ -315,7 +315,7 @@ export default function WorkoutPreviewScreen(props: Props) {
         {/* Header image */}
         <Box style={styles.heroSection}>
           {workout.thumbnail ? (
-            <Image source={{ uri: workout.thumbnail }} style={styles.heroImage} resizeMode="cover" />
+            <Image source={{ uri: workout.thumbnail }} style={styles.heroImage} contentFit="cover" />
           ) : (
             <LinearGradient
               colors={[C.gray20, C.surface]}

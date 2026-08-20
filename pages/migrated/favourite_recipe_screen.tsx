@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Image, FlatList, SafeAreaView, StyleSheet } from 'react-native';
+import { Image, FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -33,7 +34,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
   const [recipeList, setRecipeList] = useState<RecipeItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const isLastPageRef = useRef(false);
   const _scrollController = useRef<FlatList | null>(null);
 
   const _fetchRecipes = useCallback(async () => {
@@ -52,7 +53,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
       }));
       if (page === 1) setRecipeList(items);
       else setRecipeList((prev) => [...prev, ...items]);
-      setIsLastPage(value.data.pagination?.currentPage === value.data.pagination?.totalPages);
+      isLastPageRef.current = value.data.pagination?.currentPage === value.data.pagination?.totalPages;
     } catch (e) {
       logger.error(e);
     } finally {
@@ -65,7 +66,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
   }, [_fetchRecipes]);
 
   const handleEndReached = () => {
-    if (!isLastPage && !isLoading) {
+    if (!isLastPageRef.current && !isLoading) {
       setPage((prev) => prev + 1);
     }
   };

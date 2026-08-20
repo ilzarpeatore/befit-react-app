@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { Animated, Easing, Platform } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { Easing, Platform } from "react-native";
+import Animated, { useSharedValue, withTiming, useAnimatedProps } from "react-native-reanimated";
 import {
   Svg,
   Line,
@@ -22,7 +23,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
   /* chart data */
   const chartviewboxworkingwidth = styles.chartviewbox.width; //chart working area width (because of spacing, it's different from view box width)
   const chartviewboxworkingheight = styles.chartviewbox.height; //chart working area height (because of spacing, it's different from view box height)
-  const PathAnim = useRef(new Animated.Value(1000)).current; // chart path anime
+  const PathAnim = useSharedValue(1000); // chart path anime
   const Ystartpoint = styles.chartviewbox.top; //starting Y position for chart to render
   const cropfixh = styles.chartviewbox.padding; // fixing line croping height
   const startX = styles.chartviewbox.left; // start x position for chart to render from viewbox
@@ -61,15 +62,13 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
       avglinestartY
     }
 
-  }, [chartdatamaxvalue, chartdata]);
+  }, [chartdatamaxvalue, chartdata, chartviewboxworkingheight, chartviewboxworkingwidth, startX, cropfixh, Ystartpoint]);
   useEffect(() => {
-    Animated.timing(PathAnim, {
-      toValue: 0,
-      duration: 5000,
-      useNativeDriver: true,
-      easing: Easing.linear,
-    }).start();
-  }, [])
+    PathAnim.value = withTiming(0, { duration: 5000, easing: Easing.linear });
+  }, [PathAnim])
+  const lineAnimatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: AnimateLine ? PathAnim.value : undefined,
+  }));
   return (
     <Svg
       width={chartWidth}
@@ -147,7 +146,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
         strokeWidth="2"
         strokeLinecap="round"
         strokeDasharray={AnimateLine ? 1000 : 0}
-        strokeDashoffset={AnimateLine ? PathAnim : undefined}
+        animatedProps={lineAnimatedProps}
       />
       {/*graph dot lines*/}
       <AnimatedPath

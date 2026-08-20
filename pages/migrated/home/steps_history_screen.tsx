@@ -1,8 +1,8 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
   Alert,
@@ -32,6 +32,17 @@ const INITIAL_DATA: StepEntry[] = [
 
 const FILTERS = ["All", "High", "Moderate", "Low"];
 
+function getIntensityColor(intensity: string) {
+  switch (intensity) {
+    case "High":
+      return "#F44336";
+    case "Moderate":
+      return "#FF9800";
+    default:
+      return "#4CAF50";
+  }
+}
+
 export default function StepsHistoryScreen({ navigation }: any) {
 
   const [filter, setFilter] = useState("All");
@@ -55,21 +66,10 @@ export default function StepsHistoryScreen({ navigation }: any) {
     ]);
   };
 
-  const getIntensityColor = (intensity: string) => {
-    switch (intensity) {
-      case "High":
-        return "#F44336";
-      case "Moderate":
-        return "#FF9800";
-      default:
-        return "#4CAF50";
-    }
-  };
-
   const renderEntry = (entry: StepEntry) => (
-    <TouchableOpacity
+    <Pressable
       key={entry.id}
-      style={styles.entryCard}
+      style={({ pressed }) => [styles.entryCard, pressed && { opacity: 0.2 }]}
       onPress={() => navigation.navigate("MigratedStepsDetails")}
       onLongPress={() => handleDelete(entry.id)}
     >
@@ -95,7 +95,7 @@ export default function StepsHistoryScreen({ navigation }: any) {
         <Text style={styles.entrySteps}>{entry.steps.toLocaleString()}</Text>
         <Text style={styles.entryCalories}>{entry.calories} cal</Text>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
@@ -103,9 +103,13 @@ export default function StepsHistoryScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.filterBar}>
           {FILTERS.map((f) => (
-            <TouchableOpacity
+            <Pressable
               key={f}
-              style={[styles.filterBtn, filter === f && styles.filterBtnActive]}
+              style={({ pressed }) => [
+                styles.filterBtn,
+                filter === f && styles.filterBtnActive,
+                pressed && { opacity: 0.2 },
+              ]}
               onPress={() => setFilter(f)}
             >
               <Text
@@ -113,7 +117,7 @@ export default function StepsHistoryScreen({ navigation }: any) {
               >
                 {f}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 

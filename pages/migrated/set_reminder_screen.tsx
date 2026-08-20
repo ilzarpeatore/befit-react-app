@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { scheduleCustomReminder } from '@helper/reminderNotifications';
@@ -10,6 +11,17 @@ interface Props {
   isDaily?: boolean;
 }
 
+const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const weekdayLetters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+function formatHour(h: number): string {
+  const hour12 = h % 12 || 12;
+  return String(hour12).padStart(2, '0');
+}
+function formatMinute(m: number): string {
+  return String(m).padStart(2, '0');
+}
+
 export default function SetReminderScreen(props: any) {
   const isDaily = props.route?.params?.isDaily ?? false;
   const [dateTime, setDateTime] = useState(new Date());
@@ -18,9 +30,6 @@ export default function SetReminderScreen(props: any) {
   const [description, setDescription] = useState('');
   const [showTimePicker, setShowTimePicker] = useState(false);
   const styles = useStyle();
-
-  const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const weekdayLetters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   const toggleDay = (index: number) => {
     setSelectedDays((prev) => {
@@ -89,60 +98,58 @@ export default function SetReminderScreen(props: any) {
     props.navigation.goBack();
   };
 
-  const formatHour = (h: number): string => {
-    const hour12 = h % 12 || 12;
-    return String(hour12).padStart(2, '0');
-  };
-  const formatMinute = (m: number): string => String(m).padStart(2, '0');
   const isAM = dateTime.getHours() < 12;
 
   return (
     <SafeAreaView style={s.container}>
       <View style={s.header}>
-        <TouchableOpacity onPress={() => props.navigation.goBack()} style={s.backBtn}>
+        <Pressable
+          onPress={() => props.navigation.goBack()}
+          style={({ pressed }) => [s.backBtn, pressed && { opacity: 0.2 }]}
+        >
           <Ionicons name="chevron-back" size={24} color={C.white} />
-        </TouchableOpacity>
+        </Pressable>
         <View style={s.backBtn} />
       </View>
 
       <ScrollView contentContainerStyle={s.scrollContent}>
         {/* Time Picker */}
         <View style={s.timePickerContainer}>
-          <TouchableOpacity
-            style={s.timeUnit}
+          <Pressable
+            style={({ pressed }) => [s.timeUnit, pressed && { opacity: 0.2 }]}
             onPress={() => handleTimeChange((dateTime.getHours() + 1) % 24, dateTime.getMinutes())}
           >
             <Ionicons name="chevron-up" size={24} color={C.gray30} />
-          </TouchableOpacity>
+          </Pressable>
           <View style={s.timeDisplay}>
             <Text style={[s.timeText, styles.fontBold]}>{formatHour(dateTime.getHours())}</Text>
             <Text style={[s.timeSeparator, styles.fontBold]}>:</Text>
             <Text style={[s.timeText, styles.fontBold]}>{formatMinute(dateTime.getMinutes())}</Text>
             <View style={s.ampmContainer}>
-              <TouchableOpacity
-                style={[s.ampmBtn, isAM && s.ampmBtnActive]}
+              <Pressable
+                style={({ pressed }) => [s.ampmBtn, isAM && s.ampmBtnActive, pressed && { opacity: 0.2 }]}
                 onPress={() => {
                   if (!isAM) handleTimeChange(dateTime.getHours() - 12, dateTime.getMinutes());
                 }}
               >
                 <Text style={[s.ampmText, isAM && s.ampmTextActive]}>AM</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[s.ampmBtn, !isAM && s.ampmBtnActive]}
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [s.ampmBtn, !isAM && s.ampmBtnActive, pressed && { opacity: 0.2 }]}
                 onPress={() => {
                   if (isAM) handleTimeChange(dateTime.getHours() + 12, dateTime.getMinutes());
                 }}
               >
                 <Text style={[s.ampmText, !isAM && s.ampmTextActive]}>PM</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
-          <TouchableOpacity
-            style={s.timeUnit}
+          <Pressable
+            style={({ pressed }) => [s.timeUnit, pressed && { opacity: 0.2 }]}
             onPress={() => handleTimeChange((dateTime.getHours() + 23) % 24, dateTime.getMinutes())}
           >
             <Ionicons name="chevron-down" size={24} color={C.gray30} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <View style={s.divider} />
@@ -151,22 +158,22 @@ export default function SetReminderScreen(props: any) {
         {!isDaily && (
           <View style={s.repeatSection}>
             <Text style={[s.sectionTitle, styles.fontBold]}>Repetir</Text>
-            <TouchableOpacity onPress={toggleEveryDay}>
+            <Pressable onPress={toggleEveryDay} style={({ pressed }) => pressed && { opacity: 0.2 }}>
               <Text style={[s.everyDayText, { color: C.textPrimary }]}>Todos los días</Text>
-            </TouchableOpacity>
+            </Pressable>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.dayChips}>
               {weekdays.map((day, index) => {
                 const isSelected = selectedDays.has(index);
                 return (
-                  <TouchableOpacity
-                    key={index}
-                    style={[s.dayChip, isSelected && s.dayChipSelected]}
+                  <Pressable
+                    key={day}
+                    style={({ pressed }) => [s.dayChip, isSelected && s.dayChipSelected, pressed && { opacity: 0.2 }]}
                     onPress={() => toggleDay(index)}
                   >
                     <Text style={[s.dayChipText, isSelected && s.dayChipTextSelected, styles.fontBold]}>
                       {weekdayLetters[index]}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
             </ScrollView>
@@ -194,9 +201,9 @@ export default function SetReminderScreen(props: any) {
         />
 
         {/* Save Button */}
-        <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
+        <Pressable style={({ pressed }) => [s.saveBtn, pressed && { opacity: 0.2 }]} onPress={handleSave}>
           <Text style={[s.saveBtnText, styles.fontSemiBold]}>Guardar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

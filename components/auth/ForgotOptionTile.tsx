@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -15,7 +15,7 @@ export function ForgotOptionTile({ icon, label, onPress }: Props) {
   const styles = useStyle();
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <Pressable style={({ pressed }) => [styles.container, pressed && { opacity: 0.2 }]} onPress={onPress}>
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -28,7 +28,7 @@ export function ForgotOptionTile({ icon, label, onPress }: Props) {
         <Text style={styles.label}>{label}</Text>
         <Ionicons name="chevron-forward" size={20} color={Colors.TEXT_SECONDARY} />
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

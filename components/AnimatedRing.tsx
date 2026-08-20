@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleProp, ViewStyle, StyleSheet } from 'react-native';
+import Animated, { useSharedValue, withTiming, useAnimatedProps } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { C } from '../pages/migrated/theme';
 
@@ -28,16 +29,19 @@ export default function AnimatedRing({
 }: AnimatedRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = useRef(new Animated.Value(circumference)).current;
+  const offset = useSharedValue(circumference);
 
   useEffect(() => {
-    offset.setValue(circumference);
-    Animated.timing(offset, {
-      toValue: circumference * (1 - Math.min(Math.max(percent, 0), 100) / 100),
-      duration,
-      useNativeDriver: true,
-    }).start();
+    offset.value = circumference;
+    offset.value = withTiming(
+      circumference * (1 - Math.min(Math.max(percent, 0), 100) / 100),
+      { duration }
+    );
   }, [percent, circumference, duration, offset]);
+
+  const animatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: offset.value,
+  }));
 
   return (
     <View style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}>
@@ -59,7 +63,7 @@ export default function AnimatedRing({
           fill="none"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          animatedProps={animatedProps}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>

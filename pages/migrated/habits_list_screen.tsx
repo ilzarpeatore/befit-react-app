@@ -11,7 +11,8 @@ import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { habitsApi, Habit, HabitSourceType } from '../../api/habits';
 import { habitIoniconFor } from '../../constants/habitIcons';
-import WeekComplianceRow, { computeWeekCompliance } from '../../components/WeekComplianceRow';
+import WeekComplianceRow from '../../components/WeekComplianceRow';
+import { computeWeekCompliance } from '../../components/weekCompliance';
 
 const SOURCE_LABEL: Record<HabitSourceType, string> = {
   coach_assigned: 'De tu coach',
@@ -42,6 +43,8 @@ interface Props {
   navigation?: any;
 }
 
+const isGoalHabit = (habit: Habit) => habit.target_value != null && Number(habit.target_value) > 0;
+
 export default function HabitsListScreen(props: Props) {
   const { navigation } = props;
   const [isLoading, setIsLoading] = useState(true);
@@ -71,8 +74,6 @@ export default function HabitsListScreen(props: Props) {
   const openDetail = (habit: Habit) => {
     navigation?.navigate('MigratedHabitDetail', { habitId: habit.id });
   };
-
-  const isGoalHabit = (habit: Habit) => habit.target_value != null && Number(habit.target_value) > 0;
 
   // Hábitos con objetivo numérico no se marcan "hecho" a ciegas desde aquí
   // (no hay dónde introducir el valor real) — se abre el detalle, que sí

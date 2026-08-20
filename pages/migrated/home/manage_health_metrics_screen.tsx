@@ -26,6 +26,10 @@ const INITIAL_METRICS: Metric[] = [
   { id: "8", name: "Mood", icon: "happy-outline" },
 ];
 
+function handleSave() {
+  Alert.alert("Ã‰xito", "MÃ©tricas guardadas correctamente");
+}
+
 export default function ManageHealthMetricsScreen({ navigation }: any) {
 
   const [metrics, setMetrics] = useState<Metric[]>(INITIAL_METRICS);
@@ -39,10 +43,6 @@ export default function ManageHealthMetricsScreen({ navigation }: any) {
         onPress: () => setMetrics((prev) => prev.filter((m) => m.id !== id)),
       },
     ]);
-  };
-
-  const handleSave = () => {
-    Alert.alert("Ã‰xito", "MÃ©tricas guardadas correctamente");
   };
 
   const moveUp = (index: number) => {

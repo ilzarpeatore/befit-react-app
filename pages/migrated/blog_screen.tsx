@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, ScrollView, TextInput, Dimensions, Image, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TextInput, Dimensions, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -52,51 +53,7 @@ export default function BlogScreen({ navigation }: any) {
   const [sortSheetVisible, setSortSheetVisible] = useState(false);
   const [categorySheetVisible, setCategorySheetVisible] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (!isSearching && !loading) {
-      loadFilteredPosts();
-    }
-  }, [selectedCategory, sortBy, orderDir]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const postsRes = await blogApi.getList(1, { per_page: 100, order_by: sortBy, order_dir: orderDir });
-      const raw = postsRes.data;
-      const posts: BlogListItem[] = (raw?.data ?? []).filter((p: any) => p.status === 'publish');
-
-      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
-      buildSections(posts);
-
-      try {
-        const catsRes = await blogApi.getCategories();
-        setCategories(catsRes.data?.data ?? []);
-      } catch {}
-    } catch (e: any) {
-      Alert.alert('Blog Error', e?.message || String(e));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadFilteredPosts = async () => {
-    try {
-      const params: any = { per_page: 100, order_by: sortBy, order_dir: orderDir };
-      if (selectedCategory) params.blog_category_id = selectedCategory;
-
-      const res = await blogApi.getList(1, params);
-      const posts: BlogListItem[] = (res.data?.data ?? []).filter((p: any) => p.status === 'publish');
-
-      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
-      buildSections(posts);
-    } catch {}
-  };
-
-  const buildSections = (posts: BlogListItem[]) => {
+  const buildSections = useCallback((posts: BlogListItem[]) => {
     if (selectedCategory) {
       const cat = categories.find((c) => c.id === selectedCategory);
       if (cat) {
@@ -119,7 +76,65 @@ export default function BlogScreen({ navigation }: any) {
       newSections.sort((a, b) => (a.category.id || Number.MAX_SAFE_INTEGER) - (b.category.id || Number.MAX_SAFE_INTEGER));
       setSections(newSections);
     }
+  }, [selectedCategory, categories]);
+
+  const loadFilteredPosts = useCallback(async (ignoreRef: { current: boolean }) => {
+    try {
+      const params: any = { per_page: 100, order_by: sortBy, order_dir: orderDir };
+      if (selectedCategory) params.blog_category_id = selectedCategory;
+
+      const res = await blogApi.getList(1, params);
+      if (ignoreRef.current) return;
+      const posts: BlogListItem[] = (res.data?.data ?? []).filter((p: any) => p.status === 'publish');
+
+      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
+      buildSections(posts);
+    } catch {}
+  }, [sortBy, orderDir, selectedCategory, buildSections]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const postsRes = await blogApi.getList(1, { per_page: 100, order_by: sortBy, order_dir: orderDir });
+      const raw = postsRes.data;
+      const posts: BlogListItem[] = (raw?.data ?? []).filter((p: any) => p.status === 'publish');
+
+      setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
+      buildSections(posts);
+
+      try {
+        const catsRes = await blogApi.getCategories();
+        setCategories(catsRes.data?.data ?? []);
+      } catch {}
+    } catch (e: any) {
+      Alert.alert('Blog Error', e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadFilteredPosts (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (isSearching || loading) return;
+    const ignoreRef = { current: false };
+    loadFilteredPosts(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+    // isSearching/loading se quedan fuera a proposito: son solo una guarda
+    // de "no dispares mientras hay otra carga en curso", no una condicion
+    // que deba re-disparar el efecto (eso causaria una carga duplicada
+    // justo despues del mount, cuando loading pasa de true a false).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, sortBy, orderDir, loadFilteredPosts]);
 
   const handleSearch = async (text: string) => {
     setSearchText(text);
@@ -147,7 +162,7 @@ export default function BlogScreen({ navigation }: any) {
     <Pressable key={item.id} onPress={() => navigateToDetail(item)}>
       <Card variant="ghost" className="flex-row overflow-hidden rounded-sm p-0 mx-4" style={{ marginBottom: 12 }}>
         {item.post_image ? (
-          <Image source={{ uri: item.post_image }} style={styles_local.blogImage} resizeMode="cover" />
+          <Image source={{ uri: item.post_image }} style={styles_local.blogImage} contentFit="cover" />
         ) : (
           <Box style={[styles_local.blogImage, { backgroundColor: C.surfaceLight }]} />
         )}
@@ -168,7 +183,7 @@ export default function BlogScreen({ navigation }: any) {
       onPress={() => navigateToDetail(item)}
     >
       {item.post_image ? (
-        <Image source={{ uri: item.post_image }} style={styles_local.featuredImage} resizeMode="cover" />
+        <Image source={{ uri: item.post_image }} style={styles_local.featuredImage} contentFit="cover" />
       ) : (
         <Box style={[styles_local.featuredImage, { backgroundColor: C.surfaceLight }]} />
       )}

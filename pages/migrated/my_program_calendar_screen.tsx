@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
-  ScrollView,
-  SafeAreaView,
-  Image,
-  Alert,
+  ScrollView, Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -126,8 +125,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [periodMode, setPeriodMode] = useState<'week' | 'month'>('month');
-  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(today));
-  const [weekAnchor, setWeekAnchor] = useState(startOfWeekMonday(today));
+  const [selectedMonth, setSelectedMonth] = useState(() => startOfMonth(today));
+  const [weekAnchor, setWeekAnchor] = useState(() => startOfWeekMonday(today));
   const [selectedDayKey, setSelectedDayKey] = useState<string | null>(todayKey);
 
   // Modo vida real (2026-08-12): el cliente marca desde su calendario qué
@@ -183,7 +182,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   useEffect(() => {
     if (ym === loadedYm) return;
-    getData(dominantAnchor.getMonth() + 1, dominantAnchor.getFullYear(), ym);
+    // Deriva mes/año de `ym` (ya en las deps) en vez de releer
+    // dominantAnchor.getMonth()/getFullYear() directamente -- dominantAnchor
+    // es un Date nuevo en cada render (addDays/selectedMonth), añadirlo a
+    // las deps dispararía el efecto en renders donde el año/mes real no
+    // cambió.
+    const [yearStr, monthStr] = ym.split('-');
+    getData(Number(monthStr), Number(yearStr), ym);
   }, [ym, loadedYm, getData]);
 
   // BUG REAL (2026-08-13, reportado por cliente): antes había un tercer
@@ -230,7 +235,12 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     [completedSessions]
   );
   const completedByTemplate = useMemo(
-    () => new Set(completedSessions.filter((s) => s.workout_template_id != null && s.date).map((s) => `${String(s.date).slice(0, 10)}|${s.workout_template_id}`)),
+    () => completedSessions.reduce((set, s) => {
+      if (s.workout_template_id != null && s.date) {
+        set.add(`${String(s.date).slice(0, 10)}|${s.workout_template_id}`);
+      }
+      return set;
+    }, new Set<string>()),
     [completedSessions]
   );
 
@@ -319,7 +329,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           className="flex-row items-center p-3"
           style={completed ? styles.workoutCardCompleted : { marginTop: 8 }}
         >
-          <Image source={{ uri: getWorkoutImage(w.title || '') }} style={styles.workoutImage} />
+          <Image source={{ uri: getWorkoutImage(w.title || '') }} contentFit="cover" style={styles.workoutImage} />
           <VStack style={{ flex: 1, marginLeft: 14 }}>
             <Text style={styles.workoutTitle} numberOfLines={2}>{w.title || ''}</Text>
             {completed && (
@@ -374,10 +384,11 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     // Agrupar por semana (lunes) -- una solicitud = una semana calendario,
     // igual que el flujo del coach (AdaptiveWeekPlanner::persist()).
     const byWeek = new Map<string, number[]>();
+    const mDaysByDate = new Map(mDays.map((d) => [d.date, d]));
     for (const dateKey of selectedDates) {
       const dateObj = new Date(`${dateKey}T00:00:00`);
       const weekStartKey = toDateKey(startOfWeekMonday(dateObj));
-      const day = mDays.find((d) => d.date === dateKey);
+      const day = mDaysByDate.get(dateKey);
       const ids = (day?.workouts ?? []).map((w) => w.assignmentId).filter((id): id is number => id != null);
       if (!ids.length) continue;
       byWeek.set(weekStartKey, [...(byWeek.get(weekStartKey) ?? []), ...ids]);
@@ -388,15 +399,15 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     setSubmittingSelection(true);
     let okCount = 0;
     let errCount = 0;
-    for (const [weekStart, ids] of byWeek) {
-      try {
-        await adaptiveWeekPlansApi.requestUnavailable(weekStart, ids);
-        okCount++;
-      } catch {
-        errCount++;
-      }
+    try {
+      const results = await Promise.allSettled(
+        Array.from(byWeek, ([weekStart, ids]) => adaptiveWeekPlansApi.requestUnavailable(weekStart, ids))
+      );
+      okCount = results.filter((r) => r.status === 'fulfilled').length;
+      errCount = results.length - okCount;
+    } finally {
+      setSubmittingSelection(false);
     }
-    setSubmittingSelection(false);
     cancelSelectionMode();
 
     if (errCount === 0) {
@@ -551,8 +562,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {periodMode === 'month' && (
             <HStack style={styles.weekdayHeaderRow}>
-              {WEEKDAY_LABELS.map((l, i) => (
-                <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
+              {WEEKDAY_LABELS.map((l) => (
+                <Text key={l} style={styles.weekdayHeaderText}>{l}</Text>
               ))}
             </HStack>
           )}
@@ -590,8 +601,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </Box>
       ) : (
         <ScrollView contentContainerStyle={{ paddingVertical: 16 }}>
-          {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day, dayIdx) => (
-            <Box key={dayIdx} style={styles.daySection}>
+          {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day) => (
+            <Box key={day.date} style={styles.daySection}>
               <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
               {checkinsForDay(day.date).map(renderCheckinCard)}
               {day.workouts.length > 0 ? (

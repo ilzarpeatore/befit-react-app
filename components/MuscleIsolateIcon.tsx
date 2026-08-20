@@ -96,7 +96,10 @@ function resolve(rawIds: string[]): Resolved | null {
   const frontCount = defs.filter((d) => d.view === ViewSide.FRONT).length;
   const backCount = defs.length - frontCount;
   const view = backCount > frontCount ? ViewSide.BACK : ViewSide.FRONT;
-  const idsInView = new Set(defs.filter((d) => d.view === view).map((d) => d.id));
+  const idsInView = defs.reduce((set, d) => {
+    if (d.view === view) set.add(d.id);
+    return set;
+  }, new Set<string>());
   if (idsInView.size === 0) return null;
 
   let minX = Infinity;

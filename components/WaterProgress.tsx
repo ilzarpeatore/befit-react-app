@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { View, Animated, Platform } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { View, Platform } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import {
   Svg,
   Defs,
@@ -22,15 +23,15 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
     const translateY = 31 - waterY; // water Y position - 0 position (31px)
     return translateY;
   }, [percent])
-  const waterpercentanime = useRef(new Animated.Value(31)).current; // water Y position animation
+  const waterpercentanime = useSharedValue(31); // water Y position animation
   /* chart animation */
   useEffect(() => {
-    Animated.timing(waterpercentanime, {
-      toValue: translateY,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  }, [translateY])
+    waterpercentanime.value = withTiming(translateY, { duration: 500 });
+  }, [translateY, waterpercentanime])
+
+  const waterAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: waterpercentanime.value }], // animate water to Y position
+  }));
   return (
     <View
       style={{
@@ -49,9 +50,7 @@ export default function WaterProgress({ width, height, percent }: WaterProgressI
         <G transform="translate(-2 0) scale(1.1)">
           <AnimatedG
             //@ts-ignore exits ... duh
-            style={{
-              transform: [{ translateY: waterpercentanime }], // animate water to Y position
-            }}
+            style={waterAnimatedStyle}
           >
             {/* water */}
             <Path

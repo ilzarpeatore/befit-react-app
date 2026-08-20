@@ -91,11 +91,14 @@ export async function scheduleWaterReminders(settings: WaterReminderSettings): P
   const startMinutes = settings.start.hour * 60 + settings.start.minute;
   const endMinutes = settings.end.hour * 60 + settings.end.minute;
   const interval = Math.max(15, settings.intervalMinutes || 60);
+  const slots: TimeOfDay[] = [];
   for (let m = startMinutes; m <= endMinutes; m += interval) {
-    const hour = Math.floor(m / 60) % 24;
-    const minute = m % 60;
-    await scheduleDaily('💧 Hora de beber agua', 'No olvides mantenerte hidratado hoy.', { hour, minute }, 'water');
+    slots.push({ hour: Math.floor(m / 60) % 24, minute: m % 60 });
   }
+  // Cada franja se programa de forma independiente, sin orden requerido entre ellas.
+  await Promise.all(
+    slots.map((slot) => scheduleDaily('💧 Hora de beber agua', 'No olvides mantenerte hidratado hoy.', slot, 'water'))
+  );
 }
 
 export interface MealReminderSettings {
@@ -120,12 +123,15 @@ export async function scheduleMealReminders(meals: MealReminderSettings): Promis
   const granted = await ensureNotificationPermissionsAsync();
   if (!granted) return;
 
-  for (const key of Object.keys(MEAL_LABELS) as (keyof MealReminderSettings)[]) {
-    const meal = meals[key];
-    if (!meal.enabled) continue;
-    const label = MEAL_LABELS[key];
-    await scheduleDaily(`🍽️ ${label}`, `Es hora de registrar tu ${label.toLowerCase()}.`, meal.time, 'meal');
-  }
+  const enabledKeys = (Object.keys(MEAL_LABELS) as (keyof MealReminderSettings)[]).filter((key) => meals[key].enabled);
+  // Cada comida se programa de forma independiente, sin orden requerido entre ellas.
+  await Promise.all(
+    enabledKeys.map((key) => {
+      const meal = meals[key];
+      const label = MEAL_LABELS[key];
+      return scheduleDaily(`🍽️ ${label}`, `Es hora de registrar tu ${label.toLowerCase()}.`, meal.time, 'meal');
+    })
+  );
 }
 
 export interface CustomReminderInput {
@@ -144,10 +150,10 @@ export async function scheduleCustomReminder(input: CustomReminderInput): Promis
     const id = await scheduleDaily(input.title, input.description, input.time, 'custom');
     return [id];
   }
-  const ids: string[] = [];
-  for (const day of input.days) {
-    ids.push(await scheduleWeekly(input.title, input.description, input.time, day, 'custom'));
-  }
+  // Un día por notificación, todas independientes entre sí (sin orden requerido).
+  const ids = await Promise.all(
+    input.days.map((day) => scheduleWeekly(input.title, input.description, input.time, day, 'custom'))
+  );
   return ids;
 }
 

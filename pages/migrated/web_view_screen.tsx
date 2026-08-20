@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { Box } from '@components/ui/box';
 import { Button } from '@components/ui/button';
@@ -55,7 +56,7 @@ export default function WebViewScreen(props: WebViewScreenProps) {
         }
       }
     },
-    [onClick, props.navigation],
+    [],
   );
 
   const onLoadStart = () => setIsLoading(true);

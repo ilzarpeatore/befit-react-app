@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StyleSheet, ScrollView, Alert, Modal, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, FlatList, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { Image } from 'expo-image';
+import Animated, {
+  useAnimatedRef,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { runOnJS } from 'react-native-worklets';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -84,6 +92,16 @@ function formatWeekday(d: Date): string {
   return days[(d.getDay() + 6) % 7];
 }
 
+const renderCompactStat = (label: string, value: string, progress: number) => (
+  <VStack style={s.compactStat}>
+    <Text style={s.compactStatLabel}>{label}</Text>
+    <Text style={s.compactStatValue}>{value}</Text>
+    <Box style={s.compactProgressBar}>
+      <Box style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
+    </Box>
+  </VStack>
+);
+
 export default function PlanScreen(props: any) {
 
   const [kcalTarget, setKcalTarget] = useState(1331);
@@ -100,12 +118,12 @@ export default function PlanScreen(props: any) {
 
   const [mealTotals, setMealTotals] = useState<Record<string, MealTotal>>({});
   const [mealRecipes, setMealRecipes] = useState<Record<string, DailyPlanRecipeItem[]>>({});
-  const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
+  const dailyPlanIdRef = useRef<number | null>(null);
 
   const [selectedDay, setSelectedDay] = useState(new Date());
   const [showCompactSummary, setShowCompactSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [plannedDays, setPlannedDays] = useState<string[]>([]);
+  const plannedDaysRef = useRef<string[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
 
   const [addMealFor, setAddMealFor] = useState<{ key: string; label: string } | null>(null);
@@ -115,37 +133,33 @@ export default function PlanScreen(props: any) {
   const [searchResults, setSearchResults] = useState<RecipeListItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchLoadingMore, setSearchLoadingMore] = useState(false);
-  const [searchPage, setSearchPage] = useState(1);
-  const [searchIsLastPage, setSearchIsLastPage] = useState(false);
+  const searchPageRef = useRef(1);
+  const searchIsLastPageRef = useRef(false);
   const [savingRecipeId, setSavingRecipeId] = useState<number | null>(null);
 
   const insets = useSafeAreaInsets();
-  const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    fetchDailyPlan();
-  }, [selectedDay]);
-
-  useEffect(() => {
-    // Comidas que el coach ha asignado al cliente (independiente del día),
-    // usadas para priorizarlas al elegir qué añadir a una franja del plan.
-    dietApi
-      .getAssignedMealsSummary()
-      .then((res) => setAssignedMeals(res.data.meals))
-      .catch((e) => logger.error('Assigned meals fetch error:', e));
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchDailyPlan();
-    }, [selectedDay])
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  // Guardamos la posición de scroll en un shared value (hilo de UI) en vez de
+  // en un setState directo dentro de onScroll, y solo avisamos a React cuando
+  // el umbral realmente cambia de lado (ver useAnimatedReaction más abajo).
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  useAnimatedReaction(
+    () => scrollY.value > GRAPH_CARD_HEIGHT * 0.3,
+    (show, prevShow) => {
+      if (show !== prevShow) {
+        runOnJS(setShowCompactSummary)(show);
+      }
+    }
   );
 
-  const applyDailyPlanResponse = (value: any) => {
+  const applyDailyPlanResponse = useCallback((value: any) => {
     const data = value?.data;
     if (!data) return;
 
-    setDailyPlanId(data.id ?? null);
+    dailyPlanIdRef.current = data.id ?? null;
 
     const goals = data.daily_plan ?? {};
     setKcalTarget(goals.kCal ?? 0);
@@ -190,20 +204,57 @@ export default function PlanScreen(props: any) {
     });
     setMealRecipes(recipesByMeal);
 
-    setPlannedDays(value?.day_has_daily_plan ?? []);
-  };
+    plannedDaysRef.current = value?.day_has_daily_plan ?? [];
+  }, []);
 
-  const fetchDailyPlan = async () => {
+  // ignoreRef solo lo pasan los dos efectos de abajo (mount/cambio de dia y
+  // foco de pantalla), que pueden solaparse entre si -- las llamadas
+  // manuales tras mutaciones (clearDailyPlan, addRecipeToPlan) lo dejan sin
+  // pasar a proposito, no hay condicion de carrera ahi.
+  const fetchDailyPlan = useCallback(async (ignoreRef?: { current: boolean }) => {
     setIsLoading(true);
     try {
       const res = await dietApi.getDailyPlan(formatDateYMD(selectedDay));
+      if (ignoreRef?.current) return;
       applyDailyPlanResponse(res.data);
     } catch (e) {
       logger.error('Plan fetch error:', e);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedDay, applyDailyPlanResponse]);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // fetchDailyPlan (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    const ignoreRef = { current: false };
+    fetchDailyPlan(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [fetchDailyPlan]);
+
+  useEffect(() => {
+    // Comidas que el coach ha asignado al cliente (independiente del día),
+    // usadas para priorizarlas al elegir qué añadir a una franja del plan.
+    dietApi
+      .getAssignedMealsSummary()
+      .then((res) => setAssignedMeals(res.data.meals))
+      .catch((e) => logger.error('Assigned meals fetch error:', e));
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const ignoreRef = { current: false };
+      fetchDailyPlan(ignoreRef);
+      return () => {
+        ignoreRef.current = true;
+      };
+    }, [fetchDailyPlan])
+  );
 
   const proteinProgress = proteinTarget > 0 ? Math.min(proteinCurrent / proteinTarget, 1) : 0;
   const carbsProgress = carbsTarget > 0 ? Math.min(carbsCurrent / carbsTarget, 1) : 0;
@@ -241,7 +292,8 @@ export default function PlanScreen(props: any) {
   };
 
   const clearDailyPlan = () => {
-    if (!dailyPlanId) return;
+    const planId = dailyPlanIdRef.current;
+    if (!planId) return;
     Alert.alert('Vaciar plan', '¿Seguro que quieres borrar todas las recetas de este día?', [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -250,7 +302,7 @@ export default function PlanScreen(props: any) {
         onPress: async () => {
           setIsLoading(true);
           try {
-            await recipesApi.deleteAllDailyPlanRecipes(dailyPlanId);
+            await recipesApi.deleteAllDailyPlanRecipes(planId);
             await fetchDailyPlan();
           } catch (e) {
             Alert.alert('Error', 'No se pudo vaciar el plan');
@@ -278,7 +330,7 @@ export default function PlanScreen(props: any) {
       const items = res.data?.data ?? [];
       setSearchResults((prev) => (page === 1 ? items : [...prev, ...items]));
       const totalPages = res.data?.pagination?.totalPages ?? 1;
-      setSearchIsLastPage(page >= totalPages);
+      searchIsLastPageRef.current = page >= totalPages;
     } catch {
       if (page === 1) setSearchResults([]);
     } finally {
@@ -297,8 +349,8 @@ export default function PlanScreen(props: any) {
       setAddMealTab(hasAssigned ? 'assigned' : 'recipes');
       setSearchQuery('');
       setSearchResults([]);
-      setSearchPage(1);
-      setSearchIsLastPage(false);
+      searchPageRef.current = 1;
+      searchIsLastPageRef.current = false;
       searchRecipes(key, '', 1);
     },
     [searchRecipes, assignedMeals]
@@ -307,31 +359,28 @@ export default function PlanScreen(props: any) {
   useEffect(() => {
     if (!addMealFor) return;
     const timeout = setTimeout(() => {
-      setSearchPage(1);
-      setSearchIsLastPage(false);
+      searchPageRef.current = 1;
+      searchIsLastPageRef.current = false;
       searchRecipes(addMealFor.key, searchQuery, 1);
     }, 350);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, addMealFor]);
 
-  const handleSearchScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 40;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      if (!searchIsLastPage && !searchLoading && !searchLoadingMore && addMealFor) {
-        const nextPage = searchPage + 1;
-        setSearchPage(nextPage);
-        searchRecipes(addMealFor.key, searchQuery, nextPage);
-      }
+  const handleSearchEndReached = () => {
+    if (!searchIsLastPageRef.current && !searchLoading && !searchLoadingMore && addMealFor) {
+      const nextPage = searchPageRef.current + 1;
+      searchPageRef.current = nextPage;
+      searchRecipes(addMealFor.key, searchQuery, nextPage);
     }
   };
 
   const addRecipeToPlan = async (recipe: RecipeListItem | AssignedMealRecipe) => {
-    if (!dailyPlanId || !addMealFor) return;
+    const planId = dailyPlanIdRef.current;
+    if (!planId || !addMealFor) return;
     setSavingRecipeId(recipe.id);
     try {
-      await recipesApi.saveDailyPlanRecipe(dailyPlanId, recipe.id, addMealFor.key);
+      await recipesApi.saveDailyPlanRecipe(planId, recipe.id, addMealFor.key);
       setAddMealFor(null);
       await fetchDailyPlan();
     } catch {
@@ -341,16 +390,46 @@ export default function PlanScreen(props: any) {
     }
   };
 
+  const renderAddMealResultItem = useCallback(
+    ({ item: recipe }: { item: RecipeListItem | AssignedMealRecipe }) => (
+      <>
+        <Pressable
+          style={s.searchResultRow}
+          disabled={savingRecipeId === recipe.id}
+          onPress={() => addRecipeToPlan(recipe)}
+        >
+          {recipe.recipe_image ? (
+            <Image source={{ uri: recipe.recipe_image }} contentFit="cover" style={s.searchResultImage} />
+          ) : (
+            <Box style={s.searchResultImage} />
+          )}
+          <Box style={s.searchResultInfo}>
+            <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
+            <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
+          </Box>
+          {savingRecipeId === recipe.id ? (
+            <Spinner size="small" color={C.textPrimary} />
+          ) : (
+            <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
+          )}
+        </Pressable>
+        <Divider />
+      </>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [savingRecipeId]
+  );
+
   const renderWeekDays = (offset: number) => {
     const days = getWeekDays(offset);
     return (
       <HStack style={s.weekStrip}>
-        {days.map((day, i) => {
+        {days.map((day) => {
           const isSelected = isSameDay(day, selectedDay);
           const isToday = isSameDay(day, new Date());
           return (
             <Pressable
-              key={i}
+              key={formatDateYMD(day)}
               style={[s.weekDayItem, isSelected && s.weekDayItemSelected]}
               onPress={() => setSelectedDay(day)}
             >
@@ -363,16 +442,6 @@ export default function PlanScreen(props: any) {
     );
   };
 
-  const renderCompactStat = (label: string, value: string, progress: number) => (
-    <VStack style={s.compactStat}>
-      <Text style={s.compactStatLabel}>{label}</Text>
-      <Text style={s.compactStatValue}>{value}</Text>
-      <Box style={s.compactProgressBar}>
-        <Box style={[s.compactProgressFill, { width: `${progress * 100}%` }]} />
-      </Box>
-    </VStack>
-  );
-
   const renderNutrientGraph = () => (
     <Card variant="ghost" style={s.nutrientCard}>
       <Box style={s.kcalSection}>
@@ -384,8 +453,8 @@ export default function PlanScreen(props: any) {
           { label: 'Proteína', current: proteinCurrent, target: proteinTarget, progress: proteinProgress, color: C.textPrimary },
           { label: 'Carbos', current: carbsCurrent, target: carbsTarget, progress: carbsProgress, color: C.orange },
           { label: 'Grasas', current: fatsCurrent, target: fatsTarget, progress: fatsProgress, color: C.red },
-        ].map((n, i) => (
-          <Box key={i} style={s.nutrientItem}>
+        ].map((n) => (
+          <Box key={n.label} style={s.nutrientItem}>
             <Text style={s.nutrientLabel}>{n.label}</Text>
             <Text style={s.nutrientValue}>{n.current}g</Text>
             <Text style={s.nutrientTarget}>de {n.target}g</Text>
@@ -415,8 +484,8 @@ export default function PlanScreen(props: any) {
         {recipes.length === 0 ? (
           <Text style={s.emptyMealText}>Todavía no has añadido {displayName.toLowerCase()}.</Text>
         ) : (
-          recipes.map((recipe, i) => (
-            <React.Fragment key={i}>
+          recipes.map((recipe) => (
+            <React.Fragment key={recipe.id}>
               <Divider />
               <HStack style={s.recipeItem}>
                 <Pressable
@@ -424,7 +493,7 @@ export default function PlanScreen(props: any) {
                   onPress={() => openRecipeDetail(recipe)}
                 >
                   {recipe.recipeImage ? (
-                    <Image source={{ uri: recipe.recipeImage }} style={s.recipeImage} />
+                    <Image source={{ uri: recipe.recipeImage }} contentFit="cover" style={s.recipeImage} />
                   ) : (
                     <Box style={s.recipeImage} />
                   )}
@@ -489,18 +558,15 @@ export default function PlanScreen(props: any) {
           {renderCompactStat('Grasas', `${fatsCurrent}/${fatsTarget}g`, fatsProgress)}
         </Card>
       )}
-      <ScrollView
+      <Animated.ScrollView
         ref={scrollRef}
         contentContainerStyle={s.scrollContent}
-        onScroll={(e) => {
-          const show = e.nativeEvent.contentOffset.y > GRAPH_CARD_HEIGHT * 0.3;
-          if (show !== showCompactSummary) setShowCompactSummary(show);
-        }}
+        onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
         {renderNutrientGraph()}
         {Object.entries(MEAL_TYPES).map(([key, displayName]) => renderMealSection(key, displayName))}
-      </ScrollView>
+      </Animated.ScrollView>
       {isLoading && (
         <Box style={s.loadingOverlay}>
           <Spinner size="large" color={C.textPrimary} />
@@ -548,33 +614,13 @@ export default function PlanScreen(props: any) {
                 );
               }
               return (
-                <ScrollView style={s.searchResultsScroll} keyboardShouldPersistTaps="handled">
-                  {assignedForMeal.map((recipe) => (
-                    <React.Fragment key={recipe.id}>
-                      <Pressable
-                        style={s.searchResultRow}
-                        disabled={savingRecipeId === recipe.id}
-                        onPress={() => addRecipeToPlan(recipe)}
-                      >
-                        {recipe.recipe_image ? (
-                          <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
-                        ) : (
-                          <Box style={s.searchResultImage} />
-                        )}
-                        <Box style={{ flex: 1 }}>
-                          <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                          <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                        </Box>
-                        {savingRecipeId === recipe.id ? (
-                          <Spinner size="small" color={C.textPrimary} />
-                        ) : (
-                          <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
-                        )}
-                      </Pressable>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                </ScrollView>
+                <FlatList
+                  style={s.searchResultsScroll}
+                  data={assignedForMeal}
+                  keyExtractor={(recipe) => String(recipe.id)}
+                  renderItem={renderAddMealResultItem}
+                  keyboardShouldPersistTaps="handled"
+                />
               );
             })()
           ) : (
@@ -592,41 +638,20 @@ export default function PlanScreen(props: any) {
               ) : searchResults.length === 0 ? (
                 <Text style={s.noResultsText}>No se encontraron recetas.</Text>
               ) : (
-                <ScrollView
+                <FlatList
                   style={s.searchResultsScroll}
-                  onScroll={handleSearchScroll}
-                  scrollEventThrottle={16}
+                  data={searchResults}
+                  keyExtractor={(recipe) => String(recipe.id)}
+                  renderItem={renderAddMealResultItem}
                   keyboardShouldPersistTaps="handled"
-                >
-                  {searchResults.map((recipe) => (
-                    <React.Fragment key={recipe.id}>
-                      <Pressable
-                        style={s.searchResultRow}
-                        disabled={savingRecipeId === recipe.id}
-                        onPress={() => addRecipeToPlan(recipe)}
-                      >
-                        {recipe.recipe_image ? (
-                          <Image source={{ uri: recipe.recipe_image }} style={s.searchResultImage} />
-                        ) : (
-                          <Box style={s.searchResultImage} />
-                        )}
-                        <Box style={{ flex: 1 }}>
-                          <Text style={s.searchResultTitle} numberOfLines={1}>{recipe.title}</Text>
-                          <Text style={s.searchResultMeta}>{recipe.calories} kcal</Text>
-                        </Box>
-                        {savingRecipeId === recipe.id ? (
-                          <Spinner size="small" color={C.textPrimary} />
-                        ) : (
-                          <Icon name="add-circle-outline" size={26} color={C.textPrimary} />
-                        )}
-                      </Pressable>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                  {searchLoadingMore && (
-                    <Spinner size="small" color={C.textPrimary} style={{ marginVertical: 16 }} />
-                  )}
-                </ScrollView>
+                  onEndReached={handleSearchEndReached}
+                  onEndReachedThreshold={0.4}
+                  ListFooterComponent={
+                    searchLoadingMore ? (
+                      <Spinner size="small" color={C.textPrimary} style={s.searchLoadingMoreSpinner} />
+                    ) : null
+                  }
+                />
               )}
             </>
           )}
@@ -700,6 +725,8 @@ const s = StyleSheet.create({
   searchResultsScroll: { flex: 1 },
   searchResultRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   searchResultImage: { width: 44, height: 44, borderRadius: 10, marginRight: 12, backgroundColor: C.gray40 },
+  searchResultInfo: { flex: 1 },
   searchResultTitle: { fontSize: 14, fontFamily: FONT.semiBold, color: C.white },
   searchResultMeta: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50, marginTop: 2 },
+  searchLoadingMoreSpinner: { marginVertical: 16 },
 });

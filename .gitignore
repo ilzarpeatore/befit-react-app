@@ -22,4 +22,19 @@ dist_release2/
 # macOS
 .DS_Store
 
+# active agent worktrees (transient, not project content)
+.claude/worktrees/
+
+# expo-map generated navigation map (regenerate with tools/expo-map/generate-map.sh)
+.expo-map/
+
 android/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+# kept as the unanchored "graft/" on purpose: graft's own ensureGitignored()
+# checks for that exact line and re-appends it every build otherwise. The
+# negations below re-admit .claude/skills/graft/ (the graft skill itself,
+# which this pattern would otherwise also match).
+graft/
+!/.claude/skills/graft/
+!/.claude/skills/graft/**

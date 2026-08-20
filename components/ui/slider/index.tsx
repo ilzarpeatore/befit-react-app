@@ -8,7 +8,7 @@ import { Pressable, View } from 'react-native';
 
 const SCOPE = 'SLIDER';
 const Root = withStyleContext(View, SCOPE);
-export const UISlider = createSlider({
+const UISlider = createSlider({
   Root: Root,
   Thumb: View,
   Track: Pressable,

@@ -17,7 +17,7 @@ import SimpleBottomSheet from '../../components/SimpleBottomSheet';
 import { MACRO_MUSCLE_GROUPS, MacroMuscleGroup, macroGroupFor } from '../../constants/bodyMusclesMap';
 import { muscleVolumeApi, MuscleVolumeGroup } from '../../api/muscleVolume';
 import { statisticsApi, PeriodStats } from '../../api/statistics';
-import { toLocalISODate } from '../../components/DaySelectorStrip';
+import { toLocalISODate } from '../../components/dayRange';
 
 interface Props {
   navigation?: any;

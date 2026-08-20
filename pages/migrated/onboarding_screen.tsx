@@ -1,9 +1,11 @@
-﻿import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { C, FONT } from "./theme";
+
+import { useAuth } from "../../store/AuthContext";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
@@ -20,8 +22,6 @@ const PAGES = [
   { icon: "chatbubbles-outline" as const, title: "Comunidad", subtitle: "Conecta, comparte y entrena con otros usuarios." },
   { icon: "trophy-outline" as const, title: "Logros", subtitle: "Desbloquea insignias y mantÃ©n tu racha activa." },
 ];
-
-import { useAuth } from "../../store/AuthContext";
 
 export default function OnboardingScreen({ navigation }: any) {
   const styles = useStyle();
@@ -41,9 +41,9 @@ export default function OnboardingScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.skipRow}>
           {!isLast && (
-            <TouchableOpacity onPress={() => completeOnboarding()}>
+            <Pressable onPress={() => completeOnboarding()} style={({ pressed }) => pressed && { opacity: 0.2 }}>
               <Text style={styles.skipText}>Saltar</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
 
@@ -54,8 +54,8 @@ export default function OnboardingScreen({ navigation }: any) {
           showsHorizontalScrollIndicator={false}
           scrollEnabled={false}
         >
-          {PAGES.map((p, i) => (
-            <View key={i} style={styles.page}>
+          {PAGES.map((p) => (
+            <View key={p.title} style={styles.page}>
               <View style={styles.iconCircle}>
                 <Ionicons name={p.icon} size={48} color={C.textPrimary} />
               </View>
@@ -66,9 +66,9 @@ export default function OnboardingScreen({ navigation }: any) {
         </ScrollView>
 
         <View style={styles.dotsRow}>
-          {PAGES.map((_, i) => (
+          {PAGES.map((p, i) => (
             <View
-              key={i}
+              key={p.title}
               style={[styles.dot, i === page && styles.dotActive]}
             />
           ))}
@@ -76,24 +76,30 @@ export default function OnboardingScreen({ navigation }: any) {
 
         <View style={styles.footer}>
           {page > 0 && (
-            <TouchableOpacity style={styles.backBtn} onPress={() => goTo(page - 1)}>
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => goTo(page - 1)}
+            >
               <Ionicons name="arrow-back" size={20} color={C.white} />
               <Text style={styles.backText}>AtrÃ¡s</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
           <View style={{ flex: 1 }} />
           {isLast ? (
-            <TouchableOpacity
-              style={styles.startBtn}
+            <Pressable
+              style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.2 }]}
               onPress={() => completeOnboarding()}
             >
               <Text style={styles.startText}>Empezar</Text>
-            </TouchableOpacity>
+            </Pressable>
           ) : (
-            <TouchableOpacity style={styles.nextBtn} onPress={() => goTo(page + 1)}>
+            <Pressable
+              style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => goTo(page + 1)}
+            >
               <Text style={styles.nextText}>Siguiente</Text>
               <Ionicons name="arrow-forward" size={20} color={C.textPrimary} />
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </SafeAreaView>

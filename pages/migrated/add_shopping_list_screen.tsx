@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -17,6 +17,29 @@ import logger from '@helper/logger';
 import { dietApi } from '@api/diet';
 import { shoppingApi, ShoppingMealType } from '@api/shopping';
 
+const AVAILABLE_MEAL_TYPES: { key: ShoppingMealType; label: string }[] = [
+  { key: 'breakfast', label: 'Desayuno' },
+  { key: 'lunch', label: 'Comida' },
+  { key: 'dinner', label: 'Cena' },
+  { key: 'snacks', label: 'Snacks' },
+];
+
+function formatDate(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+const renderCheckboxRow = (label: string, checked: boolean, onPress: () => void, key?: string) => (
+  <Checkbox key={key} value={key ?? label} isChecked={checked} onChange={() => onPress()} className="py-2">
+    <CheckboxIndicator>
+      {checked && <Icon name="checkmark" size={14} className="text-primary-foreground" />}
+    </CheckboxIndicator>
+    <CheckboxLabel className="flex-1">{label}</CheckboxLabel>
+  </Checkbox>
+);
+
 export default function AddShoppingListScreen({ navigation, route }: any) {
   const shoppingList = route?.params?.shoppingList;
   const isDefaultSpecificDate = route?.params?.isDefaultSpecificDate ?? true;
@@ -25,29 +48,45 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
   const [title, setTitle] = useState('');
   const [isSpecificDate, setIsSpecificDate] = useState(isDefaultSpecificDate);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
-  const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState(() =>
+    shoppingList?.daily_plan_id && shoppingList?.start_date
+      ? new Date(shoppingList.start_date)
+      : new Date()
+  );
+  const [dateRangeStart, setDateRangeStart] = useState<Date | null>(() =>
+    !shoppingList?.daily_plan_id && shoppingList?.start_date && shoppingList?.end_date
+      ? new Date(shoppingList.start_date)
+      : null
+  );
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(() =>
+    !shoppingList?.daily_plan_id && shoppingList?.start_date && shoppingList?.end_date
+      ? new Date(shoppingList.end_date)
+      : null
+  );
   const [isCompleteOnly, setIsCompleteOnly] = useState(true);
   const [selectedMealTypes, setSelectedMealTypes] = useState<ShoppingMealType[]>([]);
-  const [servings, setServings] = useState(1);
-  const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
+  const [servings, setServings] = useState(() => shoppingList?.servings ?? 1);
+  const dailyPlanIdRef = useRef<number | null>(null);
   const [isFetchingPlan, setIsFetchingPlan] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
 
-  const availableMealTypes: { key: ShoppingMealType; label: string }[] = [
-    { key: 'breakfast', label: 'Desayuno' },
-    { key: 'lunch', label: 'Comida' },
-    { key: 'dinner', label: 'Cena' },
-    { key: 'snacks', label: 'Snacks' },
-  ];
-
-  useEffect(() => {
-    setSelectedMealTypes(availableMealTypes.map((t) => t.key));
-    prefillForEdit();
+  // Sin closures reactivos propios (recibe `date` como parametro), estable
+  // para siempre -- useCallback([]) evita que prefillForEdit tenga que
+  // recrearse por esto.
+  const fetchDailyPlanId = useCallback(async (date: Date) => {
+    setIsFetchingPlan(true);
+    dailyPlanIdRef.current = null;
+    try {
+      const res = await dietApi.getDailyPlan(formatDate(date));
+      dailyPlanIdRef.current = res.data?.data?.id ?? null;
+    } catch (e) {
+      logger.error('Error fetching daily plan:', e);
+    } finally {
+      setIsFetchingPlan(false);
+    }
   }, []);
 
-  const prefillForEdit = () => {
+  const prefillForEdit = useCallback(() => {
     if (!shoppingList) {
       fetchDailyPlanId(selectedDate);
       return;
@@ -55,7 +94,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     setTitle(shoppingList.title ?? '');
     if (shoppingList.daily_plan_id) {
       setIsSpecificDate(true);
-      setDailyPlanId(shoppingList.daily_plan_id);
+      dailyPlanIdRef.current = shoppingList.daily_plan_id;
       if (shoppingList.start_date) {
         setSelectedDate(new Date(shoppingList.start_date));
       }
@@ -67,27 +106,12 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
         setDateRangeEnd(new Date(shoppingList.end_date));
       }
     }
-  };
+  }, [shoppingList, selectedDate, fetchDailyPlanId]);
 
-  const fetchDailyPlanId = async (date: Date) => {
-    setIsFetchingPlan(true);
-    setDailyPlanId(null);
-    try {
-      const res = await dietApi.getDailyPlan(formatDate(date));
-      setDailyPlanId(res.data?.data?.id ?? null);
-    } catch (e) {
-      logger.error('Error fetching daily plan:', e);
-    } finally {
-      setIsFetchingPlan(false);
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  };
+  useEffect(() => {
+    setSelectedMealTypes(AVAILABLE_MEAL_TYPES.map((t) => t.key));
+    prefillForEdit();
+  }, [prefillForEdit]);
 
   const submit = async () => {
     if (!title.trim()) {
@@ -110,7 +134,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
     }
 
     if (isSpecificDate) {
-      if (dailyPlanId === null && !isFetchingPlan) {
+      if (dailyPlanIdRef.current === null && !isFetchingPlan) {
         Alert.alert('Error', 'No daily plan found for this date');
         return;
       }
@@ -118,7 +142,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
         Alert.alert('Error', 'Please wait for daily plan to load');
         return;
       }
-      req.daily_plan_id = dailyPlanId;
+      req.daily_plan_id = dailyPlanIdRef.current;
     } else {
       if (!dateRangeStart || !dateRangeEnd) {
         Alert.alert('Error', 'Please select a date range');
@@ -129,13 +153,13 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       req.servings = servings;
     }
 
-    setLoading(true);
+    loadingRef.current = true;
     try {
       await shoppingApi.generateFromDailyPlan(req);
-      setLoading(false);
+      loadingRef.current = false;
       navigation.goBack(true);
     } catch (e: any) {
-      setLoading(false);
+      loadingRef.current = false;
       const msg = e?.response?.data?.message ?? 'Failed to save shopping list';
       Alert.alert('Error', msg);
     }
@@ -146,15 +170,6 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
     );
   };
-
-  const renderCheckboxRow = (label: string, checked: boolean, onPress: () => void, key?: string) => (
-    <Checkbox key={key} value={key ?? label} isChecked={checked} onChange={() => onPress()} className="py-2">
-      <CheckboxIndicator>
-        {checked && <Icon name="checkmark" size={14} className="text-primary-foreground" />}
-      </CheckboxIndicator>
-      <CheckboxLabel className="flex-1">{label}</CheckboxLabel>
-    </Checkbox>
-  );
 
   return (
     <Box className="flex-1 bg-background">
@@ -230,7 +245,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
         {/* Meal Types */}
         <Card variant="outline">
           <Text weight="semibold">Meal Types</Text>
-          {availableMealTypes.map((type) =>
+          {AVAILABLE_MEAL_TYPES.map((type) =>
             renderCheckboxRow(
               type.label,
               selectedMealTypes.includes(type.key),

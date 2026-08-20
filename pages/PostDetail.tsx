@@ -2,16 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Text,
   View,
-  Image,
-  ImageBackground,
   ScrollView,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   FlatList,
   RefreshControl,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -37,6 +36,25 @@ interface CommentData {
     profile_image: string;
   };
   created_at: string;
+}
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "Just now";
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return `${diffDay}d ago`;
+    return d.toLocaleDateString();
+  } catch {
+    return dateStr;
+  }
 }
 
 export default function PostDetail() {
@@ -147,40 +165,21 @@ export default function PostDetail() {
     }
   }, [commentText, sending, id, fetchComments]);
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    try {
-      const d = new Date(dateStr);
-      const now = new Date();
-      const diffMs = now.getTime() - d.getTime();
-      const diffMin = Math.floor(diffMs / 60000);
-      if (diffMin < 1) return "Just now";
-      if (diffMin < 60) return `${diffMin}m ago`;
-      const diffHr = Math.floor(diffMin / 60);
-      if (diffHr < 24) return `${diffHr}h ago`;
-      const diffDay = Math.floor(diffHr / 24);
-      if (diffDay < 7) return `${diffDay}d ago`;
-      return d.toLocaleDateString();
-    } catch {
-      return dateStr;
-    }
-  };
-
   if (loading) {
     return (
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backBtn}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
             >
               <Ionicons
                 name="arrow-back"
                 size={24}
                 color={Colors.TEXT_PRIMARY}
               />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Post</Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -214,16 +213,16 @@ export default function PostDetail() {
       <View style={styles.bg}>
         <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => navigation.goBack()}
-              style={styles.backBtn}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
             >
               <Ionicons
                 name="arrow-back"
                 size={24}
                 color={Colors.TEXT_PRIMARY}
               />
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.headerTitle}>Post</Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -241,16 +240,16 @@ export default function PostDetail() {
     <View style={styles.bg}>
       <SafeAreaView style={styles.container} edges={["right", "left", "top"]}>
         <View style={styles.header}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.goBack()}
-            style={styles.backBtn}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
           >
             <Ionicons
               name="arrow-back"
               size={24}
               color={Colors.TEXT_PRIMARY}
             />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Post</Text>
           <View style={styles.headerSpacer} />
         </View>
@@ -296,15 +295,15 @@ export default function PostDetail() {
               {post.posting_media_array?.[0]?.media_url ? (
                 <Image
                   source={{ uri: post.posting_media_array[0].media_url }}
+                  contentFit="cover"
                   style={styles.postImage}
                 />
               ) : null}
 
               <View style={styles.postActions}>
-                <TouchableOpacity
-                  style={styles.actionBtn}
+                <Pressable
+                  style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]}
                   onPress={handleLike}
-                  activeOpacity={0.7}
                 >
                   <Ionicons
                     name={post.is_liked ? "heart" : "heart-outline"}
@@ -319,12 +318,9 @@ export default function PostDetail() {
                   >
                     {post.posting_like_count}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  activeOpacity={0.7}
-                >
+                <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]}>
                   <Ionicons
                     name="chatbubble-outline"
                     size={22}
@@ -333,12 +329,11 @@ export default function PostDetail() {
                   <Text style={styles.actionText}>
                     {post.posting_comment_count}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
-                  style={styles.actionBtn}
+                <Pressable
+                  style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]}
                   onPress={handleBookmark}
-                  activeOpacity={0.7}
                 >
                   <Ionicons
                     name={post.is_bookmark ? "bookmark" : "bookmark-outline"}
@@ -347,7 +342,7 @@ export default function PostDetail() {
                       post.is_bookmark ? Colors.TEXT_PRIMARY : Colors.TEXT_SECONDARY
                     }
                   />
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
 
@@ -394,13 +389,13 @@ export default function PostDetail() {
               multiline
               maxLength={500}
             />
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <Pressable
               onPress={handleSendComment}
               disabled={!commentText.trim() || sending}
-              style={[
+              style={({ pressed }) => [
                 styles.sendBtn,
                 (!commentText.trim() || sending) && styles.sendBtnDisabled,
+                pressed && { opacity: 0.8 },
               ]}
             >
               <LinearGradient
@@ -419,7 +414,7 @@ export default function PostDetail() {
                   color={Colors.TEXT_PRIMARY}
                 />
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -505,7 +500,6 @@ function useStyle() {
       width: "100%",
       height: "200@ratio",
       borderRadius: "12@ratio",
-      resizeMode: "cover",
       marginBottom: "12@ratio",
     },
     postActions: {

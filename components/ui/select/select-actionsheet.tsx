@@ -70,7 +70,7 @@ const StyledIcon = styled(UIIcon, {
 const StyledSectionList = styled(SectionList, { className: 'style' });
 const StyledSectionHeaderText = styled(H4, { className: 'style' });
 
-export const UIActionsheet = createActionsheet({
+const UIActionsheet = createActionsheet({
   Root: View,
   Content: withStyleContext(StyledMotionView),
   Item: withStyleContext(Pressable),

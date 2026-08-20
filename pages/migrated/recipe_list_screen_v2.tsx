@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { SafeAreaView, ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { FlatList, ActivityIndicator, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Heading } from '@components/ui/heading';
@@ -65,22 +67,13 @@ export default function RecipeListScreenV2(props: any) {
   const [recipeList, setRecipeList] = useState<RecipeItem[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const isLastPageRef = useRef(false);
   const [filter, setFilter] = useState<RecipeFilterModel>({});
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [mealTypeDraft, setMealTypeDraft] = useState<string[]>([]);
   const [calMinDraft, setCalMinDraft] = useState('');
   const [calMaxDraft, setCalMaxDraft] = useState('');
-  const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    loadRecipes();
-  }, [page, filter]);
-
-  useEffect(() => {
-    const scrollListener = scrollRef.current;
-    // In React Native we handle infinite scroll via onScroll
-  }, []);
+  const scrollRef = useRef<FlatList>(null);
 
   const loadRecipes = useCallback(async () => {
     setIsLoading(true);
@@ -116,7 +109,7 @@ export default function RecipeListScreenV2(props: any) {
         setRecipeList((prev) => [...prev, ...items]);
       }
       const totalPages = res.data.pagination?.totalPages ?? 1;
-      setIsLastPage(page >= totalPages);
+      isLastPageRef.current = page >= totalPages;
     } catch (e: any) {
       // toast(e.toString());
     } finally {
@@ -124,13 +117,13 @@ export default function RecipeListScreenV2(props: any) {
     }
   }, [page, filter, categoryId, tagId]);
 
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 20;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      if (!isLastPage && !isLoading) {
-        setPage((prev) => prev + 1);
-      }
+  useEffect(() => {
+    loadRecipes();
+  }, [page, filter, loadRecipes]);
+
+  const handleRecipeListEndReached = () => {
+    if (!isLastPageRef.current && !isLoading) {
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -144,6 +137,51 @@ export default function RecipeListScreenV2(props: any) {
   };
 
   const columnWidth = (SCREEN_WIDTH - 48) / 2;
+
+  const renderRecipeItem = useCallback(
+    ({ item }: { item: RecipeItem }) => (
+      <Pressable
+        style={{ width: columnWidth, marginBottom: 16 }}
+        onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id, recipeImage: item.recipeImage })}
+      >
+        {item.recipeImage ? (
+          <Image
+            source={{ uri: item.recipeImage }}
+            style={{ width: columnWidth, height: 140, borderRadius: 12 }}
+            contentFit="cover"
+          />
+        ) : (
+          <Box className="bg-card" style={{ width: columnWidth, height: 140, borderRadius: 12 }} />
+        )}
+        {item.isPremium && !item.isAccessible && (
+          <HStack
+            className="items-center rounded-pill"
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              gap: 4,
+            }}
+          >
+            <Icon name="lock-closed" size={12} color="#FFFFFF" />
+            <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>Exclusive</Text>
+          </HStack>
+        )}
+        <Text weight="bold" size="sm" numberOfLines={1} style={{ marginTop: 8 }}>
+          {item.title}
+        </Text>
+        {item.calories != null && (
+          <Text size="xs" muted style={{ marginTop: 4 }}>
+            {item.calories} kcal
+          </Text>
+        )}
+      </Pressable>
+    ),
+    [props.navigation, columnWidth]
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background">
@@ -176,60 +214,22 @@ export default function RecipeListScreenV2(props: any) {
             <Text weight="medium" muted>No recipes found</Text>
           </Box>
         ) : (
-          <ScrollView
+          <FlatList
             ref={scrollRef}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
+            data={recipeList}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderRecipeItem}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: 'space-between' }}
             contentContainerStyle={{ padding: 16 }}
-          >
-            <Box className="flex-row flex-wrap justify-between">
-              {recipeList.map((item) => (
-                <Pressable
-                  key={item.id}
-                  style={{ width: columnWidth, marginBottom: 16 }}
-                  onPress={() => props.navigation.navigate('MigratedDietDetail', { recipeId: item.id, recipeImage: item.recipeImage })}
-                >
-                  {item.recipeImage ? (
-                    <Image
-                      source={{ uri: item.recipeImage }}
-                      style={{ width: columnWidth, height: 140, borderRadius: 12 }}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Box className="bg-card" style={{ width: columnWidth, height: 140, borderRadius: 12 }} />
-                  )}
-                  {item.isPremium && !item.isAccessible && (
-                    <HStack
-                      className="items-center rounded-pill"
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'rgba(0,0,0,0.6)',
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        gap: 4,
-                      }}
-                    >
-                      <Icon name="lock-closed" size={12} color="#FFFFFF" />
-                      <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>Exclusive</Text>
-                    </HStack>
-                  )}
-                  <Text weight="bold" size="sm" numberOfLines={1} style={{ marginTop: 8 }}>
-                    {item.title}
-                  </Text>
-                  {item.calories != null && (
-                    <Text size="xs" muted style={{ marginTop: 4 }}>
-                      {item.calories} kcal
-                    </Text>
-                  )}
-                </Pressable>
-              ))}
-            </Box>
-            {isLoading && page > 1 && (
-              <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
-            )}
-          </ScrollView>
+            onEndReached={handleRecipeListEndReached}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              isLoading && page > 1 ? (
+                <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
+              ) : null
+            }
+          />
         )}
       </Box>
 

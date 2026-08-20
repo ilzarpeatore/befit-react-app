@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { FlatList, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -16,20 +17,21 @@ interface EquipmentItem {
 export default function ViewEquipmentScreen(props: any) {
   const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
   const [page, setPage] = useState(1);
-  const [numPage, setNumPage] = useState<number | null>(null);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const numPageRef = useRef<number | null>(null);
+  const isLastPageRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getEquipmentData();
+    // getEquipmentData lee `page`, pero solo se llama aqui, una vez al
+    // montar (siempre con page=1) -- getEquipmentDataPagination es la
+    // funcion dedicada a re-fetchear cuando page > 1 (ver el efecto de
+    // abajo). Añadir getEquipmentData a estas deps duplicaria el fetch
+    // cada vez que cambia page.
+    // react-doctor-disable-next-line exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (numPage && page > 1) {
-      getEquipmentDataPagination();
-    }
-  }, [page]);
 
   const getEquipmentData = async () => {
     setIsLoading(true);
@@ -40,62 +42,77 @@ export default function ViewEquipmentScreen(props: any) {
         title: e.title,
         image: e.equipment_image,
       }));
-      setNumPage(value.data.pagination?.totalPages ?? 1);
-      setIsLastPage(false);
+      numPageRef.current = value.data.pagination?.totalPages ?? 1;
+      isLastPageRef.current = false;
       if (page === 1) setEquipmentList(items);
       else setEquipmentList((prev) => [...prev, ...items]);
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getEquipmentDataPagination = async () => {
+  const getEquipmentDataPagination = useCallback(async (ignoreRef: { current: boolean }) => {
     setIsLoading(true);
     try {
       const value = await exercisesApi.getEquipment(page);
+      if (ignoreRef.current) return;
       const items = (value.data.data ?? []).map((e) => ({
         id: e.id,
         title: e.title,
         image: e.equipment_image,
       }));
-      setNumPage(value.data.pagination?.totalPages ?? 1);
-      setIsLastPage(false);
+      numPageRef.current = value.data.pagination?.totalPages ?? 1;
+      isLastPageRef.current = false;
       setEquipmentList((prev) => [...prev, ...items]);
     } catch (e) {
-      setIsLastPage(true);
+      isLastPageRef.current = true;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
 
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const isAtEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-    if (isAtEnd && !isLoading && numPage && page < numPage) {
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getEquipmentDataPagination (llamada por referencia, no inline): si el
+  // fetch queda obsoleto, ignoreRef.current corta antes de tocar el estado
+  // con datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getEquipmentDataPagination(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [page, getEquipmentDataPagination]);
+
+  const handleEquipmentListEndReached = () => {
+    if (!isLoading && numPageRef.current && page < numPageRef.current) {
       setPage((prev) => prev + 1);
     }
   };
 
-  const renderEquipmentItem = ({ item, index }: { item: EquipmentItem; index: number }) => (
-    <Pressable
-      key={item.id?.toString() || index.toString()}
-      style={{ width: '47%' }}
-      className="bg-card rounded-lg overflow-hidden"
-      onPress={() =>
-        props.navigation.navigate('MigratedSearch', {
-          mTitle: item.title,
-          isEquipment: true,
-          id: item.id,
-        })
-      }
-    >
-      <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} resizeMode="cover" />
-      <Text weight="medium" size="sm" numberOfLines={2} className="p-2.5">
-        {item.title}
-      </Text>
-    </Pressable>
+  const renderEquipmentItem = useCallback(
+    ({ item }: { item: EquipmentItem }) => (
+      <Pressable
+        style={{ width: '47%' }}
+        className="bg-card rounded-lg overflow-hidden"
+        onPress={() =>
+          props.navigation.navigate('MigratedSearch', {
+            mTitle: item.title,
+            isEquipment: true,
+            id: item.id,
+          })
+        }
+      >
+        <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} contentFit="cover" />
+        <Text weight="medium" size="sm" numberOfLines={2} className="p-2.5">
+          {item.title}
+        </Text>
+      </Pressable>
+    ),
+    [props.navigation]
   );
 
   return (
@@ -105,16 +122,17 @@ export default function ViewEquipmentScreen(props: any) {
       </Box>
 
       <Box className="flex-1">
-        <ScrollView
+        <FlatList
           ref={scrollRef}
-          contentContainerStyle={{ padding: 16 }}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          <Box style={{ rowGap: 16 }} className="flex-row flex-wrap justify-between">
-            {equipmentList.map((item, index) => renderEquipmentItem({ item, index }))}
-          </Box>
-        </ScrollView>
+          data={equipmentList}
+          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+          renderItem={renderEquipmentItem}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          contentContainerStyle={{ padding: 16, rowGap: 16 }}
+          onEndReached={handleEquipmentListEndReached}
+          onEndReachedThreshold={0.3}
+        />
 
         {isLoading && (
           <Box
