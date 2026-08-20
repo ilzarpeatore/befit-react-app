@@ -62,30 +62,33 @@ export default function OtherUserProfileScreen(props: any) {
     }
   }, [userDetails.id]);
 
-  const getPostList = useCallback(async (pageNum: number = 1) => {
-    if (!userDetails.id) return;
-    setIsLoading(true);
-    try {
-      const res = await postsApi.getList(pageNum, userDetails.id);
-      numPageRef.current = res.data.pagination?.totalPages ?? 1;
-      const list: PostData[] = (res.data.data ?? []).map((p: any) => ({
-        id: p.id,
-        content: p.description,
-        images: p.posting_media_array?.map((m: any) => m.media_url) ?? [],
-        canEdit: p.can_edit,
-        likesCount: p.posting_like_count,
-        commentsCount: p.posting_comment_count,
-        isLiked: p.is_liked,
-        isBookmarked: p.is_bookmark,
-      }));
-      setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
-      pageRef.current = pageNum;
-    } catch (e) {
-      logger.error('Error fetching user posts', e);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userDetails.id]);
+  const getPostList = useCallback(
+    async (pageNum: number = 1) => {
+      if (!userDetails.id) return;
+      setIsLoading(true);
+      try {
+        const res = await postsApi.getList(pageNum, userDetails.id);
+        numPageRef.current = res.data.pagination?.totalPages ?? 1;
+        const list: PostData[] = (res.data.data ?? []).map((p: any) => ({
+          id: p.id,
+          content: p.description,
+          images: p.posting_media_array?.map((m: any) => m.media_url) ?? [],
+          canEdit: p.can_edit,
+          likesCount: p.posting_like_count,
+          commentsCount: p.posting_comment_count,
+          isLiked: p.is_liked,
+          isBookmarked: p.is_bookmark,
+        }));
+        setPostList((prev) => (pageNum === 1 ? list : [...prev, ...list]));
+        pageRef.current = pageNum;
+      } catch (e) {
+        logger.error('Error fetching user posts', e);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [userDetails.id],
+  );
 
   const toggleLike = (item: PostData) => {
     if (!item.id) return;
@@ -94,13 +97,15 @@ export default function OtherUserProfileScreen(props: any) {
       prev.map((p) =>
         p.id === item.id
           ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) }
-          : p
-      )
+          : p,
+      ),
     );
     postsApi.like(item.id).catch((e) => {
       logger.error('Error toggling like', e);
       setPostList((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p))
+        prev.map((p) =>
+          p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p,
+        ),
       );
     });
   };
@@ -131,26 +136,50 @@ export default function OtherUserProfileScreen(props: any) {
       key={item.id}
       className="bg-card rounded-lg p-4"
       style={{ marginBottom: 12 }}
-      onPress={() => openPostDetail(item)}
-    >
+      onPress={() => openPostDetail(item)}>
       <HStack className="items-center" style={{ marginBottom: 12 }}>
         {profileImg ? (
-          <Image source={{ uri: profileImg }} contentFit="cover" style={{ width: 40, height: 40, borderRadius: 20 }} />
+          <Image
+            source={{ uri: profileImg }}
+            contentFit="cover"
+            style={{ width: 40, height: 40, borderRadius: 20 }}
+          />
         ) : (
-          <Box className="bg-muted rounded-pill items-center justify-center" style={{ width: 40, height: 40 }}>
+          <Box
+            className="bg-muted rounded-pill items-center justify-center"
+            style={{ width: 40, height: 40 }}>
             <Icon name="person" size={20} color={C.gray30} />
           </Box>
         )}
         <Box className="flex-1" style={{ marginLeft: 12 }}>
-          <Text weight="semibold" size="sm">{firstName} {lastName}</Text>
-          <Text size="xs" style={{ color: C.gray40 }}>Post</Text>
+          <Text weight="semibold" size="sm">
+            {firstName} {lastName}
+          </Text>
+          <Text size="xs" style={{ color: C.gray40 }}>
+            Publicación
+          </Text>
         </Box>
       </HStack>
-      {item.content ? <Text size="sm" style={{ color: C.gray50, marginBottom: 12, lineHeight: 20 }}>{item.content}</Text> : null}
+      {item.content ? (
+        <Text size="sm" style={{ color: C.gray50, marginBottom: 12, lineHeight: 20 }}>
+          {item.content}
+        </Text>
+      ) : null}
       {item.images && item.images.length > 0 ? (
         <HStack style={{ marginBottom: 12 }}>
           {item.images.map((img) => (
-            <Image key={img} source={{ uri: img }} contentFit="cover" style={{ width: 80, height: 80, borderRadius: 8, marginRight: 8, backgroundColor: C.surfaceLight }} />
+            <Image
+              key={img}
+              source={{ uri: img }}
+              contentFit="cover"
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 8,
+                marginRight: 8,
+                backgroundColor: C.surfaceLight,
+              }}
+            />
           ))}
         </HStack>
       ) : null}
@@ -159,18 +188,24 @@ export default function OtherUserProfileScreen(props: any) {
           className="flex-row items-center"
           style={{ marginRight: 24 }}
           onPress={() => toggleLike(item)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Icon name={item.isLiked ? 'heart' : 'heart-outline'} size={20} color={item.isLiked ? C.destructive : C.gray30} />
-          <Text size="sm" style={{ color: C.gray30, marginLeft: 6 }}>{item.likesCount ?? 0}</Text>
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Icon
+            name={item.isLiked ? 'heart' : 'heart-outline'}
+            size={20}
+            color={item.isLiked ? C.destructive : C.gray30}
+          />
+          <Text size="sm" style={{ color: C.gray30, marginLeft: 6 }}>
+            {item.likesCount ?? 0}
+          </Text>
         </Pressable>
         <Pressable
           className="flex-row items-center"
           onPress={() => openPostDetail(item)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Icon name="chatbubble-outline" size={20} color={C.gray30} />
-          <Text size="sm" style={{ color: C.gray30, marginLeft: 6 }}>{item.commentsCount ?? 0}</Text>
+          <Text size="sm" style={{ color: C.gray30, marginLeft: 6 }}>
+            {item.commentsCount ?? 0}
+          </Text>
         </Pressable>
       </HStack>
     </Pressable>
@@ -183,30 +218,45 @@ export default function OtherUserProfileScreen(props: any) {
         style={{ height: windowHeight * 0.3, backgroundColor: C.brand5 }}
       />
       <ScrollView ref={scrollRef} className="flex-1">
-        <ScreenHeader title="Profile" onBack={() => props.navigation?.goBack()} />
+        <ScreenHeader title="Perfil" onBack={() => props.navigation?.goBack()} />
         <Box
           className="bg-card rounded-lg items-center"
-          style={{ marginTop: windowHeight * 0.15, paddingTop: 60, paddingBottom: 24 }}
-        >
+          style={{ marginTop: windowHeight * 0.15, paddingTop: 60, paddingBottom: 24 }}>
           <Box className="absolute self-center" style={{ top: -48 }}>
-            <Box className="bg-muted items-center justify-center overflow-hidden" style={{ width: 96, height: 96, borderRadius: 48 }}>
+            <Box
+              className="bg-muted items-center justify-center overflow-hidden"
+              style={{ width: 96, height: 96, borderRadius: 48 }}>
               {profileImg ? (
-                <Image source={{ uri: profileImg }} contentFit="cover" style={{ width: 96, height: 96, borderRadius: 48 }} />
+                <Image
+                  source={{ uri: profileImg }}
+                  contentFit="cover"
+                  style={{ width: 96, height: 96, borderRadius: 48 }}
+                />
               ) : (
                 <Icon name="person" size={40} color={C.gray30} />
               )}
             </Box>
           </Box>
-          <Text weight="bold" size="xl" style={{ marginTop: 8 }}>{firstName} {lastName}</Text>
+          <Text weight="bold" size="xl" style={{ marginTop: 8 }}>
+            {firstName} {lastName}
+          </Text>
           <HStack className="items-center" style={{ marginTop: 16 }}>
             <VStack className="items-center" style={{ paddingHorizontal: 24 }}>
-              <Text weight="bold" size="lg">{stats ? stats.workout_count : '-'}</Text>
-              <Text size="xs" style={{ color: C.gray40, marginTop: 2 }}>Workouts</Text>
+              <Text weight="bold" size="lg">
+                {stats ? stats.workout_count : '-'}
+              </Text>
+              <Text size="xs" style={{ color: C.gray40, marginTop: 2 }}>
+                Entrenamientos
+              </Text>
             </VStack>
             <Box className="bg-border" style={{ width: 1, height: 28 }} />
             <VStack className="items-center" style={{ paddingHorizontal: 24 }}>
-              <Text weight="bold" size="lg">{stats ? stats.posting_count : '-'}</Text>
-              <Text size="xs" style={{ color: C.gray40, marginTop: 2 }}>Posts</Text>
+              <Text weight="bold" size="lg">
+                {stats ? stats.posting_count : '-'}
+              </Text>
+              <Text size="xs" style={{ color: C.gray40, marginTop: 2 }}>
+                Publicaciones
+              </Text>
             </VStack>
           </HStack>
         </Box>
@@ -216,10 +266,14 @@ export default function OtherUserProfileScreen(props: any) {
           ) : !isLoading ? (
             <Box className="items-center justify-center" style={{ paddingVertical: 48 }}>
               <Icon name="document-text-outline" size={64} color={C.gray50} />
-              <Text weight="medium" style={{ color: C.gray40, marginTop: 16 }}>No posts yet</Text>
+              <Text weight="medium" style={{ color: C.gray40, marginTop: 16 }}>
+                Aún no hay publicaciones
+              </Text>
             </Box>
           ) : null}
-          {isLoading && <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />}
+          {isLoading && (
+            <ActivityIndicator size="small" color={C.orange} style={{ marginVertical: 16 }} />
+          )}
         </Box>
       </ScrollView>
     </Box>

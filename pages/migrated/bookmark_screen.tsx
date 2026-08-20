@@ -21,7 +21,6 @@ interface BookmarkPost {
 }
 
 export default function BookmarkScreen({ navigation }: any) {
-
   const [postList, setPostList] = useState<BookmarkPost[]>([]);
   // page/numPage stay as state (not refs): both are read during render below
   // to drive the loading indicators, so they need to trigger a re-render.
@@ -44,7 +43,13 @@ export default function BookmarkScreen({ navigation }: any) {
         id: p.id,
         content: p.description,
         postImage: p.posting_media_array?.[0]?.media_url ?? '',
-        users: p.users ? { id: p.users.id, displayName: p.users.display_name, profileImage: p.users.profile_image } : undefined,
+        users: p.users
+          ? {
+              id: p.users.id,
+              displayName: p.users.display_name,
+              profileImage: p.users.profile_image,
+            }
+          : undefined,
         likesCount: p.posting_like_count,
         commentsCount: p.posting_comment_count,
         isLiked: p.is_liked,
@@ -74,123 +79,151 @@ export default function BookmarkScreen({ navigation }: any) {
   const toggleLike = useCallback((item: BookmarkPost) => {
     const wasLiked = !!item.isLiked;
     setPostList((prev) =>
-      prev.map((p) => (p.id === item.id ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) } : p))
+      prev.map((p) =>
+        p.id === item.id
+          ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) }
+          : p,
+      ),
     );
     postsApi.like(item.id).catch((e) => {
       logger.error('Error toggling like', e);
-      setPostList((prev) => prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p)));
+      setPostList((prev) =>
+        prev.map((p) =>
+          p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p,
+        ),
+      );
     });
   }, []);
 
-  const unbookmark = useCallback((item: BookmarkPost) => {
-    setPostList((prev) => prev.filter((p) => p.id !== item.id));
-    postsApi.bookmark(item.id).catch((e) => {
-      logger.error('Error removing bookmark', e);
-      getPostList(1);
-    });
-  }, [getPostList]);
+  const unbookmark = useCallback(
+    (item: BookmarkPost) => {
+      setPostList((prev) => prev.filter((p) => p.id !== item.id));
+      postsApi.bookmark(item.id).catch((e) => {
+        logger.error('Error removing bookmark', e);
+        getPostList(1);
+      });
+    },
+    [getPostList],
+  );
 
-  const openDetail = useCallback((item: BookmarkPost) => {
-    navigation.navigate('MigratedPostDetails', {
-      postData: {
-        id: item.id,
-        content: item.content,
-        images: item.postImage ? [item.postImage] : [],
-        users: {
-          id: item.users?.id,
-          firstName: item.users?.displayName || 'User',
-          lastName: '',
-          profileImage: item.users?.profileImage,
+  const openDetail = useCallback(
+    (item: BookmarkPost) => {
+      navigation.navigate('MigratedPostDetails', {
+        postData: {
+          id: item.id,
+          content: item.content,
+          images: item.postImage ? [item.postImage] : [],
+          users: {
+            id: item.users?.id,
+            firstName: item.users?.displayName || 'Usuario',
+            lastName: '',
+            profileImage: item.users?.profileImage,
+          },
+          likesCount: item.likesCount,
+          commentsCount: item.commentsCount,
+          isLiked: item.isLiked,
+          isBookmarked: true,
+          createdAt: item.createdAt,
         },
-        likesCount: item.likesCount,
-        commentsCount: item.commentsCount,
-        isLiked: item.isLiked,
-        isBookmarked: true,
-        createdAt: item.createdAt,
-      },
-    });
-  }, [navigation]);
+      });
+    },
+    [navigation],
+  );
 
-  const renderPostCard = useCallback(({ item }: { item: BookmarkPost }) => {
-    return (
-      <Pressable className="bg-card rounded-md overflow-hidden mx-4 my-1.5" onPress={() => openDetail(item)}>
-        {/* User header */}
-        <Box className="flex-row items-center gap-2.5 p-3">
-          {item.users?.profileImage ? (
-            <Image source={{ uri: item.users.profileImage }} contentFit="cover" style={{ width: 36, height: 36, borderRadius: 18 }} />
-          ) : (
-            <Box className="w-9 h-9 rounded-full bg-secondary items-center justify-center">
-              <Icon name="person" size={20} className="text-muted-foreground" />
+  const renderPostCard = useCallback(
+    ({ item }: { item: BookmarkPost }) => {
+      return (
+        <Pressable
+          className="bg-card rounded-md overflow-hidden mx-4 my-1.5"
+          onPress={() => openDetail(item)}>
+          {/* User header */}
+          <Box className="flex-row items-center gap-2.5 p-3">
+            {item.users?.profileImage ? (
+              <Image
+                source={{ uri: item.users.profileImage }}
+                contentFit="cover"
+                style={{ width: 36, height: 36, borderRadius: 18 }}
+              />
+            ) : (
+              <Box className="w-9 h-9 rounded-full bg-secondary items-center justify-center">
+                <Icon name="person" size={20} className="text-muted-foreground" />
+              </Box>
+            )}
+            <Box className="flex-1">
+              <Text weight="semibold" size="sm">
+                {item.users?.displayName ?? 'Usuario'}
+              </Text>
+              <Text muted size="xs">
+                {item.createdAt ?? ''}
+              </Text>
             </Box>
-          )}
-          <Box className="flex-1">
-            <Text weight="semibold" size="sm">{item.users?.displayName ?? 'User'}</Text>
-            <Text muted size="xs">{item.createdAt ?? ''}</Text>
           </Box>
-        </Box>
 
-        {/* Description */}
-        {item.content ? (
-          <Text size="sm" muted className="px-3" style={{ paddingBottom: 8, lineHeight: 20 }}>
-            {item.content}
-          </Text>
-        ) : null}
+          {/* Description */}
+          {item.content ? (
+            <Text size="sm" muted className="px-3" style={{ paddingBottom: 8, lineHeight: 20 }}>
+              {item.content}
+            </Text>
+          ) : null}
 
-        {/* Image */}
-        {item.postImage ? (
-          <Box className="mx-3" style={{ marginBottom: 8 }}>
-            <Image
-              source={{ uri: item.postImage }}
-              style={{ width: '100%', height: 200, borderRadius: 8 }}
-              contentFit="cover"
-            />
+          {/* Image */}
+          {item.postImage ? (
+            <Box className="mx-3" style={{ marginBottom: 8 }}>
+              <Image
+                source={{ uri: item.postImage }}
+                style={{ width: '100%', height: 200, borderRadius: 8 }}
+                contentFit="cover"
+              />
+            </Box>
+          ) : null}
+
+          {/* Actions */}
+          <Box className="flex-row items-center gap-6 px-3 py-2.5 border-t border-border">
+            <Pressable
+              style={({ pressed }: { pressed: boolean }) => [
+                { flexDirection: 'row', alignItems: 'center', gap: 6 },
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={() => toggleLike(item)}>
+              <Icon
+                name={item.isLiked ? 'heart' : 'heart-outline'}
+                size={22}
+                className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
+              />
+              <Text size="sm" muted>
+                {item.likesCount ?? 0}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }: { pressed: boolean }) => [
+                { flexDirection: 'row', alignItems: 'center', gap: 6 },
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={() => openDetail(item)}>
+              <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
+              <Text size="sm" muted>
+                {item.commentsCount ?? 0}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }: { pressed: boolean }) => [
+                { flexDirection: 'row', alignItems: 'center', gap: 6 },
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={() => unbookmark(item)}>
+              <Icon name="bookmark" size={22} className="text-foreground" />
+            </Pressable>
           </Box>
-        ) : null}
-
-        {/* Actions */}
-        <Box className="flex-row items-center gap-6 px-3 py-2.5 border-t border-border">
-          <Pressable
-            style={({ pressed }: { pressed: boolean }) => [
-              { flexDirection: 'row', alignItems: 'center', gap: 6 },
-              pressed && { opacity: 0.7 },
-            ]}
-            onPress={() => toggleLike(item)}
-          >
-            <Icon
-              name={item.isLiked ? 'heart' : 'heart-outline'}
-              size={22}
-              className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
-            />
-            <Text size="sm" muted>{item.likesCount ?? 0}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }: { pressed: boolean }) => [
-              { flexDirection: 'row', alignItems: 'center', gap: 6 },
-              pressed && { opacity: 0.7 },
-            ]}
-            onPress={() => openDetail(item)}
-          >
-            <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
-            <Text size="sm" muted>{item.commentsCount ?? 0}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }: { pressed: boolean }) => [
-              { flexDirection: 'row', alignItems: 'center', gap: 6 },
-              pressed && { opacity: 0.7 },
-            ]}
-            onPress={() => unbookmark(item)}
-          >
-            <Icon name="bookmark" size={22} className="text-foreground" />
-          </Pressable>
-        </Box>
-      </Pressable>
-    );
-  }, [openDetail, toggleLike, unbookmark]);
+        </Pressable>
+      );
+    },
+    [openDetail, toggleLike, unbookmark],
+  );
 
   return (
     <Box className="flex-1 bg-background">
       <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="Bookmarks" onBack={() => navigation.goBack()} />
+        <ScreenHeader title="Guardados" onBack={() => navigation.goBack()} />
       </Box>
 
       <Box className="flex-1">
@@ -219,7 +252,9 @@ export default function BookmarkScreen({ navigation }: any) {
         ) : (
           <Box className="flex-1 items-center justify-center gap-3">
             <Icon name="bookmark-outline" size={56} className="text-muted-foreground" />
-            <Text weight="medium" muted>No bookmarked posts</Text>
+            <Text weight="medium" muted>
+              No hay publicaciones guardadas
+            </Text>
           </Box>
         )}
       </Box>
