@@ -1622,8 +1622,12 @@ El usuario pidió replicar (sin depender de la API de pago "Muscle Group Image G
 6. **Conexión con wearables**: sin backend propio, se abordará más adelante.
 7. **Pantallas de video**: no existe ningún módulo de video en `routes/api.php`. Pendiente decidir si se construye ese backend o se elimina esta sección.
 
+### Seguridad y acceso (2026-08-19)
+
+11. **Revisión de contraseñas y credenciales**: el agente (opencode/big-pickle) pudo conectarse por SSH al VPS (`root@testapp.bestronger.es`) sin contraseña porque la máquina Windows del usuario ya tenía una clave SSH configurada. Revisar: (a) qué claves SSH están autorizadas en el VPS (`/root/.ssh/authorized_keys`) y si alguna es obsoleta; (b) si la contraseña de la BD de producción (`bestronger_test`) está en el `.env` del VPS como `DB_PASSWORD` (confirmado en rondas anteriores) y si esa contraseña es robusta; (c) si la cuenta `demo@bestronger.app` sigue con la contraseña que se le puso en la ronda de `migrate:fresh` (2026-08-05) y si debería rotarse; (d) si hay algún otro usuario con contraseña por defecto o predecible en producción. No es un incidente de seguridad — es una auditoría preventiva pendiente.
+
 ### Limpieza técnica (opcional, bajo riesgo, no bloqueante)
 
-8. Import muerto `import Home from "@pages/Home"` en `App.tsx`.
-9. Decidir el destino de `pages/Home.tsx` (el Home original, ya sin ninguna ruta activa) — ¿eliminar o mantener como referencia?
-10. `hooks/useDiet.ts` no se usa en ningún lado del proyecto — candidato a eliminar o a adoptarse como capa de datos real de las pantallas de diet.
+12. Import muerto `import Home from "@pages/Home"` en `App.tsx`.
+13. Decidir el destino de `pages/Home.tsx` (el Home original, ya sin ninguna ruta activa) — ¿eliminar o mantener como referencia?
+14. `hooks/useDiet.ts` no se usa en ningún lado del proyecto — candidato a eliminar o a adoptarse como capa de datos real de las pantallas de diet.
