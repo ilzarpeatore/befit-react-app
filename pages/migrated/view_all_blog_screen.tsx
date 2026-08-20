@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -202,7 +203,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   const listData = isSearching ? searchResults : posts;
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title={categoryTitle || 'Todos los artículos'} onBack={() => navigation.goBack()} />
 
       <Input className="mx-4" style={{ marginTop: 12 }}>
@@ -329,6 +330,6 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
           </Box>
         </Box>
       </SimpleBottomSheet>
-    </Box>
+    </SafeAreaView>
   );
 }

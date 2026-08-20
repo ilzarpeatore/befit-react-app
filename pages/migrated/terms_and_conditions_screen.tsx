@@ -1,13 +1,13 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
-import { Box } from '@components/ui/box';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@components/ui/text';
 import { Card } from '@components/ui/card';
 import ScreenHeader from '@components/ScreenHeader';
 
 export default function TermsAndConditionsScreen(props: any) {
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title="Terms of Services" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
@@ -28,6 +28,6 @@ export default function TermsAndConditionsScreen(props: any) {
           </Text>
         </Card>
       </ScrollView>
-    </Box>
+    </SafeAreaView>
   );
 }

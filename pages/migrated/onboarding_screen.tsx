@@ -122,7 +122,7 @@ function useStyle() {
       alignItems: "center",
       marginBottom: 32,
     },
-    title: { fontSize: 24, fontFamily: FONT.bold, color: C.white, textAlign: "center", marginBottom: 12 },
+    title: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, color: C.white, textAlign: "center", marginBottom: 12 },
     subtitle: { fontSize: 15, fontFamily: FONT.regular, color: C.gray50, textAlign: "center", lineHeight: 22 },
     dotsRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", paddingVertical: 16 },
     dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.gray30, marginHorizontal: 4 },

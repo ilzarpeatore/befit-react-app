@@ -106,7 +106,7 @@ export default function ArticlesScreen({ navigation }: any) {
 const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   scrollContent: { padding: 20, paddingBottom: 100 },
-  title: { fontSize: 24, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
+  title: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
   featuredCard: { backgroundColor: C.surface, borderRadius: 16, overflow: "hidden", marginBottom: 20 },
   featuredImage: { height: 180, backgroundColor: C.surfaceLight, justifyContent: "center", alignItems: "center" },
   featuredContent: { padding: 16 },

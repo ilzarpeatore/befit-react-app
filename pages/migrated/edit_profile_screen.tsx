@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, ScrollView, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -209,6 +210,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
   };
 
   return (
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -396,6 +398,7 @@ export default function EditProfileScreen(props: EditProfileScreenProps) {
         )}
       </Box>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -411,7 +414,7 @@ const localStyles = StyleSheet.create({
   },
   backBtn: {
     position: 'absolute',
-    top: 50,
+    top: 8,
     left: 8,
     padding: 8,
     zIndex: 10,

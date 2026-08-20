@@ -71,7 +71,7 @@ const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   content: { flex: 1, justifyContent: "center", alignItems: "center", padding: 30 },
   iconContainer: { width: 120, height: 120, borderRadius: 60, justifyContent: "center", alignItems: "center", marginBottom: 24 },
-  title: { fontSize: 28, fontFamily: FONT.bold, marginBottom: 12, textAlign: "center" },
+  title: { fontSize: 28, lineHeight: 34, fontFamily: FONT.bold, marginBottom: 12, textAlign: "center" },
   subtitle: { fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 30 },
   previewCard: { backgroundColor: C.surface, borderRadius: 16, padding: 16, width: "100%", marginBottom: 20 },
   previewHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ActivityIndicator, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -118,20 +119,18 @@ export default function NotificationScreen(props: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title="Notificaciones"
-          onBack={() => props.navigation?.goBack()}
-          rightAction={
-            unreadCount > 0 ? (
-              <Button variant="secondary" size="sm" onPress={markAllRead}>
-                <ButtonText className="text-warning">Marcar leídas</ButtonText>
-              </Button>
-            ) : undefined
-          }
-        />
-      </Box>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader
+        title="Notificaciones"
+        onBack={() => props.navigation?.goBack()}
+        rightAction={
+          unreadCount > 0 ? (
+            <Button variant="secondary" size="sm" onPress={markAllRead}>
+              <ButtonText className="text-warning">Marcar leídas</ButtonText>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {isLoading && notifications.length === 0 ? (
         <Box className="flex-1 items-center justify-center gap-3">
@@ -158,6 +157,6 @@ export default function NotificationScreen(props: any) {
           ) : null}
         />
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

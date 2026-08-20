@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -23,7 +24,7 @@ export default function TipsScreen(props: any) {
   const isYouTube = mExerciseVideo?.includes('https://youtu');
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title="Tips & Instructions" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
@@ -90,6 +91,6 @@ export default function TipsScreen(props: any) {
           ) : null}
         </VStack>
       </ScrollView>
-    </Box>
+    </SafeAreaView>
   );
 }

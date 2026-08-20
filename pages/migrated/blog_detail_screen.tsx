@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';
@@ -109,6 +110,7 @@ const onShouldStartLoadWithRequest = (request: any) => {
 };
 
 export default function BlogDetailScreen({ navigation, route }: any) {
+  const insets = useSafeAreaInsets();
   const mBlogModel = route?.params?.mBlogModel;
   // home_screen_modern.tsx navigates with { id } instead of { mBlogModel }; support both
   // so the post fetched from the API always matches what the user tapped.
@@ -185,7 +187,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
           <Button
             variant="ghost"
             size="icon"
-            style={{ position: 'absolute', top: 50, left: 8 }}
+            style={{ position: 'absolute', top: insets.top + 8, left: 8 }}
             onPress={() => navigation.goBack()}
           >
             <Icon name="chevron-back" size={28} color={C.white} />
@@ -195,7 +197,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
             className="items-center rounded-sm"
             style={{
               position: 'absolute',
-              top: 100,
+              top: insets.top + 58,
               left: 16,
               backgroundColor: 'rgba(255,255,255,0.2)',
               paddingHorizontal: 8,

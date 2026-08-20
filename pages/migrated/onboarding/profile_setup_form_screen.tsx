@@ -231,7 +231,7 @@ export default function ProfileSetupFormScreen({ navigation }: any) {
 const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   scrollContent: { padding: 20, paddingBottom: 100 },
-  title: { fontSize: 24, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
+  title: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
   sectionLabel: { fontSize: 14, fontFamily: FONT.bold, marginBottom: 12 },
   field: { marginBottom: 14 },
   label: { fontSize: 13, fontFamily: FONT.semiBold, marginBottom: 6 },

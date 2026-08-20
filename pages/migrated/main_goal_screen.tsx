@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
+import ScreenHeader from '@components/ScreenHeader';
 import { C, FONT } from './theme';
 
 interface GoalCardProps {
@@ -56,9 +57,6 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
 
   const styles = useResponsiveStyleSheet({
     container: { flex: 1, backgroundColor: C.bg },
-    appBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: '16@ratio', paddingTop: '16@ratio', paddingBottom: '8@ratio' },
-    backBtn: { padding: '4@ratio' },
-    appBarTitle: { flex: 1, fontSize: '18@ratio', fontFamily: FONT.bold, color: C.white, marginLeft: '8@ratio' },
     avatarImage: { width: '100@ratio', height: '200@ratio', alignSelf: 'center', marginTop: '16@ratio', backgroundColor: C.gray70, borderRadius: '12@ratio' },
     stepTitle: { fontSize: '18@ratio', fontFamily: FONT.bold, color: C.white, textAlign: 'center', marginVertical: '16@ratio' },
     goalCard: { backgroundColor: C.surfaceLight, borderRadius: '15@ratio', marginHorizontal: '16@ratio', marginVertical: '8@ratio', padding: '14@ratio' },
@@ -118,14 +116,8 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* AppBar */}
-      <View style={styles.appBar}>
-        <Pressable style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]} onPress={handleBack}>
-          <Ionicons name="chevron-back" size={28} color={C.textPrimary} />
-        </Pressable>
-        <Text style={styles.appBarTitle}>MightyFitness AI</Text>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenHeader title="MightyFitness AI" onBack={handleBack} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {/* Avatar placeholder */}

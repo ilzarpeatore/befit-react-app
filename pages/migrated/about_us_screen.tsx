@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { VStack } from '@components/ui/vstack';
 import { Text } from '@components/ui/text';
@@ -18,10 +19,8 @@ async function launchUrl(url: string) {
 
 export default function AboutUsScreen({ navigation }: any) {
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="About Us" onBack={() => navigation.goBack()} />
-      </Box>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader title="About Us" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false}>
         <VStack space="md">
@@ -68,6 +67,6 @@ export default function AboutUsScreen({ navigation }: any) {
         </Box>
         <Text muted size="xs" style={{ marginTop: 6 }}>{'© 2024 MightyFitness. All rights reserved.'}</Text>
       </Box>
-    </Box>
+    </SafeAreaView>
   );
 }
