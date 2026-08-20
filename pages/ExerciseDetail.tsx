@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -31,7 +31,7 @@ export default function ExerciseDetail() {
   // desmonto/reejecuto (id cambio) mientras el await seguia en vuelo -- evita
   // que una respuesta vieja pise el estado de un fetch mas nuevo. El boton de
   // reintentar manual no pasa nada, por eso el default siempre-false.
-  const fetchDetail = async (isIgnored: () => boolean = () => false) => {
+  const fetchDetail = useCallback(async (isIgnored: () => boolean = () => false) => {
     if (!id) {
       setError("No exercise ID provided.");
       return;
@@ -48,7 +48,7 @@ export default function ExerciseDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   // react-doctor no reconoce la guarda de ignore porque vive dentro de
   // fetchDetail (llamada por referencia, no inline): si el fetch queda
@@ -60,7 +60,7 @@ export default function ExerciseDetail() {
     return () => {
       ignore = true;
     };
-  }, [id]);
+  }, [fetchDetail]);
 
   if (error) {
     return (

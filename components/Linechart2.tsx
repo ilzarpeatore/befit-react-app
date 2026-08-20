@@ -41,7 +41,7 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
       parsedata,
       chartpath
     }
-  }, [chartdatamaxvalue, chartdata]);
+  }, [chartdatamaxvalue, chartdata, chartviewboxworkingwidth, chartviewboxworkingheight]);
 
   useEffect(() => {
     Animated.timing(PathAnim, {
@@ -50,7 +50,7 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
       useNativeDriver: true,
       easing: Easing.linear,
     }).start();
-  }, [])
+  }, [PathAnim])
 
   return (
   <Svg

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, Image, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Box } from '@components/ui/box';
@@ -97,7 +97,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
   const [bibliographyOpen, setBibliographyOpen] = useState(false);
 
-  const loadDetail = async (ignoreRef: { current: boolean }) => {
+  const loadDetail = useCallback(async (ignoreRef: { current: boolean }) => {
     setLoading(true);
     try {
       const res = await blogApi.getDetail(blogId);
@@ -110,7 +110,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [blogId, mBlogModel]);
 
   // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
   // loadDetail (llamada por referencia, no inline): si el fetch queda
@@ -123,7 +123,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
     return () => {
       ignoreRef.current = true;
     };
-  }, [blogId]);
+  }, [loadDetail]);
 
   const onWebViewMessage = (event: any) => {
     try {

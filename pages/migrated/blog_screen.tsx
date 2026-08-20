@@ -68,7 +68,12 @@ export default function BlogScreen({ navigation }: any) {
     return () => {
       ignoreRef.current = true;
     };
-  }, [selectedCategory, sortBy, orderDir]);
+    // isSearching/loading se quedan fuera a proposito: son solo una guarda
+    // de "no dispares mientras hay otra carga en curso", no una condicion
+    // que deba re-disparar el efecto (eso causaria una carga duplicada
+    // justo despues del mount, cuando loading pasa de true a false).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, sortBy, orderDir, loadFilteredPosts]);
 
   const loadData = async () => {
     setLoading(true);
@@ -91,7 +96,7 @@ export default function BlogScreen({ navigation }: any) {
     }
   };
 
-  const loadFilteredPosts = async (ignoreRef: { current: boolean }) => {
+  const loadFilteredPosts = useCallback(async (ignoreRef: { current: boolean }) => {
     try {
       const params: any = { per_page: 100, order_by: sortBy, order_dir: orderDir };
       if (selectedCategory) params.blog_category_id = selectedCategory;
@@ -103,9 +108,9 @@ export default function BlogScreen({ navigation }: any) {
       setFeaturedPosts(posts.filter((p: any) => p.is_featured === '1' || p.is_featured === true || p.is_featured === 1).slice(0, 3));
       buildSections(posts);
     } catch {}
-  };
+  }, [sortBy, orderDir, selectedCategory, buildSections]);
 
-  const buildSections = (posts: BlogListItem[]) => {
+  const buildSections = useCallback((posts: BlogListItem[]) => {
     if (selectedCategory) {
       const cat = categories.find((c) => c.id === selectedCategory);
       if (cat) {
@@ -128,7 +133,7 @@ export default function BlogScreen({ navigation }: any) {
       newSections.sort((a, b) => (a.category.id || Number.MAX_SAFE_INTEGER) - (b.category.id || Number.MAX_SAFE_INTEGER));
       setSections(newSections);
     }
-  };
+  }, [selectedCategory, categories]);
 
   const handleSearch = async (text: string) => {
     setSearchText(text);

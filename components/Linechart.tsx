@@ -61,7 +61,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
       avglinestartY
     }
 
-  }, [chartdatamaxvalue, chartdata]);
+  }, [chartdatamaxvalue, chartdata, chartviewboxworkingheight, chartviewboxworkingwidth, startX, cropfixh, Ystartpoint]);
   useEffect(() => {
     Animated.timing(PathAnim, {
       toValue: 0,
@@ -69,7 +69,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
       useNativeDriver: true,
       easing: Easing.linear,
     }).start();
-  }, [])
+  }, [PathAnim])
   return (
     <Svg
       width={chartWidth}
