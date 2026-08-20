@@ -1,9 +1,11 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { C, FONT } from "./theme";
+
+import { useAuth } from "../../store/AuthContext";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
@@ -20,8 +22,6 @@ const PAGES = [
   { icon: "chatbubbles-outline" as const, title: "Comunidad", subtitle: "Conecta, comparte y entrena con otros usuarios." },
   { icon: "trophy-outline" as const, title: "Logros", subtitle: "Desbloquea insignias y mantÃ©n tu racha activa." },
 ];
-
-import { useAuth } from "../../store/AuthContext";
 
 export default function OnboardingScreen({ navigation }: any) {
   const styles = useStyle();
@@ -54,8 +54,8 @@ export default function OnboardingScreen({ navigation }: any) {
           showsHorizontalScrollIndicator={false}
           scrollEnabled={false}
         >
-          {PAGES.map((p, i) => (
-            <View key={i} style={styles.page}>
+          {PAGES.map((p) => (
+            <View key={p.title} style={styles.page}>
               <View style={styles.iconCircle}>
                 <Ionicons name={p.icon} size={48} color={C.textPrimary} />
               </View>
@@ -66,9 +66,9 @@ export default function OnboardingScreen({ navigation }: any) {
         </ScrollView>
 
         <View style={styles.dotsRow}>
-          {PAGES.map((_, i) => (
+          {PAGES.map((p, i) => (
             <View
-              key={i}
+              key={p.title}
               style={[styles.dot, i === page && styles.dotActive]}
             />
           ))}

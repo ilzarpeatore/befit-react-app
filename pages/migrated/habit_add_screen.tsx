@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ScrollView, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, FlatList, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Box } from '@components/ui/box';
@@ -50,7 +50,7 @@ export default function HabitAddScreen(props: Props) {
 
   useFocusEffect(useCallback(() => { loadLibrary(); }, [loadLibrary]));
 
-  const adopt = async (t: HabitTemplate) => {
+  const adopt = useCallback(async (t: HabitTemplate) => {
     if (adoptingId) return;
     setAdoptingId(t.id);
     try {
@@ -67,7 +67,35 @@ export default function HabitAddScreen(props: Props) {
     } finally {
       setAdoptingId(null);
     }
-  };
+  }, [adoptingId, navigation]);
+
+  const renderTemplateItem = useCallback(
+    ({ item: t }: { item: HabitTemplate }) => (
+      <Box
+        className="flex-row items-center bg-card rounded-md"
+        style={{ gap: 12, padding: 12, marginBottom: 10 }}
+      >
+        <Box className="items-center justify-center bg-background" style={{ width: 42, height: 42, borderRadius: 13 }}>
+          <Icon name={habitIoniconFor(t.icon)} size={20} className="text-foreground" />
+        </Box>
+        <Box className="flex-1">
+          <Text weight="bold" size="sm">{t.title}</Text>
+          {t.target_value && t.target_unit && (
+            <Text size="xs" muted style={{ marginTop: 2 }}>{t.target_value} {t.target_unit} / {t.frequency === 'daily' ? 'día' : 'semana'}</Text>
+          )}
+        </Box>
+        <Pressable
+          className="items-center justify-center rounded-pill"
+          style={{ width: 34, height: 34, backgroundColor: C.accentBlack }}
+          onPress={() => adopt(t)}
+          disabled={adoptingId === t.id}
+        >
+          {adoptingId === t.id ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Icon name="add" size={20} color="#FFFFFF" />}
+        </Pressable>
+      </Box>
+    ),
+    [adopt, adoptingId]
+  );
 
   const submitPersonal = async () => {
     if (!title.trim()) {
@@ -137,33 +165,13 @@ export default function HabitAddScreen(props: Props) {
             </Text>
           </Box>
         ) : (
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-            {templates.map((t) => (
-              <Box
-                key={t.id}
-                className="flex-row items-center bg-card rounded-md"
-                style={{ gap: 12, padding: 12, marginBottom: 10 }}
-              >
-                <Box className="items-center justify-center bg-background" style={{ width: 42, height: 42, borderRadius: 13 }}>
-                  <Icon name={habitIoniconFor(t.icon)} size={20} className="text-foreground" />
-                </Box>
-                <Box className="flex-1">
-                  <Text weight="bold" size="sm">{t.title}</Text>
-                  {t.target_value && t.target_unit && (
-                    <Text size="xs" muted style={{ marginTop: 2 }}>{t.target_value} {t.target_unit} / {t.frequency === 'daily' ? 'día' : 'semana'}</Text>
-                  )}
-                </Box>
-                <Pressable
-                  className="items-center justify-center rounded-pill"
-                  style={{ width: 34, height: 34, backgroundColor: C.accentBlack }}
-                  onPress={() => adopt(t)}
-                  disabled={adoptingId === t.id}
-                >
-                  {adoptingId === t.id ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Icon name="add" size={20} color="#FFFFFF" />}
-                </Pressable>
-              </Box>
-            ))}
-          </ScrollView>
+          <FlatList
+            data={templates}
+            keyExtractor={(t) => String(t.id)}
+            renderItem={renderTemplateItem}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
+            showsVerticalScrollIndicator={false}
+          />
         )
       ) : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

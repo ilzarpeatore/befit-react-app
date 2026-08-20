@@ -231,9 +231,9 @@ export default function BlogDetailScreen({ navigation, route }: any) {
               className="flex-row flex-wrap"
               style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 8 }}
             >
-              {blog.tags_name.map((tag: any, index: number) => (
+              {blog.tags_name.map((tag: any) => (
                 <Box
-                  key={index}
+                  key={tag.id}
                   className="bg-card rounded-pill"
                   style={{ paddingHorizontal: 12, paddingVertical: 5, borderWidth: 0.5, borderColor: C.brand5 }}
                 >

@@ -556,8 +556,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {periodMode === 'month' && (
             <HStack style={styles.weekdayHeaderRow}>
-              {WEEKDAY_LABELS.map((l, i) => (
-                <Text key={i} style={styles.weekdayHeaderText}>{l}</Text>
+              {WEEKDAY_LABELS.map((l) => (
+                <Text key={l} style={styles.weekdayHeaderText}>{l}</Text>
               ))}
             </HStack>
           )}
@@ -595,8 +595,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </Box>
       ) : (
         <ScrollView contentContainerStyle={{ paddingVertical: 16 }}>
-          {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day, dayIdx) => (
-            <Box key={dayIdx} style={styles.daySection}>
+          {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day) => (
+            <Box key={day.date} style={styles.daySection}>
               <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
               {checkinsForDay(day.date).map(renderCheckinCard)}
               {day.workouts.length > 0 ? (

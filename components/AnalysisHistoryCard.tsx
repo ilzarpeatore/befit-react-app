@@ -75,7 +75,7 @@ function AnalysisHistoryCard({ session }: Props) {
           {session.sets.map((set, idx) => {
             const isLoadPrRow = loadPrValue !== null && Number(set.carga) === loadPrValue;
             return (
-              <View key={idx} style={styles.tableRow}>
+              <View key={set.set_number} style={styles.tableRow}>
                 <View style={[styles.serieCol, styles.serieCellWrap]}>
                   <Text style={[styles.cell, styles.serieText]}>{set.set_number ?? idx + 1}</Text>
                   {isLoadPrRow ? (

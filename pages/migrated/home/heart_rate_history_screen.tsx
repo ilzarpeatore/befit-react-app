@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -76,9 +76,9 @@ export default function HeartRateHistoryScreen({ navigation }: any) {
             entries.length > 0 ? (
               <View key={date} style={styles.group}>
                 <Text style={styles.dateLabel}>{date}</Text>
-                {entries.map((entry, i) => (
+                {entries.map((entry) => (
                   <TouchableOpacity
-                    key={i}
+                    key={entry.time}
                     style={styles.entry}
                     onPress={() => navigation.navigate("MigratedHeartRateDetails")}
                   >

@@ -156,11 +156,11 @@ export default function WorkoutDetailScreen(props: any) {
     getDayExerciseData(workoutDayList[index]?.id);
   };
 
-  const renderExerciseItem = (item: DayExerciseModel, index: number) => {
+  const renderExerciseItem = (item: DayExerciseModel) => {
     const sets = renderSets(item);
     return (
       <Pressable
-        key={item.id?.toString() || index.toString()}
+        key={item.id}
         onPress={() => {
           props.navigation?.navigate('MigratedExerciseInfo', {
             mExerciseId: item.exercise?.id,
@@ -278,7 +278,7 @@ export default function WorkoutDetailScreen(props: any) {
             >
               {workoutDayList.map((day, index) => (
                 <Pressable
-                  key={day.id?.toString() || index.toString()}
+                  key={day.id}
                   style={[styles.tab, currentTabIndex === index && styles.tabActive]}
                   onPress={() => onTabTap(index)}
                 >
@@ -296,7 +296,7 @@ export default function WorkoutDetailScreen(props: any) {
 
         {/* Exercise List */}
         {dayExerciseList.length > 0 ? (
-          dayExerciseList.map((item, index) => renderExerciseItem(item, index))
+          dayExerciseList.map((item) => renderExerciseItem(item))
         ) : (
           !isLoading &&
           workoutDayList.length > 0 && (

@@ -163,7 +163,7 @@ export default function SetReminderScreen(props: any) {
                 const isSelected = selectedDays.has(index);
                 return (
                   <TouchableOpacity
-                    key={index}
+                    key={day}
                     style={[s.dayChip, isSelected && s.dayChipSelected]}
                     onPress={() => toggleDay(index)}
                   >

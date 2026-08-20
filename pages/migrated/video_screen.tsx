@@ -82,7 +82,7 @@ export default function VideoScreen(props: any) {
         ref={flatListRef}
         data={videoList}
         keyExtractor={(item, i) => String(item.id || i)}
-        renderItem={({ item }) => <VideoComponent item={item} />}
+        renderItem={VideoComponent}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}

@@ -148,7 +148,7 @@ export default function NotificationScreen(props: any) {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ padding: 20 }}
           ItemSeparatorComponent={() => <Box className="h-2" />}
-          renderItem={({ item }) => <NotificationCard item={item} />}
+          renderItem={NotificationCard}
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           ListFooterComponent={isLoading ? (

@@ -128,7 +128,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
 
         return (
           <TouchableOpacity
-            key={index}
+            key={route.key}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={typedOptions.tabBarAccessibilityLabel}

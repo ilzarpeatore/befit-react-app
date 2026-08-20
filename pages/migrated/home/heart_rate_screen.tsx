@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -95,9 +95,9 @@ export default function HeartRateScreen({ navigation }: any) {
           </View>
 
           <Text style={styles.sectionTitle}>Recent Readings</Text>
-          {RECENT.map((r, i) => (
+          {RECENT.map((r) => (
             <TouchableOpacity
-              key={i}
+              key={r.time}
               style={styles.entry}
               onPress={() => navigation.navigate("MigratedHeartRateDetails")}
             >

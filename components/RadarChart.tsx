@@ -72,9 +72,9 @@ export default function RadarChart({
           />
         ))}
         {/* ejes */}
-        {axisLabels.map((_, i) => {
+        {axisLabels.map((label, i) => {
           const [x, y] = pointAt(cx, cy, maxRadius, axisAngle(i, total));
-          return <Line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke={gridColor} strokeWidth={1} />;
+          return <Line key={label} x1={cx} y1={cy} x2={x} y2={y} stroke={gridColor} strokeWidth={1} />;
         })}
         {/* series */}
         {series.map((s, si) => (

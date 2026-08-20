@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -27,7 +27,7 @@ export default function BookmarkScreen({ navigation }: any) {
   const numPageRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList>(null);
 
   useEffect(() => {
     getPostList(1);
@@ -61,7 +61,15 @@ export default function BookmarkScreen({ navigation }: any) {
     getPostList(1);
   };
 
-  const toggleLike = (item: BookmarkPost) => {
+  const handleBookmarksEndReached = () => {
+    if (!loading && numPage != null && page < numPage) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      getPostList(nextPage);
+    }
+  };
+
+  const toggleLike = useCallback((item: BookmarkPost) => {
     const wasLiked = !!item.isLiked;
     setPostList((prev) =>
       prev.map((p) => (p.id === item.id ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) } : p))
@@ -70,17 +78,17 @@ export default function BookmarkScreen({ navigation }: any) {
       logger.error('Error toggling like', e);
       setPostList((prev) => prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p)));
     });
-  };
+  }, []);
 
-  const unbookmark = (item: BookmarkPost) => {
+  const unbookmark = useCallback((item: BookmarkPost) => {
     setPostList((prev) => prev.filter((p) => p.id !== item.id));
     postsApi.bookmark(item.id).catch((e) => {
       logger.error('Error removing bookmark', e);
       getPostList(1);
     });
-  };
+  }, [getPostList]);
 
-  const openDetail = (item: BookmarkPost) => {
+  const openDetail = useCallback((item: BookmarkPost) => {
     navigation.navigate('MigratedPostDetails', {
       postData: {
         id: item.id,
@@ -99,11 +107,11 @@ export default function BookmarkScreen({ navigation }: any) {
         createdAt: item.createdAt,
       },
     });
-  };
+  }, [navigation]);
 
-  const renderPostCard = (item: BookmarkPost, index: number) => {
+  const renderPostCard = useCallback(({ item }: { item: BookmarkPost }) => {
     return (
-      <Pressable key={index} className="bg-card rounded-md overflow-hidden mx-4 my-1.5" onPress={() => openDetail(item)}>
+      <Pressable className="bg-card rounded-md overflow-hidden mx-4 my-1.5" onPress={() => openDetail(item)}>
         {/* User header */}
         <Box className="flex-row items-center gap-2.5 p-3">
           {item.users?.profileImage ? (
@@ -157,7 +165,7 @@ export default function BookmarkScreen({ navigation }: any) {
         </Box>
       </Pressable>
     );
-  };
+  }, [openDetail, toggleLike, unbookmark]);
 
   return (
     <Box className="flex-1 bg-background">
@@ -166,18 +174,28 @@ export default function BookmarkScreen({ navigation }: any) {
       </Box>
 
       <Box className="flex-1">
-        {loading ? (
+        {loading && page === 1 ? (
           <Box className="flex-1 items-center justify-center gap-3">
             <ActivityIndicator size="large" color="#000000" />
           </Box>
         ) : postList.length > 0 ? (
-          <ScrollView
+          <FlatList
             ref={scrollRef}
+            data={postList}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderPostCard}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingVertical: 8 }}
-          >
-            {postList.map((item, index) => renderPostCard(item, index))}
-          </ScrollView>
+            onEndReached={handleBookmarksEndReached}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              loading && page > 1 ? (
+                <Box className="items-center py-4">
+                  <ActivityIndicator size="small" color="#000000" />
+                </Box>
+              ) : null
+            }
+          />
         ) : (
           <Box className="flex-1 items-center justify-center gap-3">
             <Icon name="bookmark-outline" size={56} className="text-muted-foreground" />

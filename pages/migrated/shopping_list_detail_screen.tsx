@@ -172,8 +172,8 @@ export default function ShoppingListDetailScreen(props: any) {
     }
     return (
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 90 }}>
-        {categories.map((category, index) => (
-          <Box key={index}>
+        {categories.map((category) => (
+          <Box key={category.ingredient_category_id ?? 'uncategorized'}>
             <Text weight="bold" size="lg" style={{ marginBottom: 12 }}>
               {category.ingredient_category_title || 'Otros'}
             </Text>
