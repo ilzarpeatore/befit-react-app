@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -19,9 +19,12 @@ export default function HeartRateDetailsScreen({ navigation }: any) {
     <View style={styles.root}>
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Pressable
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+            onPress={() => navigation.goBack()}
+          >
             <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.bpmCenter}>
             <Ionicons name="heart" size={32} color={C.destructive50} />
@@ -41,17 +44,17 @@ export default function HeartRateDetailsScreen({ navigation }: any) {
           </View>
 
           <View style={styles.buttons}>
-            <TouchableOpacity
-              style={styles.btnPrimary}
+            <Pressable
+              style={({ pressed }) => [styles.btnPrimary, pressed && { opacity: 0.2 }]}
               onPress={() => navigation.navigate("MigratedHeartRateInsight")}
             >
               <Ionicons name="eye" size={18} color={C.white} />
               <Text style={styles.btnPrimaryText}>Ver insight</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btnSecondary}>
+            </Pressable>
+            <Pressable style={({ pressed }) => [styles.btnSecondary, pressed && { opacity: 0.2 }]}>
               <Ionicons name="chatbubble-ellipses" size={18} color={C.textPrimary} />
               <Text style={styles.btnSecondaryText}>Consultar AI Coach</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>
