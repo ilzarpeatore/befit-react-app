@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -86,8 +86,12 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
       </View>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.homeBtn, { backgroundColor: C.primary }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.homeBtn,
+            { backgroundColor: C.primary },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={async () => {
             await completeOnboarding();
             navigation.replace("Home");
@@ -95,7 +99,7 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
         >
           <Text style={[localStyles.homeBtnText, { color: C.white }]}>Ir al inicio</Text>
           <Ionicons name="arrow-forward" size={18} color={C.white} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
