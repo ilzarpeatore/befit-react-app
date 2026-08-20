@@ -414,12 +414,14 @@ const styles = StyleSheet.create({
   timeValue: {
     fontFamily: FONT.bold,
     fontSize: 40,
+    lineHeight: 47,
     color: C.white,
     marginVertical: 4,
   },
   timeSeparator: {
     fontFamily: FONT.bold,
     fontSize: 40,
+    lineHeight: 47,
     color: C.white,
   },
   confirmBtn: {

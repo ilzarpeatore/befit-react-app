@@ -100,7 +100,7 @@ export default function HealthScreen({ navigation }: any) {
 const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   scrollContent: { padding: 20, paddingBottom: 100 },
-  title: { fontSize: 24, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
+  title: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
   card: { backgroundColor: C.surface, borderRadius: 16, padding: 16, marginBottom: 16 },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 },
   cardTitle: { fontSize: 16, fontFamily: FONT.bold },

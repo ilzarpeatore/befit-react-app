@@ -134,7 +134,7 @@ function useStyle() {
       justifyContent: "center",
       alignItems: "center",
     },
-    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: '#FFFFFF' },
+    headerTitle: { fontSize: 22, lineHeight: 26, fontFamily: FONT.bold, color: '#FFFFFF' },
     content: { padding: 20, paddingBottom: 40 },
     overviewRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 28 },
     overviewCard: {
@@ -146,7 +146,7 @@ function useStyle() {
       borderColor: C.border,
       gap: 6,
     },
-    overviewValue: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
+    overviewValue: { fontSize: 22, lineHeight: 26, fontFamily: FONT.bold, color: C.white },
     overviewLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray50 },
     scoreSection: { alignItems: "center", marginBottom: 28 },
     sectionTitle: { fontSize: 18, fontFamily: FONT.semiBold, color: C.white, marginBottom: 16 },
@@ -160,7 +160,7 @@ function useStyle() {
       justifyContent: "center",
       alignItems: "center",
     },
-    scoreValue: { fontSize: 36, fontFamily: FONT.bold, color: C.white },
+    scoreValue: { fontSize: 36, lineHeight: 42, fontFamily: FONT.bold, color: C.white },
     scoreOf: { fontSize: 14, fontFamily: FONT.regular, color: C.gray50 },
     alertSection: { marginBottom: 28 },
     alertCard: {

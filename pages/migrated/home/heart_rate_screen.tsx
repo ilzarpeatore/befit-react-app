@@ -181,7 +181,7 @@ function useStyle() {
       justifyContent: "center",
       alignItems: "center",
     },
-    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
+    headerTitle: { fontSize: 22, lineHeight: 26, fontFamily: FONT.bold, color: C.white },
     bpmCard: {
       alignItems: "center",
       backgroundColor: C.surface,
@@ -191,7 +191,7 @@ function useStyle() {
       borderColor: C.border,
       marginBottom: 20,
     },
-    bpmValue: { fontSize: 64, fontFamily: FONT.extraBold, color: C.white, marginTop: 8 },
+    bpmValue: { fontSize: 64, lineHeight: 76, fontFamily: FONT.extraBold, color: C.white, marginTop: 8 },
     bpmUnit: { fontSize: 16, fontFamily: FONT.medium, color: C.gray50 },
     periodRow: { flexDirection: "row", gap: 8, marginBottom: 20 },
     periodBtn: {

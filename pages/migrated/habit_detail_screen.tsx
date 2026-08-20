@@ -603,6 +603,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     fontSize: 22,
+    lineHeight: 26,
     fontFamily: FONT.bold,
     color: C.textPrimary,
     textAlign: 'center',

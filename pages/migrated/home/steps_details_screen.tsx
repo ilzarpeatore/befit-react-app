@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
   },
   stepCount: {
     fontSize: 56,
+    lineHeight: 66,
     fontFamily: FONT.bold,
     color: C.text,
   },

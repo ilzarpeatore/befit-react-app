@@ -126,7 +126,7 @@ function useStyle() {
       justifyContent: "center",
       alignItems: "center",
     },
-    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
+    headerTitle: { fontSize: 22, lineHeight: 26, fontFamily: FONT.bold, color: C.white },
     filterRow: {
       flexDirection: "row",
       paddingHorizontal: 20,

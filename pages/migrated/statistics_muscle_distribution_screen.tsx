@@ -254,7 +254,7 @@ export default function StatisticsMuscleDistributionScreen(props: Props) {
             {kpis.map((kpi) => (
               <Box key={kpi.label} className="border border-border bg-muted rounded-md" style={{ width: '47%', padding: 18 }}>
                 <Text weight="medium" size="sm" muted numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 13.5 }}>{kpi.label}</Text>
-                <Text weight="extrabold" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ fontSize: 24, marginTop: 6 }}>{kpi.value}</Text>
+                <Text weight="extrabold" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ fontSize: 24, lineHeight: 29, marginTop: 6 }}>{kpi.value}</Text>
                 <DeltaText current={kpi.current} previous={kpi.previous} format={kpi.format} />
               </Box>
             ))}

@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
   },
   percentageText: {
     fontSize: 36,
+    lineHeight: 42,
     fontFamily: FONT.bold,
     color: C.textPrimary,
   },
@@ -221,6 +222,7 @@ const styles = StyleSheet.create({
   },
   sheetGoal: {
     fontSize: 32,
+    lineHeight: 38,
     fontFamily: FONT.bold,
     color: C.textPrimary,
     textAlign: "center",

@@ -127,7 +127,7 @@ export default function StatisticsPersonalRecordsScreen(props: Props) {
           {!muscleId ? ` Se muestran solo los últimos ${RECENT_LIMIT} ejercicios realizados.` : ` Filtrado por ${muscleName}.`}
         </Text>
 
-        <Input className="rounded-md bg-card border-0" size="md" style={{ marginTop: 10 }}>
+        <Input className="rounded-md bg-card border-0 px-3.5 gap-2" size="md" style={{ marginTop: 10 }}>
           <Icon name="search" size={16} className="text-muted-foreground" />
           <InputField
             placeholder="Buscar ejercicio..."

@@ -2,11 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet,
   ScrollView, Dimensions,
-  Platform,
   StatusBar,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -74,6 +73,8 @@ const renderSets = (exercise: DayExerciseModel) => {
 };
 
 export default function WorkoutDetailScreen(props: any) {
+  const insets = useSafeAreaInsets();
+  const heroButtonTop = insets.top + 8;
   const workoutId = props.route?.params?.id;
   const onCall = props.route?.params?.onCall;
 
@@ -207,7 +208,7 @@ export default function WorkoutDetailScreen(props: any) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
       <Box style={styles.heroSection}>
@@ -226,20 +227,20 @@ export default function WorkoutDetailScreen(props: any) {
         />
 
         {/* Back Button */}
-        <Pressable style={styles.backBtn} onPress={() => props.navigation?.goBack()}>
+        <Pressable style={[styles.backBtn, { top: heroButtonTop }]} onPress={() => props.navigation?.goBack()}>
           <Icon name="chevron-back" size={24} color="#FFFFFF" />
         </Pressable>
 
         {/* Premium Badge */}
         {workoutDetail?.is_premium === 1 && (
-          <Box style={styles.proBadge}>
+          <Box style={[styles.proBadge, { top: heroButtonTop }]}>
             <Text style={styles.proText}>PRO</Text>
           </Box>
         )}
 
         {/* Favorite Button */}
         <Pressable
-          style={styles.favBtn}
+          style={[styles.favBtn, { top: heroButtonTop }]}
           onPress={() => setWorkoutFav(workoutDetail?.id)}
         >
           <Icon
@@ -367,7 +368,6 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 40,
     left: 12,
     width: 40,
     height: 40,
@@ -378,7 +378,6 @@ const styles = StyleSheet.create({
   },
   proBadge: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 40,
     left: 60,
     backgroundColor: C.orange,
     borderRadius: 4,
@@ -392,7 +391,6 @@ const styles = StyleSheet.create({
   },
   favBtn: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 40,
     right: 16,
     width: 40,
     height: 40,
@@ -407,6 +405,7 @@ const styles = StyleSheet.create({
     left: 16,
     fontFamily: FONT.bold,
     fontSize: 20,
+    lineHeight: 24,
     color: '#FFFFFF',
   },
   contentSheet: {
