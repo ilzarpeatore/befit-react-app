@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { Image as ExpoImage } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -30,7 +31,7 @@ import { AvatarMem } from '@components/Avatar';
 import { C, FONT } from './theme';
 import { dashboardApi, BannerSliderItem } from '../../api/dashboard';
 import { motivationalPhraseApi } from '../../api/motivationalPhrase';
-import { workoutHistoryApi } from '../../api/workoutHistory';
+import { workoutHistoryApi, CompletedSessionItem } from '../../api/workoutHistory';
 import { dietApi } from '../../api/diet';
 import { blogApi } from '../../api/blog';
 import { workoutTemplateApi, WorkoutTemplateListItem } from '../../api/workoutTemplate';
@@ -101,6 +102,10 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const [resourcesList, setResourcesList] = useState<ResourceListItem[]>([]);
   const [pendingCheckins, setPendingCheckins] = useState<CheckInAssignment[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
+  // Tocar un entrenamiento ya completado en "Mi plan de hoy" debe abrir el
+  // resumen (mismo patrón que MigratedMyProgramCalendar::goToWorkout), no el
+  // preview de la plantilla — de ahí este set de assignment_id completados.
+  const [completedAssignmentIds, setCompletedAssignmentIds] = useState<Set<number>>(new Set());
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
@@ -108,17 +113,40 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     // degradado tipo cielo/atardecer con LinearGradient (en vez de
     // C.gray80/C.white, que en este theme claro son gris claro/negro — aqui
     // hace falta un fondo realmente oscuro con texto blanco de verdad).
-    heroHeader: { borderBottomLeftRadius: r(32), borderBottomRightRadius: r(32), paddingBottom: r(24), paddingHorizontal: r(20), overflow: 'hidden' as const },
-    heroTopBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' as const, marginBottom: r(20) },
+    // Sin border-radius inferior a propósito (revisión 2026-08-19): el bloque
+    // superior se funde con "Mi plan de hoy" mediante degradado de color
+    // (ver seamGradient más abajo), no con una esquina redondeada.
+    heroHeader: { paddingBottom: r(24), paddingHorizontal: r(20) },
+    // Barra fija (calendario / saludo / notificaciones / ajustes) — vive
+    // FUERA del ScrollView como overlay con blur (ver stickyHeader más abajo)
+    // para poder quedar estática al hacer scroll. heroTopBar ya no forma
+    // parte del contenido que se desplaza.
+    heroTopBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' as const, paddingHorizontal: r(20), paddingBottom: r(12) },
     heroIconBtn: { width: r(38), height: r(38), borderRadius: r(19), backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center' as const, justifyContent: 'center' as const },
     heroGreeting: { flex: 1, fontSize: r(15), fontFamily: FONT.bold, color: '#FFFFFF', textAlign: 'center' as const, marginHorizontal: r(10) },
     notifBadge: { position: 'absolute', top: r(-2), right: r(-2), width: r(16), height: r(16), borderRadius: r(8), backgroundColor: C.destructive, alignItems: 'center' as const, justifyContent: 'center' as const },
     notifBadgeText: { fontSize: r(8), fontFamily: FONT.bold, color: '#FFFFFF' },
-    ringsRow: { alignItems: 'center' as const, justifyContent: 'center' as const, marginBottom: r(16) },
-    ringSide: { flex: 1 },
-    ringValue: { fontSize: r(26), fontFamily: FONT.extraBold, color: '#FFFFFF' },
-    ringLabel: { fontSize: r(10), fontFamily: FONT.semiBold, color: 'rgba(255,255,255,0.65)', letterSpacing: 0.5, marginTop: r(2) },
-    ringSubLabel: { fontSize: r(9), color: 'rgba(255,255,255,0.5)' },
+    stickyHeader: { position: 'absolute' as const, top: 0, left: 0, right: 0, zIndex: 20, elevation: 20, overflow: 'hidden' as const },
+    // Altura del contenido de la barra fija (sin contar el inset superior) —
+    // se usa como paddingTop del header degradado para que ningún contenido
+    // del ScrollView quede tapado por la barra fija.
+    ringsRow: { alignItems: 'center' as const, justifyContent: 'center' as const, marginBottom: r(16), minHeight: r(120) },
+    ringSide: { flex: 1, justifyContent: 'center' as const },
+    // lineHeight explícito (mayor que el fontSize) — sin esto, con
+    // FONT.extraBold el número quedaba cortado por arriba/abajo dentro de su
+    // propia caja de texto (mismo patrón de "números entrecortados" ya visto
+    // en otras screens con fuentes bold). Ver nota de revisión 2026-08-19.
+    ringValue: { fontSize: r(26), lineHeight: r(32), fontFamily: FONT.extraBold, color: '#FFFFFF' },
+    ringLabel: { fontSize: r(10), lineHeight: r(14), fontFamily: FONT.semiBold, color: 'rgba(255,255,255,0.65)', letterSpacing: 0.5, marginTop: r(2) },
+    ringSubLabel: { fontSize: r(9), lineHeight: r(13), color: 'rgba(255,255,255,0.5)' },
+    // Degradado de transición entre el bloque superior y "Mi plan de hoy" —
+    // sustituye el borde redondeado que había antes (petición 2026-08-19).
+    seamGradient: { height: r(64), marginTop: r(-1) },
+    // Sueño / Balance de carga — a caballo entre los dos bloques (mitad sobre
+    // el degradado del header, mitad sobre "Mi plan de hoy") para que la
+    // costura entre ambos fondos sea menos visible. marginTop negativo tira
+    // la fila hacia arriba, sobre la mitad del seamGradient.
+    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-32), marginBottom: r(8) },
     heroPhrase: { fontSize: r(14), color: 'rgba(255,255,255,0.92)', textAlign: 'center' as const, lineHeight: r(20), marginBottom: r(16) },
     bannerCard: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: r(18), padding: r(16), alignItems: 'center' as const, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
     bannerTitle: { fontSize: r(14), fontFamily: FONT.bold, color: '#FFFFFF', marginTop: r(8) },
@@ -194,7 +222,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
       const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
 
-      const [dashRes, calendarRes, dietRes, blogRes, workoutTemplatesRes, resourcesRes, checkinsRes, habitsRes, phraseRes] = await Promise.allSettled([
+      const [dashRes, calendarRes, dietRes, blogRes, workoutTemplatesRes, resourcesRes, checkinsRes, habitsRes, phraseRes, completedRes] = await Promise.allSettled([
         dashboardApi.getDashboard(),
         workoutHistoryApi.getMyCalendar(currentMonth, currentYear),
         dietApi.getDailyPlan(todayStr),
@@ -204,6 +232,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
         checkinsApi.getAssignedList(),
         habitsApi.getMyList(7),
         motivationalPhraseApi.getPhrase(),
+        workoutHistoryApi.getMyCompletedSessions(),
       ]);
 
       const errors: string[] = [];
@@ -270,6 +299,13 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
 
       if (habitsRes.status === 'fulfilled') {
         setHabits(habitsRes.value.data.data ?? []);
+      }
+
+      if (completedRes.status === 'fulfilled') {
+        const sessions: CompletedSessionItem[] = completedRes.value.data?.data ?? [];
+        setCompletedAssignmentIds(
+          new Set(sessions.filter((s) => s.program_day_assignment_id != null).map((s) => s.program_day_assignment_id as number))
+        );
       }
 
       if (errors.length > 0) {
@@ -391,11 +427,19 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
       );
     }
     const w = item.data;
+    // Si ya está completado, abre el resumen de lo que rellenó el cliente
+    // (mismo destino y params que MigratedMyProgramCalendar::goToWorkout para
+    // un workout ya hecho) en vez del preview de la plantilla.
+    const isCompleted = w.assignment_id != null && completedAssignmentIds.has(w.assignment_id);
     return (
       <Pressable
         key={item.key}
         style={rowStyle}
-        onPress={() => navigation?.navigate('MigratedWorkoutPreview', { programDayAssignmentId: w.assignment_id, mTitle: w.title || 'Entrenamiento' })}
+        onPress={() =>
+          isCompleted
+            ? navigation?.navigate('MigratedSessionHistoryDetail', { programDayAssignmentId: w.assignment_id, title: w.title || 'Entrenamiento' })
+            : navigation?.navigate('MigratedWorkoutPreview', { programDayAssignmentId: w.assignment_id, mTitle: w.title || 'Entrenamiento' })
+        }
       >
         <HStack space="md" className="items-center" style={{ marginBottom: r(12) }}>
           <AppIcon name="barbell" size={22} color={C.orange} bg="rgba(255,107,53,0.15)" containerSize={r(44)} borderRadius={r(12)} />
@@ -411,27 +455,13 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <ScrollView
-        ref={scrollRef}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={() => {
-              setIsRefreshing(true);
-              fetchData('silent');
-            }}
-            tintColor={C.orange}
-          />
-        }
-      >
-        {/* Header (nueva cabecera estilo Helix, ver docs/Nueva_Cabecera_Home_Helix.md) */}
-        <LinearGradient
-          colors={['#2B1D14', '#7A3E1F', C.orange]}
-          start={{ x: 0.15, y: 0 }}
-          end={{ x: 0.85, y: 1 }}
-          style={[styles.heroHeader, { paddingTop: insets.top + r(14) }]}
-        >
+      {/* Barra fija con efecto glass (calendario / saludo / notificaciones /
+          ajustes) — se mantiene estática al hacer scroll, mostrando
+          desenfocado lo que pasa por debajo (petición 2026-08-19). Vive fuera
+          del ScrollView a propósito. */}
+      <Box style={styles.stickyHeader}>
+        <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+        <Box style={{ paddingTop: insets.top + r(10) }}>
           <HStack style={styles.heroTopBar}>
             <Pressable style={styles.heroIconBtn} onPress={() => navigation?.navigate('MigratedMyProgramCalendar')}>
               <Icon name="calendar-outline" size={19} color="#FFFFFF" />
@@ -453,7 +483,32 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
               </Pressable>
             </HStack>
           </HStack>
-
+        </Box>
+      </Box>
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => {
+              setIsRefreshing(true);
+              fetchData('silent');
+            }}
+            tintColor={C.orange}
+          />
+        }
+      >
+        {/* Header (nueva cabecera estilo Helix, ver docs/Nueva_Cabecera_Home_Helix.md).
+            paddingTop incluye insets.top + la altura de la barra fija de
+            arriba (stickyHeader, ~r(58)) para que ningún contenido quede
+            tapado detrás de ella. */}
+        <LinearGradient
+          colors={['#2B1D14', '#7A3E1F', C.orange]}
+          start={{ x: 0.15, y: 0 }}
+          end={{ x: 0.85, y: 1 }}
+          style={[styles.heroHeader, { paddingTop: insets.top + r(64) }]}
+        >
           {/* Anillos Recovery/Strain — placeholder "-%" sin datos reales
               (dependen de la integración de salud, fase futura, ver sección 3
               del encargo). Mismo AnimatedRing que ya usa Nutrición más abajo. */}
@@ -507,22 +562,27 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
               </Box>
             )
           )}
-
-          {/* Sleep / Load Balance — placeholder, sin cambios de layout
-              respecto a la referencia (sección 5) */}
-          <HStack space="sm" style={{ marginTop: r(16) }}>
-            <Box style={styles.miniCard}>
-              <Icon name="moon" size={16} color="rgba(255,255,255,0.75)" />
-              <Text style={styles.miniCardTitle}>Sueño</Text>
-              <Text style={styles.miniCardValue}>--</Text>
-            </Box>
-            <Box style={styles.miniCard}>
-              <Icon name="briefcase-outline" size={16} color="rgba(255,255,255,0.75)" />
-              <Text style={styles.miniCardTitle}>Balance de carga</Text>
-              <Text style={styles.miniCardValue}>--</Text>
-            </Box>
-          </HStack>
         </LinearGradient>
+
+        {/* Degradado de transición hacia "Mi plan de hoy" (petición
+            2026-08-19: fusión por color, no por borde redondeado) */}
+        <LinearGradient colors={[C.orange, C.bg]} style={styles.seamGradient} />
+
+        {/* Sueño / Balance de carga — a caballo entre el bloque superior y
+            "Mi plan de hoy" (mitad sobre el degradado, mitad sobre el
+            siguiente bloque) para difuminar la costura entre ambos fondos. */}
+        <HStack space="sm" style={styles.miniCardsRow}>
+          <Box style={styles.miniCard}>
+            <Icon name="moon" size={16} color="rgba(255,255,255,0.75)" />
+            <Text style={styles.miniCardTitle}>Sueño</Text>
+            <Text style={styles.miniCardValue}>--</Text>
+          </Box>
+          <Box style={styles.miniCard}>
+            <Icon name="briefcase-outline" size={16} color="rgba(255,255,255,0.75)" />
+            <Text style={styles.miniCardTitle}>Balance de carga</Text>
+            <Text style={styles.miniCardValue}>--</Text>
+          </Box>
+        </HStack>
 
         {errorMessage && (
           <HStack style={styles.errorBanner}>
