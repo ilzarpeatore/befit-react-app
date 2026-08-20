@@ -2,7 +2,7 @@
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
 } from "react-native";
@@ -51,9 +51,13 @@ export default function StepsScreen({ navigation }: any) {
 
         <View style={styles.periodTabs}>
           {PERIODS.map((p) => (
-            <TouchableOpacity
+            <Pressable
               key={p}
-              style={[styles.periodTab, period === p && styles.periodTabActive]}
+              style={({ pressed }) => [
+                styles.periodTab,
+                period === p && styles.periodTabActive,
+                pressed && { opacity: 0.2 },
+              ]}
               onPress={() => setPeriod(p)}
             >
               <Text
@@ -61,7 +65,7 @@ export default function StepsScreen({ navigation }: any) {
               >
                 {p}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -93,9 +97,9 @@ export default function StepsScreen({ navigation }: any) {
 
         <Text style={styles.sectionTitle}>Historial reciente</Text>
         {RECENT_HISTORY.map((entry) => (
-          <TouchableOpacity
+          <Pressable
             key={entry.id}
-            style={styles.historyCard}
+            style={({ pressed }) => [styles.historyCard, pressed && { opacity: 0.2 }]}
             onPress={() => navigation.navigate("MigratedStepsDetails")}
           >
             <Text style={styles.historyTime}>{entry.time}</Text>
@@ -115,7 +119,7 @@ export default function StepsScreen({ navigation }: any) {
                 {entry.intensity}
               </Text>
             </View>
-          </TouchableOpacity>
+          </Pressable>
         ))}
 
         <View style={styles.deviceCard}>
@@ -127,13 +131,13 @@ export default function StepsScreen({ navigation }: any) {
           <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
         </View>
 
-        <TouchableOpacity
-          style={styles.registerButton}
+        <Pressable
+          style={({ pressed }) => [styles.registerButton, pressed && { opacity: 0.2 }]}
           onPress={() => navigation.navigate("MigratedLogStepsForm")}
         >
           <Ionicons name="add-circle-outline" size={20} color={C.white} />
           <Text style={styles.registerButtonText}>Registrar pasos</Text>
-        </TouchableOpacity>
+        </Pressable>
 
         <Text style={styles.sectionTitle}>Recomendaciones</Text>
         {RECOMMENDATIONS.map((rec, i) => (

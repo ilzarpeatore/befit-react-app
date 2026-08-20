@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -47,12 +47,12 @@ export default function StepsDetailsScreen({ navigation }: any) {
           </View>
         ))}
 
-        <TouchableOpacity
-          style={styles.insightButton}
+        <Pressable
+          style={({ pressed }) => [styles.insightButton, pressed && { opacity: 0.2 }]}
           onPress={() => navigation.navigate("MigratedStepsInsight")}
         >
           <Text style={styles.insightButtonText}>Ver insight</Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
