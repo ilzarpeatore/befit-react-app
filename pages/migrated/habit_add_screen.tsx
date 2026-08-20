@@ -130,7 +130,7 @@ export default function HabitAddScreen(props: Props) {
 
       <Box
         className="flex-row bg-card rounded-md"
-        style={{ padding: 4, marginHorizontal: 20, marginBottom: 14 }}
+        style={{ padding: 4, marginHorizontal: 20, marginTop: 16, marginBottom: 14 }}
       >
         <Pressable
           className="flex-1 rounded-sm items-center"

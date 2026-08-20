@@ -181,7 +181,10 @@ export default function BodyMetricsScreen(props: any) {
                   <Box className="flex-row items-start justify-between">
                     <Box style={{ flex: 1 }}>
                       <Text weight="medium" size="sm" muted>{meta?.label}</Text>
-                      <Text weight="bold" style={{ fontSize: 32, marginTop: 4 }}>
+                      {/* lineHeight explícito: el tamaño 32 supera el lineHeight de 24 que
+                          aplica el className size="md" por defecto (Gilroy-Bold custom
+                          recorta el glifo si el lineHeight queda por debajo del fontSize). */}
+                      <Text weight="bold" style={{ fontSize: 32, lineHeight: 38, marginTop: 4 }}>
                         {latest.value}
                         <Text weight="medium" size="md" muted> {unit}</Text>
                       </Text>
@@ -276,7 +279,7 @@ export default function BodyMetricsScreen(props: any) {
           <Heading size="sm" className="text-center" style={{ marginBottom: 16 }}>Añadir {meta?.label.toLowerCase()}</Heading>
           <Box className="flex-row items-center bg-secondary rounded-md" style={{ paddingHorizontal: 16 }}>
             <TextInput
-              style={{ flex: 1, fontFamily: FONT.bold, fontSize: 28, color: C.textPrimary, paddingVertical: 14 }}
+              style={{ flex: 1, fontFamily: FONT.bold, fontSize: 28, lineHeight: 34, color: C.textPrimary, paddingVertical: 14 }}
               keyboardType="decimal-pad"
               value={formValue}
               onChangeText={setFormValue}

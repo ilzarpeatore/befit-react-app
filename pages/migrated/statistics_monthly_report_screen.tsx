@@ -413,7 +413,10 @@ const s = StyleSheet.create({
   scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
   monthNavLabel: { fontFamily: FONT.semiBold, fontSize: 16, color: C.textPrimary, minWidth: 150, textAlign: 'center' },
   kpiLabel: { fontFamily: FONT.medium, fontSize: 13, color: C.textSecondary },
-  kpiValue: { fontFamily: FONT.extraBold, fontSize: 20, color: C.textPrimary, marginTop: 5 },
+  // lineHeight explícito: Gilroy-ExtraBold/Black recortan el glifo a estos
+  // tamaños si se deja el lineHeight por defecto (mismo bug documentado en
+  // workout_summary_screen.tsx).
+  kpiValue: { fontFamily: FONT.extraBold, fontSize: 20, lineHeight: 24, color: C.textPrimary, marginTop: 5 },
   deltaUp: { fontFamily: FONT.semiBold, fontSize: 11, color: C.success60, marginTop: 4 },
   deltaDown: { fontFamily: FONT.semiBold, fontSize: 11, color: C.destructive60, marginTop: 4 },
   deltaNeutral: { fontFamily: FONT.semiBold, fontSize: 11, color: C.textSecondary, marginTop: 4 },
@@ -423,7 +426,7 @@ const s = StyleSheet.create({
   weekBarFill: { width: 22, backgroundColor: C.orange, borderRadius: 6 },
   weekLabel: { fontFamily: FONT.medium, fontSize: 11, color: C.textSecondary, marginTop: 8 },
 
-  progressStatValue: { fontFamily: FONT.extraBold, fontSize: 22, color: C.textPrimary },
+  progressStatValue: { fontFamily: FONT.extraBold, fontSize: 22, lineHeight: 26, color: C.textPrimary },
   progressStatLabel: { fontFamily: FONT.regular, fontSize: 11, color: C.textSecondary, marginTop: 3, textAlign: 'center' },
   prTitle: { fontFamily: FONT.semiBold, fontSize: 13.5, color: C.textPrimary },
   prSubtitle: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary, marginTop: 2 },

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, ScrollView, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { VStack } from '@components/ui/vstack';
@@ -54,10 +55,10 @@ export default function ViewBodyPartScreen(props: any) {
   }, [searchText]);
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title="Buscar por músculo" onBack={() => props.navigation.goBack()} />
 
-      <VStack space="sm" className="mx-5">
+      <VStack space="sm" className="mx-5" style={{ marginTop: 12 }}>
         <Input className="rounded-sm bg-card border-0 px-3.5 gap-2" size="md">
           <Icon name="search" size={16} className="text-muted-foreground" />
           <InputField
@@ -110,6 +111,6 @@ export default function ViewBodyPartScreen(props: any) {
           </Box>
         </>
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

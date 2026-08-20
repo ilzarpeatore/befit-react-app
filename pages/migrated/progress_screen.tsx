@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button, ButtonText } from '@components/ui/button';
@@ -133,7 +134,7 @@ export default function ProgressScreen(props: any) {
   const goToMetric = (metricType: string) => props.navigation?.navigate('MigratedBodyMetrics', { metricType });
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title="Informe" onBack={() => props.navigation?.goBack()} />
 
       {loading ? (
@@ -152,7 +153,7 @@ export default function ProgressScreen(props: any) {
           <Button
             variant="outline"
             className="rounded-sm"
-            style={{ marginTop: 2, backgroundColor: 'rgba(255,107,53,0.12)', borderColor: C.orange }}
+            style={{ marginTop: 14, backgroundColor: 'rgba(255,107,53,0.12)', borderColor: C.orange }}
             onPress={() => props.navigation?.navigate('MigratedBodyMetrics')}
           >
             <ButtonText style={{ fontSize: 14, fontWeight: '700', color: C.orange }}>
@@ -237,6 +238,6 @@ export default function ProgressScreen(props: any) {
           </Box>
         </ScrollView>
       )}
-    </Box>
+    </SafeAreaView>
   );
 }
