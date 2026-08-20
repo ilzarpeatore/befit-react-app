@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -75,7 +76,7 @@ export default function VideoScreen(props: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title="Videos" onBack={() => props.navigation.goBack()} />
 
       <FlatList
@@ -89,6 +90,6 @@ export default function VideoScreen(props: any) {
         onEndReachedThreshold={0.3}
         ListEmptyComponent={renderEmpty}
       />
-    </Box>
+    </SafeAreaView>
   );
 }

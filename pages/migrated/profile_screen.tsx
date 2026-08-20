@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -89,9 +90,9 @@ export default function ProfileScreen(props: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-        <Box className="rounded-b-lg px-5 items-center" style={{ backgroundColor: C.gray80, paddingTop: 60, paddingBottom: 24 }}>
+        <Box className="rounded-b-lg px-5 items-center" style={{ backgroundColor: C.gray80, paddingTop: 24, paddingBottom: 24 }}>
           <HStack className="items-center w-full" style={{ marginBottom: 24 }}>
             <Heading size="md">Profile</Heading>
           </HStack>
@@ -149,6 +150,6 @@ export default function ProfileScreen(props: any) {
           ))}
         </Box>
       </ScrollView>
-    </Box>
+    </SafeAreaView>
   );
 }

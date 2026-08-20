@@ -129,7 +129,7 @@ const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   content: { flex: 1, justifyContent: "center", alignItems: "center", padding: 30 },
   iconContainer: { width: 130, height: 130, borderRadius: 65, justifyContent: "center", alignItems: "center", marginBottom: 24 },
-  title: { fontSize: 28, fontFamily: FONT.bold, marginBottom: 12, textAlign: "center" },
+  title: { fontSize: 28, lineHeight: 34, fontFamily: FONT.bold, marginBottom: 12, textAlign: "center" },
   subtitle: { fontSize: 15, textAlign: "center", lineHeight: 22, marginBottom: 30 },
   checkList: { gap: 12, width: "100%" },
   checkRow: { flexDirection: "row", alignItems: "center", gap: 10 },

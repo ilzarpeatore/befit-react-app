@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Icon } from '@components/ui/icon';
@@ -7,7 +8,7 @@ import ScreenHeader from '@components/ScreenHeader';
 
 export default function VideoDetailScreen(props: any) {
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
       <ScreenHeader title="" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
@@ -23,6 +24,6 @@ export default function VideoDetailScreen(props: any) {
           </Text>
         </Box>
       </ScrollView>
-    </Box>
+    </SafeAreaView>
   );
 }

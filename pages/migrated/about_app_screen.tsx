@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -44,10 +45,8 @@ export default function AboutAppScreen({ navigation }: any) {
   }
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="About App" onBack={() => navigation.goBack()} />
-      </Box>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader title="About App" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 8 }} showsVerticalScrollIndicator={false}>
         {mOption('document-text-outline', 'Privacy Policy', () => {
@@ -71,6 +70,6 @@ export default function AboutAppScreen({ navigation }: any) {
           </Box>
         ))}
       </ScrollView>
-    </Box>
+    </SafeAreaView>
   );
 }
