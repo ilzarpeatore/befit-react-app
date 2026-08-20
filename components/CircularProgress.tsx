@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { View, Animated, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import { Image } from "expo-image";
 import {
   Svg,
@@ -17,14 +18,10 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 function CircularProgress({ width, height, percent, icon }: CircularProgressInterface) {
   const styles = useStyle();
   /* chart data */
-  const weightpercentageanime = useRef(new Animated.Value(100)).current;
+  const weightpercentageanime = useSharedValue(100);
   /* chart animation */
   useEffect(() => {
-    Animated.timing(weightpercentageanime, {
-      toValue: 100 - percent,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
+    weightpercentageanime.value = withTiming(100 - percent, { duration: 500 });
   }, [percent])
   return (
     <View>

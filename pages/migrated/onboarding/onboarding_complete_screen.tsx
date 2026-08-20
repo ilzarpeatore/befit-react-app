@@ -1,5 +1,14 @@
-import React, { useEffect, useRef } from "react";
-import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withDelay,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -9,37 +18,44 @@ import { useAuth } from "@store/AuthContext";
 const CONFETTI_COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
 
 function ConfettiDot({ delay, color, left }: { delay: number; color: string; left: `${number}%` }) {
-  const anim = useRef(new Animated.Value(0)).current;
+  const anim = useSharedValue(0);
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(anim, { toValue: 1, duration: 2000, useNativeDriver: true }),
-        Animated.timing(anim, { toValue: 0, duration: 0, useNativeDriver: true }),
-      ])
-    ).start();
+    anim.value = withRepeat(
+      withSequence(
+        withDelay(delay, withTiming(1, { duration: 2000 })),
+        withTiming(0, { duration: 0 })
+      ),
+      -1,
+      false
+    );
   }, []);
+
+  const dotStyle = useAnimatedStyle(() => ({
+    opacity: anim.value,
+    transform: [{ translateY: anim.value * 300 }],
+  }));
 
   return (
     <Animated.View
-      style={{
-        position: "absolute",
-        left,
-        top: "10%",
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: color,
-        opacity: anim,
-        transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [0, 300] }) }],
-      }}
+      style={[
+        {
+          position: "absolute",
+          left,
+          top: "10%",
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: color,
+        },
+        dotStyle,
+      ]}
     />
   );
 }
 
 export default function OnboardingCompleteScreen({ navigation, route }: any) {
-  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useSharedValue(0);
   const { completeOnboarding, state } = useAuth();
   const isPersonalClient = !!state.user?.is_personal_client;
   const profile = state.user?.user_profile;
@@ -52,8 +68,12 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
   ];
 
   useEffect(() => {
-    Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 40, useNativeDriver: true }).start();
+    scaleAnim.value = withSpring(1, { damping: 4, stiffness: 40 });
   }, []);
+
+  const scaleAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scaleAnim.value }],
+  }));
 
   return (
     <SafeAreaView style={localStyles.container}>
@@ -64,7 +84,7 @@ export default function OnboardingCompleteScreen({ navigation, route }: any) {
       )}
 
       <View style={localStyles.content}>
-        <Animated.View style={[localStyles.iconContainer, { backgroundColor: C.primary, transform: [{ scale: scaleAnim }] }]}>
+        <Animated.View style={[localStyles.iconContainer, { backgroundColor: C.primary }, scaleAnimatedStyle]}>
           <Ionicons name="trophy" size={64} color={C.white} />
         </Animated.View>
 

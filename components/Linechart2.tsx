@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { Animated, Easing } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { Easing } from "react-native";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import {
   Svg,
   Line,
@@ -21,7 +22,7 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
   /* chart data */
   const chartviewboxworkingwidth = styles.chartviewbox.width;
   const chartviewboxworkingheight = styles.chartviewbox.height;
-  const PathAnim = useRef(new Animated.Value(500)).current;
+  const PathAnim = useSharedValue(500);
   const chart = useMemo(() => {
     const max = chartdatamaxvalue ? chartdatamaxvalue : chartdata.reduce((a, b) => Math.max(a, b), -Infinity); //finding max number from chart data values
     const parsedata: [number, number][] = []; // chart data value parse
@@ -44,12 +45,7 @@ export default function Linechart2({ chartWidth, chartHeight, chartdata, chartda
   }, [chartdatamaxvalue, chartdata]);
 
   useEffect(() => {
-    Animated.timing(PathAnim, {
-      toValue: 0,
-      duration: 5000,
-      useNativeDriver: true,
-      easing: Easing.linear,
-    }).start();
+    PathAnim.value = withTiming(0, { duration: 5000, easing: Easing.linear });
   }, [])
 
   return (
