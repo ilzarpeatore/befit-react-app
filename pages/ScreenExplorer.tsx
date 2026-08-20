@@ -29,24 +29,92 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Forgot Password Options', route: 'ForgotOptions', category: 'Original - Auth', file: 'ForgotPasswordOptionsScreen.tsx' },
   { name: 'Forgot Password Email', route: 'ForgotEmail', category: 'Original - Auth', file: 'ForgotPasswordEmailScreen.tsx' },
   { name: 'Password Reset Sent', route: 'ResetSent', category: 'Original - Auth', file: 'PasswordResetSentScreen.tsx' },
-  { name: 'Profile Edit', route: 'ProfileEdit', category: 'Original - Auth', file: 'ProfileEditScreen.tsx' },
-  { name: 'Change Password', route: 'ChangePassword', category: 'Original - Auth', file: 'ChangePasswordScreen.tsx' },
-  { name: 'Home', route: 'Home', category: 'Original - Tabs' },
-  { name: 'Workout List', route: 'WorkoutList', category: 'Original - Workout', file: 'WorkoutList.tsx' },
-  { name: 'Workout Detail', route: 'WorkoutDetail', category: 'Original - Workout', file: 'WorkoutDetail.tsx' },
-  { name: 'Workout Day Exercises', route: 'WorkoutDayExercises', category: 'Original - Workout', file: 'WorkoutDayExercises.tsx' },
-  { name: 'Workout Session', route: 'WorkoutSession', category: 'Original - Workout', file: 'WorkoutSessionScreen.tsx' },
-  { name: 'Exercise Detail', route: 'ExerciseDetail', category: 'Original - Exercise', file: 'ExerciseDetail.tsx' },
-  { name: 'Exercise Info (root alias)', route: 'ExerciseInfo', category: 'Original - Exercise', file: 'exercise_info_screen.tsx', gluestackMigrated: true },
+  {
+    name: 'Profile Edit',
+    route: 'ProfileEdit',
+    category: 'Original - Auth',
+    file: 'ProfileEditScreen.tsx',
+    deletionCandidate:
+      'Sin llamador real: su unico punto de entrada era pages/Home.tsx, que ya no se monta en ningun sitio (import muerto en App.tsx). Reemplazada por "Edit Profile" (MigratedEditProfile), enlazada desde el menu de Profile.',
+  },
+  {
+    name: 'Change Password',
+    route: 'ChangePassword',
+    category: 'Original - Auth',
+    file: 'ChangePasswordScreen.tsx',
+    deletionCandidate:
+      'Mismo caso que Profile Edit: solo se llegaba desde pages/Home.tsx (huerfano). Reemplazada por "Change Password" (MigratedChangePwd), enlazada desde el menu de Profile.',
+  },
+
+  // === ORIGINAL INTEGRADO PERO HUERFANO (pre-migracion, sin ningun camino de navegacion real) ===
+  // pages/Home.tsx era el unico punto de entrada a todo este cluster y ya no
+  // se renderiza en ningun sitio: en App.tsx se importa con React.lazy pero
+  // nunca se usa como component={} (ver docs/TAREAS.md, "Limpieza tecnica").
+  // La ruta 'Home' del stack apunta hoy a Homenavigator -> MigratedHomeModernV2,
+  // no a este archivo. Solo alcanzables ya desde este Screen Explorer.
+  {
+    name: 'Workout List',
+    route: 'WorkoutList',
+    category: 'Huerfano - Workout (pre-migracion)',
+    file: 'WorkoutList.tsx',
+    deletionCandidate:
+      'Huerfana: solo alcanzable desde pages/Home.tsx, que no se monta en ningun sitio. Reemplazada por "Mi Programa" (MigratedMyProgramCalendar) y "Workout History" (MigratedWorkoutHistory).',
+  },
+  {
+    name: 'Workout Detail',
+    route: 'WorkoutDetail',
+    category: 'Huerfano - Workout (pre-migracion)',
+    file: 'WorkoutDetail.tsx',
+    deletionCandidate:
+      'Huerfana, mismo cluster que Workout List (solo se llegaba desde ahi). Reemplazada por "Workout Detail (migrated)" (MigratedWorkoutDetail).',
+  },
+  {
+    name: 'Workout Day Exercises',
+    route: 'WorkoutDayExercises',
+    category: 'Huerfano - Workout (pre-migracion)',
+    file: 'WorkoutDayExercises.tsx',
+    deletionCandidate:
+      'Huerfana, mismo cluster que Workout List. El flujo real de sesion hoy pasa por "Workout Session (migrated)" (MigratedWorkoutSession).',
+  },
+  {
+    name: 'Workout Session',
+    route: 'WorkoutSession',
+    category: 'Huerfano - Workout (pre-migracion)',
+    file: 'WorkoutSessionScreen.tsx',
+    deletionCandidate:
+      'Huerfana: solo alcanzable via Workout Detail/Workout Day Exercises/Exercise Detail, todos igualmente huerfanos. Reemplazada por "Workout Session (migrated)" (MigratedWorkoutSession).',
+  },
+  {
+    name: 'Exercise Detail',
+    route: 'ExerciseDetail',
+    category: 'Huerfano - Exercise (pre-migracion)',
+    file: 'ExerciseDetail.tsx',
+    deletionCandidate:
+      'Sin llamador real en ningun flujo vivo. Reemplazada por "Exercise Info" (MigratedExerciseInfo).',
+  },
   { name: 'Diet Dashboard', route: 'DietDashboard', category: 'Original - Diet', file: 'DietDashboard.tsx' },
   { name: 'Diet List', route: 'DietList', category: 'Original - Diet', file: 'DietList.tsx' },
-  { name: 'Community Feed', route: 'CommunityFeed', category: 'Original - Social', file: 'CommunityFeed.tsx' },
-  { name: 'Post Detail', route: 'PostDetail', category: 'Original - Social', file: 'PostDetail.tsx' },
+  {
+    name: 'Community Feed',
+    route: 'CommunityFeed',
+    category: 'Huerfano - Social (pre-migracion)',
+    file: 'CommunityFeed.tsx',
+    deletionCandidate:
+      'Solo alcanzable desde pages/Home.tsx (huerfano). Reemplazada por "Community (migrated)" (MigratedCommunity).',
+  },
+  {
+    name: 'Post Detail',
+    route: 'PostDetail',
+    category: 'Huerfano - Social (pre-migracion)',
+    file: 'PostDetail.tsx',
+    deletionCandidate:
+      'Solo alcanzable desde Community Feed, que ya es huerfana. Reemplazada por "Post Details" (MigratedPostDetails).',
+  },
 
   // === MIGRATED - ROOT ===
   { name: 'About App', route: 'MigratedAboutApp', category: 'Migrated - Info', file: 'about_app_screen.tsx', gluestackMigrated: true },
   { name: 'About Us', route: 'MigratedAboutUs', category: 'Migrated - Info', file: 'about_us_screen.tsx', gluestackMigrated: true },
-  { name: 'Privacy Policy', route: 'MigratedPrivacyPolicy', category: 'Migrated - Info', file: 'privacy_policy_screen.tsx', gluestackMigrated: true },
+  { name: 'Privacy Policy (mismo componente que "Privacy Policy (onboard)"; el boton del menu About aun no esta conectado, ver about_app_screen.tsx)', route: 'MigratedPrivacyPolicy', category: 'Migrated - Info', file: 'privacy_policy_screen.tsx', gluestackMigrated: true },
   { name: 'Terms & Conditions', route: 'MigratedTermsAndConditions', category: 'Migrated - Info', file: 'terms_and_conditions_screen.tsx', gluestackMigrated: true },
   { name: 'Activity Tracker', route: 'MigratedActivityTracker', category: 'Migrated - Health', file: 'activity_tracker_screen.tsx' },
   { name: 'Sleep Monitoring', route: 'MigratedSleepMonitoring', category: 'Migrated - Health', file: 'sleep_monitoring_screen.tsx' },
@@ -57,6 +125,15 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Meals Water Reminder', route: 'MigratedMealsWaterReminder', category: 'Migrated - Health', file: 'meals_water_reminder_screen.tsx' },
   { name: 'Set Reminder', route: 'MigratedSetReminder', category: 'Migrated - Health', file: 'set_reminder_screen.tsx' },
   { name: 'Reminder', route: 'MigratedReminder', category: 'Migrated - Health', file: 'reminder_screen.tsx' },
+  {
+    name: 'Home (tab raiz)',
+    route: 'Home',
+    category: 'Migrated - Dashboard',
+    // Sin `file`: la ruta 'Home' del stack ya no renderiza pages/Home.tsx (import
+    // muerto en App.tsx, ver docs/TAREAS.md). Hoy monta Homenavigator, cuyo unico
+    // tab renderiza MigratedNavigator con initialRouteName 'MigratedHomeModernV2'
+    // -- es decir, es un alias en vivo a Home Modern V2.
+  },
   { name: 'Home Modern', route: 'MigratedHomeModern', category: 'Migrated - Dashboard', file: 'home_screen_modern.tsx', gluestackMigrated: true },
   { name: 'Home Modern V2 (nueva cabecera)', route: 'MigratedHomeModernV2', category: 'Migrated - Dashboard', file: 'home_screen_modern_v2.tsx', gluestackMigrated: true },
   { name: 'Main Goal', route: 'MigratedMainGoal', category: 'Migrated - Onboarding', file: 'main_goal_screen.tsx' },
@@ -129,17 +206,17 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Log Steps Form', route: 'MigratedLogStepsForm', category: 'Migrated - Steps', file: 'log_steps_form_screen.tsx' },
 
   // === MIGRATED - ONBOARDING ===
-  { name: 'Onboarding (migrated)', route: 'MigratedOnboarding', category: 'Migrated - Onboard Flow', file: 'onboarding_screen.tsx' },
-  { name: 'Profile Setup Intro', route: 'MigratedProfileSetupIntro', category: 'Migrated - Onboard Flow', file: 'profile_setup_intro_screen.tsx' },
-  { name: 'Profile Setup Form', route: 'MigratedProfileSetupForm', category: 'Migrated - Onboard Flow', file: 'profile_setup_form_screen.tsx' },
-  { name: 'Avatar Setup', route: 'MigratedAvatarSetup', category: 'Migrated - Onboard Flow', file: 'avatar_setup_screen.tsx' },
-  { name: 'Privacy Policy (onboard)', route: 'MigratedPrivacyPolicyOnboard', category: 'Migrated - Onboard Flow', file: 'privacy_policy_screen.tsx' },
-  { name: 'Notifications (onboard)', route: 'MigratedNotificationsOnboard', category: 'Migrated - Onboard Flow', file: 'notifications_screen.tsx' },
-  { name: 'Assessment Result', route: 'MigratedAssessmentResult', category: 'Migrated - Onboard Flow', file: 'assessment_result_screen.tsx' },
-  { name: 'Recommendations', route: 'MigratedRecommendations', category: 'Migrated - Onboard Flow', file: 'recommendations_screen.tsx' },
-  { name: 'Health (onboard)', route: 'MigratedHealth', category: 'Migrated - Onboard Flow', file: 'health_screen.tsx' },
-  { name: 'Articles', route: 'MigratedArticles', category: 'Migrated - Onboard Flow', file: 'articles_screen.tsx' },
-  { name: 'Onboarding Complete', route: 'MigratedOnboardingComplete', category: 'Migrated - Onboard Flow', file: 'onboarding_complete_screen.tsx' },
+  { name: 'Onboarding (migrated)', route: 'MigratedOnboarding', category: 'Migrated - Onboarding', file: 'onboarding_screen.tsx' },
+  { name: 'Profile Setup Intro', route: 'MigratedProfileSetupIntro', category: 'Migrated - Onboarding', file: 'profile_setup_intro_screen.tsx' },
+  { name: 'Profile Setup Form', route: 'MigratedProfileSetupForm', category: 'Migrated - Onboarding', file: 'profile_setup_form_screen.tsx' },
+  { name: 'Avatar Setup', route: 'MigratedAvatarSetup', category: 'Migrated - Onboarding', file: 'avatar_setup_screen.tsx' },
+  { name: 'Privacy Policy (onboard, mismo componente que "Privacy Policy" en Info; esta ruta si esta enlazada en vivo desde avatar_setup_screen.tsx)', route: 'MigratedPrivacyPolicyOnboard', category: 'Migrated - Onboarding', file: 'privacy_policy_screen.tsx' },
+  { name: 'Notifications (onboard)', route: 'MigratedNotificationsOnboard', category: 'Migrated - Onboarding', file: 'notifications_screen.tsx' },
+  { name: 'Assessment Result', route: 'MigratedAssessmentResult', category: 'Migrated - Onboarding', file: 'assessment_result_screen.tsx' },
+  { name: 'Recommendations', route: 'MigratedRecommendations', category: 'Migrated - Onboarding', file: 'recommendations_screen.tsx' },
+  { name: 'Health (onboard)', route: 'MigratedHealth', category: 'Migrated - Onboarding', file: 'health_screen.tsx' },
+  { name: 'Articles', route: 'MigratedArticles', category: 'Migrated - Onboarding', file: 'articles_screen.tsx' },
+  { name: 'Onboarding Complete', route: 'MigratedOnboardingComplete', category: 'Migrated - Onboarding', file: 'onboarding_complete_screen.tsx' },
 
   // === MIGRATED - AÑADIDAS (estaban registradas en App.tsx pero faltaban aquí) ===
   { name: 'Estadísticas', route: 'MigratedStatistics', category: 'Migrated - Estadísticas', file: 'statistics_screen.tsx', gluestackMigrated: true },
@@ -152,7 +229,7 @@ const ALL_SCREENS: ScreenItem[] = [
   { name: 'Coming Soon (placeholder)', route: 'MigratedComingSoon', category: 'Migrated - Estadísticas', file: 'coming_soon_screen.tsx', gluestackMigrated: true },
   { name: 'Antropometría', route: 'MigratedBodyMetrics', category: 'Migrated - Estadísticas', file: 'body_metrics_screen.tsx', gluestackMigrated: true },
   { name: 'Progreso muscular', route: 'MigratedMuscleProgress', category: 'Migrated - Exercise', file: 'muscle_progress_screen.tsx', gluestackMigrated: true },
-  { name: 'Exercise Info', route: 'MigratedExerciseInfo', category: 'Migrated - Exercise', file: 'exercise_info_screen.tsx', gluestackMigrated: true },
+  { name: 'Exercise Info (implementacion unica; el antiguo alias root ExerciseInfo apuntaba al mismo archivo y se elimino de este listado)', route: 'MigratedExerciseInfo', category: 'Migrated - Exercise', file: 'exercise_info_screen.tsx', gluestackMigrated: true },
   { name: 'Workout Template List', route: 'MigratedWorkoutTemplateList', category: 'Migrated - Workout', file: 'workout_template_list_screen.tsx', gluestackMigrated: true },
   { name: 'Chatting', route: 'MigratedChatting', category: 'Migrated - Social', file: 'chatting_screen.tsx', gluestackMigrated: true },
   { name: 'Chatting Image', route: 'MigratedChattingImage', category: 'Migrated - Social', file: 'chatting_image_screen.tsx', gluestackMigrated: true },
