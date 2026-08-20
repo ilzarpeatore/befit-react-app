@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -50,17 +50,21 @@ export default function ProfileSetupIntroScreen({ navigation }: any) {
       </View>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.startBtn, { backgroundColor: C.primary }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.startBtn,
+            { backgroundColor: C.primary },
+            pressed && { opacity: 0.2 },
+          ]}
           onPress={() => navigation.navigate("MigratedProfileSetupForm")}
         >
           <Text style={[localStyles.startBtnText, { color: C.white }]}>Comenzar</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity style={localStyles.helpLink}>
+        <Pressable style={({ pressed }) => [localStyles.helpLink, pressed && { opacity: 0.2 }]}>
           <Ionicons name="help-circle-outline" size={18} color={C.gray} />
           <Text style={[localStyles.helpText, { color: C.gray }]}>Â¿Necesitas ayuda?</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

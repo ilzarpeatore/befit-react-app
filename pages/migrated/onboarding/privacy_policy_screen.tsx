@@ -1,5 +1,5 @@
 ﻿import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -34,30 +34,40 @@ export default function PrivacyPolicyScreen({ navigation }: any) {
         ))}
 
         <View style={localStyles.checkboxes}>
-          <TouchableOpacity style={localStyles.checkRow} onPress={() => setAcceptedPrivacy(!acceptedPrivacy)}>
+          <Pressable
+            style={({ pressed }) => [localStyles.checkRow, pressed && { opacity: 0.2 }]}
+            onPress={() => setAcceptedPrivacy(!acceptedPrivacy)}
+          >
             <View style={[localStyles.checkbox, { borderColor: acceptedPrivacy ? C.primary : C.border }, acceptedPrivacy && { backgroundColor: C.primary }]}>
               {acceptedPrivacy && <Ionicons name="checkmark" size={14} color={C.white} />}
             </View>
             <Text style={[localStyles.checkLabel, { color: C.white }]}>Acepto la polÃ­tica de privacidad</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity style={localStyles.checkRow} onPress={() => setAcceptedTerms(!acceptedTerms)}>
+          <Pressable
+            style={({ pressed }) => [localStyles.checkRow, pressed && { opacity: 0.2 }]}
+            onPress={() => setAcceptedTerms(!acceptedTerms)}
+          >
             <View style={[localStyles.checkbox, { borderColor: acceptedTerms ? C.primary : C.border }, acceptedTerms && { backgroundColor: C.primary }]}>
               {acceptedTerms && <Ionicons name="checkmark" size={14} color={C.white} />}
             </View>
             <Text style={[localStyles.checkLabel, { color: C.white }]}>Acepto los tÃ©rminos y condiciones</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ScrollView>
 
       <View style={localStyles.bottomBar}>
-        <TouchableOpacity
-          style={[localStyles.continueBtn, { backgroundColor: canContinue ? C.primary : C.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            localStyles.continueBtn,
+            { backgroundColor: canContinue ? C.primary : C.border },
+            pressed && { opacity: 0.2 },
+          ]}
           disabled={!canContinue}
           onPress={() => navigation.navigate("MigratedNotificationsOnboard")}
         >
           <Text style={[localStyles.continueBtnText, { color: canContinue ? C.white : C.textMuted }]}>Continuar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
