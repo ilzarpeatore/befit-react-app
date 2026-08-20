@@ -1,5 +1,5 @@
 ﻿import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -41,9 +41,9 @@ export default function OnboardingScreen({ navigation }: any) {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.skipRow}>
           {!isLast && (
-            <TouchableOpacity onPress={() => completeOnboarding()}>
+            <Pressable onPress={() => completeOnboarding()} style={({ pressed }) => pressed && { opacity: 0.2 }}>
               <Text style={styles.skipText}>Saltar</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
 
@@ -76,24 +76,30 @@ export default function OnboardingScreen({ navigation }: any) {
 
         <View style={styles.footer}>
           {page > 0 && (
-            <TouchableOpacity style={styles.backBtn} onPress={() => goTo(page - 1)}>
+            <Pressable
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => goTo(page - 1)}
+            >
               <Ionicons name="arrow-back" size={20} color={C.white} />
               <Text style={styles.backText}>AtrÃ¡s</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
           <View style={{ flex: 1 }} />
           {isLast ? (
-            <TouchableOpacity
-              style={styles.startBtn}
+            <Pressable
+              style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.2 }]}
               onPress={() => completeOnboarding()}
             >
               <Text style={styles.startText}>Empezar</Text>
-            </TouchableOpacity>
+            </Pressable>
           ) : (
-            <TouchableOpacity style={styles.nextBtn} onPress={() => goTo(page + 1)}>
+            <Pressable
+              style={({ pressed }) => [styles.nextBtn, pressed && { opacity: 0.2 }]}
+              onPress={() => goTo(page + 1)}
+            >
               <Text style={styles.nextText}>Siguiente</Text>
               <Ionicons name="arrow-forward" size={20} color={C.textPrimary} />
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </SafeAreaView>
