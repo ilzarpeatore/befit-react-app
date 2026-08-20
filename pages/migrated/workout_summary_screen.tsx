@@ -107,7 +107,7 @@ const Card = React.forwardRef<React.ComponentRef<typeof Box>, { children: React.
         style={{ marginTop: 12 }}
       >
         <Image source={require('@assets/logo.png')} style={s.cardFooterLogo} resizeMode="contain" />
-        <Text style={s.cardFooterHandle}>@befit</Text>
+        <Text style={s.cardFooterHandle}>@bestronger</Text>
       </HStack>
     </GluestackCard>
   )
@@ -545,7 +545,9 @@ const s = StyleSheet.create({
 
   // Pantalla 2 — stats + mini heatmap
   statCol: { flex: 1, alignItems: 'center' },
-  statColValue: { fontFamily: FONT.extraBold, fontSize: 20, color: C.textPrimary },
+  // Mismo bug de recorte que p0Value/gridValue/condensedValue (ver comentario
+  // arriba) -- también afecta a Gilroy-ExtraBold/Bold, no solo a Black.
+  statColValue: { fontFamily: FONT.extraBold, fontSize: 20, lineHeight: 24, color: C.textPrimary },
   statColLabel: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
 
   // Pantalla 3 — rutina + grid 2x2
@@ -557,9 +559,9 @@ const s = StyleSheet.create({
   // Pantalla 4 — rutina + stats compactos + lista
   compactStat: {},
   compactLabel: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary },
-  compactValue: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginTop: 2 },
+  compactValue: { fontFamily: FONT.bold, fontSize: 16, lineHeight: 20, color: C.textPrimary, marginTop: 2 },
   exerciseListScroll: { flex: 1 },
-  exerciseSets: { fontFamily: FONT.extraBold, fontSize: 16, color: C.orange, width: 34 },
+  exerciseSets: { fontFamily: FONT.extraBold, fontSize: 16, lineHeight: 20, color: C.orange, width: 34 },
   exerciseName: { flex: 1, fontFamily: FONT.semiBold, fontSize: 15, color: C.textPrimary },
   emptyHint: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary },
 

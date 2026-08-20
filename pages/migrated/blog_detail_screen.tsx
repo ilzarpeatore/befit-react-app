@@ -62,10 +62,17 @@ const WRAPPER_HTML = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body { margin:0; padding:0; background-color:${C.bg}; color:${C.white}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
-    img { max-width:100%; height:auto; border-radius:8px; margin:8px 0; }
+    img { max-width:100%; height:auto; border-radius:12px; margin:8px 0; }
     p, li { font-size:15px; line-height:1.7; color:#e0e0e0; margin:8px 0; }
     h1,h2,h3,h4 { color:${C.white}; margin:12px 0 8px; }
-    blockquote { border-left:3px solid ${C.brand5}; padding-left:12px; margin:12px 0; color:${C.gray30}; }
+    /* Radio de 12px en todos los bloques "recuadrados" del contenido editorial
+       (cita, código, tabla) para que sigan el mismo lenguaje visual que el
+       resto de tarjetas de la app (RADIUS.sm = 12px) en vez de verse a
+       esquina viva. */
+    blockquote { border-left:3px solid ${C.brand5}; border-radius:12px; padding:10px 12px; margin:12px 0; color:${C.gray30}; background-color:rgba(255,255,255,0.04); }
+    pre, code { border-radius:12px; }
+    pre { padding:12px; overflow-x:auto; background-color:rgba(255,255,255,0.04); }
+    table { border-radius:12px; overflow:hidden; border-collapse:separate; border-spacing:0; }
     a { color:${C.brand5}; }
     iframe { border-radius:12px; }
   </style>
