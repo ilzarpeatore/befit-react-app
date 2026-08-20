@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import { View, Text, Pressable, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
@@ -72,9 +72,12 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
     <View style={styles.root}>
       <SafeAreaView style={{ flex: 0 }} edges={["top"]}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => (step > 0 ? setStep(step - 1) : navigation.goBack())} style={styles.backBtn}>
+          <Pressable
+            onPress={() => (step > 0 ? setStep(step - 1) : navigation.goBack())}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
+          >
             <Ionicons name="arrow-back" size={22} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Evaluación Fitness</Text>
           <Text style={styles.counter}>{step + 1}/{TOTAL_STEPS}</Text>
         </View>
@@ -89,9 +92,13 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
           <Text style={styles.stepTitle}>¿Cuál es tu objetivo principal?</Text>
           <View style={{ gap: 12, width: "100%" }}>
             {GOALS.map(g => (
-              <TouchableOpacity
+              <Pressable
                 key={g.key}
-                style={[styles.optionCard, goal === g.key && { borderColor: g.color, backgroundColor: `${g.color}15` }]}
+                style={({ pressed }) => [
+                  styles.optionCard,
+                  goal === g.key && { borderColor: g.color, backgroundColor: `${g.color}15` },
+                  pressed && { opacity: 0.2 },
+                ]}
                 onPress={() => setGoal(g.key)}
               >
                 <View style={[styles.optionIcon, { backgroundColor: `${g.color}20` }]}>
@@ -99,7 +106,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
                 </View>
                 <Text style={[styles.optionLabel, goal === g.key && { color: C.white }]}>{g.label}</Text>
                 {goal === g.key && <Ionicons name="checkmark-circle" size={22} color={g.color} />}
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -109,9 +116,13 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
           <Text style={styles.stepTitle}>¿Cuál es tu nivel de experiencia?</Text>
           <View style={{ gap: 12, width: "100%" }}>
             {EXPERIENCE.map(e => (
-              <TouchableOpacity
+              <Pressable
                 key={e.key}
-                style={[styles.optionCard, experience === e.key && styles.optionOn]}
+                style={({ pressed }) => [
+                  styles.optionCard,
+                  experience === e.key && styles.optionOn,
+                  pressed && { opacity: 0.2 },
+                ]}
                 onPress={() => setExperience(e.key)}
               >
                 <View style={{ flex: 1 }}>
@@ -119,7 +130,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
                   <Text style={styles.optionDesc}>{e.desc}</Text>
                 </View>
                 {experience === e.key && <Ionicons name="checkmark-circle" size={22} color={C.white} />}
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -129,9 +140,13 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
           <Text style={styles.stepTitle}>¿Qué equipamiento tienes disponible?</Text>
           <View style={{ gap: 12, width: "100%" }}>
             {EQUIPMENT.map(eq => (
-              <TouchableOpacity
+              <Pressable
                 key={eq.key}
-                style={[styles.optionCard, equipment === eq.key && styles.optionOn]}
+                style={({ pressed }) => [
+                  styles.optionCard,
+                  equipment === eq.key && styles.optionOn,
+                  pressed && { opacity: 0.2 },
+                ]}
                 onPress={() => setEquipment(eq.key)}
               >
                 <View style={[styles.optionIcon, { backgroundColor: equipment === eq.key ? C.brand10 : C.gray40 }]}>
@@ -139,7 +154,7 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
                 </View>
                 <Text style={[styles.optionLabel, equipment === eq.key && { color: C.white }]}>{eq.label}</Text>
                 {equipment === eq.key && <Ionicons name="checkmark-circle" size={22} color={C.white} />}
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -164,26 +179,32 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
           </View>
 
           <View style={styles.sliderRow}>
-            <TouchableOpacity onPress={() => setFrequency(Math.max(1, frequency - 1))} style={styles.sliderBtn}>
+            <Pressable
+              onPress={() => setFrequency(Math.max(1, frequency - 1))}
+              style={({ pressed }) => [styles.sliderBtn, pressed && { opacity: 0.2 }]}
+            >
               <Ionicons name="remove" size={22} color={C.white} />
-            </TouchableOpacity>
+            </Pressable>
             <View style={styles.sliderTrack}>
               <View style={[styles.sliderFill, { width: `${((frequency - 1) / 6) * 100}%` }]} />
             </View>
-            <TouchableOpacity onPress={() => setFrequency(Math.min(7, frequency + 1))} style={styles.sliderBtn}>
+            <Pressable
+              onPress={() => setFrequency(Math.min(7, frequency + 1))}
+              style={({ pressed }) => [styles.sliderBtn, pressed && { opacity: 0.2 }]}
+            >
               <Ionicons name="add" size={22} color={C.white} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <View style={styles.daysRow}>
             {DAYS.map((d, i) => (
-              <TouchableOpacity
+              <Pressable
                 key={i}
-                style={[styles.dayBtn, selectedDays[i] && styles.dayOn]}
+                style={({ pressed }) => [styles.dayBtn, selectedDays[i] && styles.dayOn, pressed && { opacity: 0.2 }]}
                 onPress={() => toggleDay(i)}
               >
                 <Text style={[styles.dayLabel, selectedDays[i] && { color: C.white }]}>{d}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
 
@@ -202,14 +223,14 @@ export default function FitnessAssessmentScreen({ navigation }: any) {
 
       <SafeAreaView style={{ flex: 0 }} edges={["bottom"]}>
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.nextBtn, !canNext() && { opacity: 0.5 }]}
+          <Pressable
+            style={({ pressed }) => [styles.nextBtn, !canNext() && { opacity: 0.5 }, pressed && { opacity: 0.2 }]}
             disabled={!canNext()}
             onPress={handleNext}
           >
             <Text style={styles.nextBtnText}>{step === TOTAL_STEPS - 1 ? "Finalizar" : "Continuar"}</Text>
             <Ionicons name="arrow-forward" size={20} color={C.white} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     </View>
