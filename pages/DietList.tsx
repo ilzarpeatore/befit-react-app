@@ -84,9 +84,14 @@ export default function DietList({ navigation }: Props) {
   }, []);
 
   useEffect(() => {
-    fetchData(selectedCategory, searchQuery, 1);
+    // Carga inicial: usa los valores por defecto directamente (no
+    // selectedCategory/searchQuery, que siempre valen null/'' en este punto)
+    // para no depender de estado y evitar que este efecto de montaje se
+    // repita cuando el usuario cambia de categoria o busca (eso ya lo
+    // disparan onCategoryPress/onSearchChange).
+    fetchData(null, "", 1);
     fetchCategories();
-  }, []);
+  }, [fetchData, fetchCategories]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

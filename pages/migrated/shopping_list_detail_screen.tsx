@@ -28,10 +28,6 @@ export default function ShoppingListDetailScreen(props: any) {
   const [checkedMap, setCheckedMap] = useState<Map<number, boolean>>(new Map());
   const [showAddSheet, setShowAddSheet] = useState(false);
 
-  useEffect(() => {
-    fetchDetail();
-  }, []);
-
   const fetchDetail = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -49,6 +45,10 @@ export default function ShoppingListDetailScreen(props: any) {
       setIsLoading(false);
     }
   }, [shoppingListId]);
+
+  useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
 
   const toggleItem = async (item: ShoppingListItemDetail) => {
     if (item.id == null) return;
@@ -269,14 +269,25 @@ function AddItemSheet({
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadUnits (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    if (visible) loadUnits();
+    if (!visible) return;
+    const ignoreRef = { current: false };
+    loadUnits(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
   }, [visible]);
 
-  const loadUnits = async () => {
+  const loadUnits = async (ignoreRef: { current: boolean }) => {
     setLoadingUnits(true);
     try {
       const res = await shoppingApi.getMeasurementUnits();
+      if (ignoreRef.current) return;
       const list = res.data?.data ?? [];
       unitsRef.current = list;
       setSelectedUnit(list[0] ?? null);

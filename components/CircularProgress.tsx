@@ -25,7 +25,7 @@ function CircularProgress({ width, height, percent, icon }: CircularProgressInte
       duration: 500,
       useNativeDriver: true,
     }).start();
-  }, [percent])
+  }, [percent, weightpercentageanime])
   return (
     <View>
       <Image

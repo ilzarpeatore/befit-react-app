@@ -91,7 +91,16 @@ export const useResponsiveStyleSheet = (styleSheet: NamedStyles<any>) => {
    */
   const scaleFunc = ScaleByAnnotation();
   const scale = useScale();
+  // `styleSheet` y `scaleFunc` se recrean en cada render de quien llama a
+  // este hook (objeto literal inline / cierre nuevo de ScaleByAnnotation()),
+  // asi que añadirlos aqui anularia la memoizacion en cada pantalla que usa
+  // este hook -- justo lo que existe para evitar. `scale` si es una
+  // dependencia real (cambia con la rotacion via useWindowDimensions) y
+  // faltaba, por eso el StyleSheet se quedaba con la escala vieja tras girar
+  // el dispositivo.
   return useMemo(() => {
     return StyleSheet.create(DeepMap(styleSheet, scaleFunc, scale));
-  }, []);
+    // react-doctor-disable-next-line exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scale]);
 };

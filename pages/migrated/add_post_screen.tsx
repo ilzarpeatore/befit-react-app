@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { ScrollView, Image, Alert, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Box } from '@components/ui/box';
@@ -29,18 +29,16 @@ export default function AddPostScreen({ navigation, route }: any) {
   const flow = route?.params?.flow;
   const postData = route?.params?.postData;
 
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(() =>
+    flow === 'EditFlow' && postData ? (postData.description ?? '') : ''
+  );
   const [selectedImages, setSelectedImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(() =>
+    flow === 'EditFlow' && postData
+      ? (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url)
+      : []
+  );
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (flow === 'EditFlow' && postData) {
-      setDescription(postData.description ?? '');
-      const mediaUrls = (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url);
-      setExistingImages(mediaUrls);
-    }
-  }, []);
 
   const removedMediaIdsRef = useRef<number[]>([]);
 
@@ -103,12 +101,12 @@ export default function AddPostScreen({ navigation, route }: any) {
     try {
       const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
       await postsApi.create(description.trim(), media);
-      setLoading(false);
       navigation.goBack();
     } catch (e) {
       logger.error('Error submitting post', e);
-      setLoading(false);
       Alert.alert('Error', 'Failed to submit post');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,12 +122,12 @@ export default function AddPostScreen({ navigation, route }: any) {
       }
       const media: PickedPostMedia[] = selectedImages.map(assetToPickedMedia);
       await postsApi.update(postData?.id, description.trim(), media);
-      setLoading(false);
       navigation.goBack();
     } catch (e) {
       logger.error('Error editing post', e);
-      setLoading(false);
       Alert.alert('Error', 'Failed to edit post');
+    } finally {
+      setLoading(false);
     }
   };
 

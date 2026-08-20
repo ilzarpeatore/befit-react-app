@@ -71,8 +71,11 @@ export default function CommunityScreen(props: any) {
     setIsRefreshing(true);
     pageRef.current = 1;
     setMPostList([]);
-    await getPostList(1);
-    setIsRefreshing(false);
+    try {
+      await getPostList(1);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handlePostPress = () => {

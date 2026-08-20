@@ -182,7 +182,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   useEffect(() => {
     if (ym === loadedYm) return;
-    getData(dominantAnchor.getMonth() + 1, dominantAnchor.getFullYear(), ym);
+    // Deriva mes/año de `ym` (ya en las deps) en vez de releer
+    // dominantAnchor.getMonth()/getFullYear() directamente -- dominantAnchor
+    // es un Date nuevo en cada render (addDays/selectedMonth), añadirlo a
+    // las deps dispararía el efecto en renders donde el año/mes real no
+    // cambió.
+    const [yearStr, monthStr] = ym.split('-');
+    getData(Number(monthStr), Number(yearStr), ym);
   }, [ym, loadedYm, getData]);
 
   // BUG REAL (2026-08-13, reportado por cliente): antes había un tercer

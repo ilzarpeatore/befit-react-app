@@ -66,7 +66,10 @@ export default function BodyMetricsScreen(props: any) {
   }, []);
 
   const meta = types.find((t) => t.value === selectedType) ?? null;
-  const entries: BodyMetricChartPoint[] = selectedType ? chartData[selectedType]?.data ?? [] : [];
+  const entries: BodyMetricChartPoint[] = useMemo(
+    () => (selectedType ? chartData[selectedType]?.data ?? [] : []),
+    [selectedType, chartData]
+  );
   const unit = (selectedType && chartData[selectedType]?.unit) || meta?.unit || '';
   const sortedAsc = useMemo(() => [...entries].sort((a, b) => a.date.localeCompare(b.date)), [entries]);
   const sortedDesc = useMemo(() => [...sortedAsc].reverse(), [sortedAsc]);

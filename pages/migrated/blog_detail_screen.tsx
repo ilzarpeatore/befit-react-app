@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { WebView } from 'react-native-webview';
@@ -112,22 +112,33 @@ export default function BlogDetailScreen({ navigation, route }: any) {
   const [webViewHeight, setWebViewHeight] = useState(SCREEN_HEIGHT * 0.5);
   const [bibliographyOpen, setBibliographyOpen] = useState(false);
 
-  const loadDetail = async () => {
+  const loadDetail = useCallback(async (ignoreRef: { current: boolean }) => {
     setLoading(true);
     try {
       const res = await blogApi.getDetail(blogId);
+      if (ignoreRef.current) return;
       setBlog(res.data?.data ?? mBlogModel ?? null);
     } catch (e) {
       logger.error('Error loading blog detail:', e);
+      if (ignoreRef.current) return;
       setBlog(mBlogModel ?? null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [blogId, mBlogModel]);
 
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // loadDetail (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
   useEffect(() => {
-    loadDetail();
-  }, [blogId]);
+    const ignoreRef = { current: false };
+    loadDetail(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [loadDetail]);
 
   const onWebViewMessage = (event: any) => {
     try {

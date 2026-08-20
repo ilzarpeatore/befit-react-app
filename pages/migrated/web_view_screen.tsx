@@ -56,7 +56,7 @@ export default function WebViewScreen(props: WebViewScreenProps) {
         }
       }
     },
-    [onClick, props.navigation],
+    [],
   );
 
   const onLoadStart = () => setIsLoading(true);

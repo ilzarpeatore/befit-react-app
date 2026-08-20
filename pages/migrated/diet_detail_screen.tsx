@@ -98,7 +98,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
-  }, [fallbackId]);
+  }, [fallbackId, dietModel?.id]);
 
   useEffect(() => {
     // Recipe mode: fetch a real recipe (with structured ingredients/steps) instead
@@ -132,7 +132,7 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
         .catch((e) => logger.error(e))
         .finally(() => setIsLoading(false));
     }
-  }, [recipeId]);
+  }, [recipeId, recipeImageParam]);
 
   const setDiet = async (id?: number) => {
     if (!id) return;

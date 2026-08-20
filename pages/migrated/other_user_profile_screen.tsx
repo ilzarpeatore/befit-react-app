@@ -37,9 +37,9 @@ export default function OtherUserProfileScreen(props: any) {
   const { height: windowHeight } = useWindowDimensions();
   const userDetails: UserDetails = props.route?.params?.userDetails ?? {};
 
-  const [firstName, setFirstName] = useState(userDetails.firstName ?? '');
-  const [lastName, setLastName] = useState(userDetails.lastName ?? '');
-  const [profileImg, setProfileImg] = useState(userDetails.profileImage ?? '');
+  const firstName = userDetails.firstName ?? '';
+  const lastName = userDetails.lastName ?? '';
+  const profileImg = userDetails.profileImage ?? '';
   const [postList, setPostList] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const pageRef = useRef(1);
@@ -48,9 +48,6 @@ export default function OtherUserProfileScreen(props: any) {
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    setFirstName(userDetails.firstName ?? '');
-    setLastName(userDetails.lastName ?? '');
-    setProfileImg(userDetails.profileImage ?? '');
     getPostList(1);
     getStats();
   }, [userDetails.id]);

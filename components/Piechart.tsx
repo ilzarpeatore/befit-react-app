@@ -49,7 +49,7 @@ export default function Piechart({ chartWidth, chartHeight, chartdata, Animate }
       useNativeDriver: true,
       easing: Easing.linear,
     }).start();
-  }, [chartOffsets])
+  }, [chartOffsets, chartAnim])
   return (
     <Svg
       width={chartWidth}

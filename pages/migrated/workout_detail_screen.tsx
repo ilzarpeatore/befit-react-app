@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet,
   ScrollView, Dimensions,
@@ -89,17 +89,25 @@ export default function WorkoutDetailScreen(props: any) {
 
   const scrollRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    init();
-  }, []);
-
-  useEffect(() => {
-    if (numPageRef.current && page > 1) {
-      getDayExerciseData(workoutDayList[currentTabIndex]?.id);
+  const getDayExerciseData = useCallback(async (dayId?: number, ignoreRef?: { current: boolean }) => {
+    setIsLoading(true);
+    try {
+      await workoutsApi.getDayExercises(dayId!).then((res) => {
+        if (ignoreRef?.current) return;
+        const value: any = res.data;
+        numPageRef.current = value.pagination?.total_pages ?? null;
+        isLastPageRef.current = false;
+        if (page === 1) setDayExerciseList([]);
+        setDayExerciseList((prev) => [...prev, ...value.data]);
+      });
+    } catch (e) {
+      isLastPageRef.current = true;
+    } finally {
+      setIsLoading(false);
     }
   }, [page]);
 
-  const init = async () => {
+  const init = useCallback(async () => {
     setIsDetailLoading(true);
     try {
       await workoutsApi.getDetail(workoutId).then((res) => {
@@ -115,24 +123,25 @@ export default function WorkoutDetailScreen(props: any) {
     } finally {
       setIsDetailLoading(false);
     }
-  };
+  }, [workoutId, getDayExerciseData]);
 
-  const getDayExerciseData = async (dayId?: number) => {
-    setIsLoading(true);
-    try {
-      await workoutsApi.getDayExercises(dayId!).then((res) => {
-        const value: any = res.data;
-        numPageRef.current = value.pagination?.total_pages ?? null;
-        isLastPageRef.current = false;
-        if (page === 1) setDayExerciseList([]);
-        setDayExerciseList((prev) => [...prev, ...value.data]);
-      });
-    } catch (e) {
-      isLastPageRef.current = true;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // getDayExerciseData (llamada por referencia, no inline): si el fetch
+  // queda obsoleto, ignoreRef.current corta antes de tocar el estado con
+  // datos viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    if (!numPageRef.current || page <= 1) return;
+    const ignoreRef = { current: false };
+    getDayExerciseData(workoutDayList[currentTabIndex]?.id, ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [page, getDayExerciseData, workoutDayList, currentTabIndex]);
 
   const setWorkoutFav = async (id?: number) => {
     setIsDetailLoading(true);

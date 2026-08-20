@@ -155,26 +155,7 @@ export default function PlanScreen(props: any) {
     }
   );
 
-  useEffect(() => {
-    fetchDailyPlan();
-  }, [selectedDay]);
-
-  useEffect(() => {
-    // Comidas que el coach ha asignado al cliente (independiente del día),
-    // usadas para priorizarlas al elegir qué añadir a una franja del plan.
-    dietApi
-      .getAssignedMealsSummary()
-      .then((res) => setAssignedMeals(res.data.meals))
-      .catch((e) => logger.error('Assigned meals fetch error:', e));
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchDailyPlan();
-    }, [selectedDay])
-  );
-
-  const applyDailyPlanResponse = (value: any) => {
+  const applyDailyPlanResponse = useCallback((value: any) => {
     const data = value?.data;
     if (!data) return;
 
@@ -224,19 +205,56 @@ export default function PlanScreen(props: any) {
     setMealRecipes(recipesByMeal);
 
     plannedDaysRef.current = value?.day_has_daily_plan ?? [];
-  };
+  }, []);
 
-  const fetchDailyPlan = async () => {
+  // ignoreRef solo lo pasan los dos efectos de abajo (mount/cambio de dia y
+  // foco de pantalla), que pueden solaparse entre si -- las llamadas
+  // manuales tras mutaciones (clearDailyPlan, addRecipeToPlan) lo dejan sin
+  // pasar a proposito, no hay condicion de carrera ahi.
+  const fetchDailyPlan = useCallback(async (ignoreRef?: { current: boolean }) => {
     setIsLoading(true);
     try {
       const res = await dietApi.getDailyPlan(formatDateYMD(selectedDay));
+      if (ignoreRef?.current) return;
       applyDailyPlanResponse(res.data);
     } catch (e) {
       logger.error('Plan fetch error:', e);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedDay, applyDailyPlanResponse]);
+
+  // react-doctor no reconoce la guarda de ignoreRef porque vive dentro de
+  // fetchDailyPlan (llamada por referencia, no inline): si el fetch queda
+  // obsoleto, ignoreRef.current corta antes de tocar el estado con datos
+  // viejos.
+  // react-doctor-disable-next-line no-set-state-after-await-in-effect
+  useEffect(() => {
+    const ignoreRef = { current: false };
+    fetchDailyPlan(ignoreRef);
+    return () => {
+      ignoreRef.current = true;
+    };
+  }, [fetchDailyPlan]);
+
+  useEffect(() => {
+    // Comidas que el coach ha asignado al cliente (independiente del día),
+    // usadas para priorizarlas al elegir qué añadir a una franja del plan.
+    dietApi
+      .getAssignedMealsSummary()
+      .then((res) => setAssignedMeals(res.data.meals))
+      .catch((e) => logger.error('Assigned meals fetch error:', e));
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const ignoreRef = { current: false };
+      fetchDailyPlan(ignoreRef);
+      return () => {
+        ignoreRef.current = true;
+      };
+    }, [fetchDailyPlan])
+  );
 
   const proteinProgress = proteinTarget > 0 ? Math.min(proteinCurrent / proteinTarget, 1) : 0;
   const carbsProgress = carbsTarget > 0 ? Math.min(carbsCurrent / carbsTarget, 1) : 0;

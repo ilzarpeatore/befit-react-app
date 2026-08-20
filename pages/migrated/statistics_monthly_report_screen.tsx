@@ -65,7 +65,7 @@ function DeltaText({ current, previous, format }: { current: number; previous: n
 export default function StatisticsMonthlyReportScreen(props: Props) {
   const { navigation } = props;
   const today = useMemo(() => new Date(), []);
-  const [monthAnchor, setMonthAnchor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [monthAnchor, setMonthAnchor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [stats, setStats] = useState<PeriodStats>(ZERO_PERIOD);
   const [prevStats, setPrevStats] = useState<PeriodStats>(ZERO_PERIOD);
   const [totalSeries, setTotalSeries] = useState(0);

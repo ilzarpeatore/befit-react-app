@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -31,8 +31,6 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   );
   /* save navigation nav x location */
   const [navlocations, set_navlocations] = useState([0, 0, 0, 0]);
-  /* set navigation avtive page */
-  const [activepage, set_activepage] = useState(state.index);
   const [navigationbtnactiveX] = useState(() => new Animated.Value(0));
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
@@ -42,7 +40,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
     locations[index] = x;
     set_navlocations(locations);
     /* if is the active page move navigation btn ellipse to it location and show it */
-    if (index == activepage) {
+    if (index == state.index) {
       navigationbtnactiveX.setValue(x + ((styles.navigationbtn.width / 2) - 4.5));
       set_navigation_ellipse_show(true);
     }
@@ -62,9 +60,6 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
       onPress();
     });
   };
-  useEffect(() => {
-    set_activepage(state.index)
-  }, [state.index])
   /* hide if tabBarVisible is false */
   if (focusedOptions.tabBarVisible === false) {
     return null;

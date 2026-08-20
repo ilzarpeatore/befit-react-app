@@ -46,7 +46,7 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
       roundcropingfix,
       spacingX
     }
-  }, [chartdata, chartBarstrokeWidth])
+  }, [chartdata, chartBarstrokeWidth, chartviewboxworkingwidth, chartviewboxworkingheight])
 
   useEffect(() => {
     Animated.timing(avglinestartAnimY, {
@@ -54,7 +54,7 @@ function Barchart({ chartWidth, chartHeight, chartBarstrokeWidth, chartdata, sho
       duration: 500,
       useNativeDriver: true,
     }).start();
-  }, [chart.avglinestartY])
+  }, [chart.avglinestartY, avglinestartAnimY])
 
   return (
     <Svg

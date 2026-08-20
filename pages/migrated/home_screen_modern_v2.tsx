@@ -74,7 +74,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const firstLoadDone = useRef(false);
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
-  const r = (n: number) => Math.round(n * sc);
+  const r = useCallback((n: number) => Math.round(n * sc), [sc]);
   const insets = useSafeAreaInsets();
 
   const [showMenu, setShowMenu] = useState(false);
@@ -181,7 +181,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     menuCloseBtn: { width: r(32), height: r(32), borderRadius: r(16), backgroundColor: C.surfaceLight, alignItems: 'center' as const, justifyContent: 'center' as const },
     menuItemText: { flex: 1, fontSize: r(15), fontFamily: FONT.semiBold, color: C.white },
     menuItemTextDanger: { color: C.destructive },
-  }), [sc]);
+  }), [sc, r]);
 
   const fetchData = useCallback(async (mode?: 'initial' | 'silent') => {
     if (mode !== 'silent') {
