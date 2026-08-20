@@ -17,6 +17,7 @@ import {
   ActionsheetDragIndicator,
   ActionsheetDragIndicatorWrapper,
 } from '@components/ui/actionsheet';
+import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { shoppingApi, ShoppingListItem } from '@api/shopping';
 import logger from '@helper/logger';
@@ -90,16 +91,16 @@ export default function ShoppingListScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
-      <HStack className="items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm">Listas de la compra</Heading>
-        <Button variant="ghost" size="icon" onPress={() => setShowGenerateSheet(true)}>
-          <Icon name="add" size={28} className="text-foreground" />
-        </Button>
-      </HStack>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader
+        title="Listas de la compra"
+        onBack={() => props.navigation.goBack()}
+        rightAction={
+          <Button variant="ghost" size="icon" onPress={() => setShowGenerateSheet(true)}>
+            <Icon name="add" size={28} className="text-foreground" />
+          </Button>
+        }
+      />
 
       <Box className="flex-1">
         {isLoading && shoppingLists.length === 0 ? (

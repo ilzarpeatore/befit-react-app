@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { VStack } from '@components/ui/vstack';
@@ -199,10 +200,8 @@ export default function AssignedMealsScreen(props: any) {
       : '';
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title={title} onBack={() => props.navigation.goBack()} />
-      </Box>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <ScreenHeader title={title} onBack={() => props.navigation.goBack()} />
 
       {isLoading ? (
         <Box className="flex-1 items-center justify-center">
@@ -360,6 +359,6 @@ export default function AssignedMealsScreen(props: any) {
           </ScrollView>
         </>
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

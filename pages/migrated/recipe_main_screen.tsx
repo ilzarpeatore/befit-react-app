@@ -4,7 +4,6 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
 import { Spinner } from '@components/ui/spinner';
@@ -12,6 +11,7 @@ import { HStack } from '@components/ui/hstack';
 import { VStack } from '@components/ui/vstack';
 import { Button } from '@components/ui/button';
 import { Badge, BadgeText } from '@components/ui/badge';
+import ScreenHeader from '@components/ScreenHeader';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { C, FONT } from './theme';
 import { recipesApi, RecipeListItem } from '../../api/recipes';
@@ -198,16 +198,16 @@ export default function RecipeMainScreen(props: any) {
   );
 
   return (
-    <SafeAreaView style={s.container}>
-      <HStack className="items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm">Recetas</Heading>
-        <Button variant="ghost" size="icon" onPress={navigateToFavourites}>
-          <Icon name="heart-outline" size={22} className="text-foreground" />
-        </Button>
-      </HStack>
+    <SafeAreaView style={s.container} edges={['top']}>
+      <ScreenHeader
+        title="Recetas"
+        onBack={() => props.navigation.goBack()}
+        rightAction={
+          <Button variant="ghost" size="icon" onPress={navigateToFavourites}>
+            <Icon name="heart-outline" size={22} className="text-foreground" />
+          </Button>
+        }
+      />
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <HStack space="sm" style={s.searchWrap}>

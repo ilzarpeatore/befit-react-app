@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollView, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { HStack } from '@components/ui/hstack';
@@ -212,7 +213,7 @@ export default function OtherUserProfileScreen(props: any) {
   );
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <Box
         className="absolute top-0 left-0 right-0"
         style={{ height: windowHeight * 0.3, backgroundColor: C.brand5 }}
@@ -276,6 +277,6 @@ export default function OtherUserProfileScreen(props: any) {
           )}
         </Box>
       </ScrollView>
-    </Box>
+    </SafeAreaView>
   );
 }

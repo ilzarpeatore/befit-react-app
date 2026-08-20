@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { ScrollView, Image, Alert, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Textarea, TextareaInput } from '@components/ui/textarea';
 import { VStack } from '@components/ui/vstack';
@@ -135,13 +136,11 @@ export default function AddPostScreen({ navigation, route }: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title={flow === 'EditFlow' ? 'Editar publicación' : 'Nueva publicación'}
-          onBack={() => navigation.goBack()}
-        />
-      </Box>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <ScreenHeader
+        title={flow === 'EditFlow' ? 'Editar publicación' : 'Nueva publicación'}
+        onBack={() => navigation.goBack()}
+      />
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <VStack space="lg" style={{ paddingTop: 16, paddingBottom: 32 }}>
@@ -217,6 +216,6 @@ export default function AddPostScreen({ navigation, route }: any) {
           <Spinner size="large" color={C.orange} />
         </Box>
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

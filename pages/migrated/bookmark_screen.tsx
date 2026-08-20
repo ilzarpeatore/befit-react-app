@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FlatList, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -221,10 +222,8 @@ export default function BookmarkScreen({ navigation }: any) {
   );
 
   return (
-    <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="Guardados" onBack={() => navigation.goBack()} />
-      </Box>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <ScreenHeader title="Guardados" onBack={() => navigation.goBack()} />
 
       <Box className="flex-1">
         {loading && page === 1 ? (
@@ -258,6 +257,6 @@ export default function BookmarkScreen({ navigation }: any) {
           </Box>
         )}
       </Box>
-    </Box>
+    </SafeAreaView>
   );
 }
