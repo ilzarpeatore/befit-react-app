@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { Easing, Platform } from "react-native";
-import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { useSharedValue, withTiming, useAnimatedProps } from "react-native-reanimated";
 import {
   Svg,
   Line,
@@ -66,6 +66,9 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
   useEffect(() => {
     PathAnim.value = withTiming(0, { duration: 5000, easing: Easing.linear });
   }, [PathAnim])
+  const lineAnimatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: AnimateLine ? PathAnim.value : undefined,
+  }));
   return (
     <Svg
       width={chartWidth}
@@ -143,7 +146,7 @@ export default function Linechart({ chartWidth, chartHeight, chartdata, chartdat
         strokeWidth="2"
         strokeLinecap="round"
         strokeDasharray={AnimateLine ? 1000 : 0}
-        strokeDashoffset={AnimateLine ? PathAnim : undefined}
+        animatedProps={lineAnimatedProps}
       />
       {/*graph dot lines*/}
       <AnimatedPath

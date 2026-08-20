@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
-import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { useSharedValue, withTiming, useAnimatedProps } from "react-native-reanimated";
 import { Image } from "expo-image";
 import {
   Svg,
@@ -23,6 +23,9 @@ function CircularProgress({ width, height, percent, icon }: CircularProgressInte
   useEffect(() => {
     weightpercentageanime.value = withTiming(100 - percent, { duration: 500 });
   }, [percent, weightpercentageanime])
+  const animatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: weightpercentageanime.value,
+  }));
   return (
     <View>
       <Image
@@ -47,7 +50,7 @@ function CircularProgress({ width, height, percent, icon }: CircularProgressInte
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray="98"
-          strokeDashoffset={weightpercentageanime}
+          animatedProps={animatedProps}
         />
         <Defs>
           <SlinearGradient
