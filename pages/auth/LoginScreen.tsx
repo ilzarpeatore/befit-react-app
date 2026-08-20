@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -51,12 +51,12 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.goBack()}
-            style={styles.backBtn}
+            style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.2 }]}
           >
             <Ionicons name="arrow-back" size={24} color={Colors.TEXT_PRIMARY} />
-          </TouchableOpacity>
+          </Pressable>
 
           <Text style={styles.title}>Bienvenido de nuevo</Text>
           <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
@@ -91,18 +91,21 @@ export default function LoginScreen() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={({ pressed }) => [styles.eyeBtn, pressed && { opacity: 0.2 }]}
+              >
                 <Ionicons
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={20}
                   color={Colors.TEXT_SECONDARY}
                 />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
 
-          <TouchableOpacity
-            style={[styles.btn, loading && styles.btnDisabled]}
+          <Pressable
+            style={({ pressed }) => [styles.btn, loading && styles.btnDisabled, pressed && { opacity: 0.2 }]}
             onPress={handleLogin}
             disabled={loading}
           >
@@ -111,14 +114,14 @@ export default function LoginScreen() {
             ) : (
               <Text style={styles.btnText}>Iniciar sesión</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.navigate("ForgotOptions")}
-            style={styles.forgotBtn}
+            style={({ pressed }) => [styles.forgotBtn, pressed && { opacity: 0.2 }]}
           >
             <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
@@ -126,16 +129,19 @@ export default function LoginScreen() {
             <View style={styles.dividerLine} />
           </View>
 
-          <TouchableOpacity style={styles.googleBtn}>
+          <Pressable style={({ pressed }) => [styles.googleBtn, pressed && { opacity: 0.2 }]}>
             <Ionicons name="logo-google" size={20} color={Colors.TEXT_PRIMARY} />
             <Text style={styles.googleBtnText}>Continuar con Google</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>¿No tienes una cuenta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("RegisterFlow")}>
+            <Pressable
+              onPress={() => navigation.navigate("RegisterFlow")}
+              style={({ pressed }) => pressed && { opacity: 0.2 }}
+            >
               <Text style={styles.footerLink}>Regístrate</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
