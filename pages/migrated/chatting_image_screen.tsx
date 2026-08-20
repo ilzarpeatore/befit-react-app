@@ -24,17 +24,17 @@ const renderMessage = ({ item, index }: { item: any; index: number }) => (
         marginLeft: 48,
         marginBottom: 4,
         gap: 8,
-      }}
-    >
+      }}>
       {item.imageUri ? (
         <Box
           className="items-center justify-center"
-          style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.2)' }}
-        >
+          style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.2)' }}>
           <Icon name="image" size={16} className="text-muted-foreground" />
         </Box>
       ) : null}
-      <Text className="flex-1" style={{ lineHeight: 20 }}>{item.question}</Text>
+      <Text className="flex-1" style={{ lineHeight: 20 }}>
+        {item.question}
+      </Text>
     </Box>
 
     {/* Bot response */}
@@ -46,23 +46,25 @@ const renderMessage = ({ item, index }: { item: any; index: number }) => (
         padding: 12,
         marginRight: 48,
         gap: 8,
-      }}
-    >
+      }}>
       <Icon name="hardware-chip-outline" size={18} className="text-foreground" />
       {item.isLoading ? (
         <Box className="flex-row items-center" style={{ gap: 8 }}>
           <Spinner size="small" color={C.orange} />
-          <Text size="sm" muted>Thinking...</Text>
+          <Text size="sm" muted>
+            Pensando...
+          </Text>
         </Box>
       ) : (
-        <Text className="flex-1" muted style={{ lineHeight: 20 }}>{item.answer}</Text>
+        <Text className="flex-1" muted style={{ lineHeight: 20 }}>
+          {item.answer}
+        </Text>
       )}
     </Box>
   </Box>
 );
 
 export default function ChattingImageScreen({ navigation }: any) {
-
   const [questionAnswers, setQuestionAnswers] = useState<any[]>([]);
   const myMessagesRef = useRef<any[]>([]);
   const [msgController, setMsgController] = useState('');
@@ -106,7 +108,8 @@ export default function ChattingImageScreen({ navigation }: any) {
       // TODO: Replace with actual OpenAI API call
       // const stream = await openAI.onChatCompletion(request);
       // Simulate response
-      const answer = 'This is a placeholder response. Implement OpenAI integration here.';
+      const answer =
+        'Esto es una respuesta de ejemplo. Falta implementar la integración con OpenAI.';
       setQuestionAnswers((prev) => {
         const updated = [...prev];
         if (updated.length > 0) {
@@ -121,7 +124,11 @@ export default function ChattingImageScreen({ navigation }: any) {
       setQuestionAnswers((prev) => {
         const updated = [...prev];
         if (updated.length > 0) {
-          updated[0] = { ...updated[0], answer: 'Too many requests please try again', isLoading: false };
+          updated[0] = {
+            ...updated[0],
+            answer: 'Demasiadas solicitudes, inténtalo de nuevo',
+            isLoading: false,
+          };
         }
         return updated;
       });
@@ -134,10 +141,10 @@ export default function ChattingImageScreen({ navigation }: any) {
   };
 
   const showClearDialog = () => {
-    Alert.alert('Clear Chat', 'Are you sure you want to clear the conversation?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Limpiar Chat', '¿Estás seguro de que quieres borrar toda la conversación?', [
+      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Yes',
+        text: 'Sí',
         onPress: () => {
           setQuestionAnswers([]);
           myMessagesRef.current = [];
@@ -185,8 +192,12 @@ export default function ChattingImageScreen({ navigation }: any) {
           <Box className="flex-1 items-center justify-center" style={{ gap: 12 }}>
             {/* TODO: Integrate ChatBotEmptyScreen */}
             <Icon name="chatbubbles-outline" size={48} className="text-muted-foreground" />
-            <Text size="lg" weight="semibold" muted>FitBot Image Chat</Text>
-            <Text size="sm" muted>Send an image and ask a question</Text>
+            <Text size="lg" weight="semibold" muted>
+              FitBot Chat de imágenes
+            </Text>
+            <Text size="sm" muted>
+              Envía una imagen y haz una pregunta
+            </Text>
           </Box>
         )}
       </Box>
@@ -194,24 +205,27 @@ export default function ChattingImageScreen({ navigation }: any) {
       {!showResponse && (
         <Box
           className="flex-row items-end bg-card"
-          style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28, gap: 10 }}
-        >
-          <Input className="flex-1 rounded-sm" size="md" style={{ height: undefined, minHeight: 44, maxHeight: 100 }}>
+          style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28, gap: 10 }}>
+          <Input
+            className="flex-1 rounded-sm"
+            size="md"
+            style={{ height: undefined, minHeight: 44, maxHeight: 100 }}>
             <InputField
-              placeholder="Type a message..."
+              placeholder="Escribe un mensaje..."
               value={msgController}
               onChangeText={setMsgController}
               onSubmitEditing={sendMessage}
               multiline
-              onFocus={() => { isScrollRef.current = true; }}
+              onFocus={() => {
+                isScrollRef.current = true;
+              }}
             />
           </Input>
           <Pressable
             className="w-10 h-10 rounded-sm items-center justify-center"
             style={{ backgroundColor: C.brand5 }}
             onPress={sendMessage}
-            disabled={!msgController.trim()}
-          >
+            disabled={!msgController.trim()}>
             <Icon name="send" size={16} className="text-foreground" />
           </Pressable>
         </Box>

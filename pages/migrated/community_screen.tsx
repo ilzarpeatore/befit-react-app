@@ -36,11 +36,13 @@ export default function CommunityScreen(props: any) {
       numPageRef.current = res.data.pagination?.totalPages ?? 1;
       const list = (res.data.data ?? []).map((p: any) => ({
         id: p.id,
-        users: p.users ? {
-          id: p.users.id,
-          profileImage: p.users.profile_image,
-          displayName: p.users.display_name,
-        } : undefined,
+        users: p.users
+          ? {
+              id: p.users.id,
+              profileImage: p.users.profile_image,
+              displayName: p.users.display_name,
+            }
+          : undefined,
         canEdit: p.can_edit,
         content: p.description,
         postImage: p.posting_media_array?.[0]?.media_url ?? '',
@@ -64,7 +66,7 @@ export default function CommunityScreen(props: any) {
     useCallback(() => {
       pageRef.current = 1;
       getPostList(1);
-    }, [getPostList])
+    }, [getPostList]),
   );
 
   const _onRefresh = async () => {
@@ -95,7 +97,7 @@ export default function CommunityScreen(props: any) {
     props.navigation.navigate('MigratedOtherUserProfile', {
       userDetails: {
         id: item.users.id,
-        firstName: item.users.displayName || 'User',
+        firstName: item.users.displayName || 'Usuario',
         lastName: '',
         profileImage: item.users.profileImage,
       },
@@ -111,7 +113,7 @@ export default function CommunityScreen(props: any) {
         canEdit: item.canEdit,
         users: {
           id: item.users?.id,
-          firstName: item.users?.displayName || 'User',
+          firstName: item.users?.displayName || 'Usuario',
           lastName: '',
           profileImage: item.users?.profileImage,
         },
@@ -130,13 +132,15 @@ export default function CommunityScreen(props: any) {
       prev.map((p) =>
         p.id === item.id
           ? { ...p, isLiked: !wasLiked, likesCount: (p.likesCount || 0) + (wasLiked ? -1 : 1) }
-          : p
-      )
+          : p,
+      ),
     );
     postsApi.like(item.id).catch((e) => {
       logger.error('Error toggling like', e);
       setMPostList((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p))
+        prev.map((p) =>
+          p.id === item.id ? { ...p, isLiked: wasLiked, likesCount: item.likesCount } : p,
+        ),
       );
     });
   };
@@ -144,12 +148,12 @@ export default function CommunityScreen(props: any) {
   const toggleBookmark = (item: PostData) => {
     const wasBookmarked = !!item.isBookmark;
     setMPostList((prev) =>
-      prev.map((p) => (p.id === item.id ? { ...p, isBookmark: !wasBookmarked } : p))
+      prev.map((p) => (p.id === item.id ? { ...p, isBookmark: !wasBookmarked } : p)),
     );
     postsApi.bookmark(item.id).catch((e) => {
       logger.error('Error toggling bookmark', e);
       setMPostList((prev) =>
-        prev.map((p) => (p.id === item.id ? { ...p, isBookmark: wasBookmarked } : p))
+        prev.map((p) => (p.id === item.id ? { ...p, isBookmark: wasBookmarked } : p)),
       );
     });
   };
@@ -191,30 +195,41 @@ export default function CommunityScreen(props: any) {
       <Pressable
         className="bg-card rounded-md p-3"
         style={{ marginHorizontal: 10, marginVertical: 6 }}
-        onPress={() => openPostDetail(item)}
-      >
+        onPress={() => openPostDetail(item)}>
         <HStack className="items-center">
           <Pressable className="flex-1 flex-row items-center" onPress={() => openUserProfile(item)}>
             {item.users?.profileImage ? (
-              <Image source={{ uri: item.users.profileImage }} contentFit="cover" style={{ width: 40, height: 40, borderRadius: 20 }} />
+              <Image
+                source={{ uri: item.users.profileImage }}
+                contentFit="cover"
+                style={{ width: 40, height: 40, borderRadius: 20 }}
+              />
             ) : (
               <Box className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
                 <Icon name="person" size={18} className="text-muted-foreground" />
               </Box>
             )}
             <Box className="flex-1" style={{ marginLeft: 10 }}>
-              <Text weight="semibold" size="sm">{item.users?.displayName || 'User'}</Text>
-              <Text size="xs" muted>{item.createdAt || ''}</Text>
+              <Text weight="semibold" size="sm">
+                {item.users?.displayName || 'Usuario'}
+              </Text>
+              <Text size="xs" muted>
+                {item.createdAt || ''}
+              </Text>
             </Box>
           </Pressable>
           {item.canEdit && (
-            <Pressable onPress={() => showPostOptions(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Pressable
+              onPress={() => showPostOptions(item)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Icon name="ellipsis-vertical" size={18} className="text-muted-foreground" />
             </Pressable>
           )}
         </HStack>
         {item.content ? (
-          <Text size="sm" style={{ marginTop: 10 }}>{item.content}</Text>
+          <Text size="sm" style={{ marginTop: 10 }}>
+            {item.content}
+          </Text>
         ) : null}
         {item.postImage ? (
           <Image
@@ -225,35 +240,35 @@ export default function CommunityScreen(props: any) {
         ) : null}
         <HStack
           className="items-center"
-          style={{ marginTop: 12, borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 10 }}
-        >
+          style={{ marginTop: 12, borderTopWidth: 0.5, borderTopColor: C.border, paddingTop: 10 }}>
           <Pressable
             className="flex-row items-center"
             style={{ marginRight: 20 }}
             onPress={() => toggleLike(item)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Icon
               name={item.isLiked ? 'heart' : 'heart-outline'}
               size={20}
               className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
             />
-            <Text size="sm" muted style={{ marginLeft: 4 }}>{item.likesCount || 0}</Text>
+            <Text size="sm" muted style={{ marginLeft: 4 }}>
+              {item.likesCount || 0}
+            </Text>
           </Pressable>
           <Pressable
             className="flex-row items-center"
             style={{ marginRight: 20 }}
             onPress={() => openPostDetail(item)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Icon name="chatbubble-outline" size={20} className="text-muted-foreground" />
-            <Text size="sm" muted style={{ marginLeft: 4 }}>{item.commentsCount || 0}</Text>
+            <Text size="sm" muted style={{ marginLeft: 4 }}>
+              {item.commentsCount || 0}
+            </Text>
           </Pressable>
           <Pressable
             className="flex-row items-center"
             onPress={() => toggleBookmark(item)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Icon
               name={item.isBookmark ? 'bookmark' : 'bookmark-outline'}
               size={20}
@@ -271,7 +286,7 @@ export default function CommunityScreen(props: any) {
     return (
       <Box className="flex-1 items-center justify-center gap-3" style={{ paddingTop: 80 }}>
         <Icon name="alert-circle-outline" size={80} className="text-muted-foreground" />
-        <Text weight="bold">No posts found</Text>
+        <Text weight="bold">No se encontraron publicaciones</Text>
       </Box>
     );
   };
@@ -279,22 +294,22 @@ export default function CommunityScreen(props: any) {
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background">
       <HStack className="items-center justify-between px-4 py-3">
-        <Heading size="md">Community</Heading>
+        <Heading size="md">Comunidad</Heading>
         <HStack space="md" className="items-center">
           <Button
             variant="ghost"
             size="icon"
-            onPress={() => props.navigation.navigate('MigratedBookmark')}
-          >
+            onPress={() => props.navigation.navigate('MigratedBookmark')}>
             <Icon name="bookmark-outline" size={22} className="text-foreground" />
           </Button>
           <Pressable
             className="flex-row items-center rounded-pill"
             style={{ backgroundColor: C.orange, paddingHorizontal: 12, paddingVertical: 6 }}
-            onPress={handlePostPress}
-          >
+            onPress={handlePostPress}>
             <Icon name="add-circle-outline" size={18} color="#FFFFFF" />
-            <Text weight="bold" style={{ color: '#FFFFFF', marginLeft: 4 }}>Post</Text>
+            <Text weight="bold" style={{ color: '#FFFFFF', marginLeft: 4 }}>
+              Publicar
+            </Text>
           </Pressable>
         </HStack>
       </HStack>
@@ -308,7 +323,11 @@ export default function CommunityScreen(props: any) {
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             refreshControl={
-              <RefreshControl refreshing={isRefreshing} onRefresh={_onRefresh} tintColor={C.orange} />
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={_onRefresh}
+                tintColor={C.orange}
+              />
             }
             contentContainerStyle={{ paddingBottom: 20 }}
           />

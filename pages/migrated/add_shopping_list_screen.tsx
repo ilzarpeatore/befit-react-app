@@ -32,7 +32,12 @@ function formatDate(date: Date) {
 }
 
 const renderCheckboxRow = (label: string, checked: boolean, onPress: () => void, key?: string) => (
-  <Checkbox key={key} value={key ?? label} isChecked={checked} onChange={() => onPress()} className="py-2">
+  <Checkbox
+    key={key}
+    value={key ?? label}
+    isChecked={checked}
+    onChange={() => onPress()}
+    className="py-2">
     <CheckboxIndicator>
       {checked && <Icon name="checkmark" size={14} className="text-primary-foreground" />}
     </CheckboxIndicator>
@@ -51,17 +56,17 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
   const [selectedDate, setSelectedDate] = useState(() =>
     shoppingList?.daily_plan_id && shoppingList?.start_date
       ? new Date(shoppingList.start_date)
-      : new Date()
+      : new Date(),
   );
   const [dateRangeStart, setDateRangeStart] = useState<Date | null>(() =>
     !shoppingList?.daily_plan_id && shoppingList?.start_date && shoppingList?.end_date
       ? new Date(shoppingList.start_date)
-      : null
+      : null,
   );
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(() =>
     !shoppingList?.daily_plan_id && shoppingList?.start_date && shoppingList?.end_date
       ? new Date(shoppingList.end_date)
-      : null
+      : null,
   );
   const [isCompleteOnly, setIsCompleteOnly] = useState(true);
   const [selectedMealTypes, setSelectedMealTypes] = useState<ShoppingMealType[]>([]);
@@ -115,11 +120,11 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
   const submit = async () => {
     if (!title.trim()) {
-      Alert.alert('Error', 'Please enter a title');
+      Alert.alert('Error', 'Introduce un título');
       return;
     }
     if (selectedMealTypes.length === 0) {
-      Alert.alert('Error', 'Please select at least one meal type');
+      Alert.alert('Error', 'Selecciona al menos un tipo de comida');
       return;
     }
 
@@ -135,17 +140,17 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
     if (isSpecificDate) {
       if (dailyPlanIdRef.current === null && !isFetchingPlan) {
-        Alert.alert('Error', 'No daily plan found for this date');
+        Alert.alert('Error', 'No se encontró un plan diario para esta fecha');
         return;
       }
       if (isFetchingPlan) {
-        Alert.alert('Error', 'Please wait for daily plan to load');
+        Alert.alert('Error', 'Espera a que se cargue el plan diario');
         return;
       }
       req.daily_plan_id = dailyPlanIdRef.current;
     } else {
       if (!dateRangeStart || !dateRangeEnd) {
-        Alert.alert('Error', 'Please select a date range');
+        Alert.alert('Error', 'Selecciona un rango de fechas');
         return;
       }
       req.start_date = formatDate(dateRangeStart);
@@ -160,28 +165,34 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
       navigation.goBack(true);
     } catch (e: any) {
       loadingRef.current = false;
-      const msg = e?.response?.data?.message ?? 'Failed to save shopping list';
+      const msg = e?.response?.data?.message ?? 'No se pudo guardar la lista de la compra';
       Alert.alert('Error', msg);
     }
   };
 
   const toggleMealType = (key: ShoppingMealType) => {
     setSelectedMealTypes((prev) =>
-      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]
+      prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key],
     );
   };
 
   return (
     <Box className="flex-1 bg-background">
       <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title={isEditMode ? 'Edit Shopping List' : 'Add Shopping List'} onBack={() => navigation.goBack()} />
+        <ScreenHeader
+          title={isEditMode ? 'Editar lista de la compra' : 'Añadir lista de la compra'}
+          onBack={() => navigation.goBack()}
+        />
       </Box>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, gap: 16 }}
+        showsVerticalScrollIndicator={false}>
         {/* Date / Range Selection */}
         <Card variant="outline">
           <HStack className="items-center justify-between">
-            <Text weight="semibold">Specific Date</Text>
+            <Text weight="semibold">Fecha concreta</Text>
             <Switch
               value={isSpecificDate}
               onValueChange={(value) => {
@@ -195,20 +206,22 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
           {isSpecificDate ? (
             <HStack className="items-center justify-between" style={{ marginTop: 12 }}>
-              <Text weight="semibold">Date</Text>
+              <Text weight="semibold">Fecha</Text>
               <Pressable className="flex-row items-center gap-2">
-                <Text size="sm" muted>{formatDate(selectedDate)}</Text>
+                <Text size="sm" muted>
+                  {formatDate(selectedDate)}
+                </Text>
                 <Icon name="calendar-outline" size={18} className="text-muted-foreground" />
               </Pressable>
             </HStack>
           ) : (
             <HStack className="items-center justify-between" style={{ marginTop: 12 }}>
-              <Text weight="semibold">Date Range</Text>
+              <Text weight="semibold">Rango de fechas</Text>
               <Pressable className="flex-row items-center gap-2">
                 <Text size="sm" muted>
                   {dateRangeStart && dateRangeEnd
                     ? `${formatDate(dateRangeStart)} - ${formatDate(dateRangeEnd)}`
-                    : 'Select Range'}
+                    : 'Selecciona un rango'}
                 </Text>
                 <Icon name="calendar-outline" size={18} className="text-muted-foreground" />
               </Pressable>
@@ -222,13 +235,9 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
         {/* Title */}
         <Card variant="outline">
-          <Text weight="semibold">Title</Text>
+          <Text weight="semibold">Título</Text>
           <Input style={{ marginTop: 8 }}>
-            <InputField
-              placeholder="Enter title"
-              value={title}
-              onChangeText={setTitle}
-            />
+            <InputField placeholder="Introduce un título" value={title} onChangeText={setTitle} />
           </Input>
         </Card>
 
@@ -236,7 +245,9 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
         {!isSpecificDate && (
           <Card variant="outline">
             <HStack className="items-center justify-between">
-              <Text weight="semibold" className="flex-1">Servings</Text>
+              <Text weight="semibold" className="flex-1">
+                Raciones
+              </Text>
               <Stepper value={servings} onChange={setServings} min={1} />
             </HStack>
           </Card>
@@ -244,27 +255,29 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
         {/* Meal Types */}
         <Card variant="outline">
-          <Text weight="semibold">Meal Types</Text>
+          <Text weight="semibold">Tipos de comida</Text>
           {AVAILABLE_MEAL_TYPES.map((type) =>
             renderCheckboxRow(
               type.label,
               selectedMealTypes.includes(type.key),
               () => toggleMealType(type.key),
-              type.key
-            )
+              type.key,
+            ),
           )}
         </Card>
 
         {/* Is Complete Only */}
         <Card variant="outline">
-          {renderCheckboxRow('Is Complete Only', isCompleteOnly, () => setIsCompleteOnly(!isCompleteOnly))}
+          {renderCheckboxRow('Solo comidas completas', isCompleteOnly, () =>
+            setIsCompleteOnly(!isCompleteOnly),
+          )}
         </Card>
       </ScrollView>
 
       {/* Bottom button */}
       <Box className="p-4">
         <Button size="lg" onPress={submit}>
-          <ButtonText>{isEditMode ? 'Update List' : 'Generate List'}</ButtonText>
+          <ButtonText>{isEditMode ? 'Actualizar lista' : 'Generar lista'}</ButtonText>
         </Button>
       </Box>
     </Box>

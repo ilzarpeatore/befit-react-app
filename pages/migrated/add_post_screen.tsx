@@ -30,13 +30,13 @@ export default function AddPostScreen({ navigation, route }: any) {
   const postData = route?.params?.postData;
 
   const [description, setDescription] = useState(() =>
-    flow === 'EditFlow' && postData ? (postData.description ?? '') : ''
+    flow === 'EditFlow' && postData ? (postData.description ?? '') : '',
   );
   const [selectedImages, setSelectedImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(() =>
     flow === 'EditFlow' && postData
       ? (postData.postingMediaArray ?? []).map((e: any) => e.media_url ?? e.url)
-      : []
+      : [],
   );
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +51,10 @@ export default function AddPostScreen({ navigation, route }: any) {
   const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para añadir fotos/vídeos al post.');
+      Alert.alert(
+        'Permiso denegado',
+        'Necesitamos acceso a tu galería para añadir fotos/vídeos al post.',
+      );
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -94,7 +97,7 @@ export default function AddPostScreen({ navigation, route }: any) {
 
   const submitPost = async () => {
     if (!description.trim() && selectedImages.length === 0 && existingImages.length === 0) {
-      Alert.alert('Error', 'Please enter some text or select images');
+      Alert.alert('Error', 'Escribe algo de texto o selecciona imágenes');
       return;
     }
     setLoading(true);
@@ -104,7 +107,7 @@ export default function AddPostScreen({ navigation, route }: any) {
       navigation.goBack();
     } catch (e) {
       logger.error('Error submitting post', e);
-      Alert.alert('Error', 'Failed to submit post');
+      Alert.alert('Error', 'No se pudo publicar el post');
     } finally {
       setLoading(false);
     }
@@ -112,7 +115,7 @@ export default function AddPostScreen({ navigation, route }: any) {
 
   const editPost = async () => {
     if (!description.trim() && selectedImages.length === 0 && existingImages.length === 0) {
-      Alert.alert('Error', 'Please enter some text or select images');
+      Alert.alert('Error', 'Escribe algo de texto o selecciona imágenes');
       return;
     }
     setLoading(true);
@@ -125,7 +128,7 @@ export default function AddPostScreen({ navigation, route }: any) {
       navigation.goBack();
     } catch (e) {
       logger.error('Error editing post', e);
-      Alert.alert('Error', 'Failed to edit post');
+      Alert.alert('Error', 'No se pudo editar el post');
     } finally {
       setLoading(false);
     }
@@ -134,7 +137,10 @@ export default function AddPostScreen({ navigation, route }: any) {
   return (
     <Box className="flex-1 bg-background">
       <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title={flow === 'EditFlow' ? 'Edit Post' : 'New Post'} onBack={() => navigation.goBack()} />
+        <ScreenHeader
+          title={flow === 'EditFlow' ? 'Editar publicación' : 'Nueva publicación'}
+          onBack={() => navigation.goBack()}
+        />
       </Box>
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
@@ -143,7 +149,7 @@ export default function AddPostScreen({ navigation, route }: any) {
           <Textarea className="bg-card rounded-sm border-border h-auto" style={{ minHeight: 140 }}>
             <TextareaInput
               className="p-3.5 font-gilroy-regular text-sm"
-              placeholder="What's on your mind?"
+              placeholder="¿Qué estás pensando?"
               placeholderTextColor="rgb(var(--muted-foreground))"
               value={description}
               onChangeText={setDescription}
@@ -159,8 +165,7 @@ export default function AddPostScreen({ navigation, route }: any) {
                   <Image source={{ uri }} className="w-full h-full rounded-sm bg-secondary" />
                   <Pressable
                     style={{ position: 'absolute', top: -6, right: -6 }}
-                    onPress={() => removeExistingImage(index)}
-                  >
+                    onPress={() => removeExistingImage(index)}>
                     <Icon name="close-circle" size={24} className="text-destructive" />
                   </Pressable>
                 </Box>
@@ -173,11 +178,13 @@ export default function AddPostScreen({ navigation, route }: any) {
             <Box className="flex-row flex-wrap gap-2">
               {selectedImages.map((img, index) => (
                 <Box key={img.uri} className="relative" style={{ width: '48%', aspectRatio: 1 }}>
-                  <Image source={{ uri: img.uri }} className="w-full h-full rounded-sm bg-secondary" />
+                  <Image
+                    source={{ uri: img.uri }}
+                    className="w-full h-full rounded-sm bg-secondary"
+                  />
                   <Pressable
                     style={{ position: 'absolute', top: -6, right: -6 }}
-                    onPress={() => setSelectedImages((prev) => prev.filter((_, i) => i !== index))}
-                  >
+                    onPress={() => setSelectedImages((prev) => prev.filter((_, i) => i !== index))}>
                     <Icon name="close-circle" size={24} className="text-destructive" />
                   </Pressable>
                 </Box>
@@ -188,15 +195,19 @@ export default function AddPostScreen({ navigation, route }: any) {
           {/* Upload button */}
           <Pressable
             className="flex-row items-center justify-center bg-card rounded-sm border border-border border-dashed py-4 gap-2"
-            onPress={pickMedia}
-          >
+            onPress={pickMedia}>
             <Icon name="camera-outline" size={28} className="text-muted-foreground" />
-            <Text weight="medium" size="sm" className="text-muted-foreground">Add Photos/Videos</Text>
+            <Text weight="medium" size="sm" className="text-muted-foreground">
+              Añadir fotos/vídeos
+            </Text>
           </Pressable>
 
           {/* Submit button */}
-          <Button onPress={flow === 'EditFlow' ? editPost : submitPost} radius="pill" className="w-full">
-            <ButtonText>{flow === 'EditFlow' ? 'Edit Post' : 'Share Post'}</ButtonText>
+          <Button
+            onPress={flow === 'EditFlow' ? editPost : submitPost}
+            radius="pill"
+            className="w-full">
+            <ButtonText>{flow === 'EditFlow' ? 'Guardar cambios' : 'Publicar'}</ButtonText>
           </Button>
         </VStack>
       </ScrollView>

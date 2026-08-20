@@ -72,7 +72,9 @@ export default function PostDetailsScreen(props: any) {
       <Box className="flex-1 bg-background">
         <ScreenHeader title="" onBack={() => props.navigation?.goBack()} />
         <Box className="flex-1 items-center justify-center">
-          <Text muted weight="medium">No post data available</Text>
+          <Text muted weight="medium">
+            No hay datos disponibles de la publicación
+          </Text>
         </Box>
       </Box>
     );
@@ -124,7 +126,10 @@ export default function PostDetailsScreen(props: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
         <ScreenHeader title="" onBack={() => props.navigation?.goBack()} />
         <ScrollView contentContainerStyle={{ padding: 6, paddingBottom: 24 }}>
           <Card variant="ghost" style={{ marginBottom: 12 }}>
@@ -134,8 +139,7 @@ export default function PostDetailsScreen(props: any) {
                 onPress={() => {
                   if (!user?.id) return;
                   props.navigation?.navigate('MigratedOtherUserProfile', { userDetails: user });
-                }}
-              >
+                }}>
                 <Box className="w-9 h-9 rounded-pill bg-secondary items-center justify-center">
                   {user?.profileImage ? (
                     <Image source={{ uri: user.profileImage }} className="w-9 h-9 rounded-pill" />
@@ -144,15 +148,25 @@ export default function PostDetailsScreen(props: any) {
                   )}
                 </Box>
                 <Box className="flex-1" style={{ marginLeft: 12 }}>
-                  <Text weight="semibold" size="sm">{user?.firstName ?? ''} {user?.lastName ?? ''}</Text>
-                  {postData.createdAt && <Text muted size="xs" style={{ marginTop: 2 }}>{postData.createdAt}</Text>}
+                  <Text weight="semibold" size="sm">
+                    {user?.firstName ?? ''} {user?.lastName ?? ''}
+                  </Text>
+                  {postData.createdAt && (
+                    <Text muted size="xs" style={{ marginTop: 2 }}>
+                      {postData.createdAt}
+                    </Text>
+                  )}
                 </Box>
               </Pressable>
               <Pressable style={{ padding: 4 }}>
                 <Icon name="ellipsis-horizontal" size={20} className="text-muted-foreground" />
               </Pressable>
             </Box>
-            {postData.content ? <Text muted style={{ lineHeight: 22, marginBottom: 12 }}>{postData.content}</Text> : null}
+            {postData.content ? (
+              <Text muted style={{ lineHeight: 22, marginBottom: 12 }}>
+                {postData.content}
+              </Text>
+            ) : null}
             {postData.images && postData.images.length > 0 ? (
               <Box className="flex-row flex-wrap" style={{ marginBottom: 12 }}>
                 {postData.images.map((img) => (
@@ -168,18 +182,38 @@ export default function PostDetailsScreen(props: any) {
                 ))}
               </Box>
             ) : null}
-            <Box className="flex-row items-center border-t border-border" style={{ paddingTop: 12, marginTop: 4 }}>
-              <Pressable className="flex-row items-center" style={{ marginRight: 20 }} onPress={toggleLike}>
-                <Icon name={isLiked ? 'heart' : 'heart-outline'} size={22} className={isLiked ? 'text-destructive' : 'text-muted-foreground'} />
-                <Text size="xs" className={isLiked ? 'text-destructive' : 'text-muted-foreground'} style={{ marginLeft: 6 }}>
+            <Box
+              className="flex-row items-center border-t border-border"
+              style={{ paddingTop: 12, marginTop: 4 }}>
+              <Pressable
+                className="flex-row items-center"
+                style={{ marginRight: 20 }}
+                onPress={toggleLike}>
+                <Icon
+                  name={isLiked ? 'heart' : 'heart-outline'}
+                  size={22}
+                  className={isLiked ? 'text-destructive' : 'text-muted-foreground'}
+                />
+                <Text
+                  size="xs"
+                  className={isLiked ? 'text-destructive' : 'text-muted-foreground'}
+                  style={{ marginLeft: 6 }}>
                   {(postData.likesCount ?? 0) + (isLiked ? 1 : 0)}
                 </Text>
               </Pressable>
-              <Pressable className="flex-row items-center" style={{ marginRight: 20 }} onPress={focusCommentInput}>
+              <Pressable
+                className="flex-row items-center"
+                style={{ marginRight: 20 }}
+                onPress={focusCommentInput}>
                 <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
-                <Text size="xs" className="text-muted-foreground" style={{ marginLeft: 6 }}>{commentsCount}</Text>
+                <Text size="xs" className="text-muted-foreground" style={{ marginLeft: 6 }}>
+                  {commentsCount}
+                </Text>
               </Pressable>
-              <Pressable className="flex-row items-center" style={{ marginRight: 20 }} onPress={toggleBookmark}>
+              <Pressable
+                className="flex-row items-center"
+                style={{ marginRight: 20 }}
+                onPress={toggleBookmark}>
                 <Icon
                   name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
                   size={22}
@@ -194,7 +228,9 @@ export default function PostDetailsScreen(props: any) {
           </Card>
 
           <Card variant="ghost" style={{ marginBottom: 12 }}>
-            <Text weight="semibold" size="sm" style={{ marginBottom: 12 }}>Comments</Text>
+            <Text weight="semibold" size="sm" style={{ marginBottom: 12 }}>
+              Comentarios
+            </Text>
             {commentsLoading ? (
               <Spinner size="small" color={C.orange} style={{ marginVertical: 16 }} />
             ) : comments.length > 0 ? (
@@ -202,7 +238,10 @@ export default function PostDetailsScreen(props: any) {
                 <Box key={c.id} className="flex-row items-start" style={{ marginBottom: 14 }}>
                   <Box className="w-9 h-9 rounded-pill bg-secondary items-center justify-center">
                     {c.users?.profile_image ? (
-                      <Image source={{ uri: c.users.profile_image }} className="w-9 h-9 rounded-pill" />
+                      <Image
+                        source={{ uri: c.users.profile_image }}
+                        className="w-9 h-9 rounded-pill"
+                      />
                     ) : (
                       <Icon name="person" size={16} className="text-muted-foreground" />
                     )}
@@ -211,13 +250,21 @@ export default function PostDetailsScreen(props: any) {
                     <Text weight="semibold" size="xs">
                       {c.users?.first_name ?? ''} {c.users?.last_name ?? ''}
                     </Text>
-                    <Text muted size="xs" style={{ marginTop: 2, lineHeight: 18 }}>{c.comment}</Text>
-                    {c.created_at ? <Text muted size="xs" style={{ marginTop: 4 }}>{c.created_at}</Text> : null}
+                    <Text muted size="xs" style={{ marginTop: 2, lineHeight: 18 }}>
+                      {c.comment}
+                    </Text>
+                    {c.created_at ? (
+                      <Text muted size="xs" style={{ marginTop: 4 }}>
+                        {c.created_at}
+                      </Text>
+                    ) : null}
                   </Box>
                 </Box>
               ))
             ) : (
-              <Text muted size="xs" className="text-center" style={{ paddingVertical: 12 }}>Be the first to comment</Text>
+              <Text muted size="xs" className="text-center" style={{ paddingVertical: 12 }}>
+                Sé el primero en comentar
+              </Text>
             )}
           </Card>
         </ScrollView>
@@ -227,7 +274,7 @@ export default function PostDetailsScreen(props: any) {
             ref={commentInputRef}
             className="flex-1 bg-secondary rounded-md px-3.5 py-2.5 text-foreground font-gilroy-regular text-sm border border-border"
             style={{ maxHeight: 100 }}
-            placeholder="Write a comment..."
+            placeholder="Escribe un comentario..."
             placeholderTextColor="rgb(var(--muted-foreground))"
             value={commentText}
             onChangeText={setCommentText}
@@ -238,8 +285,7 @@ export default function PostDetailsScreen(props: any) {
             disabled={!commentText.trim() || postingComment}
             size="icon"
             radius="pill"
-            className="w-10 h-10"
-          >
+            className="w-10 h-10">
             {postingComment ? (
               <Spinner size="small" color="#FFFFFF" />
             ) : (
