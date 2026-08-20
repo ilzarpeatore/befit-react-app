@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -139,21 +139,39 @@ export default function BookmarkScreen({ navigation }: any) {
 
         {/* Actions */}
         <Box className="flex-row items-center gap-6 px-3 py-2.5 border-t border-border">
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => toggleLike(item)}>
+          <Pressable
+            style={({ pressed }: { pressed: boolean }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 6 },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => toggleLike(item)}
+          >
             <Icon
               name={item.isLiked ? 'heart' : 'heart-outline'}
               size={22}
               className={item.isLiked ? 'text-destructive' : 'text-muted-foreground'}
             />
             <Text size="sm" muted>{item.likesCount ?? 0}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => openDetail(item)}>
+          </Pressable>
+          <Pressable
+            style={({ pressed }: { pressed: boolean }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 6 },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => openDetail(item)}
+          >
             <Icon name="chatbubble-outline" size={22} className="text-muted-foreground" />
             <Text size="sm" muted>{item.commentsCount ?? 0}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7} onPress={() => unbookmark(item)}>
+          </Pressable>
+          <Pressable
+            style={({ pressed }: { pressed: boolean }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 6 },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => unbookmark(item)}
+          >
             <Icon name="bookmark" size={22} className="text-foreground" />
-          </TouchableOpacity>
+          </Pressable>
         </Box>
       </Pressable>
     );
