@@ -15,6 +15,14 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { Image as ExpoImage } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedProps,
+  useSharedValue,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -49,6 +57,15 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const FIGMA_W = 375;
 const FIGMA_H = 812;
 
+// Modulo-scope, igual que AnimatedImage en NavigationTab -- evita recrear el
+// wrapper animado de BlurView en cada render.
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+// Recorrido de scroll (px) sobre el que el header pasa de nitido a
+// glass-effect total, estilo KOTCHA: 0 = arriba del todo (imagen/gradiente
+// con toda su claridad), HERO_BLUR_SCROLL_RANGE = header ya desenfocado.
+const HERO_BLUR_SCROLL_RANGE = 160;
+const HERO_BLUR_MAX_INTENSITY = 65;
+
 // Saludo dinamico por hora local del dispositivo (no posicion solar, no hace
 // falta suncalc) -- mismos rangos que usaria cualquier reloj: mañana antes de
 // mediodia, tarde hasta el atardecer, noche el resto.
@@ -73,6 +90,17 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const firstLoadDone = useRef(false);
+
+  // Glass-effect progresivo del hero header: a medida que se hace scroll,
+  // la imagen/gradiente de fondo se va desenfocando (como en KOTCHA) en vez
+  // de desaparecer de golpe bajo el resto del contenido.
+  const scrollY = useSharedValue(0);
+  const heroScrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  const heroBlurAnimatedProps = useAnimatedProps(() => ({
+    intensity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_BLUR_MAX_INTENSITY], Extrapolation.CLAMP),
+  }));
 
   // Placeholder: contenido real de los pasos y qué señal marca cada uno
   // como "done" se define más adelante — solo se construye la mecánica
@@ -425,9 +453,11 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <ScrollView
-        ref={scrollRef}
+      <Animated.ScrollView
+        ref={scrollRef as any}
         showsVerticalScrollIndicator={false}
+        onScroll={heroScrollHandler}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -446,6 +476,16 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           end={{ x: 0.85, y: 1 }}
           style={[styles.heroHeader, { paddingTop: insets.top + r(14) }]}
         >
+          {/* Glass-effect progresivo (estilo KOTCHA): el fondo del hero se
+              desenfoca a medida que se hace scroll -- se renderiza primero
+              para quedar detrás del contenido (texto/iconos), que se
+              mantiene nítido encima. */}
+          <AnimatedBlurView
+            style={StyleSheet.absoluteFillObject}
+            animatedProps={heroBlurAnimatedProps}
+            tint="dark"
+            pointerEvents="none"
+          />
           <HStack style={styles.heroTopBar}>
             <Pressable style={styles.heroIconBtn} onPress={() => navigation?.navigate('MigratedMyProgramCalendar')}>
               <Icon name="calendar-outline" size={19} color="#FFFFFF" />
@@ -934,7 +974,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
         </Pressable>
 
         <Box style={{ height: r(16) }} />
-      </ScrollView>
+      </Animated.ScrollView>
 
       <Pressable
         onPress={() => navigation?.navigate('ScreenExplorer')}
