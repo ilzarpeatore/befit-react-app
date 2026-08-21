@@ -34,4 +34,15 @@ export const adaptiveWeekPlansApi = {
       week_start: weekStart,
       unavailable_assignment_ids: unavailableAssignmentIds,
     }),
+
+  // Reorganizar entrenamientos de la semana en curso (mover de día). Mismo
+  // criterio "siempre propuesto" que requestUnavailable -- construye la
+  // solicitud del lado cliente, el coach la aprueba antes de que se refleje
+  // en el calendario real. moves: un par {assignment_id, to_date} por cada
+  // entrenamiento que el cliente quiere mover dentro de esa misma semana.
+  requestReorder: (weekStart: string, moves: { assignmentId: number; toDate: string }[]) =>
+    apiClient.post<{ data: AdaptiveWeekPlan }>('adaptive-week-plans/request-reorder', {
+      week_start: weekStart,
+      moves: moves.map((m) => ({ assignment_id: m.assignmentId, to_date: m.toDate })),
+    }),
 };
