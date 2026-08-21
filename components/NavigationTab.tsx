@@ -183,7 +183,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
             colors={["#FF8A50", C.orange, "#E85A2A"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
           />
           <Icon name="add" size={26} color="#FFFFFF" />
         </Pressable>

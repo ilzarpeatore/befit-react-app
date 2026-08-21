@@ -481,7 +481,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
               para quedar detrás del contenido (texto/iconos), que se
               mantiene nítido encima. */}
           <AnimatedBlurView
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             animatedProps={heroBlurAnimatedProps}
             tint="dark"
             pointerEvents="none"
