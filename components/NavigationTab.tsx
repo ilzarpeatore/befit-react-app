@@ -1,24 +1,55 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import type { ComponentProps } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import {
   View,
   Pressable,
   Animated,
   StyleSheet,
   LayoutChangeEvent,
+  Modal,
 } from "react-native";
 import { Image } from "expo-image";
+import { GlassView, isGlassEffectAPIAvailable } from "@components/ui/glass-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { NavigationTabOptionsInterface } from "./_types/NavigationTab.i";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Icon } from "@components/ui/icon";
+import { Text } from "@components/ui/text";
+import { C, FONT } from "../pages/migrated/theme";
 // Modulo-scope: Animated.createAnimatedComponent(Image) solo depende del
 // import estatico de Image, no de props/estado del componente -- crearlo
 // aqui evita reconstruirlo (y su wrapper interno) en cada render.
 const AnimatedImage = Animated.createAnimatedComponent(Image);
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
+
+interface QuickAction {
+  id: string;
+  label: string;
+  icon: IoniconName;
+  route: string;
+  params?: Record<string, any>;
+}
+
+// Placeholder: mismo criterio que StartupChecklist -- construye la mecánica
+// del submenu "+" con accesos ya existentes en la app; el set final de
+// acciones se puede ajustar más adelante sin tocar la mecánica.
+const QUICK_ACTIONS: QuickAction[] = [
+  { id: "habit", label: "Añadir hábito", icon: "flame-outline", route: "MigratedHabitAdd" },
+  { id: "calendar", label: "Ver calendario", icon: "calendar-outline", route: "MigratedMyProgramCalendar" },
+  { id: "shopping", label: "Lista de la compra", icon: "cart-outline", route: "MigratedAddShoppingList" },
+  { id: "coach", label: "Hablar con tu entrenador", icon: "chatbubble-ellipses-outline", route: "MigratedChatting" },
+];
+
 /**
  * NavigationTab
- * reactnative navigation tabBar function
+ * reactnative navigation tabBar function -- barra flotante con efecto
+ * glass (GlassView, Liquid Glass real en iOS 26+, mismo componente que ya
+ * usan Fab/Modal/Popover/Tooltip -- ver components/ui/glass-view) y botón
+ * central "+" que abre un submenu de accesos rápidos, también glass.
  */
 export default function NavigationTab({ state, descriptors, navigation }: BottomTabBarProps) {
   const styles = useStyle();
@@ -32,6 +63,18 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   /* save navigation nav x location */
   const [navlocations, set_navlocations] = useState([0, 0, 0, 0]);
   const [navigationbtnactiveX] = useState(() => new Animated.Value(0));
+
+  /* submenu "+" */
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuAnim = useRef(new Animated.Value(0)).current;
+
+  const openMenu = () => {
+    setMenuOpen(true);
+    Animated.spring(menuAnim, { toValue: 1, useNativeDriver: true, friction: 8, tension: 80 }).start();
+  };
+  const closeMenu = () => {
+    Animated.timing(menuAnim, { toValue: 0, duration: 160, useNativeDriver: true }).start(() => setMenuOpen(false));
+  };
 
   const set_nav_positions = (event: LayoutChangeEvent, index: number) => {
     /* save navigation tab x positions */
@@ -65,89 +108,136 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
     return null;
   }
   return (
-    <View style={[styles.navigation, { marginBottom: safearea.bottom }]}>
-      {/*navigation bg start*/}
-      <LinearGradient
-        colors={["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.08)"]}
-        style={styles.navigationdropshadow}
-      ></LinearGradient>
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        colors={[
-          "rgba(0, 0, 0, 0)",
-          "rgba(229,229,234, 1)",
-          "rgba(0, 0, 0, 0)",
-        ]}
-        locations={[0, 0.515625, 1]}
-        style={styles.navigationglow}
-      ></LinearGradient>
-      <AnimatedImage
-        source={require("./../assets/icons/navigationellipse.png")}
-        contentFit="contain"
-        style={[
-          styles.navigationbtnactive,
-          {
-            transform: [{ translateX: navigationbtnactiveX }],
-            tintColor: "#1C1C1E",
-          },
-          navigation_ellipse_show ? { opacity: 1 } : { opacity: 0 },
-        ]}
-      />
-      {/*navigation bg end*/}
-      {/*navigation icons start*/}
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const typedOptions = options as NavigationTabOptionsInterface;
-        //if (options.tabBarVisible == false) return;
-        const isFocused = state.index === index;
+    <>
+      <View style={[styles.navigationOuter, { marginBottom: safearea.bottom || 12 }]}>
+        <View style={[styles.navigationBlur, !isGlassEffectAPIAvailable() && styles.navigationFallbackBg]}>
+          <GlassView glassEffectStyle="regular" style={StyleSheet.absoluteFill} />
+          <View style={styles.navigationglow} />
+          <AnimatedImage
+            source={require("./../assets/icons/navigationellipse.png")}
+            contentFit="contain"
+            style={[
+              styles.navigationbtnactive,
+              {
+                transform: [{ translateX: navigationbtnactiveX }],
+                tintColor: "#1C1C1E",
+              },
+              navigation_ellipse_show ? { opacity: 1 } : { opacity: 0 },
+            ]}
+          />
+          {/*navigation icons start*/}
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const typedOptions = options as NavigationTabOptionsInterface;
+            const isFocused = state.index === index;
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: "tabPress",
-            target: route.key,
-            canPreventDefault: true,
-          });
+            const onPress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: "tabLongPress",
-            target: route.key,
-          });
-        };
+            const onLongPress = () => {
+              navigation.emit({
+                type: "tabLongPress",
+                target: route.key,
+              });
+            };
 
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={typedOptions.tabBarAccessibilityLabel}
-            testID={(typedOptions as any).tabBarTestID}
-            onLayout={(event) => set_nav_positions(event, index)}
-            onPress={() => {
-              navigation_press(index, onPress);
-            }}
-            onLongPress={onLongPress}
-            style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
+            return (
+              <Pressable
+                key={route.key}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={typedOptions.tabBarAccessibilityLabel}
+                testID={(typedOptions as any).tabBarTestID}
+                onLayout={(event) => set_nav_positions(event, index)}
+                onPress={() => {
+                  navigation_press(index, onPress);
+                }}
+                onLongPress={onLongPress}
+                style={({ pressed }) => [styles.navigationbtn, pressed && { opacity: 0.2 }]}
+              >
+                <Image
+                  source={typedOptions.icon}
+                  contentFit="contain"
+                  style={[
+                    styles.navigationicon,
+                    { tintColor: isFocused ? "#000000" : "#AEAEB2" },
+                  ]}
+                />
+              </Pressable>
+            );
+          })}
+          {/*navigation icons end*/}
+        </View>
+
+        {/* Botón "+" flotante -- abre el submenu de accesos rápidos */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Accesos rápidos"
+          style={({ pressed }) => [styles.plusBtn, pressed && { opacity: 0.85 }]}
+          onPress={openMenu}
+        >
+          <LinearGradient
+            colors={["#FF8A50", C.orange, "#E85A2A"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Icon name="add" size={26} color="#FFFFFF" />
+        </Pressable>
+      </View>
+
+      {/* Submenu glass -- accesos rápidos */}
+      <Modal visible={menuOpen} transparent animationType="none" onRequestClose={closeMenu}>
+        <View style={{ flex: 1 }}>
+          <Pressable style={[StyleSheet.absoluteFill, styles.modalBackdrop]} onPress={closeMenu} />
+          <View
+            pointerEvents="box-none"
+            style={{ flex: 1, justifyContent: "flex-end", alignItems: "center", paddingBottom: safearea.bottom + 92 }}
           >
-            <Image
-              source={typedOptions.icon}
-              contentFit="contain"
+            <Animated.View
               style={[
-                styles.navigationicon,
-                { tintColor: isFocused ? "#000000" : "#AEAEB2" },
+                styles.quickMenu,
+                {
+                  opacity: menuAnim,
+                  transform: [
+                    { translateY: menuAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) },
+                    { scale: menuAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) },
+                  ],
+                },
               ]}
-            />
-          </Pressable>
-        );
-      })}
-      {/*navigation icons end*/}
-    </View>
+            >
+              <View style={[styles.quickMenuBlur, !isGlassEffectAPIAvailable() && styles.navigationFallbackBg]}>
+                <GlassView glassEffectStyle="regular" style={StyleSheet.absoluteFill} />
+                {QUICK_ACTIONS.map((action, i) => (
+                  <Pressable
+                    key={action.id}
+                    style={[styles.quickMenuItem, i > 0 && styles.quickMenuItemDivider]}
+                    onPress={() => {
+                      closeMenu();
+                      navigation.navigate(action.route, action.params);
+                    }}
+                  >
+                    <View style={styles.quickMenuIconWrap}>
+                      <Icon name={action.icon} size={18} color="#1C1C1E" />
+                    </View>
+                    <Text style={styles.quickMenuLabel}>{action.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </Animated.View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 /**
@@ -156,29 +246,40 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
  */
 function useStyle() {
   const styles = useResponsiveStyleSheet({
-    navigation: {
-      width: "100%",
-      height: '65@ratio',
-      backgroundColor: "#FFFFFF",
+    navigationOuter: {
+      position: "absolute",
+      left: '20@ratio',
+      right: '20@ratio',
       bottom: 0,
-      right: 0,
+      height: '64@ratio',
+    },
+    navigationBlur: {
       flexDirection: "row",
       justifyContent: "space-around",
       alignItems: "center",
-    },
-    navigationdropshadow: {
-      position: "absolute",
-      top: '-40@ratio',
-      right: 0,
       width: "100%",
-      height: '40@ratio',
+      height: '64@ratio',
+      borderRadius: '32@ratio',
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.4)",
+    },
+    // Fondo sólido de reserva -- solo se aplica cuando NO hay Liquid Glass
+    // real (Android, iOS<26); con glass real el material translúcido ya lo
+    // pinta el propio GlassView (mismo criterio que Fab/Modal/Popover).
+    navigationFallbackBg: {
+      backgroundColor: "rgba(255,255,255,0.92)",
+    },
+    modalBackdrop: {
+      backgroundColor: "rgba(0,0,0,0.35)",
     },
     navigationglow: {
       position: "absolute",
       top: 0,
-      right: 0,
-      width: "100%",
+      left: '14@ratio',
+      right: '14@ratio',
       height: '1@ratio',
+      backgroundColor: "rgba(255,255,255,0.5)",
     },
     navigationbtn: {
       width: '50@ratio',
@@ -187,66 +288,65 @@ function useStyle() {
       alignItems: "center",
     },
     navigationicon: {
-      width: '28@ratio',
-      height: '28@ratio',
+      width: '26@ratio',
+      height: '26@ratio',
     },
     navigationbtnactive: {
       position: "absolute",
-      top: 0,
+      top: '8@ratio',
       left: 0,
       width: '9@ratio',
       height: '5@ratio',
     },
+    plusBtn: {
+      position: "absolute",
+      top: '-22@ratio',
+      left: "50%",
+      marginLeft: '-28@ratio',
+      width: '56@ratio',
+      height: '56@ratio',
+      borderRadius: '28@ratio',
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      shadowColor: "#000",
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
+    quickMenu: {
+      width: "78%",
+      borderRadius: '20@ratio',
+      overflow: "hidden",
+    },
+    quickMenuBlur: {
+      paddingVertical: '8@ratio',
+    },
+    quickMenuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: '12@ratio',
+      paddingHorizontal: '16@ratio',
+      gap: '12@ratio',
+    },
+    quickMenuItemDivider: {
+      borderTopWidth: 1,
+      borderTopColor: "rgba(0,0,0,0.06)",
+    },
+    quickMenuIconWrap: {
+      width: '32@ratio',
+      height: '32@ratio',
+      borderRadius: '16@ratio',
+      backgroundColor: "rgba(0,0,0,0.06)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    quickMenuLabel: {
+      fontSize: '14@ratio',
+      fontFamily: FONT.medium,
+      color: "#1C1C1E",
+    },
   });
   return styles
 }
-/**
- * style
- * * you can remove this const
- * * use this style if you don't want to use ratio
- */
-const styles_old = StyleSheet.create({
-  navigation: {
-    width: "100%",
-    height: 65,
-    backgroundColor: "#1A1735",
-    bottom: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  navigationdropshadow: {
-    position: "absolute",
-    top: -40,
-    right: 0,
-    width: "100%",
-    height: 40,
-  },
-  navigationglow: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: "100%",
-    height: 1,
-  },
-  navigationbtn: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  navigationicon: {
-    width: 28,
-    height: 28,
-    resizeMode: "contain",
-  },
-  navigationbtnactive: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: 9,
-    height: 5,
-    resizeMode: "contain",
-  },
-});

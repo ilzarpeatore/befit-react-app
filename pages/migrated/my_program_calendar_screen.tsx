@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView, Alert, View,
@@ -138,6 +138,87 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [submittingSelection, setSubmittingSelection] = useState(false);
+
+  // Vida real (2026-08-21): el cliente solo puede ver la programación de la
+  // semana en curso en vista "Semana" -- ir más allá muestra un aviso en vez
+  // de navegar. La vista "Mes" no se restringe (sirve para consultar
+  // historial/planificación general, no para "trabajar" el día a día).
+  const [weekBlockedMessage, setWeekBlockedMessage] = useState<string | null>(null);
+  const weekBlockedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (weekBlockedTimeoutRef.current) clearTimeout(weekBlockedTimeoutRef.current);
+  }, []);
+  const showWeekBlockedMessage = (message: string) => {
+    if (weekBlockedTimeoutRef.current) clearTimeout(weekBlockedTimeoutRef.current);
+    setWeekBlockedMessage(message);
+    weekBlockedTimeoutRef.current = setTimeout(() => setWeekBlockedMessage(null), 3500);
+  };
+
+  // Reorganizar entrenamientos moviéndolos de día -- solo tiene sentido
+  // dentro de la semana en curso (la única que el cliente puede "trabajar",
+  // ver bloqueo de semanas futuras más arriba). Igual que selectionMode,
+  // construye una propuesta (moves) que se envía al coach: no reordena el
+  // calendario real hasta que se aprueba.
+  const [reorderMode, setReorderMode] = useState(false);
+  const [movingWorkout, setMovingWorkout] = useState<{ assignmentId: number; fromDate: string; title: string } | null>(null);
+  const [pendingMoves, setPendingMoves] = useState<Map<number, { fromDate: string; toDate: string; title: string }>>(new Map());
+  const [submittingReorder, setSubmittingReorder] = useState(false);
+
+  const isCurrentWeek = periodMode === 'week' && toDateKey(weekAnchor) === toDateKey(startOfWeekMonday(today));
+
+  const cancelReorderMode = () => {
+    setReorderMode(false);
+    setMovingWorkout(null);
+    setPendingMoves(new Map());
+  };
+
+  const selectWorkoutToMove = (w: CalendarWorkout, dateKey: string) => {
+    if (w.assignmentId == null) return;
+    setMovingWorkout({ assignmentId: w.assignmentId, fromDate: dateKey, title: w.title || 'Entrenamiento' });
+  };
+
+  const applyMoveToDay = (toDateKey: string) => {
+    if (!movingWorkout || toDateKey === movingWorkout.fromDate) {
+      setMovingWorkout(null);
+      return;
+    }
+    setPendingMoves((prev) => {
+      const next = new Map(prev);
+      next.set(movingWorkout.assignmentId, { fromDate: movingWorkout.fromDate, toDate: toDateKey, title: movingWorkout.title });
+      return next;
+    });
+    setMovingWorkout(null);
+  };
+
+  const submitReorder = async () => {
+    if (pendingMoves.size === 0) return;
+    setSubmittingReorder(true);
+    const weekStartKey = toDateKey(weekAnchor);
+    let ok = false;
+    try {
+      await adaptiveWeekPlansApi.requestReorder(
+        weekStartKey,
+        Array.from(pendingMoves, ([assignmentId, m]) => ({ assignmentId, toDate: m.toDate }))
+      );
+      ok = true;
+    } catch {
+      ok = false;
+    } finally {
+      setSubmittingReorder(false);
+    }
+    const count = pendingMoves.size;
+    cancelReorderMode();
+    if (ok) {
+      Alert.alert(
+        'Solicitud enviada',
+        count > 1
+          ? `Se propusieron ${count} cambios de día. Tu entrenador los revisará antes de aplicarlos.`
+          : 'Tu entrenador revisará el cambio antes de aplicarlo a tu calendario.'
+      );
+    } else {
+      Alert.alert('No se pudo enviar', 'Inténtalo de nuevo en unos minutos.');
+    }
+  };
 
   const dominantAnchor = periodMode === 'week' ? addDays(weekAnchor, 3) : selectedMonth;
   const ym = `${dominantAnchor.getFullYear()}-${dominantAnchor.getMonth() + 1}`;
@@ -296,6 +377,19 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   };
 
   const goNext = () => {
+    if (periodMode === 'week') {
+      const currentWeekStart = startOfWeekMonday(today);
+      const nextAnchor = addDays(weekAnchor, 7);
+      const weeksAhead = Math.round((nextAnchor.getTime() - currentWeekStart.getTime()) / (7 * 86400000));
+      if (weeksAhead >= 1) {
+        showWeekBlockedMessage(
+          weeksAhead === 1
+            ? 'Todavía no puedes ver la próxima semana. Se desbloqueará cuando comience.'
+            : 'Tienes semanas anteriores sin completar. Ponte al día antes de avanzar.'
+        );
+        return;
+      }
+    }
     setSelectedDayKey(null);
     if (periodMode === 'month') {
       setSelectedMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
@@ -357,12 +451,22 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   const renderWorkoutCard = (w: CalendarWorkout, dateKey: string, key: string | number) => {
     const completed = isWorkoutCompleted(w, dateKey);
+    const pendingMove = w.assignmentId != null ? pendingMoves.get(w.assignmentId) : undefined;
+    const isSelectedToMove = !!movingWorkout && movingWorkout.assignmentId === w.assignmentId && movingWorkout.fromDate === dateKey;
+    const canMove = reorderMode && !completed && w.assignmentId != null;
     return (
-      <Pressable key={key} onPress={() => goToWorkout(w, dateKey)}>
+      <Pressable
+        key={key}
+        onPress={() => (reorderMode ? (canMove && selectWorkoutToMove(w, dateKey)) : goToWorkout(w, dateKey))}
+        disabled={reorderMode && !canMove}
+      >
         <Card
           variant="elevated"
           className="flex-row items-center p-3"
-          style={completed ? styles.workoutCardCompleted : { marginTop: 8 }}
+          style={[
+            completed ? styles.workoutCardCompleted : { marginTop: 8 },
+            isSelectedToMove && styles.workoutCardMoving,
+          ]}
         >
           <Image source={{ uri: getWorkoutImage(w.title || '') }} contentFit="cover" style={styles.workoutImage} />
           <VStack style={{ flex: 1, marginLeft: 14 }}>
@@ -373,8 +477,18 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
                 <Text style={styles.completedBadgeText}>Completado</Text>
               </HStack>
             )}
+            {pendingMove && (
+              <HStack space="xs" style={{ marginTop: 4 }}>
+                <Icon name="arrow-forward-circle" size={13} color={C.orange} />
+                <Text style={styles.pendingMoveText}>Propuesto para {formatDayLabel(pendingMove.toDate)}</Text>
+              </HStack>
+            )}
           </VStack>
-          <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+          {reorderMode ? (
+            canMove && <Icon name="reorder-three-outline" size={20} color={isSelectedToMove ? C.orange : C.textSecondary} />
+          ) : (
+            <Icon name="chevron-forward" size={20} color={C.textSecondary} />
+          )}
         </Card>
       </Pressable>
     );
@@ -516,13 +630,30 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   return (
     <SafeAreaView style={styles.container}>
       <HStack style={styles.headerRow}>
-        <Text style={styles.header}>{selectionMode ? 'Marca los días' : 'Mi programa'}</Text>
+        <Text style={styles.header}>
+          {selectionMode ? 'Marca los días' : reorderMode ? 'Reorganiza tu semana' : 'Mi programa'}
+        </Text>
         {selectionMode ? (
           <Pressable onPress={cancelSelectionMode}>
             <Text style={styles.unavailableCancelText}>Cancelar</Text>
           </Pressable>
+        ) : reorderMode ? (
+          <Pressable onPress={cancelReorderMode}>
+            <Text style={styles.unavailableCancelText}>Cancelar</Text>
+          </Pressable>
         ) : (
           <HStack style={styles.viewToggle}>
+            {isCurrentWeek && (
+              <Pressable
+                style={styles.viewToggleBtn}
+                onPress={() => {
+                  setViewMode('list');
+                  setReorderMode(true);
+                }}
+              >
+                <Icon name="swap-vertical-outline" size={18} color={C.textSecondary} />
+              </Pressable>
+            )}
             <Pressable
               style={styles.viewToggleBtn}
               onPress={() => setSelectionMode(true)}
@@ -547,6 +678,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
       {selectionMode && (
         <Text style={styles.unavailableHint}>
           Toca los días con entrenamiento que no vas a poder hacer. Tu entrenador revisará la solicitud antes de aplicarla.
+        </Text>
+      )}
+      {reorderMode && (
+        <Text style={styles.unavailableHint}>
+          {movingWorkout
+            ? `Toca el día al que quieres mover "${movingWorkout.title}".`
+            : 'Toca un entrenamiento para elegir un nuevo día. Tu entrenador revisará los cambios.'}
         </Text>
       )}
 
@@ -584,6 +722,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           <Icon name="chevron-forward" size={22} color={C.textPrimary} />
         </Pressable>
       </HStack>
+
+      {weekBlockedMessage && (
+        <Box style={styles.weekBlockedBanner}>
+          <Icon name="lock-closed" size={16} color={C.textSecondary} />
+          <Text style={styles.weekBlockedText}>{weekBlockedMessage}</Text>
+        </Box>
+      )}
 
       {isLoading ? (
         <Box style={styles.loader}>
@@ -640,20 +785,33 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </Box>
       ) : (
         <ScrollView contentContainerStyle={{ paddingVertical: 16 }}>
-          {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day) => (
-            <Box key={day.date} style={styles.daySection}>
-              <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
-              {checkinsForDay(day.date).map(renderCheckinCard)}
-              {day.workouts.length > 0 ? (
-                day.workouts.map((w, wIdx) => renderWorkoutCard(w, day.date, wIdx))
-              ) : checkinsForDay(day.date).length === 0 ? (
-                <Card variant="ghost" className="flex-row items-center gap-2 p-3.5 rounded-sm" style={{ marginTop: 8 }}>
-                  <Icon name="moon-outline" size={16} color={C.textSecondary} />
-                  <Text style={styles.restDayText}>Día de descanso</Text>
-                </Card>
-              ) : null}
-            </Box>
-          ))}
+          {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day) => {
+            const isDropTarget = reorderMode && !!movingWorkout && movingWorkout.fromDate !== day.date;
+            return (
+              <Box key={day.date} style={[styles.daySection, isDropTarget && styles.daySectionDropTarget]}>
+                <Pressable disabled={!isDropTarget} onPress={() => applyMoveToDay(day.date)}>
+                  <HStack className="items-center justify-between">
+                    <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
+                    {isDropTarget && (
+                      <HStack space="xs" className="items-center">
+                        <Icon name="arrow-down-circle-outline" size={16} color={C.orange} />
+                        <Text style={styles.dropTargetText}>Mover aquí</Text>
+                      </HStack>
+                    )}
+                  </HStack>
+                </Pressable>
+                {checkinsForDay(day.date).map(renderCheckinCard)}
+                {day.workouts.length > 0 ? (
+                  day.workouts.map((w, wIdx) => renderWorkoutCard(w, day.date, wIdx))
+                ) : checkinsForDay(day.date).length === 0 ? (
+                  <Card variant="ghost" className="flex-row items-center gap-2 p-3.5 rounded-sm" style={{ marginTop: 8 }}>
+                    <Icon name="moon-outline" size={16} color={C.textSecondary} />
+                    <Text style={styles.restDayText}>Día de descanso</Text>
+                  </Card>
+                ) : null}
+              </Box>
+            );
+          })}
         </ScrollView>
       )}
 
@@ -671,6 +829,25 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
               <Spinner size="small" color="#FFFFFF" />
             ) : (
               <ButtonText style={styles.unavailableSubmitText}>Enviar solicitud</ButtonText>
+            )}
+          </Button>
+        </HStack>
+      )}
+
+      {reorderMode && pendingMoves.size > 0 && (
+        <HStack style={styles.unavailableBar}>
+          <Text style={styles.unavailableBarText}>
+            {pendingMoves.size} cambio{pendingMoves.size !== 1 ? 's' : ''} de día
+          </Text>
+          <Button
+            style={[styles.unavailableSubmitBtn, submittingReorder && { opacity: 0.6 }] as any}
+            onPress={submitReorder}
+            disabled={submittingReorder}
+          >
+            {submittingReorder ? (
+              <Spinner size="small" color="#FFFFFF" />
+            ) : (
+              <ButtonText style={styles.unavailableSubmitText}>Enviar cambios</ButtonText>
             )}
           </Button>
         </HStack>
@@ -727,6 +904,18 @@ const styles = StyleSheet.create({
   },
   monthBtn: { padding: 8 },
   monthText: { fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary },
+  weekBlockedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: C.surfaceLight,
+  },
+  weekBlockedText: { flex: 1, fontSize: 13, fontFamily: FONT.medium, color: C.textSecondary },
   weekdayHeaderRow: {
     flexDirection: 'row',
     paddingHorizontal: 12,
@@ -819,6 +1008,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   daySection: { marginBottom: 16 },
+  daySectionDropTarget: {
+    marginHorizontal: 8,
+    paddingHorizontal: 8,
+    paddingTop: 4,
+    borderRadius: 12,
+    backgroundColor: C.brand10,
+  },
+  dropTargetText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.orange, marginRight: 8 },
   dayDate: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, paddingHorizontal: 16 },
   workoutImage: { width: 72, height: 72, borderRadius: 16 },
   checkinIconWrap: {
@@ -836,8 +1033,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.success50,
   },
+  workoutCardMoving: {
+    borderWidth: 1,
+    borderColor: C.orange,
+    backgroundColor: C.brand10,
+  },
   workoutTitle: { flex: 1, fontSize: 15, fontFamily: FONT.bold, color: C.textPrimary },
   completedBadgeText: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.success },
+  pendingMoveText: { fontFamily: FONT.semiBold, fontSize: 11.5, color: C.orange },
   restDayText: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 32 },
   emptyText: { fontSize: 16, fontFamily: FONT.medium, color: C.textSecondary, textAlign: 'center' },
