@@ -419,11 +419,6 @@ export default function WorkoutSessionScreen(props: Props) {
     return Math.round(total);
   }, [allExercises]);
 
-  const hasAnyProgress = useMemo(
-    () => allExercises.some((ex) => ex.rows.some((r) => r.completed)),
-    [allExercises]
-  );
-
   // Sets planos {exercise_id, weight, reps} de todas las series completadas
   // de la sesion - se envian tal cual a muscleVolumeApi.compute() en la
   // pantalla de resumen, sin depender de que ya esten guardadas en BD.
@@ -786,12 +781,12 @@ export default function WorkoutSessionScreen(props: Props) {
   };
 
   const onClose = () => {
-    if (!hasAnyProgress) {
-      // Sin ninguna serie marcada -- no hay nada que retomar, se descarta.
-      clearPersistedSession();
-      navigation?.goBack();
-      return;
-    }
+    // Siempre confirma mientras el entrenamiento está en curso -- antes se
+    // saltaba el diálogo si no había ninguna serie marcada (hasAnyProgress),
+    // así que cerrar justo al empezar (0 series, cronómetro ya corriendo)
+    // salía directo sin preguntar. onConfirm ya hace clearPersistedSession()
+    // + goBack(), así que el comportamiento de "sin progreso" no cambia,
+    // solo se deja de saltar la confirmación.
     setCloseConfirmVisible(true);
   };
 
