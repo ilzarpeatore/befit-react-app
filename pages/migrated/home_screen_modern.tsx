@@ -16,6 +16,7 @@ import { VStack } from '@components/ui/vstack';
 import { Divider } from '@components/ui/divider';
 import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
+import StartupChecklist, { StartupChecklistStep } from '@components/StartupChecklist';
 import { AvatarMem } from '@components/Avatar';
 import { C, FONT } from './theme';
 import { dashboardApi } from '../../api/dashboard';
@@ -69,6 +70,18 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
   const [resourcesList, setResourcesList] = useState<ResourceListItem[]>([]);
   const [pendingCheckins, setPendingCheckins] = useState<CheckInAssignment[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
+
+  // Placeholder: contenido y señales de "done" reales se definen más
+  // adelante. Por ahora solo construye la mecánica de StartupChecklist.
+  const startupSteps: StartupChecklistStep[] = useMemo(() => [
+    { id: 'goal', label: 'Establece tu objetivo', done: true, onPress: () => navigation?.navigate('MigratedMainGoal') },
+    { id: 'plan', label: 'Selecciona tu plan', done: true },
+    { id: 'device', label: 'Conecta tu dispositivo (opcional)', done: false, onPress: () => navigation?.navigate('MigratedLinkDeviceChoice') },
+    { id: 'coach', label: 'Di "Hola" a tu entrenador', done: false, onPress: () => navigation?.navigate('MigratedChatting') },
+    { id: 'push', label: 'Activa las notificaciones push', done: false, onPress: () => navigation?.navigate('MigratedNotification') },
+    { id: 'first-workout', label: 'Completa tu primer entrenamiento', done: false },
+    { id: 'week-2', label: 'Comienza tu segunda semana', done: false },
+  ], [navigation]);
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
@@ -397,6 +410,10 @@ export default function HomeScreenModern(props: HomeScreenModernProps) {
             </VStack>
             <Icon name="chevron-forward" size={24} color={C.white} />
           </Pressable>
+        </Box>
+
+        <Box style={{ paddingHorizontal: r(20), marginTop: r(16) }}>
+          <StartupChecklist steps={startupSteps} />
         </Box>
 
         {errorMessage && (
