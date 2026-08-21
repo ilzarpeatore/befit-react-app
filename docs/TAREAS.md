@@ -4,6 +4,20 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Hero con foto real por hora + modo oscuro automático en Home v2 (2026-08-21)
+
+**Foto real de fondo en el hero** (`home_screen_modern_v2.tsx`, sustituye al `LinearGradient` plano): 3 fotos del cliente convertidas a JPEG (~250-300KB c/u, originales PNG de 2-3MB) en `assets/hero-sunrise-sunset.jpg` / `hero-day.jpg` / `hero-night.jpg`, elegidas por `getHeroImageForHour()` según la hora local (5-8h y 19-21h → amanecer/atardecer, 8-19h → día, resto → noche). Scrim oscuro fijo sobre la foto para que el texto blanco de la cabecera mantenga contraste.
+
+**El blur solo no bastaba** para que la foto "desapareciera" en scroll (se quedaba borrosa pero reconocible): añadido un oscurecido animado (`heroDarkenAnimatedStyle`, sube de 0 a 92% de opacidad en el mismo recorrido que el blur, que también se subió de intensidad 65 a 100) que sí la tapa del todo. Más un degradado de cierre fijo (no animado) en el borde inferior del header, para que el límite entre la foto y el resto del contenido no se note como un corte.
+
+**Modo oscuro automático, solo en Home v2**: `C_DARK` nuevo en `theme.ts` (mismas claves que `C`) + `helper/useAppColorMode.ts` — modo `auto` (oscuro de 21:00 a 5:00, mismo criterio horario que la foto de noche del hero) con override manual Claro/Oscuro persistido en `AsyncStorage`. Selector "Apariencia" en el menú de ajustes de Home v2. Home v2 sombrea el `C` importado de `theme.ts` con los colores resueltos del hook, para no reescribir los ~85 usos `C.xxx` ya existentes en el fichero.
+
+**Investigado de paso, alcance real del problema de estilos hardcodeados** (pie de la pregunta "¿todas las screens respetan theme.ts?"): de 82 pantallas en `pages/migrated/`, 64 importan `theme.ts` y 18 no — de esas 18, **6 hardcodean colores hex directamente** (`bookmark_screen.tsx`, `favourite_screen.tsx`, `recipe_category_list_screen.tsx`, `session_history_detail_screen.tsx`, `view_equipment_screen.tsx`, `workout_history_screen.tsx`). Las otras 12 no usan hex sueltos, usan `className` de NativeWind. Las 14 pantallas de `pages/auth/` no importan `theme.ts` en absoluto — dependen igualmente de NativeWind. `global.css` ya define tokens de modo claro/oscuro completos (`:root`, `@media (prefers-color-scheme: dark)`, `:root.dark`/`:root.light`), pero están "apagados" porque `App.tsx` fija `GluestackUIProvider mode="light"` fijo — es decir, hay dos sistemas de estilos conviviendo (NativeWind+tokens, ya preparado para oscuro, y el objeto plano `theme.ts`, sin variante oscura hasta esta sesión).
+
+**Pendiente real, para más adelante**: solucionar de raíz el problema de las pantallas con estilos hardcodeados en vez de ir arrastrándolo — probablemente en dos frentes: (1) desbloquear `GluestackUIProvider mode` en `App.tsx` (hoy fijo a `"light"`) para que las pantallas basadas en NativeWind/`className` respondan gratis al modo oscuro vía los tokens que ya existen en `global.css`; (2) migrar progresivamente las pantallas que usan `C` de `theme.ts` (64 en `pages/migrated/`, más las que hardcodean hex directo) a un hook tipo `useAppColorMode` en vez de importar `C` como objeto estático — hoy solo Home v2 lo hace. Es un cambio de alcance grande (prácticamente cada pantalla migrada), no una tarea de una sesión.
+
+---
+
 ## ✅ Bloqueo de semana futura, reorganizar entrenamientos, glass-effect en Home v2 y nuevo menú (2026-08-21)
 
 Cinco encargos de UX del cliente, implementados en orden de complejidad sobre `home_screen_modern_v2.tsx` (todos los cambios de Home van sobre la v2, nunca sobre `home_screen_modern.tsx`) y `my_program_calendar_screen.tsx`.
