@@ -26,6 +26,7 @@ import { VStack } from '@components/ui/vstack';
 import { Divider } from '@components/ui/divider';
 import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
+import StartupChecklist, { StartupChecklistStep } from '@components/StartupChecklist';
 import { AvatarMem } from '@components/Avatar';
 import { C, FONT } from './theme';
 import { dashboardApi, BannerSliderItem } from '../../api/dashboard';
@@ -72,6 +73,19 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const firstLoadDone = useRef(false);
+
+  // Placeholder: contenido real de los pasos y qué señal marca cada uno
+  // como "done" se define más adelante — solo se construye la mecánica
+  // (ring de progreso + hoja con el listado) por ahora.
+  const startupSteps: StartupChecklistStep[] = useMemo(() => [
+    { id: 'goal', label: 'Establece tu objetivo', done: true, onPress: () => navigation?.navigate('MigratedMainGoal') },
+    { id: 'plan', label: 'Selecciona tu plan', done: true },
+    { id: 'device', label: 'Conecta tu dispositivo (opcional)', done: false, onPress: () => navigation?.navigate('MigratedLinkDeviceChoice') },
+    { id: 'coach', label: 'Di "Hola" a tu entrenador', done: false, onPress: () => navigation?.navigate('MigratedChatting') },
+    { id: 'push', label: 'Activa las notificaciones push', done: false, onPress: () => navigation?.navigate('MigratedNotification') },
+    { id: 'first-workout', label: 'Completa tu primer entrenamiento', done: false },
+    { id: 'week-2', label: 'Comienza tu segunda semana', done: false },
+  ], [navigation]);
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
   const r = useCallback((n: number) => Math.round(n * sc), [sc]);
@@ -533,6 +547,10 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
             </Pressable>
           </HStack>
         )}
+
+        <Box style={{ paddingHorizontal: r(20), marginTop: r(16) }}>
+          <StartupChecklist steps={startupSteps} />
+        </Box>
 
         {/* Mi plan de hoy — para un cliente 1:1 esta ES su sección personalizada
             (viene del calendario que le asigna su coach, ProgramDayAssignment),
