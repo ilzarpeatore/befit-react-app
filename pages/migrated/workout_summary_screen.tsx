@@ -224,7 +224,7 @@ export default function WorkoutSummaryScreen(props: Props) {
     if (typeof navigation?.popToTop === 'function') {
       navigation.popToTop();
     } else {
-      navigation?.navigate('MigratedHomeModern');
+      navigation?.navigate('MigratedHomeModernV2');
     }
   };
 

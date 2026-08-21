@@ -189,8 +189,6 @@ function Homenavigator() {
         options={
           {
             icon: require("@assets/icons/nav1.png"),
-            tabBarVisible: false,
-            tabBarStyle: { display: 'none' }
           } as NavigationTabOptionsInterface
         }
       />
@@ -201,7 +199,7 @@ function Homenavigator() {
 function MigratedNavigator() {
   const MStack = createStackNavigator();
   return (
-    <MStack.Navigator initialRouteName="MigratedHomeModern" screenOptions={{ headerShown: false }}>
+    <MStack.Navigator initialRouteName="MigratedHomeModernV2" screenOptions={{ headerShown: false }}>
       <MStack.Screen name="MigratedAboutApp" component={AboutAppScreen} />
       <MStack.Screen name="MigratedAboutUs" component={AboutUsScreen} />
       <MStack.Screen name="MigratedActivityTracker" component={ActivityTrackerScreen} />
