@@ -19,6 +19,7 @@ import { BlurView } from 'expo-blur';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedProps,
+  useAnimatedStyle,
   useSharedValue,
   interpolate,
   Extrapolation,
@@ -61,10 +62,13 @@ const FIGMA_H = 812;
 // wrapper animado de BlurView en cada render.
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 // Recorrido de scroll (px) sobre el que el header pasa de nitido a
-// glass-effect total, estilo KOTCHA: 0 = arriba del todo (imagen/gradiente
-// con toda su claridad), HERO_BLUR_SCROLL_RANGE = header ya desenfocado.
+// glass-effect total, estilo KOTCHA: 0 = arriba del todo (foto con toda su
+// claridad), HERO_BLUR_SCROLL_RANGE = la foto ya no se distingue -- blur al
+// máximo (casi opaco de por sí) + oscurecido animado por encima que la tapa
+// del todo, para que "desaparezca" de verdad y no se quede a medias.
 const HERO_BLUR_SCROLL_RANGE = 160;
-const HERO_BLUR_MAX_INTENSITY = 65;
+const HERO_BLUR_MAX_INTENSITY = 100;
+const HERO_DARKEN_MAX_OPACITY = 0.92;
 
 // Saludo dinamico por hora local del dispositivo (no posicion solar, no hace
 // falta suncalc) -- mismos rangos que usaria cualquier reloj: mañana antes de
@@ -118,6 +122,13 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const heroBlurAnimatedProps = useAnimatedProps(() => ({
     intensity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_BLUR_MAX_INTENSITY], Extrapolation.CLAMP),
   }));
+  // El blur solo desenfoca -- no basta para que la foto "desaparezca" del
+  // todo (sigue habiendo luz/color de fondo). Un oscurecido animado encima,
+  // que sube de 0 a casi opaco en el mismo recorrido, es lo que de verdad la
+  // tapa hasta el punto de no verse.
+  const heroDarkenAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
+  }));
 
   // Placeholder: contenido real de los pasos y qué señal marca cada uno
   // como "done" se define más adelante — solo se construye la mecánica
@@ -168,6 +179,8 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     // + scrim oscuro -- antes era un LinearGradient plano; el texto blanco de
     // encima sigue necesitando fondo oscuro real, ahora lo da el scrim.
     heroHeader: { borderBottomLeftRadius: r(32), borderBottomRightRadius: r(32), paddingBottom: r(24), paddingHorizontal: r(20), overflow: 'hidden' as const },
+    heroDarkenLayer: { backgroundColor: '#1A100A' },
+    heroCloseGradient: { position: 'absolute' as const, left: 0, right: 0, bottom: 0, height: r(90) },
     heroTopBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' as const, marginBottom: r(20) },
     heroIconBtn: { width: r(38), height: r(38), borderRadius: r(19), backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center' as const, justifyContent: 'center' as const },
     heroGreeting: { flex: 1, fontSize: r(15), fontFamily: FONT.bold, color: '#FFFFFF', textAlign: 'center' as const, marginHorizontal: r(10) },
@@ -510,6 +523,22 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
             style={StyleSheet.absoluteFill}
             animatedProps={heroBlurAnimatedProps}
             tint="dark"
+            pointerEvents="none"
+          />
+          {/* Oscurecido animado: sube junto con el blur hasta tapar la foto
+              casi del todo -- sin esto el blur por sí solo no llega a "no
+              verse", se queda en una foto borrosa pero reconocible. */}
+          <Animated.View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, styles.heroDarkenLayer, heroDarkenAnimatedStyle]}
+          />
+          {/* Degradado de cierre, fijo (no animado): sin él, el límite
+              inferior de la foto contra el resto del contenido se nota como
+              un corte -- este remate suaviza esa transición siempre, esté o
+              no en marcha el efecto de scroll. */}
+          <LinearGradient
+            colors={['rgba(20,11,6,0)', 'rgba(20,11,6,0.65)']}
+            style={styles.heroCloseGradient}
             pointerEvents="none"
           />
           <HStack style={styles.heroTopBar}>
