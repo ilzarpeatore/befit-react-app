@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView, Alert,
@@ -137,6 +137,21 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [submittingSelection, setSubmittingSelection] = useState(false);
 
+  // Vida real (2026-08-21): el cliente solo puede ver la programación de la
+  // semana en curso en vista "Semana" -- ir más allá muestra un aviso en vez
+  // de navegar. La vista "Mes" no se restringe (sirve para consultar
+  // historial/planificación general, no para "trabajar" el día a día).
+  const [weekBlockedMessage, setWeekBlockedMessage] = useState<string | null>(null);
+  const weekBlockedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (weekBlockedTimeoutRef.current) clearTimeout(weekBlockedTimeoutRef.current);
+  }, []);
+  const showWeekBlockedMessage = (message: string) => {
+    if (weekBlockedTimeoutRef.current) clearTimeout(weekBlockedTimeoutRef.current);
+    setWeekBlockedMessage(message);
+    weekBlockedTimeoutRef.current = setTimeout(() => setWeekBlockedMessage(null), 3500);
+  };
+
   const dominantAnchor = periodMode === 'week' ? addDays(weekAnchor, 3) : selectedMonth;
   const ym = `${dominantAnchor.getFullYear()}-${dominantAnchor.getMonth() + 1}`;
 
@@ -261,6 +276,19 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   };
 
   const goNext = () => {
+    if (periodMode === 'week') {
+      const currentWeekStart = startOfWeekMonday(today);
+      const nextAnchor = addDays(weekAnchor, 7);
+      const weeksAhead = Math.round((nextAnchor.getTime() - currentWeekStart.getTime()) / (7 * 86400000));
+      if (weeksAhead >= 1) {
+        showWeekBlockedMessage(
+          weeksAhead === 1
+            ? 'Todavía no puedes ver la próxima semana. Se desbloqueará cuando comience.'
+            : 'Tienes semanas anteriores sin completar. Ponte al día antes de avanzar.'
+        );
+        return;
+      }
+    }
     setSelectedDayKey(null);
     if (periodMode === 'month') {
       setSelectedMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
@@ -550,6 +578,13 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </Pressable>
       </HStack>
 
+      {weekBlockedMessage && (
+        <Box style={styles.weekBlockedBanner}>
+          <Icon name="lock-closed" size={16} color={C.textSecondary} />
+          <Text style={styles.weekBlockedText}>{weekBlockedMessage}</Text>
+        </Box>
+      )}
+
       {isLoading ? (
         <Box style={styles.loader}>
           <Spinner size="large" color={C.textPrimary} />
@@ -688,6 +723,18 @@ const styles = StyleSheet.create({
   },
   monthBtn: { padding: 8 },
   monthText: { fontSize: 16, fontFamily: FONT.bold, color: C.textPrimary },
+  weekBlockedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: C.surfaceLight,
+  },
+  weekBlockedText: { flex: 1, fontSize: 13, fontFamily: FONT.medium, color: C.textSecondary },
   weekdayHeaderRow: {
     flexDirection: 'row',
     paddingHorizontal: 12,
