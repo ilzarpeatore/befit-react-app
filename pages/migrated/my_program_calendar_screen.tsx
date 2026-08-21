@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   StyleSheet,
   ScrollView, Alert,
+  View,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS, SharedValue } from 'react-native-reanimated';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -46,6 +49,108 @@ interface CalendarDayModel {
 interface MyProgramCalendarScreenProps {
   navigation?: any;
   route?: any;
+}
+
+interface DropZone {
+  dateKey: string;
+  yStart: number;
+  yEnd: number;
+}
+
+function hitTestDropZone(y: number, zones: DropZone[]): string | null {
+  'worklet';
+  for (const z of zones) {
+    if (y >= z.yStart && y <= z.yEnd) return z.dateKey;
+  }
+  return null;
+}
+
+interface DraggableWorkoutCardProps {
+  dateKey: string;
+  assignmentId: number | null;
+  canDrag: boolean;
+  dragAssignmentId: SharedValue<number | null>;
+  dragTranslateX: SharedValue<number>;
+  dragTranslateY: SharedValue<number>;
+  dropZones: SharedValue<DropZone[]>;
+  onDragStart: () => void;
+  onDragHover: (dateKey: string | null) => void;
+  onDragEnd: (toDateKey: string | null) => void;
+  children: React.ReactElement;
+}
+
+// Arrastre real (finger drag) del entrenamiento -- solo se activa cuando
+// canDrag es true (semana en curso + vista Semana/Lista, ver renderWorkoutCard).
+// Fuera de ese caso el gesto queda deshabilitado y la tarjeta se comporta
+// exactamente igual que antes (solo toque). El wrapper anima su propia
+// posición leyendo los shared values del padre -- solo la tarjeta que
+// realmente se está arrastrando (dragAssignmentId coincide) se mueve.
+function DraggableWorkoutCard({
+  dateKey,
+  assignmentId,
+  canDrag,
+  dragAssignmentId,
+  dragTranslateX,
+  dragTranslateY,
+  dropZones,
+  onDragStart,
+  onDragHover,
+  onDragEnd,
+  children,
+}: DraggableWorkoutCardProps) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const isDragging = assignmentId != null && dragAssignmentId.value === assignmentId;
+    return {
+      transform: [
+        { translateX: isDragging ? dragTranslateX.value : 0 },
+        { translateY: isDragging ? dragTranslateY.value : 0 },
+      ],
+      zIndex: isDragging ? 50 : 0,
+      elevation: isDragging ? 12 : 0,
+      shadowOpacity: isDragging ? 0.2 : 0,
+      opacity: isDragging ? 0.96 : 1,
+    };
+  });
+
+  const panGesture = Gesture.Pan()
+    .enabled(canDrag)
+    .onStart(() => {
+      // Reset explícito -- si el rebote (withSpring) de un drag anterior
+      // sobre OTRA tarjeta todavía no había terminado, dragTranslateX/Y
+      // podían traer un valor residual y esta tarjeta "saltaría" antes de
+      // empezar a seguir el dedo.
+      dragTranslateX.value = 0;
+      dragTranslateY.value = 0;
+      // Se fija aquí, en el hilo de UI, para que la tarjeta empiece a
+      // seguir el dedo sin esperar a la vuelta por runOnJS/JS thread.
+      dragAssignmentId.value = assignmentId;
+      runOnJS(onDragStart)();
+    })
+    .onUpdate((e) => {
+      dragTranslateX.value = e.translationX;
+      dragTranslateY.value = e.translationY;
+      runOnJS(onDragHover)(hitTestDropZone(e.absoluteY, dropZones.value));
+    })
+    .onEnd((e) => {
+      const hovered = hitTestDropZone(e.absoluteY, dropZones.value);
+      dragTranslateX.value = withSpring(0);
+      // dragAssignmentId solo se limpia cuando el spring termina de verdad
+      // (y sigue siendo esta tarjeta la que está "activa") -- limpiarlo ya
+      // mismo haría que useAnimatedStyle deje de leer dragTranslateY y la
+      // tarjeta saltase de golpe a su sitio en vez de verse el rebote.
+      dragTranslateY.value = withSpring(0, undefined, (finished) => {
+        if (finished && dragAssignmentId.value === assignmentId) {
+          dragAssignmentId.value = null;
+        }
+      });
+      runOnJS(onDragEnd)(hovered);
+    });
+
+  return (
+    <Animated.View style={animatedStyle}>
+      {canDrag ? <GestureDetector gesture={panGesture}>{children}</GestureDetector> : children}
+    </Animated.View>
+  );
 }
 
 const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -162,22 +267,112 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const [pendingMoves, setPendingMoves] = useState<Map<number, { fromDate: string; toDate: string; title: string }>>(new Map());
   const [submittingReorder, setSubmittingReorder] = useState(false);
 
-  const isCurrentWeek = periodMode === 'week' && toDateKey(weekAnchor) === toDateKey(startOfWeekMonday(today));
+  // Arrastre real con el dedo (solo semana en curso + vista Semana/Lista,
+  // ver canDrag en renderWorkoutCard) -- comparte el mismo movingWorkout/
+  // pendingMoves que el flujo de "toca para seleccionar" de arriba, así que
+  // ambos caminos conviven sin duplicar lógica de negocio. Los shared values
+  // viven aquí (un solo drag activo a la vez) y solo la tarjeta cuyo
+  // assignmentId coincide con dragAssignmentId anima su posición.
+  const dragAssignmentId = useSharedValue<number | null>(null);
+  const dragTranslateX = useSharedValue(0);
+  const dragTranslateY = useSharedValue(0);
+  const dropZones = useSharedValue<DropZone[]>([]);
+  const [dragHoverDateKey, setDragHoverDateKey] = useState<string | null>(null);
+  const dayRowRefs = useRef<Record<string, View | null>>({});
+
+  // Las zonas de suelta solo tienen sentido en Semana+Lista (único caso con
+  // canDrag=true) -- al salir de esa combinación se descartan para no
+  // arrastrar coordenadas obsoletas si se vuelve a entrar más tarde.
+  useEffect(() => {
+    if (periodMode !== 'week' || viewMode !== 'list') {
+      dropZones.value = [];
+      dayRowRefs.current = {};
+    }
+  }, [periodMode, viewMode, dropZones]);
+
+  // Semanas de diferencia entre la semana de dateKey y la semana en curso
+  // (0 = semana actual, 1 = la siguiente, etc). Único punto de cálculo:
+  // reutilizado tanto por la navegación de goNext (vista Semana) como por
+  // goToWorkout (bloquea abrir/empezar un entrenamiento de una semana
+  // futura sin importar por qué vista se llegó hasta él -- mes, semana o
+  // lista -- ver bug real reportado: se pudo iniciar un entrenamiento de
+  // dentro de 2 semanas seleccionando el día directamente en vista Mes).
+  const weeksAheadForDate = (dateKey: string): number => {
+    const weekStart = startOfWeekMonday(new Date(`${dateKey}T00:00:00`));
+    const currentWeekStart = startOfWeekMonday(today);
+    return Math.round((weekStart.getTime() - currentWeekStart.getTime()) / (7 * 86400000));
+  };
+
+  const weekBlockedMessageFor = (weeksAhead: number): string =>
+    weeksAhead === 1
+      ? 'Todavía no puedes ver la próxima semana. Se desbloqueará cuando comience.'
+      : 'Tienes semanas anteriores sin completar. Ponte al día antes de avanzar.';
+
+  // Reorganizar solo opera sobre la semana en curso, sea cual sea la vista
+  // desde la que se entra (Mes, Semana o Lista) -- ver reorderMode más abajo.
+  const isCurrentWeekDate = (dateKey: string): boolean => weeksAheadForDate(dateKey) === 0;
 
   const cancelReorderMode = () => {
     setReorderMode(false);
     setMovingWorkout(null);
     setPendingMoves(new Map());
+    setDragHoverDateKey(null);
+    dropZones.value = [];
   };
 
   const selectWorkoutToMove = (w: CalendarWorkout, dateKey: string) => {
-    if (w.assignmentId == null) return;
+    if (w.assignmentId == null || !isCurrentWeekDate(dateKey)) return;
     setMovingWorkout({ assignmentId: w.assignmentId, fromDate: dateKey, title: w.title || 'Entrenamiento' });
   };
 
+  // Re-mide las zonas de suelta justo antes de empezar a arrastrar (ver
+  // handleDragStart) -- onLayout NO se dispara al hacer scroll (solo cuando
+  // cambia el layout de verdad), así que si el usuario baja la lista antes
+  // de agarrar una tarjeta, las coordenadas cacheadas en el montaje
+  // quedarían desactualizadas. Repetir la medición aquí, con el scroll ya
+  // bloqueado justo después (ver ScrollView de la vista Lista), asegura que
+  // el hit-test del drag usa siempre la posición real en pantalla.
+  const measureDropZones = () => {
+    Object.entries(dayRowRefs.current).forEach(([dateKey, node]) => {
+      if (!node || !isCurrentWeekDate(dateKey)) return;
+      node.measureInWindow((x, y, width, height) => {
+        dropZones.value = [
+          ...dropZones.value.filter((z) => z.dateKey !== dateKey),
+          { dateKey, yStart: y, yEnd: y + height },
+        ];
+      });
+    });
+  };
+
+  // onDragStart/onDragHover/onDragEnd: llamados desde el worklet del pan
+  // gesture vía runOnJS (ver DraggableWorkoutCard) -- el drag reutiliza
+  // exactamente el mismo selectWorkoutToMove/applyMoveToDay que el flujo de
+  // toque, así que hereda gratis la validación de "semana en curso".
+  const handleDragStart = (w: CalendarWorkout, dateKey: string) => {
+    measureDropZones();
+    selectWorkoutToMove(w, dateKey);
+  };
+
+  const handleDragHover = (hoveredDateKey: string | null) => {
+    setDragHoverDateKey(hoveredDateKey);
+  };
+
+  const handleDragEnd = (toDateKey: string | null) => {
+    setDragHoverDateKey(null);
+    if (toDateKey) applyMoveToDay(toDateKey);
+    else setMovingWorkout(null);
+  };
+
   const applyMoveToDay = (toDateKey: string) => {
-    if (!movingWorkout || toDateKey === movingWorkout.fromDate) {
+    if (!movingWorkout) return;
+    if (toDateKey === movingWorkout.fromDate) {
       setMovingWorkout(null);
+      return;
+    }
+    if (!isCurrentWeekDate(toDateKey)) {
+      // Deja movingWorkout activo -- el usuario puede seguir eligiendo un
+      // día válido sin tener que volver a tocar el entrenamiento.
+      showWeekBlockedMessage('Solo puedes mover entrenamientos dentro de la semana en curso.');
       return;
     }
     setPendingMoves((prev) => {
@@ -191,7 +386,10 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
   const submitReorder = async () => {
     if (pendingMoves.size === 0) return;
     setSubmittingReorder(true);
-    const weekStartKey = toDateKey(weekAnchor);
+    // Siempre la semana en curso real -- no depender de weekAnchor, que
+    // solo se actualiza navegando en vista Semana y puede no reflejar la
+    // semana actual si el reorder se inició desde Mes o Lista.
+    const weekStartKey = toDateKey(startOfWeekMonday(today));
     let ok = false;
     try {
       await adaptiveWeekPlansApi.requestReorder(
@@ -343,15 +541,10 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   const goNext = () => {
     if (periodMode === 'week') {
-      const currentWeekStart = startOfWeekMonday(today);
       const nextAnchor = addDays(weekAnchor, 7);
-      const weeksAhead = Math.round((nextAnchor.getTime() - currentWeekStart.getTime()) / (7 * 86400000));
+      const weeksAhead = weeksAheadForDate(toDateKey(nextAnchor));
       if (weeksAhead >= 1) {
-        showWeekBlockedMessage(
-          weeksAhead === 1
-            ? 'Todavía no puedes ver la próxima semana. Se desbloqueará cuando comience.'
-            : 'Tienes semanas anteriores sin completar. Ponte al día antes de avanzar.'
-        );
+        showWeekBlockedMessage(weekBlockedMessageFor(weeksAhead));
         return;
       }
     }
@@ -391,6 +584,11 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
 
   const goToWorkout = (w: CalendarWorkout, dateKey: string) => {
     if (w.assignmentId == null) return;
+    const weeksAhead = weeksAheadForDate(dateKey);
+    if (weeksAhead >= 1) {
+      showWeekBlockedMessage(weekBlockedMessageFor(weeksAhead));
+      return;
+    }
     if (isWorkoutCompleted(w, dateKey)) {
       // Día ya realizado: vista de solo lectura de lo que se hizo de verdad
       // (mismo destino que Historial de entrenamientos), no el editor/preview
@@ -418,44 +616,67 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     const completed = isWorkoutCompleted(w, dateKey);
     const pendingMove = w.assignmentId != null ? pendingMoves.get(w.assignmentId) : undefined;
     const isSelectedToMove = !!movingWorkout && movingWorkout.assignmentId === w.assignmentId && movingWorkout.fromDate === dateKey;
-    const canMove = reorderMode && !completed && w.assignmentId != null;
+    const canMove = reorderMode && !completed && w.assignmentId != null && isCurrentWeekDate(dateKey);
+    // Arrastre real solo en Semana+Lista (días completos y grandes como
+    // zona de suelta) -- en Mes/vista Calendario sigue disponible el toque
+    // (canMove) para elegir día, pero no el drag por el tamaño de celda.
+    const canDrag = canMove && periodMode === 'week' && viewMode === 'list';
     return (
-      <Pressable
+      <DraggableWorkoutCard
         key={key}
-        onPress={() => (reorderMode ? (canMove && selectWorkoutToMove(w, dateKey)) : goToWorkout(w, dateKey))}
-        disabled={reorderMode && !canMove}
+        dateKey={dateKey}
+        assignmentId={w.assignmentId ?? null}
+        canDrag={canDrag}
+        dragAssignmentId={dragAssignmentId}
+        dragTranslateX={dragTranslateX}
+        dragTranslateY={dragTranslateY}
+        dropZones={dropZones}
+        onDragStart={() => handleDragStart(w, dateKey)}
+        onDragHover={handleDragHover}
+        onDragEnd={handleDragEnd}
       >
-        <Card
-          variant="elevated"
-          className="flex-row items-center p-3"
-          style={[
-            completed ? styles.workoutCardCompleted : { marginTop: 8 },
-            isSelectedToMove && styles.workoutCardMoving,
-          ]}
+        <Pressable
+          onPress={() => (reorderMode ? (canMove && selectWorkoutToMove(w, dateKey)) : goToWorkout(w, dateKey))}
+          disabled={reorderMode && !canMove}
         >
-          <Image source={{ uri: getWorkoutImage(w.title || '') }} contentFit="cover" style={styles.workoutImage} />
-          <VStack style={{ flex: 1, marginLeft: 14 }}>
-            <Text style={styles.workoutTitle} numberOfLines={2}>{w.title || ''}</Text>
-            {completed && (
-              <HStack space="xs" style={{ marginTop: 4 }}>
-                <Icon name="checkmark-circle" size={13} color={C.success} />
-                <Text style={styles.completedBadgeText}>Completado</Text>
-              </HStack>
+          <Card
+            variant="elevated"
+            className="flex-row items-center p-3"
+            style={[
+              completed ? styles.workoutCardCompleted : { marginTop: 8 },
+              isSelectedToMove && styles.workoutCardMoving,
+            ]}
+          >
+            <Image source={{ uri: getWorkoutImage(w.title || '') }} contentFit="cover" style={styles.workoutImage} />
+            <VStack style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={styles.workoutTitle} numberOfLines={2}>{w.title || ''}</Text>
+              {completed && (
+                <HStack space="xs" style={{ marginTop: 4 }}>
+                  <Icon name="checkmark-circle" size={13} color={C.success} />
+                  <Text style={styles.completedBadgeText}>Completado</Text>
+                </HStack>
+              )}
+              {pendingMove && (
+                <HStack space="xs" style={{ marginTop: 4 }}>
+                  <Icon name="arrow-forward-circle" size={13} color={C.orange} />
+                  <Text style={styles.pendingMoveText}>Propuesto para {formatDayLabel(pendingMove.toDate)}</Text>
+                </HStack>
+              )}
+            </VStack>
+            {reorderMode ? (
+              canMove && (
+                <Icon
+                  name={canDrag ? 'reorder-three' : 'reorder-three-outline'}
+                  size={20}
+                  color={isSelectedToMove ? C.orange : C.textSecondary}
+                />
+              )
+            ) : (
+              <Icon name="chevron-forward" size={20} color={C.textSecondary} />
             )}
-            {pendingMove && (
-              <HStack space="xs" style={{ marginTop: 4 }}>
-                <Icon name="arrow-forward-circle" size={13} color={C.orange} />
-                <Text style={styles.pendingMoveText}>Propuesto para {formatDayLabel(pendingMove.toDate)}</Text>
-              </HStack>
-            )}
-          </VStack>
-          {reorderMode ? (
-            canMove && <Icon name="reorder-three-outline" size={20} color={isSelectedToMove ? C.orange : C.textSecondary} />
-          ) : (
-            <Icon name="chevron-forward" size={20} color={C.textSecondary} />
-          )}
-        </Card>
-      </Pressable>
+          </Card>
+        </Pressable>
+      </DraggableWorkoutCard>
     );
   };
 
@@ -546,6 +767,7 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     // propio (color warning) para que la celda no se vea como día libre.
     const hasCheckinTasks = checkinsForDay(day.date).length > 0;
     const isMarkedUnavailable = selectionMode && selectedDates.has(day.date);
+    const isReorderDropTarget = reorderMode && !!movingWorkout && isCurrentWeekDate(day.date) && day.date !== movingWorkout.fromDate;
     const dateObj = new Date(`${day.date}T00:00:00`);
     return (
       <Pressable
@@ -556,9 +778,14 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           isSelected && !selectionMode && (big ? styles.dayCellBigSelected : styles.dayCellSelected),
           isToday && !isSelected && styles.dayCellToday,
           isMarkedUnavailable && styles.dayCellUnavailable,
+          isReorderDropTarget && styles.dayCellDropTarget,
         ]}
         disabled={selectionMode && !hasWorkout}
-        onPress={() => (selectionMode ? toggleDaySelection(day) : setSelectedDayKey(day.date))}
+        onPress={() => {
+          if (selectionMode) return toggleDaySelection(day);
+          if (reorderMode && movingWorkout) return applyMoveToDay(day.date);
+          setSelectedDayKey(day.date);
+        }}
       >
         {big && (
           <Text style={styles.dayCellLetter}>
@@ -608,17 +835,12 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           </Pressable>
         ) : (
           <HStack style={styles.viewToggle}>
-            {isCurrentWeek && (
-              <Pressable
-                style={styles.viewToggleBtn}
-                onPress={() => {
-                  setViewMode('list');
-                  setReorderMode(true);
-                }}
-              >
-                <Icon name="swap-vertical-outline" size={18} color={C.textSecondary} />
-              </Pressable>
-            )}
+            <Pressable
+              style={styles.viewToggleBtn}
+              onPress={() => setReorderMode(true)}
+            >
+              <Icon name="swap-vertical-outline" size={18} color={C.textSecondary} />
+            </Pressable>
             <Pressable
               style={styles.viewToggleBtn}
               onPress={() => setSelectionMode(true)}
@@ -648,8 +870,8 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
       {reorderMode && (
         <Text style={styles.unavailableHint}>
           {movingWorkout
-            ? `Toca el día al que quieres mover "${movingWorkout.title}".`
-            : 'Toca un entrenamiento para elegir un nuevo día. Tu entrenador revisará los cambios.'}
+            ? `Toca el día de esta semana al que quieres mover "${movingWorkout.title}".`
+            : 'Toca un entrenamiento de la semana en curso para elegir un nuevo día. Tu entrenador revisará los cambios.'}
         </Text>
       )}
 
@@ -745,18 +967,44 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
           <Text style={styles.emptyText}>No tienes entrenamientos programados este mes.</Text>
         </Box>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingVertical: 16 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingVertical: 16 }}
+          scrollEnabled={!(reorderMode && movingWorkout)}
+        >
           {(periodMode === 'week' ? visibleDays : daysWithWorkouts).map((day) => {
-            const isDropTarget = reorderMode && !!movingWorkout && movingWorkout.fromDate !== day.date;
+            const isDropTarget = reorderMode && !!movingWorkout && isCurrentWeekDate(day.date) && movingWorkout.fromDate !== day.date;
+            const isHoveredDropTarget = isDropTarget && dragHoverDateKey === day.date;
             return (
-              <Box key={day.date} style={[styles.daySection, isDropTarget && styles.daySectionDropTarget]}>
+              <Box
+                key={day.date}
+                ref={(node: View | null) => { dayRowRefs.current[day.date] = node; }}
+                onLayout={() => {
+                  if (!isCurrentWeekDate(day.date)) return;
+                  // measureInWindow necesita el layout ya asentado -- se
+                  // reintenta en el siguiente frame para evitar medidas a 0
+                  // justo tras el montaje.
+                  requestAnimationFrame(() => {
+                    dayRowRefs.current[day.date]?.measureInWindow((x, y, width, height) => {
+                      dropZones.value = [
+                        ...dropZones.value.filter((z) => z.dateKey !== day.date),
+                        { dateKey: day.date, yStart: y, yEnd: y + height },
+                      ];
+                    });
+                  });
+                }}
+                style={[
+                  styles.daySection,
+                  isDropTarget && styles.daySectionDropTarget,
+                  isHoveredDropTarget && styles.daySectionDropTargetHover,
+                ]}
+              >
                 <Pressable disabled={!isDropTarget} onPress={() => applyMoveToDay(day.date)}>
                   <HStack className="items-center justify-between">
                     <Text style={styles.dayDate}>{formatDayLabel(day.date)}</Text>
                     {isDropTarget && (
                       <HStack space="xs" className="items-center">
                         <Icon name="arrow-down-circle-outline" size={16} color={C.orange} />
-                        <Text style={styles.dropTargetText}>Mover aquí</Text>
+                        <Text style={styles.dropTargetText}>{isHoveredDropTarget ? 'Suelta aquí' : 'Mover aquí'}</Text>
                       </HStack>
                     )}
                   </HStack>
@@ -927,6 +1175,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: C.destructive,
   },
+  dayCellDropTarget: {
+    backgroundColor: C.brand10,
+    borderWidth: 1.5,
+    borderColor: C.orange,
+  },
   dayCellLetter: {
     fontFamily: FONT.medium,
     fontSize: 13,
@@ -975,6 +1228,11 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     borderRadius: 12,
     backgroundColor: C.brand10,
+  },
+  daySectionDropTargetHover: {
+    backgroundColor: C.success10,
+    borderWidth: 1.5,
+    borderColor: C.success,
   },
   dropTargetText: { fontFamily: FONT.semiBold, fontSize: 12, color: C.orange, marginRight: 8 },
   dayDate: { fontSize: 13, fontFamily: FONT.regular, color: C.textSecondary, paddingHorizontal: 16 },
