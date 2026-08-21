@@ -10,7 +10,7 @@ import {
   Modal,
 } from "react-native";
 import { Image } from "expo-image";
-import { BlurView } from "expo-blur";
+import { GlassView, isGlassEffectAPIAvailable } from "@components/ui/glass-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { NavigationTabOptionsInterface } from "./_types/NavigationTab.i";
@@ -47,8 +47,9 @@ const QUICK_ACTIONS: QuickAction[] = [
 /**
  * NavigationTab
  * reactnative navigation tabBar function -- barra flotante con efecto
- * glass (BlurView) y botón central "+" que abre un submenu de accesos
- * rápidos, también con efecto glass.
+ * glass (GlassView, Liquid Glass real en iOS 26+, mismo componente que ya
+ * usan Fab/Modal/Popover/Tooltip -- ver components/ui/glass-view) y botón
+ * central "+" que abre un submenu de accesos rápidos, también glass.
  */
 export default function NavigationTab({ state, descriptors, navigation }: BottomTabBarProps) {
   const styles = useStyle();
@@ -109,7 +110,8 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
   return (
     <>
       <View style={[styles.navigationOuter, { marginBottom: safearea.bottom || 12 }]}>
-        <BlurView intensity={55} tint="light" style={styles.navigationBlur}>
+        <View style={[styles.navigationBlur, !isGlassEffectAPIAvailable() && styles.navigationFallbackBg]}>
+          <GlassView glassEffectStyle="regular" style={StyleSheet.absoluteFill} />
           <View style={styles.navigationglow} />
           <AnimatedImage
             source={require("./../assets/icons/navigationellipse.png")}
@@ -174,7 +176,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
             );
           })}
           {/*navigation icons end*/}
-        </BlurView>
+        </View>
 
         {/* Botón "+" flotante -- abre el submenu de accesos rápidos */}
         <Pressable
@@ -196,9 +198,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
       {/* Submenu glass -- accesos rápidos */}
       <Modal visible={menuOpen} transparent animationType="none" onRequestClose={closeMenu}>
         <View style={{ flex: 1 }}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu}>
-            <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
-          </Pressable>
+          <Pressable style={[StyleSheet.absoluteFill, styles.modalBackdrop]} onPress={closeMenu} />
           <View
             pointerEvents="box-none"
             style={{ flex: 1, justifyContent: "flex-end", alignItems: "center", paddingBottom: safearea.bottom + 92 }}
@@ -215,7 +215,8 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
                 },
               ]}
             >
-              <BlurView intensity={70} tint="light" style={styles.quickMenuBlur}>
+              <View style={[styles.quickMenuBlur, !isGlassEffectAPIAvailable() && styles.navigationFallbackBg]}>
+                <GlassView glassEffectStyle="regular" style={StyleSheet.absoluteFill} />
                 {QUICK_ACTIONS.map((action, i) => (
                   <Pressable
                     key={action.id}
@@ -231,7 +232,7 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
                     <Text style={styles.quickMenuLabel}>{action.label}</Text>
                   </Pressable>
                 ))}
-              </BlurView>
+              </View>
             </Animated.View>
           </View>
         </View>
@@ -262,6 +263,15 @@ function useStyle() {
       overflow: "hidden",
       borderWidth: 1,
       borderColor: "rgba(255,255,255,0.4)",
+    },
+    // Fondo sólido de reserva -- solo se aplica cuando NO hay Liquid Glass
+    // real (Android, iOS<26); con glass real el material translúcido ya lo
+    // pinta el propio GlassView (mismo criterio que Fab/Modal/Popover).
+    navigationFallbackBg: {
+      backgroundColor: "rgba(255,255,255,0.92)",
+    },
+    modalBackdrop: {
+      backgroundColor: "rgba(0,0,0,0.35)",
     },
     navigationglow: {
       position: "absolute",
