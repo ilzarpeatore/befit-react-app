@@ -75,6 +75,23 @@ function greetingForHour(hour: number): string {
   return 'Buenas noches';
 }
 
+// Fondo real del hero (sustituye al LinearGradient plano) -- 3 fotos fijas
+// del cliente, elegidas por hora local del dispositivo. Mismo criterio que
+// greetingForHour: no hace falta posición solar real, basta con franjas
+// horarias razonables. Amanecer/atardecer comparten foto (misma luz cálida).
+const HERO_IMAGES = {
+  sunriseSunset: require('../../assets/hero-sunrise-sunset.jpg'),
+  day: require('../../assets/hero-day.jpg'),
+  night: require('../../assets/hero-night.jpg'),
+};
+
+function getHeroImageForHour(hour: number) {
+  if (hour >= 5 && hour < 8) return HERO_IMAGES.sunriseSunset; // amanecer
+  if (hour >= 8 && hour < 19) return HERO_IMAGES.day;
+  if (hour >= 19 && hour < 21) return HERO_IMAGES.sunriseSunset; // atardecer
+  return HERO_IMAGES.night;
+}
+
 interface HomeScreenModernProps {
   navigation?: any;
   route?: any;
@@ -147,9 +164,9 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg },
     // Nueva cabecera estilo Helix (docs/Nueva_Cabecera_Home_Helix.md). Fondo
-    // degradado tipo cielo/atardecer con LinearGradient (en vez de
-    // C.gray80/C.white, que en este theme claro son gris claro/negro — aqui
-    // hace falta un fondo realmente oscuro con texto blanco de verdad).
+    // con foto real (amanecer/atardecer, día o noche, ver getHeroImageForHour)
+    // + scrim oscuro -- antes era un LinearGradient plano; el texto blanco de
+    // encima sigue necesitando fondo oscuro real, ahora lo da el scrim.
     heroHeader: { borderBottomLeftRadius: r(32), borderBottomRightRadius: r(32), paddingBottom: r(24), paddingHorizontal: r(20), overflow: 'hidden' as const },
     heroTopBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' as const, marginBottom: r(20) },
     heroIconBtn: { width: r(38), height: r(38), borderRadius: r(19), backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center' as const, justifyContent: 'center' as const },
@@ -470,12 +487,21 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
         }
       >
         {/* Header (nueva cabecera estilo Helix, ver docs/Nueva_Cabecera_Home_Helix.md) */}
-        <LinearGradient
-          colors={['#2B1D14', '#7A3E1F', C.orange]}
-          start={{ x: 0.15, y: 0 }}
-          end={{ x: 0.85, y: 1 }}
-          style={[styles.heroHeader, { paddingTop: insets.top + r(14) }]}
-        >
+        <Box style={[styles.heroHeader, { paddingTop: insets.top + r(14) }]}>
+          {/* Foto real de fondo (amanecer/atardecer, día o noche según la
+              hora) en vez del degradado plano anterior. */}
+          <ExpoImage
+            source={getHeroImageForHour(new Date().getHours())}
+            contentFit="cover"
+            style={StyleSheet.absoluteFill}
+          />
+          {/* Scrim oscuro sobre la foto -- el texto/iconos en blanco de la
+              cabecera necesitan contraste real, la foto sola (sobre todo
+              día/amanecer, cielo muy claro) no lo da. */}
+          <LinearGradient
+            colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.55)']}
+            style={StyleSheet.absoluteFill}
+          />
           {/* Glass-effect progresivo (estilo KOTCHA): el fondo del hero se
               desenfoca a medida que se hace scroll -- se renderiza primero
               para quedar detrás del contenido (texto/iconos), que se
@@ -576,7 +602,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
               <Text style={styles.miniCardValue}>--</Text>
             </Box>
           </HStack>
-        </LinearGradient>
+        </Box>
 
         {errorMessage && (
           <HStack style={styles.errorBanner}>
