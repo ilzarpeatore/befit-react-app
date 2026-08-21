@@ -1,4 +1,6 @@
 import React, { useRef, useState } from "react";
+import type { ComponentProps } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import {
   View,
   Pressable,
@@ -22,10 +24,12 @@ import { C, FONT } from "../pages/migrated/theme";
 // aqui evita reconstruirlo (y su wrapper interno) en cada render.
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
+
 interface QuickAction {
   id: string;
   label: string;
-  icon: string;
+  icon: IoniconName;
   route: string;
   params?: Record<string, any>;
 }
