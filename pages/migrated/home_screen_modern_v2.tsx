@@ -37,7 +37,8 @@ import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
 import StartupChecklist, { StartupChecklistStep } from '@components/StartupChecklist';
 import { AvatarMem } from '@components/Avatar';
-import { C, FONT } from './theme';
+import { FONT } from './theme';
+import { useAppColorMode } from '../../helper/useAppColorMode';
 import { dashboardApi, BannerSliderItem } from '../../api/dashboard';
 import { motivationalPhraseApi } from '../../api/motivationalPhrase';
 import { workoutHistoryApi } from '../../api/workoutHistory';
@@ -105,6 +106,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   const { navigation } = props;
   const { state, logout } = useAuth();
   const user = state.user;
+
+  // Modo oscuro automático por hora (solo Home v2 por ahora, ver
+  // helper/useAppColorMode.ts) -- "C" queda con el mismo nombre que el
+  // import estático de siempre para no reescribir los ~85 usos C.xxx de
+  // este fichero; sigue el modo salvo que el usuario lo fije a mano.
+  const { preference: themePreference, setPreference: setThemePreference, colors: C } = useAppColorMode();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -253,7 +260,17 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     menuCloseBtn: { width: r(32), height: r(32), borderRadius: r(16), backgroundColor: C.surfaceLight, alignItems: 'center' as const, justifyContent: 'center' as const },
     menuItemText: { flex: 1, fontSize: r(15), fontFamily: FONT.semiBold, color: C.white },
     menuItemTextDanger: { color: C.destructive },
-  }), [sc, r]);
+    themeOptionBtn: {
+      flex: 1,
+      paddingVertical: r(9),
+      borderRadius: r(10),
+      alignItems: 'center' as const,
+      backgroundColor: C.gray70,
+    },
+    themeOptionBtnActive: { backgroundColor: C.orange },
+    themeOptionText: { fontSize: r(13), fontFamily: FONT.semiBold, color: C.textSecondary },
+    themeOptionTextActive: { color: '#FFFFFF' },
+  }), [sc, r, C]);
 
   const fetchData = useCallback(async (mode?: 'initial' | 'silent') => {
     if (mode !== 'silent') {
@@ -1092,6 +1109,30 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
                 thumbColor={C.white}
               />
             </HStack>
+
+            {/* Modo oscuro automático por hora (2026-08-21) -- "Auto" sigue
+                la hora del dispositivo (isNightHour en theme.ts), el usuario
+                puede fijarlo a Claro/Oscuro y eso manda hasta que vuelva a
+                elegir Auto. Ver helper/useAppColorMode.ts. */}
+            <VStack className="px-5 py-3.5" style={{ gap: r(10) }}>
+              <HStack className="items-center">
+                <AppIcon name="contrast-outline" size={18} color={C.textPrimary} bg={C.brand10} containerSize={r(36)} borderRadius={r(12)} style={{ marginRight: r(14) }} />
+                <Text style={styles.menuItemText}>Apariencia</Text>
+              </HStack>
+              <HStack space="xs">
+                {(['auto', 'light', 'dark'] as const).map((option) => (
+                  <Pressable
+                    key={option}
+                    style={[styles.themeOptionBtn, themePreference === option && styles.themeOptionBtnActive]}
+                    onPress={() => setThemePreference(option)}
+                  >
+                    <Text style={[styles.themeOptionText, themePreference === option && styles.themeOptionTextActive]}>
+                      {option === 'auto' ? 'Automático' : option === 'light' ? 'Claro' : 'Oscuro'}
+                    </Text>
+                  </Pressable>
+                ))}
+              </HStack>
+            </VStack>
 
             <Pressable onPress={() => navigateFromMenu('MigratedCommunity')}>
               <HStack className="items-center px-5 py-3.5">

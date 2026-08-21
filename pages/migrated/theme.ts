@@ -90,6 +90,95 @@ export const C = {
   accentBlack: "#000000",
 } as const;
 
+// Variante oscura de C, mismas claves exactas (Home v2, 2026-08-21 —
+// arranque de modo oscuro automático por hora, ver useAppColorMode). Los
+// acentos semánticos (success/warning/destructive/blue/purple/orange) se
+// mantienen igual en ambos modos — son colores de sistema tipo iOS, ya
+// pensados para funcionar sobre fondo claro u oscuro sin retocar el tono.
+// Solo cambia la jerarquía de fondo/superficie/texto/grises, que sí es
+// específica de cada modo.
+export const C_DARK: typeof C = {
+  bg: "#0B0B0D",
+  surface: "#1C1C1E",
+  surfaceLight: "#242426",
+  border: "#3A3A3C",
+  white: "#FFFFFF",
+  gray5: "#242426",
+  gray10: "#3A3A3C",
+  gray20: "#48484A",
+  gray30: "#636366",
+  gray40: "#8A8A8E",
+  gray50: "#AEAEB2",
+  gray60: "#C7C7CC",
+  gray70: "#3A3A3C",
+  gray80: "#3A3A3C",
+  brand5: "rgba(255,255,255,0.08)",
+  brand10: "rgba(255,255,255,0.15)",
+  brand20: "rgba(255,255,255,0.25)",
+  brand50: "#3A3A3C",
+  brand60: "#3A3A3C",
+  success: "#34C759",
+  success5: "rgba(52,199,89,0.12)",
+  success10: "rgba(52,199,89,0.2)",
+  success50: "#34C759",
+  success60: "#30D158",
+  warning: "#FF9F0A",
+  warning5: "rgba(255,159,10,0.12)",
+  warning10: "rgba(255,159,10,0.2)",
+  warning40: "#FF9F0A",
+  warning50: "#FF9F0A",
+  warning60: "#FFB340",
+  destructive: "#FF453A",
+  destructive5: "rgba(255,69,58,0.12)",
+  destructive10: "rgba(255,69,58,0.2)",
+  destructive20: "rgba(255,69,58,0.3)",
+  destructive50: "#FF453A",
+  destructive60: "#FF6961",
+  blue: "#0A84FF",
+  blue5: "rgba(10,132,255,0.12)",
+  blue10: "rgba(10,132,255,0.2)",
+  blue20: "rgba(10,132,255,0.3)",
+  blue50: "#0A84FF",
+  blue60: "#409CFF",
+  blue70: "#66B2FF",
+  purple: "#A78BFA",
+  purple5: "rgba(167,139,250,0.14)",
+  purple50: "#A78BFA",
+  purple60: "#BFA6FF",
+  orange: "#FF6B35",
+  orangeGradient1: "#FF8A2B",
+  orangeGradient2: "#FF6000",
+  amber: "#FF9F0A",
+  blue80: "#66B2FF",
+  blue30: "#003166",
+  red: "#FF453A",
+  pink: "#FB558B",
+  textWhite: "#FFFFFF",
+  textPrimary: "#F2F2F7",
+  textSecondary: "#AEAEB2",
+  textTertiary: "#8A8A8E",
+  primary: "#3A3A3C",
+  primaryLight: "rgba(255,255,255,0.15)",
+  gray: "#AEAEB2",
+  text: "#F2F2F7",
+  card: "#1C1C1E",
+  textMuted: "#8A8A8E",
+  statusSuccess: "#34C759",
+  statusWarning: "#FF9F0A",
+  statusDanger: "#FF453A",
+  statusInfo: "#0A84FF",
+  statusRest: "#FFD60A",
+  statusCycle: "#FFD1DC",
+  accentBlack: "#FFFFFF",
+};
+
+// Hora local (0-23) a partir de la cual se considera "de noche" para el
+// modo oscuro automático -- mismo criterio que usa la foto de noche del
+// hero de Home v2 (ver getHeroImageForHour), para que ambos cambien juntos.
+export function isNightHour(hour: number): boolean {
+  return hour >= 21 || hour < 5;
+}
+
 export const FONT = {
   light: "Gilroy-Light",
   regular: "Gilroy-Regular",
