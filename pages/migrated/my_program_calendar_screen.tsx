@@ -7,7 +7,8 @@ import {
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS, SharedValue } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, SharedValue } from 'react-native-reanimated';
+import { runOnJS } from 'react-native-worklets';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -530,6 +531,39 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
     [completedAssignmentIds, completedByTemplate]
   );
 
+  // Swipe vertical dentro del propio grid del calendario (números/celdas, no
+  // la pantalla entera): arriba -> vista semanal, abajo -> vista mensual. Se
+  // limita al modo calendario (no en selectionMode, donde arrastrar sobre
+  // las celdas sirve para marcar días) y exige una distancia vertical clara
+  // y predominante para no robarle el scroll vertical normal a la
+  // ScrollView que lo envuelve.
+  const CALENDAR_SWIPE_THRESHOLD = 40;
+  // startOfWeekMonday/startOfMonth son funciones normales de JS (no
+  // worklets) -- llamarlas directamente dentro de .onEnd() las ejecutaria en
+  // el hilo de UI y crashea la app en produccion. Se envuelve toda la logica
+  // en una funcion JS y se salta al hilo de JS una unica vez con runOnJS.
+  const applyWeekSwipe = useCallback(() => {
+    setPeriodMode('week');
+    setWeekAnchor(startOfWeekMonday(today));
+    setSelectedDayKey(todayKey);
+  }, [today, todayKey]);
+  const applyMonthSwipe = useCallback(() => {
+    setPeriodMode('month');
+    setSelectedMonth(startOfMonth(today));
+    setSelectedDayKey(todayKey);
+  }, [today, todayKey]);
+  const calendarSwipeGesture = Gesture.Pan()
+    .enabled(!selectionMode)
+    .activeOffsetY([-20, 20])
+    .failOffsetX([-18, 18])
+    .onEnd((e) => {
+      if (e.translationY <= -CALENDAR_SWIPE_THRESHOLD) {
+        runOnJS(applyWeekSwipe)();
+      } else if (e.translationY >= CALENDAR_SWIPE_THRESHOLD) {
+        runOnJS(applyMonthSwipe)();
+      }
+    });
+
   const goPrev = () => {
     setSelectedDayKey(null);
     if (periodMode === 'month') {
@@ -927,25 +961,29 @@ export default function MyProgramCalendarScreen(props: MyProgramCalendarScreenPr
         </Box>
       ) : viewMode === 'calendar' ? (
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-          {periodMode === 'month' && (
-            <HStack style={styles.weekdayHeaderRow}>
-              {WEEKDAY_LABELS.map((l) => (
-                <Text key={l} style={styles.weekdayHeaderText}>{l}</Text>
-              ))}
-            </HStack>
-          )}
+          <GestureDetector gesture={calendarSwipeGesture}>
+            <View>
+              {periodMode === 'month' && (
+                <HStack style={styles.weekdayHeaderRow}>
+                  {WEEKDAY_LABELS.map((l) => (
+                    <Text key={l} style={styles.weekdayHeaderText}>{l}</Text>
+                  ))}
+                </HStack>
+              )}
 
-          {periodMode === 'month' ? (
-            monthWeeks.map((week, wi) => (
-              <HStack key={wi} style={styles.weekRow}>
-                {week.map((day) => renderDayCell(day, `m${wi}`, false))}
-              </HStack>
-            ))
-          ) : (
-            <HStack style={styles.weekRow}>
-              {weekDays.map((day) => renderDayCell(day, 'w', true))}
-            </HStack>
-          )}
+              {periodMode === 'month' ? (
+                monthWeeks.map((week, wi) => (
+                  <HStack key={wi} style={styles.weekRow}>
+                    {week.map((day) => renderDayCell(day, `m${wi}`, false))}
+                  </HStack>
+                ))
+              ) : (
+                <HStack style={styles.weekRow}>
+                  {weekDays.map((day) => renderDayCell(day, 'w', true))}
+                </HStack>
+              )}
+            </View>
+          </GestureDetector>
 
           <Box style={styles.selectedDaySection}>
             <Text style={styles.selectedDayTitle}>

@@ -261,7 +261,7 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (error || !workout) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+        <Pressable style={[styles.backBtnStatic, { marginTop: insets.top + 8 }]} onPress={() => navigation?.goBack()}>
           <Icon name="chevron-back" size={22} color={C.textPrimary} />
         </Pressable>
         <Box style={styles.loader}>
@@ -274,7 +274,7 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (workout.isRest || workout.isAdjusted) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+        <Pressable style={[styles.backBtnStatic, { marginTop: insets.top + 8 }]} onPress={() => navigation?.goBack()}>
           <Icon name="chevron-back" size={22} color={C.textPrimary} />
         </Pressable>
         <Box style={styles.loader}>
@@ -290,7 +290,7 @@ export default function WorkoutPreviewScreen(props: Props) {
   if (workout.isExclusive && !workout.isAccessible) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Pressable style={styles.backBtnStatic} onPress={() => navigation?.goBack()}>
+        <Pressable style={[styles.backBtnStatic, { marginTop: insets.top + 8 }]} onPress={() => navigation?.goBack()}>
           <Icon name="chevron-back" size={22} color={C.textPrimary} />
         </Pressable>
         <Box style={styles.loader}>
@@ -328,7 +328,7 @@ export default function WorkoutPreviewScreen(props: Props) {
             colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0)']}
             style={styles.heroTopFade}
           />
-          <Pressable style={styles.backBtn} onPress={() => navigation?.goBack()}>
+          <Pressable style={[styles.backBtn, { top: insets.top + 8 }]} onPress={() => navigation?.goBack()}>
             <Icon name="chevron-back" size={22} color="#FFFFFF" />
           </Pressable>
         </Box>
@@ -482,7 +482,6 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 40,
     left: 16,
     width: 40,
     height: 40,
@@ -492,7 +491,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backBtnStatic: {
-    marginTop: Platform.OS === 'ios' ? 50 : 40,
     marginLeft: 16,
     width: 40,
     height: 40,
@@ -506,6 +504,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: FONT.extraBold,
     fontSize: 24,
+    lineHeight: 29,
     color: C.textPrimary,
     marginRight: 12,
   },
@@ -531,6 +530,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontFamily: FONT.extraBold,
     fontSize: 21,
+    lineHeight: 25,
     color: C.textPrimary,
   },
   statLabel: {
@@ -640,6 +640,7 @@ const rs = StyleSheet.create({
   title: {
     fontFamily: FONT.extraBold,
     fontSize: 24,
+    lineHeight: 29,
     color: C.textPrimary,
   },
   subtitle: {

@@ -1684,8 +1684,41 @@ El usuario pidió replicar (sin depender de la API de pago "Muscle Group Image G
 6. **Conexión con wearables**: sin backend propio, se abordará más adelante.
 7. **Pantallas de video**: no existe ningún módulo de video en `routes/api.php`. Pendiente decidir si se construye ese backend o se elimina esta sección.
 
+### Seguridad y acceso (2026-08-19)
+
+11. **Revisión de contraseñas y credenciales**: el agente (opencode/big-pickle) pudo conectarse por SSH al VPS (`root@testapp.bestronger.es`) sin contraseña porque la máquina Windows del usuario ya tenía una clave SSH configurada. Revisar: (a) qué claves SSH están autorizadas en el VPS (`/root/.ssh/authorized_keys`) y si alguna es obsoleta; (b) si la contraseña de la BD de producción (`bestronger_test`) está en el `.env` del VPS como `DB_PASSWORD` (confirmado en rondas anteriores) y si esa contraseña es robusta; (c) si la cuenta `demo@bestronger.app` sigue con la contraseña que se le puso en la ronda de `migrate:fresh` (2026-08-05) y si debería rotarse; (d) si hay algún otro usuario con contraseña por defecto o predecible en producción. No es un incidente de seguridad — es una auditoría preventiva pendiente.
+
 ### Limpieza técnica (opcional, bajo riesgo, no bloqueante)
 
-8. Import muerto `import Home from "@pages/Home"` en `App.tsx`.
-9. Decidir el destino de `pages/Home.tsx` (el Home original, ya sin ninguna ruta activa) — ¿eliminar o mantener como referencia?
-10. `hooks/useDiet.ts` no se usa en ningún lado del proyecto — candidato a eliminar o a adoptarse como capa de datos real de las pantallas de diet.
+12. Import muerto `import Home from "@pages/Home"` en `App.tsx`.
+13. Decidir el destino de `pages/Home.tsx` (el Home original, ya sin ninguna ruta activa) — ¿eliminar o mantener como referencia?
+14. `hooks/useDiet.ts` no se usa en ningún lado del proyecto — candidato a eliminar o a adoptarse como capa de datos real de las pantallas de diet.
+
+## Sesión 2026-08-20 — Fusión react-doctor, rename del repo, ronda de crashes y diseño
+
+Repo renombrado por el usuario de `befit-react-app` a **`bsa`** (`ilzarpeatore/bsa`) — `builder.json` y el remote de git actualizados.
+
+### Fusión a master del trabajo de react-doctor/expo-map/graft
+
+La rama `claude/setup-screen-navigator-dxvcj1` (documentada en `docs/Sesion_Herramientas_y_ReactDoctor.md`) se fusionó a `master` sin conflictos: expo-map, graft, y los 727→242 issues de react-doctor. Se activó `MigratedHomeModernV2` como pantalla de inicio real (`initialRouteName` en `App.tsx`) — antes el rediseño completo de Home v2 vivía en un componente inalcanzable, `MigratedHomeModern` (v1) era la ruta activa real.
+
+### Ronda 1 — 5 agentes en paralelo sobre las notas de `screen_review_marks`
+
+Traducciones, texto/números cortados (causa raíz: fuente Gilroy Bold/ExtraBold/Black sin `lineHeight` explícito — se recorta en iOS), bugs de sincronización (hábitos: bug de zona horaria en `toIso()` que desplazaba la fecha un día vía UTC; favoritos y heatmap muscular ya estaban arreglados de antes), rediseño de HomeModernV2 (header sticky glass, degradado) y WorkoutSession (gestos, minimizador), y features de Plan/Nutrición. Build IPA Release en GitHub Actions exitoso tras purgar un caché de `DerivedData` contaminado con rutas del nombre antiguo del repo (`befit-react-app`) — cualquier caché de build anterior al rename debe invalidarse.
+
+**Bug de teclado descubierto y arreglado**: `components/ScreenReviewFab.tsx` tenía una condición de carrera real — al abrir el modal se lanzaba `getForRoute()` en paralelo con el campo de texto ya editable; si el usuario escribía antes de que la petición respondiera, la respuesta tardía sobreescribía el texto tecleado con la nota vieja del servidor. Reproducido en vivo en dispositivo real antes de arreglarlo (ver `noteEditedRef` en el componente).
+
+### Ronda 2 — crashes reales y diseño sistémico (5 agentes más)
+
+- **Crash real de `my_program_calendar_screen.tsx`** (causa raíz confirmada): el gesto de swipe vertical llamaba `startOfWeekMonday()`/`startOfMonth()` (funciones JS normales) directamente dentro de `.onEnd()`, que corre en el hilo de UI de Reanimated — crash nativo. Arreglado envolviendo toda la lógica en un callback JS invocado vía `runOnJS()`.
+- **Crash de `habit_add_screen.tsx`**: investigado a fondo dos veces (lectura estática exhaustiva de la pantalla, `ScreenHeader`, `api/habits.ts`, `constants/habitIcons.ts`, puntos de entrada en `App.tsx`) sin encontrar una causa raíz definitiva. Se añadió una mitigación (filtro de items malformados de `habit-library`) y el **primer `ErrorBoundary` de toda la app** (`HabitAddErrorBoundary`) — antes no existía ninguno, cualquier excepción no capturada tumbaba la app entera en producción. Si el crash se reproduce de nuevo tras este fix, el ErrorBoundary debería al menos evitar el cierre total y dar pistas del error real.
+- **Bug de diseño sistémico "esquina cuadrada detrás de contenido redondeado"** (causa raíz confirmada): `GlassView` de `expo-glass-effect` solo aplica su `borderRadius` nativo al `UIVisualEffectView` interno cuando el Liquid Glass real está disponible y ya se montó (su propio código fuente tiene un TODO documentando que falla a veces por timing). Arreglado con un wrapper `overflow:'hidden'` propio (recorte 100% RN, no depende del native module) en los 4 sitios que combinaban `GlassView` con esquinas redondeadas: `WorkoutMinimizedBar`, `SimpleBottomSheet`, `Card` (`variant="glass"`), `Fab`.
+- **Bug de swipe en `diet_detail_screen.tsx`**: el gesto estaba bien implementado pero con los umbrales invertidos (`activeOffsetX([-15,15])` mayor que `failOffsetY([-12,12])`) — el desvío vertical natural del dedo cancelaba el gesto casi siempre antes de que el horizontal se activara. Corregido a `activeOffsetX([-10,10])` / `failOffsetY([-20,20])`.
+- **Barrido exhaustivo de márgenes/headers** en ~110 pantallas (patrones: texto cortado por falta de `lineHeight`, `SafeAreaView` faltante o con `paddingTop` fijo tapado por la Dynamic Island, headers migrados al componente compartido `ScreenHeader`, márgenes de iconos pegados a bordes) — un barrido anterior había arreglado solo los casos "obvios" de las pantallas reportadas, no todos los bloques de estilo de esas pantallas, por eso varios problemas seguían reportándose tras el primer intento.
+- **`pages/ScreenExplorer.tsx`** reorganizado y deduplicado: `exercise_info_screen.tsx` aparecía dos veces (consolidado), y 9 pantallas de la categoría "Original -" (pre-migración) marcadas `deletionCandidate` — todas colgaban de `pages/Home.tsx`, que es un import muerto en `App.tsx` (ver tareas 12-13 arriba).
+- **Degradado naranja de HomeModernV2** rehecho con 5 paradas de opacidad (en vez de 2 colores planos duros) y extendido en altura hasta la mitad de las tarjetas de Sueño/Balance de carga, como se pidió.
+- **Contenido de blog de prueba**: 15 posts reales (5 por categoría: Entrenamiento/Nutrición/Hábitos) creados directamente en la base de datos de producción vía `php artisan tinker` (respetando el modelo Eloquent `Post` y `Spatie\MediaLibrary`), con imágenes reales descargadas vía `addMediaFromUrl()`. El contenido fuente vive en `docs/blog_seed_content.json` por si hace falta re-sembrar en otro entorno. Nota: `source.unsplash.com` (usado inicialmente para las imágenes) está caído/descontinuado (503) — se sustituyó por `picsum.photos`, que sí funciona.
+
+### Verificación final de la sesión
+
+`eslint` y `tsc --noEmit` limpios (0 errores) sobre todo el repo fusionado tras cada ronda. Build IPA Release relanzado tras esta ronda de fixes; ver historial de runs en GitHub Actions del repo `ilzarpeatore/bsa` para el resultado.

@@ -4,9 +4,9 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
+import ScreenHeader from '@components/ScreenHeader';
 
 interface LanguageData {
   languageCode: string;
@@ -62,8 +62,8 @@ export default function LanguageScreen(props: LanguageScreenProps) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
-      <Heading size="md" className="p-4">Select Language</Heading>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+      <ScreenHeader title="Select Language" onBack={() => navigation?.goBack()} />
       <FlatList
         data={languages}
         keyExtractor={(item) => item.languageCode}

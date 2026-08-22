@@ -36,8 +36,19 @@ const BIG_PERIODS: Period[] = ['month', 'quarter', 'half', 'year'];
 
 const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
+// OJO: NUNCA usar d.toISOString() aqui. `startOfDay()` deja la fecha en
+// medianoche LOCAL; convertirla despues a ISO/UTC la desplaza un dia hacia
+// atras en cualquier huso horario positivo (España incluida, UTC+1/+2)
+// practicamente todo el dia. Eso hacia que marcar un habito como hecho desde
+// esta pantalla guardara el log bajo la fecha de AYER, y por eso nunca
+// aparecia como completado en habits_list_screen.tsx (que compara contra el
+// dia de hoy real). Construimos el string YYYY-MM-DD a partir de los
+// componentes locales de la fecha, sin pasar por UTC.
 function toIso(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 function startOfDay(d: Date): Date {
   const c = new Date(d);
@@ -592,6 +603,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     fontSize: 22,
+    lineHeight: 26,
     fontFamily: FONT.bold,
     color: C.textPrimary,
     textAlign: 'center',

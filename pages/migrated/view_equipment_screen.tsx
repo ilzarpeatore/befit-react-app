@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -116,7 +117,7 @@ export default function ViewEquipmentScreen(props: any) {
   );
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScreenHeader title="Equipments Exercise" onBack={() => props.navigation?.goBack()} />
 
       <Box className="flex-1">
@@ -141,6 +142,6 @@ export default function ViewEquipmentScreen(props: any) {
           </Box>
         )}
       </Box>
-    </Box>
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ActivityIndicator, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -118,7 +119,7 @@ export default function NotificationScreen(props: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader
         title="Notificaciones"
         onBack={() => props.navigation?.goBack()}
@@ -156,6 +157,6 @@ export default function NotificationScreen(props: any) {
           ) : null}
         />
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

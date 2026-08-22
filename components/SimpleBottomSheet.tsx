@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
+import { KeyboardAvoidingView, Keyboard, Platform, View } from 'react-native';
 import { Actionsheet, ActionsheetBackdrop, ActionsheetContent } from '@components/ui/actionsheet';
 import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
 import { C } from '../pages/migrated/theme';
@@ -64,23 +64,29 @@ export default function SimpleBottomSheet({ visible, onClose, children }: Simple
     <Actionsheet isOpen={visible} onClose={onClose}>
       <ActionsheetBackdrop onPress={onBackdropPress} />
       <ActionsheetContent className="items-stretch p-0" style={{ backgroundColor: 'transparent' }}>
-        <GlassView
-          glassEffectStyle="regular"
-          style={{
-            width: '100%',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingBottom: 28,
-            ...(hasGlass ? null : { backgroundColor: C.surface }),
-          }}
-        >
-          <KeyboardAvoidingView
-            style={{ width: '100%' }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        {/* Ver nota en WorkoutMinimizedBar.tsx: GlassView solo aplica su
+            propio borderRadius nativo cuando el Liquid Glass real esta
+            disponible y ya se monto -- sin este wrapper, la esquina superior
+            del sheet se ve cuadrada por detras cuando falla ese timing. */}
+        <View style={{ width: '100%', borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden' }}>
+          <GlassView
+            glassEffectStyle="regular"
+            style={{
+              width: '100%',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingBottom: 28,
+              ...(hasGlass ? null : { backgroundColor: C.surface }),
+            }}
           >
-            {children}
-          </KeyboardAvoidingView>
-        </GlassView>
+            <KeyboardAvoidingView
+              style={{ width: '100%' }}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            >
+              {children}
+            </KeyboardAvoidingView>
+          </GlassView>
+        </View>
       </ActionsheetContent>
     </Actionsheet>
   );

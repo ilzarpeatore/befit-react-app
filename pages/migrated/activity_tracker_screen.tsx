@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
@@ -64,7 +65,7 @@ export default function ActivityTrackerScreen({ navigation }: any) {
   const periods = ACTIVITY_PERIODS;
 
   return (
-    <View style={styles_local.container}>
+    <SafeAreaView style={styles_local.container} edges={['top']}>
       <View style={styles_local.header}>
         <Pressable
           onPress={() => navigation.goBack()}
@@ -183,7 +184,7 @@ export default function ActivityTrackerScreen({ navigation }: any) {
           />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -194,8 +195,7 @@ const styles_local = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 14,
+    paddingVertical: 12,
     backgroundColor: C.surface,
   },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
@@ -220,7 +220,7 @@ const styles_local = StyleSheet.create({
     padding: 16,
   },
   statIconWrap: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  statValue: { fontSize: 24, fontFamily: FONT.bold, color: C.white, marginTop: 12 },
+  statValue: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, color: C.white, marginTop: 12 },
   statLabel: { fontSize: 12, fontFamily: FONT.regular, color: C.gray30, marginTop: 2 },
   progressTrack: { height: 4, backgroundColor: C.bg, borderRadius: 4, marginTop: 8, overflow: 'hidden' },
   progressFill: { height: 4, borderRadius: 4 },

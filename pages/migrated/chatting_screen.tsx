@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FlatList, Alert, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button } from '@components/ui/button';
@@ -136,7 +137,7 @@ export default function ChattingScreen({ navigation }: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScreenHeader
         title="FitBot"
         onBack={() => navigation.goBack()}
@@ -207,6 +208,6 @@ export default function ChattingScreen({ navigation }: any) {
           </Pressable>
         </Box>
       </KeyboardAvoidingView>
-    </Box>
+    </SafeAreaView>
   );
 }

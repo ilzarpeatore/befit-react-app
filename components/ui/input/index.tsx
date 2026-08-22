@@ -47,17 +47,19 @@ const inputFieldStyle = tva({
 type IInputProps = React.ComponentPropsWithoutRef<typeof UIInput> &
   VariantProps<typeof inputStyle> & { className?: string };
 
-const Input = React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(
-  function Input({ className, size = 'md', ...props }, ref) {
-    return (
-      <UIInput
-        className={inputStyle({ size, class: className })}
-        context={{ size }}
-        {...props}
-        ref={ref}
-      />
-    );
-  }
+const Input = React.memo(
+  React.forwardRef<React.ComponentRef<typeof UIInput>, IInputProps>(
+    function Input({ className, size = 'md', ...props }, ref) {
+      return (
+        <UIInput
+          className={inputStyle({ size, class: className })}
+          context={{ size }}
+          {...props}
+          ref={ref}
+        />
+      );
+    }
+  )
 );
 
 type IInputFieldProps = React.ComponentPropsWithoutRef<typeof UIInput.Input> & {

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { ScrollView, Alert } from 'react-native';
 import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { VStack } from '@components/ui/vstack';
@@ -10,11 +11,26 @@ import { Icon } from '@components/ui/icon';
 import { Card } from '@components/ui/card';
 import { Spinner } from '@components/ui/spinner';
 import ScreenHeader from '@components/ScreenHeader';
+import DaySelectorStrip from '../../components/DaySelectorStrip';
+import { buildDayRange, toLocalISODate } from '../../components/dayRange';
 import { C } from './theme';
 import { dietApi, AssignedMealsSummary, AssignedMealRecipe } from '../../api/diet';
+import { recipesApi } from '../../api/recipes';
 import logger from '@helper/logger';
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+
+// Próximos 7 días (hoy incluido) para elegir a qué día del plan se añade la
+// opción de comida -- el mismo horizonte que usa el selector de plan_screen,
+// pero mirando hacia adelante (aquí se añade algo nuevo, no se consulta lo ya
+// planeado).
+function buildUpcomingWeek(): { date: string; dayLetter: string; dayNumber: string }[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const end = new Date(today);
+  end.setDate(end.getDate() + 6);
+  return buildDayRange(7, end);
+}
 
 const MEAL_TYPES: { key: MealType; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -23,17 +39,99 @@ const MEAL_TYPES: { key: MealType; label: string }[] = [
   { key: 'snacks', label: 'Snacks' },
 ];
 
+function isMealType(value: unknown): value is MealType {
+  return value === 'breakfast' || value === 'lunch' || value === 'dinner' || value === 'snacks';
+}
+
 export default function AssignedMealsScreen(props: any) {
   const dietId: number | undefined = props.route?.params?.dietId;
   const dietTitle: string | undefined = props.route?.params?.dietTitle;
   const isDietMode = !!dietId;
+  // Enlace directo desde MigratedPlan ("Ver opciones asignadas" en cada
+  // sección) -- arranca ya en la pestaña de esa sección en vez de siempre en
+  // "breakfast".
+  const initialMealType: MealType = isMealType(props.route?.params?.mealType)
+    ? props.route.params.mealType
+    : 'breakfast';
 
   const [goal, setGoal] = useState<AssignedMealsSummary['goal'] | null>(null);
   const [meals, setMeals] = useState<AssignedMealsSummary['meals'] | null>(null);
   const [title, setTitle] = useState<string>(dietTitle ?? 'Assigned to Me');
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<MealType>('breakfast');
+  const [activeTab, setActiveTab] = useState<MealType>(initialMealType);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  // Añadir una opción de comida a un día concreto del plan (se refleja en
+  // MigratedPlan vía el mismo endpoint save-daily-plan-recipe que usa
+  // plan_screen.tsx al añadir desde allí). Por defecto, hoy.
+  const upcomingDays = useMemo(() => buildUpcomingWeek(), []);
+  const [selectedDate, setSelectedDate] = useState(() => toLocalISODate(new Date()));
+  const [dailyPlanId, setDailyPlanId] = useState<number | null>(null);
+  const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    dietApi
+      .getDailyPlan(selectedDate)
+      .then((res) => {
+        if (ignore) return;
+        setDailyPlanId(res.data?.data?.id ?? null);
+      })
+      .catch((e) => {
+        if (!ignore) {
+          logger.error('Daily plan fetch error (assigned meals):', e);
+          setDailyPlanId(null);
+        }
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [selectedDate]);
+
+  const selectedDayLabel = useCallback(() => {
+    const today = toLocalISODate(new Date());
+    if (selectedDate === today) return 'hoy';
+    const d = new Date(`${selectedDate}T00:00:00`);
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }, [selectedDate]);
+
+  const addRecipeToDay = async (recipe: AssignedMealRecipe) => {
+    if (!dailyPlanId) {
+      Alert.alert('Error', 'No se pudo preparar el plan de ese día. Inténtalo de nuevo.');
+      return;
+    }
+    setAddingIds((prev) => new Set(prev).add(recipe.id));
+    try {
+      await recipesApi.saveDailyPlanRecipe(dailyPlanId, recipe.id, activeTab);
+      Alert.alert('Añadido', `"${recipe.title}" se añadió a ${MEAL_TYPES.find(m => m.key === activeTab)?.label} de ${selectedDayLabel()}. Ya lo verás en tu Plan diario.`);
+    } catch (e) {
+      logger.error('Add recipe to day error:', e);
+      Alert.alert('Error', 'No se pudo añadir esta comida. Inténtalo de nuevo.');
+    } finally {
+      setAddingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(recipe.id);
+        return next;
+      });
+    }
+  };
+
+  const addSelectedToDay = async () => {
+    if (!dailyPlanId || selectedIds.size === 0) return;
+    setIsBulkAdding(true);
+    try {
+      const recipes = allRecipes.filter((r) => selectedIds.has(r.id));
+      await Promise.all(recipes.map((r) => recipesApi.saveDailyPlanRecipe(dailyPlanId, r.id, activeTab)));
+      Alert.alert('Añadido', `${recipes.length} comida(s) añadidas a ${selectedDayLabel()}. Ya las verás en tu Plan diario.`);
+      setSelectedIds(new Set());
+    } catch (e) {
+      logger.error('Bulk add to day error:', e);
+      Alert.alert('Error', 'No se pudieron añadir todas las comidas. Inténtalo de nuevo.');
+    } finally {
+      setIsBulkAdding(false);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -102,7 +200,7 @@ export default function AssignedMealsScreen(props: any) {
       : '';
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScreenHeader title={title} onBack={() => props.navigation.goBack()} />
 
       {isLoading ? (
@@ -147,6 +245,23 @@ export default function AssignedMealsScreen(props: any) {
               <Text weight="semibold" size="xs" style={{ color: kcalStatusColor, marginTop: 4 }}>
                 {kcalStatusText}
               </Text>
+              <Pressable
+                className="flex-row items-center justify-center rounded-md bg-primary"
+                style={{ marginTop: 10, paddingVertical: 10, opacity: isBulkAdding || !dailyPlanId ? 0.6 : 1 }}
+                disabled={isBulkAdding || !dailyPlanId}
+                onPress={addSelectedToDay}
+              >
+                {isBulkAdding ? (
+                  <Spinner size="small" color={C.white} />
+                ) : (
+                  <>
+                    <Icon name="add-circle-outline" size={18} className="text-primary-foreground" />
+                    <Text weight="semibold" size="sm" className="text-primary-foreground" style={{ marginLeft: 6 }}>
+                      Añadir {selectedIds.size} a {selectedDayLabel()}
+                    </Text>
+                  </>
+                )}
+              </Pressable>
             </Card>
           )}
 
@@ -167,6 +282,13 @@ export default function AssignedMealsScreen(props: any) {
               </Pressable>
             ))}
           </HStack>
+
+          <Box className="px-4" style={{ marginBottom: 16 }}>
+            <Text size="xs" weight="semibold" muted style={{ marginBottom: 8 }}>
+              Añadir a tu plan del día
+            </Text>
+            <DaySelectorStrip days={upcomingDays} selectedDate={selectedDate} onSelect={setSelectedDate} />
+          </Box>
 
           <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
             {activeRecipes.length === 0 ? (
@@ -218,7 +340,18 @@ export default function AssignedMealsScreen(props: any) {
                         <Text size="xs" muted>F {recipe.fats}g</Text>
                       </HStack>
                     </Box>
-                    <Icon name="chevron-forward" size={18} color={C.gray30} />
+                  </Pressable>
+                  <Pressable
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    style={{ paddingHorizontal: 14, paddingVertical: 12, opacity: !dailyPlanId ? 0.5 : 1 }}
+                    disabled={addingIds.has(recipe.id) || !dailyPlanId}
+                    onPress={() => addRecipeToDay(recipe)}
+                  >
+                    {addingIds.has(recipe.id) ? (
+                      <Spinner size="small" color={C.orange} />
+                    ) : (
+                      <Icon name="add-circle-outline" size={24} color={C.orange} />
+                    )}
                   </Pressable>
                 </Box>
               ))
@@ -226,6 +359,6 @@ export default function AssignedMealsScreen(props: any) {
           </ScrollView>
         </>
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

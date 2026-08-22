@@ -3,11 +3,9 @@ import { Image, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
-import { Button } from '@components/ui/button';
 import { Pressable } from '@components/ui/pressable';
-import { Icon } from '@components/ui/icon';
 import { Spinner } from '@components/ui/spinner';
+import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { recipesApi } from '../../api/recipes';
 import logger from '@helper/logger';
@@ -116,14 +114,8 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center px-2 bg-background">
-        <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm" className="flex-1 text-center">Favourite Recipe</Heading>
-        <Box className="w-10" />
-      </Box>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <ScreenHeader title="Recetas favoritas" onBack={() => props.navigation.goBack()} />
 
       <Box className="flex-1">
         <FlatList
@@ -137,7 +129,7 @@ export default function FavouriteRecipeScreen(props: FavouriteRecipeScreenProps)
           ListEmptyComponent={
             !isLoading ? (
               <Box style={{ paddingVertical: 60 }} className="flex-1 items-center justify-center">
-                <Text muted size="sm">No favourite recipes found</Text>
+                <Text muted size="sm">No se encontraron recetas favoritas</Text>
               </Box>
             ) : null
           }

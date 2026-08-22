@@ -19,7 +19,51 @@ interface Props {
   navigation?: any;
 }
 
-export default function HabitAddScreen(props: Props) {
+// Red de seguridad: no se pudo confirmar una causa raíz definitiva para el
+// crash real reportado en esta pantalla tras revisar a fondo habitsApi,
+// HABIT_ICON_MAP, ScreenHeader y el registro de navegación en App.tsx (todo
+// null-safe por lectura estática). Como hipótesis más probable queda una
+// respuesta de biblioteca con forma inesperada (item null/no-objeto dentro
+// del array) reventando renderTemplateItem sin try/catch alrededor — ya
+// mitigado abajo filtrando la respuesta — pero por si hay otra causa no
+// detectada, este ErrorBoundary evita que un throw en el árbol de esta
+// pantalla tumbe la app entera; en su lugar degrada a un mensaje con salida.
+class HabitAddErrorBoundary extends React.Component<
+  { navigation?: any; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { navigation?: any; children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.error('[HabitAddScreen] Error atrapado por el ErrorBoundary:', error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'bottom']}>
+          <ScreenHeader title="Añadir hábito" onBack={() => this.props.navigation?.goBack()} />
+          <Box className="flex-1 items-center justify-center" style={{ paddingHorizontal: 32 }}>
+            <Icon name="alert-circle-outline" size={36} className="text-muted-foreground" />
+            <Text size="sm" muted className="text-center" style={{ marginTop: 12 }}>
+              No se pudo mostrar esta pantalla. Vuelve a intentarlo en unos segundos.
+            </Text>
+            <Button radius="pill" style={{ marginTop: 18, paddingHorizontal: 22, paddingVertical: 12 }} onPress={() => this.props.navigation?.goBack()}>
+              <ButtonText size="sm">Volver</ButtonText>
+            </Button>
+          </Box>
+        </SafeAreaView>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function HabitAddScreenInner(props: Props) {
   const { navigation } = props;
   const [tab, setTab] = useState<'library' | 'create'>('library');
 
@@ -40,7 +84,13 @@ export default function HabitAddScreen(props: Props) {
     setErrorLibrary(false);
     try {
       const res = await habitsApi.getLibrary();
-      setTemplates(res.data?.data ?? []);
+      const raw = res.data?.data;
+      // El backend en teoria siempre devuelve un array de objetos, pero si
+      // llegara algo con forma distinta (item null, o data no-array) el
+      // FlatList de abajo reventaria al leer t.icon/t.title sin proteccion
+      // — se filtra aqui para que un dato malformado nunca sea la causa de
+      // un crash de pantalla completa.
+      setTemplates(Array.isArray(raw) ? raw.filter((t): t is HabitTemplate => !!t && typeof t === 'object') : []);
     } catch (e) {
       setErrorLibrary(true);
     } finally {
@@ -130,7 +180,7 @@ export default function HabitAddScreen(props: Props) {
 
       <Box
         className="flex-row bg-card rounded-md"
-        style={{ padding: 4, marginHorizontal: 20, marginBottom: 14 }}
+        style={{ padding: 4, marginHorizontal: 20, marginTop: 16, marginBottom: 14 }}
       >
         <Pressable
           className="flex-1 rounded-sm items-center"
@@ -248,5 +298,13 @@ export default function HabitAddScreen(props: Props) {
         </KeyboardAvoidingView>
       )}
     </SafeAreaView>
+  );
+}
+
+export default function HabitAddScreen(props: Props) {
+  return (
+    <HabitAddErrorBoundary navigation={props.navigation}>
+      <HabitAddScreenInner {...props} />
+    </HabitAddErrorBoundary>
   );
 }

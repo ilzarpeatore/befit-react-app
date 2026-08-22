@@ -30,8 +30,16 @@ const SOURCE_BG: Record<HabitSourceType, string> = {
   personal: C.warning5,
 };
 
+// Fecha local (YYYY-MM-DD) sin pasar por UTC — ver comentario homologo en
+// habit_detail_screen.tsx. toISOString() desplaza la fecha en usos horarios
+// positivos (p.ej. España) y desincroniza esta comprobacion con lo que
+// guarda esa pantalla.
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function isDoneToday(habit: Habit): boolean {

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { runOnJS } from 'react-native-worklets';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Pressable } from '@components/ui/pressable';
@@ -69,6 +72,44 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
   const [recipeSteps, setRecipeSteps] = useState<RecipeStep[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const insets = useSafeAreaInsets();
+
+  // Swipe horizontal sincronizado con las pestañas Ingredientes/Instrucciones:
+  // deslizar cambia `select` (y por tanto qué pestaña se ve activa arriba),
+  // igual que tocar el pill lo hace. translateX solo da feedback visual
+  // durante el gesto -- el contenido en sí no se anima entre secciones (se
+  // sustituye al soltar), por eso siempre vuelve a 0 con spring.
+  const swipeX = useSharedValue(0);
+  const SWIPE_THRESHOLD = 60;
+
+  const goToIngredients = () => setSelect(true);
+  const goToInstructions = () => setSelect(false);
+
+  // activeOffsetX debe ser MENOR que failOffsetY: si no, un swipe real (que
+  // casi nunca es perfectamente horizontal) supera el umbral vertical de
+  // fallo antes de llegar al umbral de activación horizontal y el gesto se
+  // cancela casi siempre -- exactamente el bug reportado ("no es posible
+  // navegar deslizando"). Con activeOffsetX pequeño y failOffsetY holgado el
+  // swipe horizontal gana incluso con el desvío diagonal natural del dedo,
+  // mientras que un scroll claramente vertical sigue fallando el pan y cede
+  // al ScrollView.
+  const contentSwipeGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-20, 20])
+    .onUpdate((e) => {
+      swipeX.value = e.translationX;
+    })
+    .onEnd((e) => {
+      if (e.translationX <= -SWIPE_THRESHOLD) {
+        runOnJS(goToInstructions)();
+      } else if (e.translationX >= SWIPE_THRESHOLD) {
+        runOnJS(goToIngredients)();
+      }
+      swipeX.value = withSpring(0, { damping: 18, stiffness: 180 });
+    });
+
+  const contentSwipeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: swipeX.value * 0.2 }],
+  }));
 
   useEffect(() => {
     // Fallback for when the screen is navigated with only { id } instead of the
@@ -304,9 +345,11 @@ export default function DietDetailScreen(props: DietDetailScreenProps) {
             </HStack>
           </Box>
 
-          <Box style={{ padding: 16 }}>
-            {select ? ingredients() : instruction()}
-          </Box>
+          <GestureDetector gesture={contentSwipeGesture}>
+            <Animated.View style={[{ padding: 16 }, contentSwipeStyle]}>
+              {select ? ingredients() : instruction()}
+            </Animated.View>
+          </GestureDetector>
         </ScrollView>
       </Box>
 

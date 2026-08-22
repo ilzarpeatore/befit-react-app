@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, ScrollView, TextInput, Dimensions, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
@@ -200,7 +201,7 @@ export default function BlogScreen({ navigation }: any) {
   );
 
   return (
-    <Box style={styles_local.container}>
+    <SafeAreaView style={styles_local.container} edges={['bottom']}>
       <ScreenHeader
         title="Blog"
         onBack={() => navigation.goBack()}
@@ -378,7 +379,7 @@ export default function BlogScreen({ navigation }: any) {
           </ScrollView>
         </Box>
       </SimpleBottomSheet>
-    </Box>
+    </SafeAreaView>
   );
 }
 
@@ -387,7 +388,7 @@ const styles_local = StyleSheet.create({
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: C.white },
   body: { flex: 1 },
-  searchInput: { flex: 1, fontSize: 14, lineHeight: 18, fontFamily: FONT.regular, color: C.white },
+  searchInput: { flex: 1, fontSize: 14, lineHeight: 20, fontFamily: FONT.regular, color: C.white },
   sheetContent: { padding: 24 },
   sheetTitle: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginBottom: 8 },
   sheetOptionRow: {

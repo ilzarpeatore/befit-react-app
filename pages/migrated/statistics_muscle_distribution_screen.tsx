@@ -76,7 +76,13 @@ function DeltaText({ current, previous, format }: { current: number; previous: n
   }
   const positive = delta >= 0;
   return (
-    <Text weight="semibold" size="xs" style={{ marginTop: 4, color: positive ? C.success60 : C.destructive60 }}>
+    <Text
+      weight="semibold"
+      size="xs"
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      style={{ marginTop: 4, color: positive ? C.success60 : C.destructive60 }}
+    >
       {positive ? '↑' : '↓'} {format(Math.abs(delta))}
     </Text>
   );
@@ -247,8 +253,8 @@ export default function StatisticsMuscleDistributionScreen(props: Props) {
           <Box className="flex-row flex-wrap gap-3" style={{ marginTop: 20 }}>
             {kpis.map((kpi) => (
               <Box key={kpi.label} className="border border-border bg-muted rounded-md" style={{ width: '47%', padding: 18 }}>
-                <Text weight="medium" size="sm" muted style={{ fontSize: 13.5 }}>{kpi.label}</Text>
-                <Text weight="extrabold" style={{ fontSize: 24, marginTop: 6 }}>{kpi.value}</Text>
+                <Text weight="medium" size="sm" muted numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 13.5 }}>{kpi.label}</Text>
+                <Text weight="extrabold" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ fontSize: 24, lineHeight: 29, marginTop: 6 }}>{kpi.value}</Text>
                 <DeltaText current={kpi.current} previous={kpi.previous} format={kpi.format} />
               </Box>
             ))}

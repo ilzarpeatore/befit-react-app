@@ -39,6 +39,16 @@ export function subscribeWorkoutSession(listener: Listener): () => void {
   };
 }
 
+// Lectura síncrona puntual (sin suscribirse) — usada por
+// workout_session_screen.tsx al montar para saber si YA hay un
+// entrenamiento distinto en curso antes de arrancar/retomar uno nuevo
+// (petición 2026-08-19: "no se pueda empezar un workout si ya hay uno
+// empezado"). Cualquier punto de entrada a esa pantalla (preview, o el
+// minimizador) pasa por el mismo mount, así que basta con comprobarlo ahí.
+export function getActiveWorkoutSession(): ActiveWorkoutSession | null {
+  return currentSession;
+}
+
 export function updateActiveWorkoutSession(session: ActiveWorkoutSession) {
   currentSession = session;
   notify();

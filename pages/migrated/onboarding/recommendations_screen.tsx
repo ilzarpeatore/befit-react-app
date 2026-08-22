@@ -116,7 +116,7 @@ export default function RecommendationsScreen({ navigation }: any) {
 const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   scrollContent: { padding: 20, paddingBottom: 100 },
-  title: { fontSize: 24, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
+  title: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, marginBottom: 20, textAlign: "center" },
   sectionTitle: { fontSize: 16, fontFamily: FONT.bold, marginBottom: 12 },
   activitiesScroll: { marginBottom: 8 },
   activityCard: { width: 150, backgroundColor: C.surface, borderRadius: 14, padding: 14, marginRight: 12, alignItems: "center" },

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import ScreenHeader from '@components/ScreenHeader';
@@ -84,7 +85,7 @@ function WeekBar({ day, hours, isToday }: { day: string; hours: number; isToday:
 
 export default function SleepMonitoringScreen(props: any) {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScreenHeader
         title="Monitor de Sueño"
         hideBack
@@ -150,7 +151,7 @@ export default function SleepMonitoringScreen(props: any) {
 
         <View style={{ height: 32 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   qualityCircleBorder: { alignItems: 'center' },
-  qualityTime: { fontSize: 28, fontFamily: FONT.bold, color: C.white },
+  qualityTime: { fontSize: 28, lineHeight: 33, fontFamily: FONT.bold, color: C.white },
   qualityLabel: { fontSize: 14, color: C.orange, fontFamily: FONT.semiBold },
   statsRow: { flexDirection: 'row', justifyContent: 'space-evenly', width: '100%', marginTop: 16 },
   statContainer: { alignItems: 'center' },

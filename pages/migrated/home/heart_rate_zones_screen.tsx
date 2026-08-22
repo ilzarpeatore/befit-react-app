@@ -158,7 +158,7 @@ function useStyle() {
       justifyContent: "center",
       alignItems: "center",
     },
-    headerTitle: { fontSize: 22, fontFamily: FONT.bold, color: C.white },
+    headerTitle: { fontSize: 22, lineHeight: 26, fontFamily: FONT.bold, color: C.white },
     gradientBarContainer: { marginBottom: 28 },
     gradientBar: { height: 12, borderRadius: 6 },
     gradientLabels: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },

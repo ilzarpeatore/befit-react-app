@@ -152,7 +152,10 @@ export default function StatisticsSeriesCountScreen(props: Props) {
         </Pressable>
 
         <Box className="bg-card rounded-lg items-center shadow-card" style={{ marginTop: 16, padding: 22 }}>
-          <Text weight="black" style={{ fontSize: 34 }}>{totalSeries}</Text>
+          {/* lineHeight explícito: Gilroy-Black recorta el glifo a este tamaño si se
+              deja el lineHeight por defecto (el className size="md" aporta 24, muy por
+              debajo de fontSize 34). */}
+          <Text weight="black" style={{ fontSize: 34, lineHeight: 41 }}>{totalSeries}</Text>
           <Text size="xs" muted style={{ marginTop: 4 }}>series totales registradas</Text>
         </Box>
 

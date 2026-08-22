@@ -107,7 +107,7 @@ const Card = React.forwardRef<React.ComponentRef<typeof Box>, { children: React.
         style={{ marginTop: 12 }}
       >
         <Image source={require('@assets/logo.png')} style={s.cardFooterLogo} resizeMode="contain" />
-        <Text style={s.cardFooterHandle}>@befit</Text>
+        <Text style={s.cardFooterHandle}>@bestronger</Text>
       </HStack>
     </GluestackCard>
   )
@@ -164,7 +164,10 @@ export default function WorkoutSummaryScreen(props: Props) {
   } = route?.params ?? {};
 
   const [muscleVolume, setMuscleVolume] = useState<MuscleVolumeGroup[]>([]);
-  const [mapLoading, setMapLoading] = useState(false);
+  // Arranca en "cargando" solo si de verdad hay sets que computar -- evita
+  // llamar a setState de forma sincrona dentro del efecto de abajo (mismo
+  // resultado, sin la actualizacion de estado en el cuerpo del effect).
+  const [mapLoading, setMapLoading] = useState(() => muscleVolumeSets.length > 0);
   const [workoutNumber, setWorkoutNumber] = useState<number | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
@@ -175,7 +178,6 @@ export default function WorkoutSummaryScreen(props: Props) {
     const sets: MuscleVolumeSet[] = muscleVolumeSets;
     if (!sets || sets.length === 0) return;
     let active = true;
-    setMapLoading(true);
     muscleVolumeApi
       .compute(sets)
       .then((res) => {
@@ -512,7 +514,7 @@ const s = StyleSheet.create({
     marginBottom: 12,
     ...SHADOW.card,
   },
-  headerTitle: { fontFamily: FONT.black, fontSize: 26, color: C.textPrimary, textAlign: 'center' },
+  headerTitle: { fontFamily: FONT.black, fontSize: 26, lineHeight: 31, color: C.textPrimary, textAlign: 'center' },
   headerSubtitle: { fontFamily: FONT.regular, fontSize: 13.5, color: C.textSecondary, textAlign: 'center', marginTop: 6 },
 
   pagerWrap: { flex: 1 },
@@ -545,11 +547,13 @@ const s = StyleSheet.create({
 
   // Pantalla 2 — stats + mini heatmap
   statCol: { flex: 1, alignItems: 'center' },
-  statColValue: { fontFamily: FONT.extraBold, fontSize: 20, color: C.textPrimary },
+  // Mismo bug de recorte que p0Value/gridValue/condensedValue (ver comentario
+  // arriba) -- también afecta a Gilroy-ExtraBold/Bold, no solo a Black.
+  statColValue: { fontFamily: FONT.extraBold, fontSize: 20, lineHeight: 24, color: C.textPrimary },
   statColLabel: { fontFamily: FONT.regular, fontSize: 12, color: C.textSecondary, marginTop: 3 },
 
   // Pantalla 3 — rutina + grid 2x2
-  routineTitle: { fontFamily: FONT.extraBold, fontSize: 20, color: C.textPrimary, marginBottom: 20 },
+  routineTitle: { fontFamily: FONT.extraBold, fontSize: 20, lineHeight: 24, color: C.textPrimary, marginBottom: 20 },
   gridCell: { width: '50%', marginBottom: 32 },
   gridValue: { fontFamily: FONT.black, fontSize: 28, lineHeight: 34, color: C.textPrimary },
   gridLabel: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary, marginTop: 4 },
@@ -557,9 +561,9 @@ const s = StyleSheet.create({
   // Pantalla 4 — rutina + stats compactos + lista
   compactStat: {},
   compactLabel: { fontFamily: FONT.regular, fontSize: 11.5, color: C.textSecondary },
-  compactValue: { fontFamily: FONT.bold, fontSize: 16, color: C.textPrimary, marginTop: 2 },
+  compactValue: { fontFamily: FONT.bold, fontSize: 16, lineHeight: 20, color: C.textPrimary, marginTop: 2 },
   exerciseListScroll: { flex: 1 },
-  exerciseSets: { fontFamily: FONT.extraBold, fontSize: 16, color: C.orange, width: 34 },
+  exerciseSets: { fontFamily: FONT.extraBold, fontSize: 16, lineHeight: 20, color: C.orange, width: 34 },
   exerciseName: { flex: 1, fontFamily: FONT.semiBold, fontSize: 15, color: C.textPrimary },
   emptyHint: { fontFamily: FONT.regular, fontSize: 13, color: C.textSecondary },
 

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ScrollView, Alert, Keyboard, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
 import { Button, ButtonText } from '@components/ui/button';
@@ -59,7 +60,7 @@ export default function ChangePwdScreen({ navigation }: any) {
   };
 
   return (
-    <Box className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Change Password" onBack={() => navigation.goBack()} />
 
       <ScrollView
@@ -140,6 +141,6 @@ export default function ChangePwdScreen({ navigation }: any) {
           <Spinner size="large" color={C.orange} />
         </Box>
       )}
-    </Box>
+    </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Box } from '@components/ui/box';
@@ -40,6 +40,13 @@ export default function ScreenReviewFab({ navigationRef }: Props) {
   const [routeName, setRouteName] = useState<string>('');
   const [existingMark, setExistingMark] = useState<ScreenReviewMark | null>(null);
   const [loadingExisting, setLoadingExisting] = useState(false);
+  // Si el usuario ya empezo a escribir antes de que getForRoute responda, la
+  // respuesta tardia NO debe pisar lo que esta tecleando -- ese race era el
+  // bug real detras de "letras que se mezclan / el texto vuelve al
+  // principio" (la nota vieja del servidor sobreescribia el campo a media
+  // escritura). Se resetea a false en cada open() y se marca true en el
+  // primer onChangeText del usuario.
+  const noteEditedRef = useRef(false);
 
   const open = () => {
     const current = navigationRef?.current?.getCurrentRoute?.()?.name || 'Desconocida';
@@ -47,6 +54,7 @@ export default function ScreenReviewFab({ navigationRef }: Props) {
     setStep('menu');
     setPendingStatus(null);
     setNote('');
+    noteEditedRef.current = false;
     setExistingMark(null);
     setVisible(true);
     setLoadingExisting(true);
@@ -58,10 +66,16 @@ export default function ScreenReviewFab({ navigationRef }: Props) {
         // Precarga la nota ya guardada — es justo lo que fallaba: al
         // reabrir en la misma pantalla, el campo aparecia vacio y parecia
         // que la nota anterior se habia perdido, aunque si estaba guardada.
-        if (found?.note) setNote(found.note);
+        // Pero solo si el usuario no ha tocado el campo mientras tanto.
+        if (found?.note && !noteEditedRef.current) setNote(found.note);
       })
       .catch(() => {})
       .finally(() => setLoadingExisting(false));
+  };
+
+  const onNoteChange = (text: string) => {
+    noteEditedRef.current = true;
+    setNote(text);
   };
 
   const close = () => setVisible(false);
@@ -174,7 +188,7 @@ export default function ScreenReviewFab({ navigationRef }: Props) {
                   placeholder="Nota (opcional) — objetivo, instrucciones, qué falta..."
                   style={{ fontFamily: FONT.regular, fontSize: 13.5 }}
                   value={note}
-                  onChangeText={setNote}
+                  onChangeText={onNoteChange}
                   autoFocus={!existingMark?.note}
                 />
               </Textarea>

@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
   consumedValue: {
     fontFamily: FONT.bold,
     fontSize: 40,
+    lineHeight: 47,
     color: C.textPrimary,
     marginTop: 8,
   },

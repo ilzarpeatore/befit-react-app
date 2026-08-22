@@ -96,7 +96,7 @@ export default function AvatarSetupScreen({ navigation }: any) {
 const localStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   scrollContent: { padding: 20, paddingBottom: 120 },
-  title: { fontSize: 24, fontFamily: FONT.bold, marginBottom: 24, textAlign: "center" },
+  title: { fontSize: 24, lineHeight: 29, fontFamily: FONT.bold, marginBottom: 24, textAlign: "center" },
   profileSection: { alignItems: "center", marginBottom: 30 },
   profileCircle: { width: 120, height: 120, borderRadius: 60, justifyContent: "center", alignItems: "center", borderWidth: 3, marginBottom: 12 },
   uploadBtn: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, gap: 6 },
