@@ -66,10 +66,17 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 // glass-effect total, estilo KOTCHA: 0 = arriba del todo (foto con toda su
 // claridad), HERO_BLUR_SCROLL_RANGE = la foto ya no se distingue -- blur al
 // máximo (casi opaco de por sí) + oscurecido animado por encima que la tapa
-// del todo, para que "desaparezca" de verdad y no se quede a medias.
-const HERO_BLUR_SCROLL_RANGE = 160;
+// del todo, para que "desaparezca" de verdad y no se quede a medias. Subido
+// de 160 a 280 (pedido explícito: el oscurecido se notaba "de golpe") para
+// que el mismo recorrido de opacidad se reparta en más scroll, más lento y
+// progresivo.
+const HERO_BLUR_SCROLL_RANGE = 280;
 const HERO_BLUR_MAX_INTENSITY = 100;
 const HERO_DARKEN_MAX_OPACITY = 0.92;
+// Antes de hacer scroll (scrollY=0) el oscurecido animado partía de 0 -- la
+// foto se veía "demasiado clara" en reposo. Con este suelo, ya arranca algo
+// oscurecida en reposo y sube hasta HERO_DARKEN_MAX_OPACITY con el scroll.
+const HERO_DARKEN_MIN_OPACITY = 0.18;
 
 // Saludo dinamico por hora local del dispositivo (no posicion solar, no hace
 // falta suncalc) -- mismos rangos que usaria cualquier reloj: mañana antes de
@@ -134,7 +141,7 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   // que sube de 0 a casi opaco en el mismo recorrido, es lo que de verdad la
   // tapa hasta el punto de no verse.
   const heroDarkenAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
+    opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [HERO_DARKEN_MIN_OPACITY, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
   }));
 
   // Placeholder: contenido real de los pasos y qué señal marca cada uno
@@ -193,9 +200,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     // 2026-08-19): el bloque superior se funde con "Mi plan de hoy" mediante
     // degradado de color (ver seamGradient más abajo), no con una esquina
     // redondeada -- mismo criterio aplicado ahora a la foto.
-    heroHeader: { paddingBottom: r(24), paddingHorizontal: r(20), overflow: 'hidden' as const },
+    // paddingBottom subido de 24 a 48 (pedido explícito: "haz la imagen un
+    // poco más vertical") -- más foto real antes de que empiece el
+    // degradado de cierre, no solo un recorrido de gradiente más largo.
+    heroHeader: { paddingBottom: r(48), paddingHorizontal: r(20), overflow: 'hidden' as const },
     heroDarkenLayer: { backgroundColor: '#1A100A' },
-    heroCloseGradient: { position: 'absolute' as const, left: 0, right: 0, bottom: 0, height: r(90) },
+    heroCloseGradient: { position: 'absolute' as const, left: 0, right: 0, bottom: 0, height: r(120) },
     // Barra fija (calendario / saludo / notificaciones / ajustes) — vive
     // FUERA del ScrollView como overlay con blur (ver stickyHeader más abajo)
     // para poder quedar estática al hacer scroll. heroTopBar ya no forma
@@ -226,13 +236,13 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     // el tramo visible llegue hasta, aproximadamente, la mitad vertical de
     // esas tarjetas (ver miniCardsRow) — mismo marginTop = -altura/2 de
     // antes, solo escalado hacia arriba para cubrir más superficie.
-    seamGradient: { height: r(104), marginTop: r(-1) },
+    seamGradient: { height: r(130), marginTop: r(-1) },
     // Sueño / Balance de carga — a caballo entre los dos bloques (la mitad
     // superior de la tarjeta queda sobre el degradado del header, la mitad
     // inferior sobre "Mi plan de hoy") para que la costura entre ambos
     // fondos sea menos visible. marginTop negativo (~mitad de la altura de
     // seamGradient) tira la fila hacia arriba, hasta la mitad de la tarjeta.
-    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-52), marginBottom: r(8) },
+    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-65), marginBottom: r(8) },
     heroPhrase: { fontSize: r(14), color: 'rgba(255,255,255,0.92)', textAlign: 'center' as const, lineHeight: r(20), marginBottom: r(16) },
     bannerCard: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: r(18), padding: r(16), alignItems: 'center' as const, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
     bannerTitle: { fontSize: r(14), fontFamily: FONT.bold, color: '#FFFFFF', marginTop: r(8) },
@@ -705,10 +715,15 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
             como un corte duro). Recoloreado de naranja a la misma paleta
             oscura/cálida del heroCloseGradient de arriba -- con foto de fondo
             real el remate ya no es naranja, tiene que continuar el mismo
-            tono para que ambos degradados se lean como uno solo. */}
+            tono para que ambos degradados se lean como uno solo. Termina en
+            C.bg opaco (no en alpha 0): desvanecer un color oscuro sobre un
+            fondo claro dejaba un lavado grisáceo/sucio en vez de una
+            transición limpia -- pedido explícito de que la imagen "termine
+            con un degradado hacia el color de fondo del resto de la
+            pantalla", literal. */}
         <LinearGradient
-          colors={['rgba(20,11,6,0.65)', 'rgba(20,11,6,0.45)', 'rgba(20,11,6,0.25)', 'rgba(20,11,6,0.1)', 'rgba(20,11,6,0)']}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
+          colors={['rgba(20,11,6,0.65)', 'rgba(20,11,6,0.4)', 'rgba(20,11,6,0.15)', C.bg]}
+          locations={[0, 0.3, 0.6, 1]}
           style={styles.seamGradient}
         />
 
@@ -1125,13 +1140,6 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
 
         <Box style={{ height: r(16) }} />
       </Animated.ScrollView>
-
-      <Pressable
-        onPress={() => navigation?.navigate('ScreenExplorer')}
-        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(229, 229, 234, 0.3)', zIndex: 999 }}
-      >
-        <Text style={{ fontSize: 28, color: '#000000', marginTop: -2 }}>+</Text>
-      </Pressable>
 
       {/* Menú de usuario (perfil, favoritos, ajustes, salud, comunidad, logout) */}
       <Modal visible={showMenu} transparent animationType="slide" onRequestClose={() => setShowMenu(false)}>

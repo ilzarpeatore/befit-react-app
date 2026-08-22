@@ -45,7 +45,7 @@ class HabitAddErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'bottom']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['bottom']}>
           <ScreenHeader title="Añadir hábito" onBack={() => this.props.navigation?.goBack()} />
           <Box className="flex-1 items-center justify-center" style={{ paddingHorizontal: 32 }}>
             <Icon name="alert-circle-outline" size={36} className="text-muted-foreground" />

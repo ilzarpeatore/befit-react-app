@@ -85,7 +85,7 @@ function WeekBar({ day, hours, isToday }: { day: string; hours: number; isToday:
 
 export default function SleepMonitoringScreen(props: any) {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScreenHeader
         title="Monitor de Sueño"
         hideBack

@@ -185,7 +185,7 @@ export default function RecipeListScreenV2(props: any) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader
         title={title}
         onBack={() => props.navigation.goBack()}

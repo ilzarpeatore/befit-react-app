@@ -167,7 +167,7 @@ export default function RecipeTagListScreen(props: any) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Etiquetas" onBack={() => props.navigation.goBack()} />
 
       <Box className="flex-1">

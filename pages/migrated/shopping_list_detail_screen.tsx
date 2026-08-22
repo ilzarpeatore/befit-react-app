@@ -187,7 +187,7 @@ export default function ShoppingListDetailScreen(props: any) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScreenHeader
         title={detailData?.title ?? 'Lista de la compra'}
         onBack={() => props.navigation.goBack()}

@@ -62,7 +62,7 @@ export default function RecipeCategoryListScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Categorías" onBack={() => props.navigation.goBack()} />
 
       <Box className="flex-1">

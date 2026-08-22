@@ -223,7 +223,14 @@ export default function NavigationTab({ state, descriptors, navigation }: Bottom
                     style={[styles.quickMenuItem, i > 0 && styles.quickMenuItemDivider]}
                     onPress={() => {
                       closeMenu();
-                      navigation.navigate(action.route, action.params);
+                      // `navigation` aqui es el navigator de PESTAÑAS (Tab.Navigator),
+                      // no el stack interno -- navigate(action.route) buscaba
+                      // "MigratedHabitAdd" etc. como si fuera una pestaña propia y
+                      // nunca encontraba nada (bug real: "al pulsar en + ninguno
+                      // funciona"). Hay que anidar explícitamente: entrar en la
+                      // pestaña "HomePage" y pedirle a SU stack que navegue a la
+                      // pantalla real.
+                      navigation.navigate("HomePage", { screen: action.route, params: action.params });
                     }}
                   >
                     <View style={styles.quickMenuIconWrap}>

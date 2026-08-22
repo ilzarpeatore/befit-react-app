@@ -198,7 +198,7 @@ export default function RecipeMainScreen(props: any) {
   );
 
   return (
-    <SafeAreaView style={s.container} edges={['top']}>
+    <SafeAreaView style={s.container} edges={['bottom']}>
       <ScreenHeader
         title="Recetas"
         onBack={() => props.navigation.goBack()}

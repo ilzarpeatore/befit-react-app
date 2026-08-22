@@ -91,7 +91,7 @@ export default function ShoppingListScreen(props: any) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader
         title="Listas de la compra"
         onBack={() => props.navigation.goBack()}

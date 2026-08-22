@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import { Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
+import { BlurView } from 'expo-blur';
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Box } from '@components/ui/box';
@@ -22,6 +31,16 @@ import { blogApi, BlogDetailItem } from '../../api/blog';
 import logger from '@helper/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Mismo efecto glass progresivo que el hero de home_screen_modern_v2.tsx
+// (pedido explícito: "el mismo efecto que las imágenes que hay en el home
+// v2") -- a medida que se hace scroll la foto de cabecera se desenfoca y
+// oscurece progresivamente, dejando el texto de título/categoría (que se
+// pinta encima, en un z-index superior) siempre legible.
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+const HERO_BLUR_SCROLL_RANGE = 220;
+const HERO_BLUR_MAX_INTENSITY = 90;
+const HERO_DARKEN_MAX_OPACITY = 0.55;
 
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '';
@@ -71,10 +90,15 @@ const WRAPPER_HTML = `<!DOCTYPE html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body { margin:0; padding:0; background-color:${C.surface}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
-    img { max-width:100%; height:auto; border-radius:12px; margin:8px 0; }
-    p, li { font-size:15px; line-height:1.7; margin:8px 0; }
-    h1,h2,h3,h4 { margin:12px 0 8px; }
+    /* padding real en el body -- antes el texto llegaba justo al borde de la
+       tarjeta (bg-card) que lo envuelve, sin ningún margen propio: se veía
+       "colapsado y junto" (pedido explícito). El padding vive aquí, no en la
+       tarjeta de fuera, para que las imágenes/tablas del contenido puedan
+       seguir siendo full-bleed si el editor las pone así. */
+    body { margin:0; padding:16px 18px; background-color:${C.surface}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
+    img { max-width:100%; height:auto; border-radius:12px; margin:10px 0; }
+    p, li { font-size:15px; line-height:1.7; margin:10px 0; }
+    h1,h2,h3,h4 { margin:16px 0 10px; }
     /* Radio de 12px en todos los bloques "recuadrados" del contenido editorial
        (cita, código, tabla) para que sigan el mismo lenguaje visual que el
        resto de tarjetas de la app (RADIUS.sm = 12px) en vez de verse a
@@ -128,6 +152,16 @@ const onShouldStartLoadWithRequest = (request: any) => {
 
 export default function BlogDetailScreen({ navigation, route }: any) {
   const insets = useSafeAreaInsets();
+  const scrollY = useSharedValue(0);
+  const heroScrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  const heroBlurAnimatedProps = useAnimatedProps(() => ({
+    intensity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_BLUR_MAX_INTENSITY], Extrapolation.CLAMP),
+  }));
+  const heroDarkenAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
+  }));
   const mBlogModel = route?.params?.mBlogModel;
   // home_screen_modern.tsx navigates with { id } instead of { mBlogModel }; support both
   // so the post fetched from the API always matches what the user tapped.
@@ -191,15 +225,34 @@ export default function BlogDetailScreen({ navigation, route }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        onScroll={heroScrollHandler}
+        scrollEventThrottle={16}
+      >
         {/* Hero */}
-        <Box style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.42, position: 'relative' }}>
+        <Box style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.42, position: 'relative', overflow: 'hidden' }}>
           {blog?.post_image ? (
-            <Image source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+            <ExpoImage source={{ uri: blog.post_image }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           ) : (
             <Box className="bg-card" style={{ width: '100%', height: '100%' }} />
           )}
           <Box style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
+          {/* Glass progresivo (mismo efecto que el hero de home v2): la foto
+              se desenfoca y oscurece más a medida que se hace scroll, sin
+              tapar nunca del todo el texto/iconos de encima (z-index
+              superior, pintados después de estas dos capas). */}
+          <AnimatedBlurView
+            style={StyleSheet.absoluteFill}
+            animatedProps={heroBlurAnimatedProps}
+            tint="dark"
+            pointerEvents="none"
+          />
+          <Animated.View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }, heroDarkenAnimatedStyle]}
+          />
 
           <Button
             variant="ghost"
@@ -289,7 +342,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
               como el resto de la app (antes era un rectángulo suelto sin
               radio, la única zona "cuadrada" de la pantalla). */}
           {blog?.content || blog?.description ? (
-            <Box className="bg-card rounded-lg" style={{ marginHorizontal: 16, marginTop: 4, overflow: 'hidden' }}>
+            <Box className="bg-card rounded-lg" style={{ marginHorizontal: 12, marginTop: 4, overflow: 'hidden' }}>
               <WebView
                 source={{ html: getRenderedHtml() }}
                 style={{ width: '100%', height: webViewHeight, backgroundColor: 'transparent' }}
@@ -355,7 +408,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
             </Accordion>
           )}
         </Box>
-      </ScrollView>
+      </Animated.ScrollView>
     </Box>
   );
 }

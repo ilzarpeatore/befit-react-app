@@ -556,13 +556,14 @@ export default function PlanScreen(props: any) {
   );
 
   return (
-    // edges=['top']: antes esta pantalla no tenia SafeAreaView y el
-    // ScreenHeader se pintaba pegado a y=0 -- el calendario quedaba debajo de
-    // la dynamic island y el icono de borrar (rightAction del header) caia
-    // justo al lado del icono de bateria del sistema, casi imposible de
-    // pulsar sin querer. Con el inset real aplicado ambos bajan a la misma
-    // zona segura que usa el resto de pantallas migradas.
-    <SafeAreaView style={s.container} edges={['top']}>
+    // ScreenHeader ya absorbe el inset superior el solo (paddingTop:
+    // insets.top + 12, ver components/ScreenHeader.tsx) -- edges={['top']}
+    // aqui ademas SafeAreaView volvia a aplicar el mismo inset por duplicado,
+    // dejando un hueco en blanco excesivo antes de la cabecera y un corte de
+    // color donde el status bar se pintaba con un fondo distinto al resto de
+    // la cabecera. Se deja solo 'bottom' (para el home indicator), igual que
+    // el resto de pantallas migradas.
+    <SafeAreaView style={s.container} edges={['bottom']}>
       <ScreenHeader
         title="Plan diario"
         onBack={() => props.navigation?.goBack()}

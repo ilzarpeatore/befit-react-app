@@ -7,7 +7,7 @@ import ScreenHeader from '@components/ScreenHeader';
 
 export default function TermsAndConditionsScreen(props: any) {
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Terms of Services" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>

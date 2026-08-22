@@ -139,7 +139,7 @@ export default function ResourceDetailScreen(props: Props) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top', 'bottom']}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
         <ScreenHeader title="" onBack={() => navigation?.goBack()} />
         <Box className="flex-1 items-center justify-center px-8">
           <Spinner size="large" color={C.textPrimary} />
@@ -150,7 +150,7 @@ export default function ResourceDetailScreen(props: Props) {
 
   if (error || !resource) {
     return (
-      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top', 'bottom']}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
         <ScreenHeader title="" onBack={() => navigation?.goBack()} />
         <Box className="flex-1 items-center justify-center px-8">
           <Text muted className="text-center">No se pudo cargar el recurso.</Text>
@@ -162,7 +162,7 @@ export default function ResourceDetailScreen(props: Props) {
   const isExternalType = resource.type === 'video' || resource.type === 'link';
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title={resource.title || fallbackTitle || ''} onBack={() => navigation?.goBack()} />
 
       {isExternalType ? (
@@ -180,10 +180,7 @@ export default function ResourceDetailScreen(props: Props) {
           </Button>
         </Box>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-          <Text weight="extrabold" size="lg" className="text-center px-5" style={{ marginBottom: 12 }}>
-            {resource.title}
-          </Text>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32, paddingTop: 12 }}>
           {resource.content ? (
             <WebView
               source={{

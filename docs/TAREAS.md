@@ -4,6 +4,22 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Home v2 (hero), menú de navegación reconstruido, segundo barrido de corte de color y limpieza de 9 pantallas huérfanas (2026-08-22)
+
+**Hero de Home v2** (`home_screen_modern_v2.tsx`): imagen más alta (pedido "hazla un poco más vertical"), el degradado de cierre ahora termina en `C.bg` real en vez de desvanecerse a transparente (evitaba un lavado grisáceo sucio sobre fondo claro), oscurecido animado con suelo mínimo en reposo (antes 0%, "se veía demasiado clara") y recorrido de scroll subido de 160 a 280px (antes el oscurecido se notaba "de golpe"). Quitado un botón flotante de debug ("ScreenExplorer", un "+" gris sin icono real) que se solapaba con el "+" real del menú.
+
+**Menú de navegación inferior — reconstruido de raíz** (`App.tsx`, `NavigationTab.tsx`): solo había UNA pestaña registrada (`HomePage`) pese a que existían 4 iconos (nav1-4) como assets sin usar — de ahí "no hay iconos". Añadidas las 3 pestañas que faltaban (Buscar/Comunidad/Perfil), las 4 comparten el mismo stack completo vía `initialParams.initialScreen`. El botón "+" de accesos rápidos llamaba a `navigation.navigate(ruta)` directamente sobre el navigator de PESTAÑAS (que no conoce esas rutas, solo los nombres de pestaña) — nunca navegaba a nada, corregido a navegación anidada real (`navigate('HomePage', { screen, params })`). Bug más profundo: la barra se mostraba en TODAS las pantallas del stack (100+), tapando botones propios de pantallas de detalle (ej. WorkoutPreview) — corregido con el patrón estándar de React Navigation (`getFocusedRouteNameFromRoute`) para que solo se muestre en las 4 raíces de pestaña.
+
+**Segundo barrido del bug de doble-inset superior** (22 pantallas más, además de las 17 ya corregidas ayer): mismo patrón `edges={['top',...]}` + `ScreenHeader` (que ya absorbe el inset él solo desde ayer) en `resource_detail_screen`, `plan_screen`, `recipe_category_list`, `shopping_list_detail`, `habit_add` (un segundo return que se había pasado en el barrido de ayer), `recipe_main`, `terms_and_conditions`, `recipe_tag_list`, `favourite_recipe`, `language`, `other_user_profile`, `video`, `shopping_list`, `view_all_blog`, `post_details` (x2 returns), `privacy_policy`, `tips`, `sleep_monitoring`, `view_body_part`, `recipe_list_v2`, `main_goal`, `progress`, `video_detail`.
+
+**`resource_detail_screen.tsx`**: título duplicado (se pintaba en el `ScreenHeader` y otra vez como texto grande dentro del contenido) — quitado el segundo.
+
+**`blog_detail_screen.tsx`**: mismo efecto de glass progresivo que el hero de Home v2 portado al header de foto del blog (blur + oscurecido animado con el scroll, manteniendo legible el título/categoría de encima); padding real dentro del WebView (`body { padding:16px 18px }`, antes el texto tocaba el borde de la tarjeta — "se ve muy colapsado y junto"); tarjeta de contenido un poco más ancha (margen 16→12).
+
+**Limpieza de 9 pantallas huérfanas** (candidatas detectadas por el propio Screen Explorer de la app, verificadas antes de borrar buscando cualquier `navigate()` real que las alcanzara desde fuera de su propio clúster): `pages/CommunityFeed.tsx`, `pages/PostDetail.tsx`, `pages/ExerciseDetail.tsx`, `pages/WorkoutList.tsx`, `pages/WorkoutDetail.tsx`, `pages/WorkoutDayExercises.tsx`, `pages/WorkoutSessionScreen.tsx`, `pages/auth/ProfileEditScreen.tsx`, `pages/auth/ChangePasswordScreen.tsx` — su único punto de entrada real era `pages/Home.tsx` (import muerto en `App.tsx`, nunca montado). Quitados también sus `Stack.Screen`/lazy-import en `App.tsx`. **Importante, verificado antes de tocar nada**: el usuario también pidió borrar `WelcomeAuthScreen.tsx`/`LoginScreen.tsx`/`RegisterScreen.tsx`/`ForgotPasswordOptionsScreen.tsx`/`ForgotPasswordEmailScreen.tsx`/`PasswordResetSentScreen.tsx` (probablemente por una lectura cruzada con el resto de la lista de Screen Explorer) — **no se tocaron**: son el flujo de login real y activo (`RootNavigator` fija `initialRouteName: 'WelcomeAuth'` cuando `!state.isAuthenticated`), borrarlos habría roto el login para cualquier usuario no autenticado.
+
+---
+
 ## ✅ Barrido completo: corte de color bajo la status bar + márgenes de pantalla inconsistentes (2026-08-22)
 
 Pedido explícito tras una captura de "Mis hábitos" señalando dos problemas repetidos en muchas pantallas: la franja de la status bar se veía de un color distinto a la cabecera justo debajo, y los márgenes laterales del contenido variaban de pantalla a pantalla.
