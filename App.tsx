@@ -9,6 +9,8 @@ import { DefaultTheme, NavigationContainer, createNavigationContainerRef, getFoc
 // borrar este import + el ref + el mount del FAB mas abajo cuando ya no haga falta.
 import ScreenReviewFab from "@components/ScreenReviewFab";
 import WorkoutMinimizedBar from "@components/WorkoutMinimizedBar";
+import TutorialOverlay from "@components/tutorial/TutorialOverlay";
+import { TutorialProvider } from "@store/TutorialContext";
 import { hydratePersistedWorkoutSession } from "@helper/workoutSessionBus";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -486,15 +488,18 @@ export default function App() {
       <GluestackUIProvider mode="light">
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <AuthProvider>
-            <NavigationContainer
-              ref={screenReviewNavigationRef}
-              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#EBEBF0" } }}
-              onReady={onLayoutRootView}
-            >
-              <RootNavigator />
-            </NavigationContainer>
-            <ScreenReviewFab navigationRef={screenReviewNavigationRef} />
-            <WorkoutMinimizedBar navigationRef={screenReviewNavigationRef} />
+            <TutorialProvider navigationRef={screenReviewNavigationRef}>
+              <NavigationContainer
+                ref={screenReviewNavigationRef}
+                theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#EBEBF0" } }}
+                onReady={onLayoutRootView}
+              >
+                <RootNavigator />
+              </NavigationContainer>
+              <ScreenReviewFab navigationRef={screenReviewNavigationRef} />
+              <WorkoutMinimizedBar navigationRef={screenReviewNavigationRef} />
+              <TutorialOverlay />
+            </TutorialProvider>
           </AuthProvider>
         </SafeAreaProvider>
       </GluestackUIProvider>

@@ -9,6 +9,7 @@ import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
 import { Input, InputField } from '@components/ui/input';
 import ScreenHeader from '@components/ScreenHeader';
+import { useTutorial } from '@store/TutorialContext';
 import { C } from './theme';
 import { habitsApi, HabitTemplate, HabitFrequency } from '../../api/habits';
 import { HABIT_ICON_KEYS, habitIoniconFor } from '../../constants/habitIcons';
@@ -71,6 +72,7 @@ function HabitAddScreenInner(props: Props) {
   const [loadingLibrary, setLoadingLibrary] = useState(true);
   const [errorLibrary, setErrorLibrary] = useState(false);
   const [adoptingId, setAdoptingId] = useState<number | null>(null);
+  const { reportAction } = useTutorial();
 
   const [icon, setIcon] = useState<string>('fitness');
   const [title, setTitle] = useState('');
@@ -106,6 +108,7 @@ function HabitAddScreenInner(props: Props) {
     try {
       const res = await habitsApi.adopt(t.id);
       const newId = res.data?.data?.id;
+      reportAction('habit_added');
       if (newId) {
         navigation?.replace ? navigation.replace('MigratedHabitDetail', { habitId: newId }) : navigation?.navigate('MigratedHabitDetail', { habitId: newId });
       } else {
@@ -117,7 +120,7 @@ function HabitAddScreenInner(props: Props) {
     } finally {
       setAdoptingId(null);
     }
-  }, [adoptingId, navigation]);
+  }, [adoptingId, navigation, reportAction]);
 
   const renderTemplateItem = useCallback(
     ({ item: t }: { item: HabitTemplate }) => (
@@ -162,6 +165,7 @@ function HabitAddScreenInner(props: Props) {
         frequency,
       });
       const newId = res.data?.data?.id;
+      reportAction('habit_added');
       if (newId) {
         navigation?.replace ? navigation.replace('MigratedHabitDetail', { habitId: newId }) : navigation?.navigate('MigratedHabitDetail', { habitId: newId });
       } else {

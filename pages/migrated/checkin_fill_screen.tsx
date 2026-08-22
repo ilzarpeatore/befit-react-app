@@ -11,6 +11,7 @@ import { Textarea, TextareaInput } from '@components/ui/textarea';
 import { Card } from '@components/ui/card';
 import { Spinner } from '@components/ui/spinner';
 import ScreenHeader from '@components/ScreenHeader';
+import { useTutorial } from '@store/TutorialContext';
 import { C } from './theme';
 import {
   checkinsApi,
@@ -201,6 +202,7 @@ export default function CheckInFillScreen(props: Props) {
   const [error, setError] = useState(false);
   const [answers, setAnswers] = useState<Record<number, AnswerValue>>({});
   const [submitting, setSubmitting] = useState(false);
+  const { reportAction } = useTutorial();
 
   const load = useCallback(async () => {
     if (!formId) { setError(true); setIsLoading(false); return; }
@@ -242,6 +244,7 @@ export default function CheckInFillScreen(props: Props) {
       }, []);
 
       await checkinsApi.submit(formAssignmentId, payload);
+      reportAction('checkin_submitted');
       Alert.alert('Enviado', 'Tu respuesta se ha guardado correctamente.', [
         { text: 'OK', onPress: () => navigation?.goBack() },
       ]);

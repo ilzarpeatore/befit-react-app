@@ -36,6 +36,9 @@ import { Divider } from '@components/ui/divider';
 import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
 import StartupChecklist, { StartupChecklistStep } from '@components/StartupChecklist';
+import TutorialTarget from '@components/tutorial/TutorialTarget';
+import { useTutorial } from '@store/TutorialContext';
+import { TUTORIAL_CHALLENGES } from '../../constants/tutorialChallenges';
 import { AvatarMem } from '@components/Avatar';
 import { FONT } from './theme';
 import { useAppColorMode } from '../../helper/useAppColorMode';
@@ -144,18 +147,22 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [HERO_DARKEN_MIN_OPACITY, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
   }));
 
-  // Placeholder: contenido real de los pasos y qué señal marca cada uno
-  // como "done" se define más adelante — solo se construye la mecánica
-  // (ring de progreso + hoja con el listado) por ahora.
-  const startupSteps: StartupChecklistStep[] = useMemo(() => [
-    { id: 'goal', label: 'Establece tu objetivo', done: true, onPress: () => navigation?.navigate('MigratedMainGoal') },
-    { id: 'plan', label: 'Selecciona tu plan', done: true },
-    { id: 'device', label: 'Conecta tu dispositivo (opcional)', done: false, onPress: () => navigation?.navigate('MigratedLinkDeviceChoice') },
-    { id: 'coach', label: 'Di "Hola" a tu entrenador', done: false, onPress: () => navigation?.navigate('MigratedChatting') },
-    { id: 'push', label: 'Activa las notificaciones push', done: false, onPress: () => navigation?.navigate('MigratedNotification') },
-    { id: 'first-workout', label: 'Completa tu primer entrenamiento', done: false },
-    { id: 'week-2', label: 'Comienza tu segunda semana', done: false },
-  ], [navigation]);
+  // Este bloque ("Reto para empezar") es la entrada al tutorial guiado:
+  // cada paso es uno de los 7 retos esenciales (ver constants/tutorialChallenges.ts).
+  // "done" viene de useTutorial() (persistido, se marca solo cuando el
+  // usuario completa la acción real -- nunca a mano aquí). Tocar un paso
+  // lanza su spotlight (TutorialOverlay) en vez de navegar directamente.
+  const { isDone: isTutorialDone, startChallenge } = useTutorial();
+  const startupSteps: StartupChecklistStep[] = useMemo(
+    () =>
+      TUTORIAL_CHALLENGES.map((challenge) => ({
+        id: challenge.id,
+        label: challenge.label,
+        done: isTutorialDone(challenge.id),
+        onPress: () => startChallenge(challenge.id),
+      })),
+    [isTutorialDone, startChallenge]
+  );
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
   const r = useCallback((n: number) => Math.round(n * sc), [sc]);
@@ -515,9 +522,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     const rowStyle = i > 0 ? { marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border } : {};
     if (item.kind === 'checkin') {
       const a = item.data;
-      return (
+      // Solo el primer check-in visible actúa como objetivo del reto
+      // "Rellena tu check-in" -- con varios pendientes, señalar todos a la
+      // vez no tendría sentido.
+      const isFirstCheckin = visibleTodayItems.findIndex((x) => x.kind === 'checkin') === i;
+      const checkinCard = (
         <Pressable
-          key={item.key}
           style={rowStyle}
           onPress={() => navigation?.navigate('MigratedCheckInFill', { formAssignmentId: a.id, formId: a.form_id, title: a.form.title })}
         >
@@ -531,15 +541,22 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           </HStack>
         </Pressable>
       );
+      return isFirstCheckin ? (
+        <TutorialTarget key={item.key} id="home-checkin-card">{checkinCard}</TutorialTarget>
+      ) : (
+        <Box key={item.key}>{checkinCard}</Box>
+      );
     }
     const w = item.data;
     // Si ya está completado, abre el resumen de lo que rellenó el cliente
     // (mismo destino y params que MigratedMyProgramCalendar::goToWorkout para
     // un workout ya hecho) en vez del preview de la plantilla.
     const isCompleted = w.assignment_id != null && completedAssignmentIds.has(w.assignment_id);
-    return (
+    // Solo el primer workout visible es el objetivo del reto "Accede a tu
+    // entrenamiento de hoy" -- mismo criterio que con los check-ins.
+    const isFirstWorkout = visibleTodayItems.findIndex((x) => x.kind === 'workout') === i;
+    const workoutCard = (
       <Pressable
-        key={item.key}
         style={rowStyle}
         onPress={() =>
           isCompleted
@@ -556,6 +573,11 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           <Icon name="chevron-forward" size={20} color={C.textSecondary} />
         </HStack>
       </Pressable>
+    );
+    return isFirstWorkout ? (
+      <TutorialTarget key={item.key} id="home-today-workout-card">{workoutCard}</TutorialTarget>
+    ) : (
+      <Box key={item.key}>{workoutCard}</Box>
     );
   };
 
@@ -937,10 +959,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
               <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
             </Box>
           )}
-          <Pressable style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
-            <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
-            <Icon name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
-          </Pressable>
+          <TutorialTarget id="home-nutrition-link">
+            <Pressable style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
+              <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
+              <Icon name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
+            </Pressable>
+          </TutorialTarget>
         </Card>
 
         {/* Explorar — accesos directos portados desde pages/Today.tsx (pantalla

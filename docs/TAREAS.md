@@ -4,6 +4,20 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Tutorial guiado ("retos para empezar") — spotlight con completado activo (2026-08-22)
+
+Sustituye el checklist placeholder de "Reto para empezar" en Home v2 (goal/plan/device/coach/push, contenido de relleno desde que se construyó `StartupChecklist.tsx`) por los 7 retos esenciales reales, con un mecanismo de coach-marks nuevo:
+
+- **`constants/tutorialChallenges.ts`**: catálogo de los 7 retos (acceder al entrenamiento, registrar una serie, añadir hábito, marcar hábito hecho, acceder al plan de nutrición, marcar comida hecha, rellenar check-in). Cada paso tiene un `targetId` opcional (elemento real a señalar) y una `completion`: `{ type: 'navigate', screen }` o `{ type: 'action', actionId }`.
+- **`store/TutorialContext.tsx`**: provider (mismo patrón que `AuthContext`) con persistencia en `AsyncStorage`. **Completado activo, pedido explícito** — nunca hay botón "Siguiente"; el reto solo avanza cuando: (a) la navegación real llega a la pantalla del paso (un listener de estado sobre el `navigationRef` ya existente, sin instrumentar cada pantalla destino), o (b) `reportAction(actionId)` se llama justo en el punto de éxito real de una acción ya existente (`habitsApi.logHabit`, `habitsApi.adopt`/`createPersonal`, `recipesApi.updateDailyPlanRecipe`, `toggleRowComplete` de una serie, `checkinsApi.submit`) — es un no-op barato si no hay reto activo, así que se llama siempre, sin comprobar antes.
+- **`components/tutorial/TutorialTarget.tsx`**: envuelve cualquier elemento señalable; se mide con `measureInWindow` en cada foco de pantalla (no basta con `onLayout` solo — `react-native-screens` mantiene la pantalla montada al volver atrás, así que no se re-dispara al reenfocar).
+- **`components/tutorial/TutorialOverlay.tsx`**: montado una vez en `App.tsx` (mismo patrón que `WorkoutMinimizedBar`/`ScreenReviewFab`). Máscara de 4 franjas oscuras alrededor del elemento activo (más simple y fiable que un path SVG) — el root del `Modal` lleva `pointerEvents="box-none"` y las franjas SÍ bloquean el toque (sin `pointerEvents="none"`, al revés de lo que podría parecer intuitivo), así el hueco central deja pasar el toque directo al elemento real de debajo. Un paso sin `targetId` (elegir cualquier hábito de una lista dinámica) muestra un aviso flotante en vez de oscurecer la pantalla.
+- Home v2: `startupSteps` ahora mapea `TUTORIAL_CHALLENGES` → `done` viene de `useTutorial().isDone()`, tocar un paso llama a `startChallenge(id)` en vez de navegar directo.
+
+**Pendiente, no pedido todavía**: los 13 retos "descubre más" del resto de la lista (quedaron solo planteados, no en el catálogo); un botón "Reiniciar tutorial" en ajustes (el método `resetAll()` del contexto ya existe, falta la UI que lo llame).
+
+---
+
 ## ✅ Home v2 (hero), menú de navegación reconstruido, segundo barrido de corte de color y limpieza de 9 pantallas huérfanas (2026-08-22)
 
 **Hero de Home v2** (`home_screen_modern_v2.tsx`): imagen más alta (pedido "hazla un poco más vertical"), el degradado de cierre ahora termina en `C.bg` real en vez de desvanecerse a transparente (evitaba un lavado grisáceo sucio sobre fondo claro), oscurecido animado con suelo mínimo en reposo (antes 0%, "se veía demasiado clara") y recorrido de scroll subido de 160 a 280px (antes el oscurecido se notaba "de golpe"). Quitado un botón flotante de debug ("ScreenExplorer", un "+" gris sin icono real) que se solapaba con el "+" real del menú.
