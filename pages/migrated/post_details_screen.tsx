@@ -70,7 +70,7 @@ export default function PostDetailsScreen(props: any) {
 
   if (!postData) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
         <ScreenHeader title="" onBack={() => props.navigation?.goBack()} />
         <Box className="flex-1 items-center justify-center">
           <Text muted weight="medium">
@@ -126,7 +126,7 @@ export default function PostDetailsScreen(props: any) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

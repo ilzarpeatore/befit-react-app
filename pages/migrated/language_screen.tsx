@@ -62,7 +62,7 @@ export default function LanguageScreen(props: LanguageScreenProps) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Select Language" onBack={() => navigation?.goBack()} />
       <FlatList
         data={languages}

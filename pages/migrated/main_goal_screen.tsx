@@ -116,7 +116,7 @@ export default function MainGoalScreen(props: MainGoalScreenProps) {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScreenHeader title="MightyFitness AI" onBack={handleBack} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>

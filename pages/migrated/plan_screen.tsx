@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { StyleSheet, FlatList, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -18,6 +18,8 @@ import { HStack } from '@components/ui/hstack';
 import { VStack } from '@components/ui/vstack';
 import { Divider } from '@components/ui/divider';
 import ScreenHeader from '@components/ScreenHeader';
+import TutorialTarget from '@components/tutorial/TutorialTarget';
+import { useTutorial } from '@store/TutorialContext';
 import { GlassView, isGlassEffectAPIAvailable } from '@components/ui/glass-view';
 import { useResponsiveStyleSheet } from '@helper/responsiveStyleSheet';
 import { useFocusEffect } from '@react-navigation/native';
@@ -105,6 +107,7 @@ const renderCompactStat = (label: string, value: string, progress: number) => (
 
 export default function PlanScreen(props: any) {
 
+  const { reportAction } = useTutorial();
   const [kcalTarget, setKcalTarget] = useState(1331);
   const [kcalFrom, setKcalFrom] = useState(0);
   const [kcalTo, setKcalTo] = useState(0);
@@ -270,13 +273,15 @@ export default function PlanScreen(props: any) {
     }
     setIsLoading(true);
     try {
+      const wasComplete = item.isComplete ?? false;
       const response = await recipesApi.updateDailyPlanRecipe(
         item.id,
         item.dailyPlanId,
         item.recipeId,
         mealType,
-        !(item.isComplete ?? false)
+        !wasComplete
       );
+      if (!wasComplete) reportAction('meal_marked_done');
       applyDailyPlanResponse(response.data);
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'No se pudo actualizar');
@@ -476,6 +481,17 @@ export default function PlanScreen(props: any) {
     </Card>
   );
 
+  // Único objetivo del reto "Marca una comida como realizada" -- el primer
+  // ítem del día en orden de MEAL_TYPES (desayuno, comida, cena, snacks),
+  // sea cual sea la sección donde caiga.
+  const firstRecipeId = useMemo(() => {
+    for (const key of Object.keys(MEAL_TYPES)) {
+      const first = (mealRecipes[key] ?? [])[0];
+      if (first) return first.id;
+    }
+    return null;
+  }, [mealRecipes]);
+
   const renderMealSection = (key: string, displayName: string) => {
     const total = mealTotals[key] ?? {};
     const recipes = mealRecipes[key] ?? [];
@@ -528,13 +544,25 @@ export default function PlanScreen(props: any) {
                     )}
                   </Box>
                 </Pressable>
-                <Pressable onPress={() => toggleRecipeCompletion(recipe, key)}>
-                  <Icon
-                    name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
-                    size={22}
-                    color={recipe.isComplete ? C.success : C.gray40}
-                  />
-                </Pressable>
+                {recipe.id === firstRecipeId ? (
+                  <TutorialTarget id="plan-meal-toggle-first">
+                    <Pressable onPress={() => toggleRecipeCompletion(recipe, key)}>
+                      <Icon
+                        name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
+                        size={22}
+                        color={recipe.isComplete ? C.success : C.gray40}
+                      />
+                    </Pressable>
+                  </TutorialTarget>
+                ) : (
+                  <Pressable onPress={() => toggleRecipeCompletion(recipe, key)}>
+                    <Icon
+                      name={recipe.isComplete ? 'checkmark-circle' : 'ellipse-outline'}
+                      size={22}
+                      color={recipe.isComplete ? C.success : C.gray40}
+                    />
+                  </Pressable>
+                )}
               </HStack>
             </React.Fragment>
           ))
@@ -556,13 +584,14 @@ export default function PlanScreen(props: any) {
   );
 
   return (
-    // edges=['top']: antes esta pantalla no tenia SafeAreaView y el
-    // ScreenHeader se pintaba pegado a y=0 -- el calendario quedaba debajo de
-    // la dynamic island y el icono de borrar (rightAction del header) caia
-    // justo al lado del icono de bateria del sistema, casi imposible de
-    // pulsar sin querer. Con el inset real aplicado ambos bajan a la misma
-    // zona segura que usa el resto de pantallas migradas.
-    <SafeAreaView style={s.container} edges={['top']}>
+    // ScreenHeader ya absorbe el inset superior el solo (paddingTop:
+    // insets.top + 12, ver components/ScreenHeader.tsx) -- edges={['top']}
+    // aqui ademas SafeAreaView volvia a aplicar el mismo inset por duplicado,
+    // dejando un hueco en blanco excesivo antes de la cabecera y un corte de
+    // color donde el status bar se pintaba con un fondo distinto al resto de
+    // la cabecera. Se deja solo 'bottom' (para el home indicator), igual que
+    // el resto de pantallas migradas.
+    <SafeAreaView style={s.container} edges={['bottom']}>
       <ScreenHeader
         title="Plan diario"
         onBack={() => props.navigation?.goBack()}

@@ -55,7 +55,7 @@ export default function ViewBodyPartScreen(props: any) {
   }, [searchText]);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Buscar por músculo" onBack={() => props.navigation.goBack()} />
 
       <VStack space="sm" className="mx-5" style={{ marginTop: 12 }}>

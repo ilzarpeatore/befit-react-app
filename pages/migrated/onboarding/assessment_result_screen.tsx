@@ -76,9 +76,9 @@ export default function AssessmentResultScreen({ navigation }: any) {
             { backgroundColor: C.primary },
             pressed && { opacity: 0.2 },
           ]}
-          onPress={() => navigation.navigate("MigratedRecommendations")}
+          onPress={() => navigation.navigate("MigratedOnboardingComplete")}
         >
-          <Text style={localStyles.continueBtnText}>Ver recomendaciones</Text>
+          <Text style={localStyles.continueBtnText}>Continuar</Text>
         </Pressable>
       </View>
     </SafeAreaView>

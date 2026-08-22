@@ -4,11 +4,13 @@ import { View } from 'react-native';
 import React, { useCallback, useEffect, useState, Suspense } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from "expo-font";
-import { DefaultTheme, NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
+import { DefaultTheme, NavigationContainer, createNavigationContainerRef, getFocusedRouteNameFromRoute } from "@react-navigation/native";
 // Herramienta temporal de desarrollo (ver components/ScreenReviewFab.tsx) —
 // borrar este import + el ref + el mount del FAB mas abajo cuando ya no haga falta.
 import ScreenReviewFab from "@components/ScreenReviewFab";
 import WorkoutMinimizedBar from "@components/WorkoutMinimizedBar";
+import TutorialOverlay from "@components/tutorial/TutorialOverlay";
+import { TutorialProvider } from "@store/TutorialContext";
 import { hydratePersistedWorkoutSession } from "@helper/workoutSessionBus";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -34,18 +36,9 @@ const ForgotPasswordOptionsScreen = React.lazy(() => import('@pages/auth/ForgotP
 const ForgotPasswordEmailScreen = React.lazy(() => import('@pages/auth/ForgotPasswordEmailScreen'));
 const PasswordResetSentScreen = React.lazy(() => import('@pages/auth/PasswordResetSentScreen'));
 const RegisterScreen = React.lazy(() => import('@pages/auth/RegisterScreen'));
-const ProfileEditScreen = React.lazy(() => import('@pages/auth/ProfileEditScreen'));
-const ChangePasswordScreen = React.lazy(() => import('@pages/auth/ChangePasswordScreen'));
 
-const WorkoutList = React.lazy(() => import('@pages/WorkoutList'));
-const WorkoutDetail = React.lazy(() => import('@pages/WorkoutDetail'));
-const WorkoutDayExercises = React.lazy(() => import('@pages/WorkoutDayExercises'));
-const WorkoutSessionScreen = React.lazy(() => import('@pages/WorkoutSessionScreen'));
-const ExerciseDetail = React.lazy(() => import('@pages/ExerciseDetail'));
 const DietDashboard = React.lazy(() => import('@pages/DietDashboard'));
 const DietList = React.lazy(() => import('@pages/DietList'));
-const CommunityFeed = React.lazy(() => import('@pages/CommunityFeed'));
-const PostDetail = React.lazy(() => import('@pages/PostDetail'));
 const ScreenExplorer = React.lazy(() => import('@pages/ScreenExplorer'));
 
 const AboutAppScreen = React.lazy(() => import('@pages/migrated/about_app_screen'));
@@ -85,6 +78,7 @@ const MuscleProgressScreen = React.lazy(() => import('@pages/migrated/muscle_pro
 const MyProgramCalendarScreen = React.lazy(() => import('@pages/migrated/my_program_calendar_screen'));
 const NotificationScreen = React.lazy(() => import('@pages/migrated/notification_screen'));
 const OnboardingScreen = React.lazy(() => import('@pages/migrated/onboarding_screen'));
+const OnboardingV2Screen = React.lazy(() => import('@pages/migrated/onboarding_v2/onboarding_v2_screen'));
 const OtherUserProfileScreen = React.lazy(() => import('@pages/migrated/other_user_profile_screen'));
 const PlanScreen = React.lazy(() => import('@pages/migrated/plan_screen'));
 const PostDetailsScreen = React.lazy(() => import('@pages/migrated/post_details_screen'));
@@ -175,6 +169,34 @@ const LazyFallback = () => <View style={{ flex: 1, backgroundColor: '#EBEBF0' }}
 
 const Tab = createBottomTabNavigator();
 
+// Cada pestaña comparte el mismo stack completo (MigratedNavigator, ~100
+// pantallas) -- solo cambia su pantalla raíz. `descriptors[route].options`
+// del Tab.Navigator EXTERIOR solo se re-evalúa cuando cambia el estado de
+// ESE nivel (qué pestaña está activa), nunca cuando el usuario navega más
+// adentro dentro del stack interno de una pestaña -- por eso la barra se
+// quedaba visible siempre, tapando botones de pantallas de detalle como
+// WorkoutPreview ("el menú coincide con botones que no se pueden pulsar").
+// Fix estándar de React Navigation: `options` como función que lee el
+// nombre de pantalla actualmente enfocado DENTRO del stack anidado
+// (getFocusedRouteNameFromRoute) y solo muestra la barra cuando esa
+// pantalla enfocada es la raíz de la propia pestaña.
+const TAB_ROOT_SCREEN: Record<string, string> = {
+  HomePage: "MigratedHomeModernV2",
+  SearchTab: "MigratedSearch",
+  CommunityTab: "MigratedCommunity",
+  ProfileTab: "MigratedProfile",
+};
+
+function tabScreenOptions(tabName: keyof typeof TAB_ROOT_SCREEN, icon: number) {
+  return ({ route }: { route: any }) => {
+    const focusedRouteName = getFocusedRouteNameFromRoute(route) ?? TAB_ROOT_SCREEN[tabName];
+    return {
+      icon,
+      tabBarVisible: focusedRouteName === TAB_ROOT_SCREEN[tabName],
+    } as NavigationTabOptionsInterface;
+  };
+}
+
 function Homenavigator() {
   return (
     <Tab.Navigator
@@ -186,20 +208,41 @@ function Homenavigator() {
       <Tab.Screen
         name="HomePage"
         component={MigratedNavigator}
-        options={
-          {
-            icon: require("@assets/icons/nav1.png"),
-          } as NavigationTabOptionsInterface
-        }
+        options={tabScreenOptions("HomePage", require("@assets/icons/nav1.png"))}
+      />
+      {/* Los otros 3 iconos de la barra (nav2/3/4) ya existían como assets
+          pero nunca se registraron como tabs reales -- la barra solo tenía
+          "HomePage", así que se veía con un único icono ("menú disfuncional,
+          no hay iconos"). Las 4 pestañas comparten el mismo stack completo
+          (MigratedNavigator, con las ~100 pantallas migradas) para no
+          duplicar rutas -- solo cambia la pantalla inicial de cada una via
+          initialParams.initialScreen. */}
+      <Tab.Screen
+        name="SearchTab"
+        component={MigratedNavigator}
+        initialParams={{ initialScreen: "MigratedSearch" }}
+        options={tabScreenOptions("SearchTab", require("@assets/icons/nav2.png"))}
+      />
+      <Tab.Screen
+        name="CommunityTab"
+        component={MigratedNavigator}
+        initialParams={{ initialScreen: "MigratedCommunity" }}
+        options={tabScreenOptions("CommunityTab", require("@assets/icons/nav3.png"))}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={MigratedNavigator}
+        initialParams={{ initialScreen: "MigratedProfile" }}
+        options={tabScreenOptions("ProfileTab", require("@assets/icons/nav4.png"))}
       />
     </Tab.Navigator>
   );
 }
 
-function MigratedNavigator() {
+function MigratedNavigator({ route }: { route?: { params?: { initialScreen?: string } } }) {
   const MStack = createStackNavigator();
   return (
-    <MStack.Navigator initialRouteName="MigratedHomeModernV2" screenOptions={{ headerShown: false }}>
+    <MStack.Navigator initialRouteName={route?.params?.initialScreen ?? "MigratedHomeModernV2"} screenOptions={{ headerShown: false }}>
       <MStack.Screen name="MigratedAboutApp" component={AboutAppScreen} />
       <MStack.Screen name="MigratedAboutUs" component={AboutUsScreen} />
       <MStack.Screen name="MigratedActivityTracker" component={ActivityTrackerScreen} />
@@ -325,7 +368,7 @@ function RootNavigator() {
     <Suspense fallback={<LazyFallback />}>
       <Stack.Navigator
         key={state.isAuthenticated ? (state.onboardingCompleted ? 'main' : 'onboarding') : 'auth'}
-        initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboarding' : 'Home'}
+        initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboardingV2' : 'Home'}
         screenOptions={{ headerShown: false }}
       >
         {!state.isAuthenticated ? (
@@ -339,43 +382,20 @@ function RootNavigator() {
         </>
       ) : !state.onboardingCompleted ? (
         <>
-          <Stack.Screen name="MigratedOnboarding" component={OnboardingScreen} />
-          <Stack.Screen name="MigratedProfileSetupIntro" component={ProfileSetupIntroScreen} />
-          <Stack.Screen name="MigratedProfileSetupForm" component={ProfileSetupFormScreen} />
-          <Stack.Screen name="MigratedAvatarSetup" component={AvatarSetupScreen} />
-          <Stack.Screen name="MigratedPrivacyPolicyOnboard" component={PrivacyPolicyScreenOnboard} />
-          <Stack.Screen name="MigratedNotificationsOnboard" component={NotificationsScreen} />
+          <Stack.Screen name="MigratedOnboardingV2" component={OnboardingV2Screen} />
           <Stack.Screen name="MigratedAssessmentResult" component={AssessmentResultScreen} />
-          <Stack.Screen name="MigratedRecommendations" component={RecommendationsScreen} />
-          <Stack.Screen name="MigratedHealth" component={HealthScreen} />
-          <Stack.Screen name="MigratedArticles" component={ArticlesScreen} />
           <Stack.Screen name="MigratedOnboardingComplete" component={OnboardingCompleteScreen} />
         </>
       ) : (
         <>
           <Stack.Screen name="Home" component={Homenavigator} />
 
-          {/* Workout flow */}
-          <Stack.Screen name="WorkoutList" component={WorkoutList} />
-          <Stack.Screen name="WorkoutDetail" component={WorkoutDetail} />
-          <Stack.Screen name="WorkoutDayExercises" component={WorkoutDayExercises} />
-          <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
-
           {/* Exercise */}
-          <Stack.Screen name="ExerciseDetail" component={ExerciseDetail} />
           <Stack.Screen name="ExerciseInfo" component={ExerciseInfoScreen} />
 
           {/* Diet */}
           <Stack.Screen name="DietDashboard" component={DietDashboard} />
           <Stack.Screen name="DietList" component={DietList} />
-
-          {/* Community */}
-          <Stack.Screen name="CommunityFeed" component={CommunityFeed} />
-          <Stack.Screen name="PostDetail" component={PostDetail} />
-
-          {/* Profile */}
-          <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
-          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
 
           {/* Migrated screens (nested navigator) */}
           <Stack.Screen name="Migrated" component={MigratedNavigator} />
@@ -461,15 +481,18 @@ export default function App() {
       <GluestackUIProvider mode="light">
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <AuthProvider>
-            <NavigationContainer
-              ref={screenReviewNavigationRef}
-              theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#EBEBF0" } }}
-              onReady={onLayoutRootView}
-            >
-              <RootNavigator />
-            </NavigationContainer>
-            <ScreenReviewFab navigationRef={screenReviewNavigationRef} />
-            <WorkoutMinimizedBar navigationRef={screenReviewNavigationRef} />
+            <TutorialProvider navigationRef={screenReviewNavigationRef}>
+              <NavigationContainer
+                ref={screenReviewNavigationRef}
+                theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "#EBEBF0" } }}
+                onReady={onLayoutRootView}
+              >
+                <RootNavigator />
+              </NavigationContainer>
+              <ScreenReviewFab navigationRef={screenReviewNavigationRef} />
+              <WorkoutMinimizedBar navigationRef={screenReviewNavigationRef} />
+              <TutorialOverlay />
+            </TutorialProvider>
           </AuthProvider>
         </SafeAreaProvider>
       </GluestackUIProvider>

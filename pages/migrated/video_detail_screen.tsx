@@ -8,7 +8,7 @@ import ScreenHeader from '@components/ScreenHeader';
 
 export default function VideoDetailScreen(props: any) {
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="" onBack={() => props.navigation.goBack()} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>

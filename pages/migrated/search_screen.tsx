@@ -402,9 +402,11 @@ export default function SearchScreen(props: any) {
             <>
               {/* Search Bar */}
               <Box className="flex-row items-center gap-2" style={{ padding: 16, paddingTop: 30 }}>
-                <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
-                  <Icon name="chevron-back" size={28} className="text-foreground" />
-                </Button>
+                {props.navigation.canGoBack() && (
+                  <Button variant="ghost" size="icon" onPress={() => props.navigation.goBack()}>
+                    <Icon name="chevron-back" size={28} className="text-foreground" />
+                  </Button>
+                )}
                 <Input className="flex-1 rounded-md bg-card border border-border px-3.5 gap-2" size="md">
                   <InputField
                     ref={searchRef}

@@ -1,0 +1,149 @@
+import React from 'react';
+import { Dimensions, Modal, Pressable, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Box } from '@components/ui/box';
+import { Text } from '@components/ui/text';
+import { Icon } from '@components/ui/icon';
+import { useTutorial } from '@store/TutorialContext';
+import { C, FONT } from '../../pages/migrated/theme';
+
+const SPOTLIGHT_PADDING = 6;
+
+// Overlay global de coach-marks -- montado una vez en App.tsx (mismo patrón
+// que WorkoutMinimizedBar/ScreenReviewFab). Recorta con 4 rectángulos
+// oscuros alrededor del elemento activo (más simple y fiable que una
+// máscara SVG) dejando ese hueco totalmente tocable -- el usuario interactúa
+// con el elemento real de debajo, y el reto avanza solo cuando esa acción
+// real tiene éxito (reportAction/navegación), nunca con un botón "Siguiente".
+//
+// Importante sobre touch: el root del Modal lleva pointerEvents="box-none"
+// (mismo patrón que NavigationTab.tsx) -- así el propio root NO intercepta
+// nada, y el "hueco" del spotlight (donde no hay ninguna vista encima) deja
+// pasar el toque directo al elemento real de debajo. Las 4 franjas oscuras SÍ
+// deben bloquear el toque (llevan el pointerEvents por defecto, no 'none'),
+// para que no se pueda interactuar con lo que tapan visualmente.
+export default function TutorialOverlay() {
+  const { activeChallenge, activeStep, activeStepIndex, activeTargetRect, skipChallenge } = useTutorial();
+  const insets = useSafeAreaInsets();
+  const { height: screenH } = Dimensions.get('window');
+
+  if (!activeChallenge || !activeStep) return null;
+
+  // Paso con targetId pero cuyo elemento todavía no se ha registrado (el
+  // usuario no ha llegado a esa pantalla) -- no se muestra nada hasta que
+  // TutorialTarget lo mida y aparezca.
+  if (activeStep.targetId && !activeTargetRect) return null;
+
+  const skipBtn = (
+    <Pressable onPress={skipChallenge} style={[styles.skipBtn, { top: insets.top + 10 }]} hitSlop={10}>
+      <Text style={styles.skipText}>Saltar tutorial</Text>
+    </Pressable>
+  );
+
+  // Paso sin elemento fijo que señalar (ej. "elige cualquier hábito de la
+  // biblioteca") -- aviso flotante abajo, sin oscurecer la pantalla.
+  if (!activeStep.targetId) {
+    return (
+      <Modal visible transparent animationType="fade">
+        <View style={{ flex: 1 }} pointerEvents="box-none">
+          {skipBtn}
+          <Box style={[styles.banner, { bottom: insets.bottom + 24 }]}>
+            <Text style={styles.tooltipTitle}>{activeStep.title}</Text>
+            <Text style={styles.tooltipText}>{activeStep.text}</Text>
+          </Box>
+        </View>
+      </Modal>
+    );
+  }
+
+  const rect = activeTargetRect!;
+  const padded = {
+    x: Math.max(0, rect.x - SPOTLIGHT_PADDING),
+    y: Math.max(0, rect.y - SPOTLIGHT_PADDING),
+    width: rect.width + SPOTLIGHT_PADDING * 2,
+    height: rect.height + SPOTLIGHT_PADDING * 2,
+  };
+  const spaceBelow = screenH - (padded.y + padded.height);
+  const tooltipBelow = spaceBelow > 160;
+
+  return (
+    <Modal visible transparent animationType="fade">
+      <View style={{ flex: 1 }} pointerEvents="box-none">
+        {/* Estas 4 franjas SÍ deben bloquear el toque (no llevan pointerEvents
+            "none"): son la máscara oscura, y nada de lo que tapan debe poder
+            tocarse. El propio hueco central, sin ninguna vista encima, deja
+            pasar el toque gracias al pointerEvents="box-none" del root. */}
+        <Box style={[styles.mask, { left: 0, top: 0, right: 0, height: padded.y }]} />
+        <Box style={[styles.mask, { left: 0, top: padded.y + padded.height, right: 0, bottom: 0 }]} />
+        <Box style={[styles.mask, { left: 0, top: padded.y, width: padded.x, height: padded.height }]} />
+        <Box style={[styles.mask, { left: padded.x + padded.width, top: padded.y, right: 0, height: padded.height }]} />
+        {/* Solo decorativo (borde alrededor del hueco) -- pointerEvents="none"
+            para no bloquear el propio hueco que enmarca. */}
+        <Box
+          pointerEvents="none"
+          style={[styles.spotlightBorder, { left: padded.x, top: padded.y, width: padded.width, height: padded.height }]}
+        />
+
+        {skipBtn}
+
+        <Box
+          style={[
+            styles.tooltip,
+            tooltipBelow ? { top: padded.y + padded.height + 12 } : { bottom: screenH - padded.y + 12 },
+          ]}
+        >
+          <Text style={styles.stepCounter}>
+            {activeChallenge.label} · {activeStepIndex + 1}/{activeChallenge.steps.length}
+          </Text>
+          <Text style={styles.tooltipTitle}>{activeStep.title}</Text>
+          <Text style={styles.tooltipText}>{activeStep.text}</Text>
+          <Box style={styles.tooltipHint}>
+            <Icon name="hand-left-outline" size={14} color={C.orange} />
+            <Text style={styles.tooltipHintText}>Tócalo para continuar</Text>
+          </Box>
+        </Box>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  mask: { position: 'absolute', backgroundColor: 'rgba(0,0,0,0.72)' },
+  spotlightBorder: {
+    position: 'absolute',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: C.orange,
+  },
+  skipBtn: {
+    position: 'absolute',
+    right: 16,
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+  },
+  skipText: { fontSize: 12, fontFamily: FONT.semiBold, color: '#FFFFFF' },
+  tooltip: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    padding: 16,
+  },
+  banner: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    padding: 16,
+  },
+  stepCounter: { fontSize: 11, fontFamily: FONT.semiBold, color: C.orange, marginBottom: 6 },
+  tooltipTitle: { fontSize: 15, fontFamily: FONT.bold, color: C.textPrimary, marginBottom: 4 },
+  tooltipText: { fontSize: 13.5, fontFamily: FONT.regular, color: C.textSecondary, lineHeight: 19 },
+  tooltipHint: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
+  tooltipHintText: { fontSize: 12, fontFamily: FONT.medium, color: C.orange },
+});

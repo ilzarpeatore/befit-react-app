@@ -36,6 +36,9 @@ import { Divider } from '@components/ui/divider';
 import AppIcon from '@components/AppIcon';
 import AnimatedRing from '@components/AnimatedRing';
 import StartupChecklist, { StartupChecklistStep } from '@components/StartupChecklist';
+import TutorialTarget from '@components/tutorial/TutorialTarget';
+import { useTutorial } from '@store/TutorialContext';
+import { TUTORIAL_CHALLENGES } from '../../constants/tutorialChallenges';
 import { AvatarMem } from '@components/Avatar';
 import { FONT } from './theme';
 import { useAppColorMode } from '../../helper/useAppColorMode';
@@ -66,10 +69,17 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 // glass-effect total, estilo KOTCHA: 0 = arriba del todo (foto con toda su
 // claridad), HERO_BLUR_SCROLL_RANGE = la foto ya no se distingue -- blur al
 // máximo (casi opaco de por sí) + oscurecido animado por encima que la tapa
-// del todo, para que "desaparezca" de verdad y no se quede a medias.
-const HERO_BLUR_SCROLL_RANGE = 160;
+// del todo, para que "desaparezca" de verdad y no se quede a medias. Subido
+// de 160 a 280 (pedido explícito: el oscurecido se notaba "de golpe") para
+// que el mismo recorrido de opacidad se reparta en más scroll, más lento y
+// progresivo.
+const HERO_BLUR_SCROLL_RANGE = 280;
 const HERO_BLUR_MAX_INTENSITY = 100;
 const HERO_DARKEN_MAX_OPACITY = 0.92;
+// Antes de hacer scroll (scrollY=0) el oscurecido animado partía de 0 -- la
+// foto se veía "demasiado clara" en reposo. Con este suelo, ya arranca algo
+// oscurecida en reposo y sube hasta HERO_DARKEN_MAX_OPACITY con el scroll.
+const HERO_DARKEN_MIN_OPACITY = 0.18;
 
 // Saludo dinamico por hora local del dispositivo (no posicion solar, no hace
 // falta suncalc) -- mismos rangos que usaria cualquier reloj: mañana antes de
@@ -134,21 +144,25 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
   // que sube de 0 a casi opaco en el mismo recorrido, es lo que de verdad la
   // tapa hasta el punto de no verse.
   const heroDarkenAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [0, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
+    opacity: interpolate(scrollY.value, [0, HERO_BLUR_SCROLL_RANGE], [HERO_DARKEN_MIN_OPACITY, HERO_DARKEN_MAX_OPACITY], Extrapolation.CLAMP),
   }));
 
-  // Placeholder: contenido real de los pasos y qué señal marca cada uno
-  // como "done" se define más adelante — solo se construye la mecánica
-  // (ring de progreso + hoja con el listado) por ahora.
-  const startupSteps: StartupChecklistStep[] = useMemo(() => [
-    { id: 'goal', label: 'Establece tu objetivo', done: true, onPress: () => navigation?.navigate('MigratedMainGoal') },
-    { id: 'plan', label: 'Selecciona tu plan', done: true },
-    { id: 'device', label: 'Conecta tu dispositivo (opcional)', done: false, onPress: () => navigation?.navigate('MigratedLinkDeviceChoice') },
-    { id: 'coach', label: 'Di "Hola" a tu entrenador', done: false, onPress: () => navigation?.navigate('MigratedChatting') },
-    { id: 'push', label: 'Activa las notificaciones push', done: false, onPress: () => navigation?.navigate('MigratedNotification') },
-    { id: 'first-workout', label: 'Completa tu primer entrenamiento', done: false },
-    { id: 'week-2', label: 'Comienza tu segunda semana', done: false },
-  ], [navigation]);
+  // Este bloque ("Reto para empezar") es la entrada al tutorial guiado:
+  // cada paso es uno de los 7 retos esenciales (ver constants/tutorialChallenges.ts).
+  // "done" viene de useTutorial() (persistido, se marca solo cuando el
+  // usuario completa la acción real -- nunca a mano aquí). Tocar un paso
+  // lanza su spotlight (TutorialOverlay) en vez de navegar directamente.
+  const { isDone: isTutorialDone, startChallenge } = useTutorial();
+  const startupSteps: StartupChecklistStep[] = useMemo(
+    () =>
+      TUTORIAL_CHALLENGES.map((challenge) => ({
+        id: challenge.id,
+        label: challenge.label,
+        done: isTutorialDone(challenge.id),
+        onPress: () => startChallenge(challenge.id),
+      })),
+    [isTutorialDone, startChallenge]
+  );
   const { width: winW, height: winH } = useWindowDimensions();
   const sc = useMemo(() => Math.min(winW / FIGMA_W, winH / FIGMA_H), [winW, winH]);
   const r = useCallback((n: number) => Math.round(n * sc), [sc]);
@@ -193,9 +207,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     // 2026-08-19): el bloque superior se funde con "Mi plan de hoy" mediante
     // degradado de color (ver seamGradient más abajo), no con una esquina
     // redondeada -- mismo criterio aplicado ahora a la foto.
-    heroHeader: { paddingBottom: r(24), paddingHorizontal: r(20), overflow: 'hidden' as const },
+    // paddingBottom subido de 24 a 48 (pedido explícito: "haz la imagen un
+    // poco más vertical") -- más foto real antes de que empiece el
+    // degradado de cierre, no solo un recorrido de gradiente más largo.
+    heroHeader: { paddingBottom: r(48), paddingHorizontal: r(20), overflow: 'hidden' as const },
     heroDarkenLayer: { backgroundColor: '#1A100A' },
-    heroCloseGradient: { position: 'absolute' as const, left: 0, right: 0, bottom: 0, height: r(90) },
+    heroCloseGradient: { position: 'absolute' as const, left: 0, right: 0, bottom: 0, height: r(120) },
     // Barra fija (calendario / saludo / notificaciones / ajustes) — vive
     // FUERA del ScrollView como overlay con blur (ver stickyHeader más abajo)
     // para poder quedar estática al hacer scroll. heroTopBar ya no forma
@@ -226,13 +243,13 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     // el tramo visible llegue hasta, aproximadamente, la mitad vertical de
     // esas tarjetas (ver miniCardsRow) — mismo marginTop = -altura/2 de
     // antes, solo escalado hacia arriba para cubrir más superficie.
-    seamGradient: { height: r(104), marginTop: r(-1) },
+    seamGradient: { height: r(130), marginTop: r(-1) },
     // Sueño / Balance de carga — a caballo entre los dos bloques (la mitad
     // superior de la tarjeta queda sobre el degradado del header, la mitad
     // inferior sobre "Mi plan de hoy") para que la costura entre ambos
     // fondos sea menos visible. marginTop negativo (~mitad de la altura de
     // seamGradient) tira la fila hacia arriba, hasta la mitad de la tarjeta.
-    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-52), marginBottom: r(8) },
+    miniCardsRow: { paddingHorizontal: r(20), marginTop: r(-65), marginBottom: r(8) },
     heroPhrase: { fontSize: r(14), color: 'rgba(255,255,255,0.92)', textAlign: 'center' as const, lineHeight: r(20), marginBottom: r(16) },
     bannerCard: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: r(18), padding: r(16), alignItems: 'center' as const, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
     bannerTitle: { fontSize: r(14), fontFamily: FONT.bold, color: '#FFFFFF', marginTop: r(8) },
@@ -505,9 +522,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
     const rowStyle = i > 0 ? { marginTop: r(12), paddingTop: r(12), borderTopWidth: 1, borderTopColor: C.border } : {};
     if (item.kind === 'checkin') {
       const a = item.data;
-      return (
+      // Solo el primer check-in visible actúa como objetivo del reto
+      // "Rellena tu check-in" -- con varios pendientes, señalar todos a la
+      // vez no tendría sentido.
+      const isFirstCheckin = visibleTodayItems.findIndex((x) => x.kind === 'checkin') === i;
+      const checkinCard = (
         <Pressable
-          key={item.key}
           style={rowStyle}
           onPress={() => navigation?.navigate('MigratedCheckInFill', { formAssignmentId: a.id, formId: a.form_id, title: a.form.title })}
         >
@@ -521,15 +541,22 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           </HStack>
         </Pressable>
       );
+      return isFirstCheckin ? (
+        <TutorialTarget key={item.key} id="home-checkin-card">{checkinCard}</TutorialTarget>
+      ) : (
+        <Box key={item.key}>{checkinCard}</Box>
+      );
     }
     const w = item.data;
     // Si ya está completado, abre el resumen de lo que rellenó el cliente
     // (mismo destino y params que MigratedMyProgramCalendar::goToWorkout para
     // un workout ya hecho) en vez del preview de la plantilla.
     const isCompleted = w.assignment_id != null && completedAssignmentIds.has(w.assignment_id);
-    return (
+    // Solo el primer workout visible es el objetivo del reto "Accede a tu
+    // entrenamiento de hoy" -- mismo criterio que con los check-ins.
+    const isFirstWorkout = visibleTodayItems.findIndex((x) => x.kind === 'workout') === i;
+    const workoutCard = (
       <Pressable
-        key={item.key}
         style={rowStyle}
         onPress={() =>
           isCompleted
@@ -546,6 +573,11 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
           <Icon name="chevron-forward" size={20} color={C.textSecondary} />
         </HStack>
       </Pressable>
+    );
+    return isFirstWorkout ? (
+      <TutorialTarget key={item.key} id="home-today-workout-card">{workoutCard}</TutorialTarget>
+    ) : (
+      <Box key={item.key}>{workoutCard}</Box>
     );
   };
 
@@ -705,10 +737,15 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
             como un corte duro). Recoloreado de naranja a la misma paleta
             oscura/cálida del heroCloseGradient de arriba -- con foto de fondo
             real el remate ya no es naranja, tiene que continuar el mismo
-            tono para que ambos degradados se lean como uno solo. */}
+            tono para que ambos degradados se lean como uno solo. Termina en
+            C.bg opaco (no en alpha 0): desvanecer un color oscuro sobre un
+            fondo claro dejaba un lavado grisáceo/sucio en vez de una
+            transición limpia -- pedido explícito de que la imagen "termine
+            con un degradado hacia el color de fondo del resto de la
+            pantalla", literal. */}
         <LinearGradient
-          colors={['rgba(20,11,6,0.65)', 'rgba(20,11,6,0.45)', 'rgba(20,11,6,0.25)', 'rgba(20,11,6,0.1)', 'rgba(20,11,6,0)']}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
+          colors={['rgba(20,11,6,0.65)', 'rgba(20,11,6,0.4)', 'rgba(20,11,6,0.15)', C.bg]}
+          locations={[0, 0.3, 0.6, 1]}
           style={styles.seamGradient}
         />
 
@@ -922,10 +959,12 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
               <Text style={[styles.nutritionMsg, { marginTop: r(8) }]}>Sin plan de alimentación hoy</Text>
             </Box>
           )}
-          <Pressable style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
-            <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
-            <Icon name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
-          </Pressable>
+          <TutorialTarget id="home-nutrition-link">
+            <Pressable style={styles.nutritionLink} onPress={() => navigation?.navigate('MigratedPlan')}>
+              <Text style={styles.nutritionLinkText}>Añadir comidas</Text>
+              <Icon name="arrow-forward" size={14} color={C.orange} style={{ marginLeft: r(8) }} />
+            </Pressable>
+          </TutorialTarget>
         </Card>
 
         {/* Explorar — accesos directos portados desde pages/Today.tsx (pantalla
@@ -1125,13 +1164,6 @@ export default function HomeScreenModernV2(props: HomeScreenModernProps) {
 
         <Box style={{ height: r(16) }} />
       </Animated.ScrollView>
-
-      <Pressable
-        onPress={() => navigation?.navigate('ScreenExplorer')}
-        style={{ position: 'absolute', bottom: 80, right: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px rgba(229, 229, 234, 0.3)', zIndex: 999 }}
-      >
-        <Text style={{ fontSize: 28, color: '#000000', marginTop: -2 }}>+</Text>
-      </Pressable>
 
       {/* Menú de usuario (perfil, favoritos, ajustes, salud, comunidad, logout) */}
       <Modal visible={showMenu} transparent animationType="slide" onRequestClose={() => setShowMenu(false)}>

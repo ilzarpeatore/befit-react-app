@@ -9,7 +9,7 @@ export default function PrivacyPolicyScreen(props: any) {
   const privacyPolicy = props.route?.params?.privacyPolicy ?? 'Privacy policy content will be loaded here.';
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Privacy Policy" onBack={() => props.navigation?.goBack()} />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text muted className="leading-6">{privacyPolicy}</Text>

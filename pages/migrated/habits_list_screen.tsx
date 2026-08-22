@@ -8,6 +8,8 @@ import { Button, ButtonText } from '@components/ui/button';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
 import ScreenHeader from '@components/ScreenHeader';
+import TutorialTarget from '@components/tutorial/TutorialTarget';
+import { useTutorial } from '@store/TutorialContext';
 import { C } from './theme';
 import { habitsApi, Habit, HabitSourceType } from '../../api/habits';
 import { habitIoniconFor } from '../../constants/habitIcons';
@@ -59,6 +61,7 @@ export default function HabitsListScreen(props: Props) {
   const [error, setError] = useState(false);
   const [items, setItems] = useState<Habit[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const { reportAction } = useTutorial();
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -96,6 +99,7 @@ export default function HabitsListScreen(props: Props) {
     setTogglingId(habit.id);
     try {
       await habitsApi.logHabit(habit.id, { is_completed: !done });
+      if (!done) reportAction('habit_marked_done');
       await load();
     } catch (e) {
       // silencioso — el usuario puede reintentar el tap
@@ -106,8 +110,22 @@ export default function HabitsListScreen(props: Props) {
 
   const totalStreakDays = useMemo(() => items.reduce((sum, h) => sum + (h.current_streak || 0), 0), [items]);
 
-  const renderCard = (habit: Habit) => {
+  const renderCard = (habit: Habit, index: number) => {
     const done = isDoneToday(habit);
+    const toggleBtn = (
+      <Pressable
+        className="w-9 h-9 rounded-pill items-center justify-center"
+        style={{ backgroundColor: done ? C.success50 : C.bg }}
+        onPress={() => toggleToday(habit)}
+        disabled={togglingId === habit.id}
+      >
+        {togglingId === habit.id ? (
+          <ActivityIndicator size="small" color={done ? '#FFFFFF' : C.textSecondary} />
+        ) : (
+          <Icon name="checkmark" size={20} color={done ? '#FFFFFF' : C.gray30} />
+        )}
+      </Pressable>
+    );
     return (
       <Pressable
         key={habit.id}
@@ -139,18 +157,11 @@ export default function HabitsListScreen(props: Props) {
               </Box>
             </Box>
           </Box>
-          <Pressable
-            className="w-9 h-9 rounded-pill items-center justify-center"
-            style={{ backgroundColor: done ? C.success50 : C.bg }}
-            onPress={() => toggleToday(habit)}
-            disabled={togglingId === habit.id}
-          >
-            {togglingId === habit.id ? (
-              <ActivityIndicator size="small" color={done ? '#FFFFFF' : C.textSecondary} />
-            ) : (
-              <Icon name="checkmark" size={20} color={done ? '#FFFFFF' : C.gray30} />
-            )}
-          </Pressable>
+          {index === 0 ? (
+            <TutorialTarget id="habit-toggle-first">{toggleBtn}</TutorialTarget>
+          ) : (
+            toggleBtn
+          )}
         </Box>
         <WeekComplianceRow completedDays={computeWeekCompliance(habit.logs)} color={C.orange} size={24} />
       </Pressable>
@@ -163,9 +174,11 @@ export default function HabitsListScreen(props: Props) {
         title="Mis hábitos"
         onBack={() => navigation?.goBack()}
         rightAction={
-          <Pressable onPress={() => navigation?.navigate('MigratedHabitAdd')}>
-            <Icon name="add-circle" size={26} className="text-foreground" />
-          </Pressable>
+          <TutorialTarget id="habits-add-button">
+            <Pressable onPress={() => navigation?.navigate('MigratedHabitAdd')}>
+              <Icon name="add-circle" size={26} className="text-foreground" />
+            </Pressable>
+          </TutorialTarget>
         }
       />
 

@@ -28,6 +28,8 @@ import { Divider } from '@components/ui/divider';
 import { C, FONT } from './theme';
 import { ExerciseThumbMem } from '../../components/ExerciseThumb';
 import { ConfirmDialogMem } from '../../components/ConfirmDialog';
+import TutorialTarget from '@components/tutorial/TutorialTarget';
+import { useTutorial } from '@store/TutorialContext';
 import PainReportSheet from '../../components/PainReportSheet';
 import { useAuth } from '../../store/AuthContext';
 import { workoutHistoryApi } from '../../api/workoutHistory';
@@ -196,6 +198,7 @@ function parseRestSeconds(raw?: string): number | null {
 export default function WorkoutSessionScreen(props: Props) {
   const { navigation, route } = props;
   const { state } = useAuth();
+  const { reportAction } = useTutorial();
   const insets = useSafeAreaInsets();
   const programDayAssignmentId: number | undefined = route?.params?.programDayAssignmentId;
   const workoutTemplateId: number | undefined = route?.params?.workoutTemplateId;
@@ -589,6 +592,7 @@ export default function WorkoutSessionScreen(props: Props) {
       return next;
     });
     syncExerciseLog(ex);
+    if (!wasCompleted) reportAction('workout_set_logged');
     // Solo al MARCAR (no al desmarcar) y solo si esta serie concreta tiene
     // un valor de descanso real configurado -- sin dato, no se inventa.
     if (!wasCompleted && ex.enabledMetrics.includes('descanso')) {
@@ -1102,17 +1106,26 @@ export default function WorkoutSessionScreen(props: Props) {
                           </Box>
                         );
                       })}
-                      <Pressable
-                        className="items-center"
-                        style={{ width: 34 }}
-                        onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
-                      >
-                        <Icon
-                          name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
-                          size={26}
-                          color={row.completed ? C.success : C.textSecondary}
-                        />
-                      </Pressable>
+                      {(() => {
+                        const toggleBtn = (
+                          <Pressable
+                            className="items-center"
+                            style={{ width: 34 }}
+                            onPress={() => toggleRowComplete(blockIdx, exIdx, rowIdx)}
+                          >
+                            <Icon
+                              name={row.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}
+                              size={26}
+                              color={row.completed ? C.success : C.textSecondary}
+                            />
+                          </Pressable>
+                        );
+                        return blockIdx === 0 && rowIdx === 0 ? (
+                          <TutorialTarget id="workout-session-first-set-toggle">{toggleBtn}</TutorialTarget>
+                        ) : (
+                          toggleBtn
+                        );
+                      })()}
                     </HStack>
                   ))}
                 </Box>

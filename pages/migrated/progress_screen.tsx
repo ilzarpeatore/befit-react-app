@@ -134,7 +134,7 @@ export default function ProgressScreen(props: any) {
   const goToMetric = (metricType: string) => props.navigation?.navigate('MigratedBodyMetrics', { metricType });
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Informe" onBack={() => props.navigation?.goBack()} />
 
       {loading ? (

@@ -203,7 +203,7 @@ export default function ViewAllBlogScreen({ navigation, route }: any) {
   const listData = isSearching ? searchResults : posts;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title={categoryTitle || 'Todos los artículos'} onBack={() => navigation.goBack()} />
 
       <Input className="mx-4" style={{ marginTop: 12 }}>
