@@ -4,10 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Box } from '@components/ui/box';
 import { Text } from '@components/ui/text';
-import { Heading } from '@components/ui/heading';
-import { Button } from '@components/ui/button';
 import { Pressable } from '@components/ui/pressable';
 import { Icon } from '@components/ui/icon';
+import { Input, InputField, InputSlot } from '@components/ui/input';
+import ScreenHeader from '@components/ScreenHeader';
 import { C } from './theme';
 import { resourcesApi, ResourceListItem, ResourceCategory } from '../../api/resources';
 
@@ -41,6 +41,22 @@ const TYPE_COLOR: Record<string, string> = {
   doc: C.success60,
 };
 
+const TYPE_LABEL: Record<string, string> = {
+  article: 'Artículo',
+  video: 'Vídeo',
+  link: 'Enlace',
+  doc: 'Documento',
+};
+
+function formatResourceDate(dateStr: string): string {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch {
+    return '';
+  }
+}
+
 interface Props {
   navigation?: any;
 }
@@ -51,6 +67,7 @@ export default function ResourcesListScreen(props: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [items, setItems] = useState<ResourceListItem[]>([]);
+  const [search, setSearch] = useState('');
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -71,7 +88,12 @@ export default function ResourcesListScreen(props: Props) {
 
   const mine = useMemo(() => items.filter((i) => i.scope === 'assigned'), [items]);
   const shared = useMemo(() => items.filter((i) => i.scope === 'shared'), [items]);
-  const activeList = activeTab === 'mine' ? mine : shared;
+  const scopedList = activeTab === 'mine' ? mine : shared;
+  const query = search.trim().toLowerCase();
+  const activeList = useMemo(
+    () => (query ? scopedList.filter((i) => i.title.toLowerCase().includes(query)) : scopedList),
+    [scopedList, query]
+  );
   const sectionDefs = activeTab === 'mine' ? MINE_SECTIONS : SHARED_SECTIONS;
 
   const sections = useMemo(() => {
@@ -90,36 +112,42 @@ export default function ResourcesListScreen(props: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
-      <Box style={{ paddingTop: 12, paddingBottom: 12 }} className="flex-row items-center justify-between px-5">
-        <Button variant="ghost" size="icon" onPress={() => navigation?.goBack()}>
-          <Icon name="chevron-back" size={24} className="text-foreground" />
-        </Button>
-        <Heading size="sm">Recursos</Heading>
-        <Box className="w-10" />
+      <ScreenHeader title="Recursos" onBack={() => navigation?.goBack()} />
+
+      <Box className="px-5" style={{ marginTop: 12, marginBottom: 4 }}>
+        <Input className="rounded-full bg-secondary px-4 gap-2" size="md">
+          <Icon name="search" size={18} className="text-muted-foreground" />
+          <InputField
+            placeholder="Busca en tus recursos"
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search.length > 0 && (
+            <InputSlot onPress={() => setSearch('')}>
+              <Icon name="close-circle" size={18} className="text-muted-foreground" />
+            </InputSlot>
+          )}
+        </Input>
       </Box>
 
-      <Box className="flex-row gap-2 px-5" style={{ marginBottom: 16 }}>
-        <Pressable
-          className={`flex-1 py-2.5 rounded-md items-center ${activeTab === 'mine' ? 'bg-primary' : 'bg-secondary'}`}
-          onPress={() => setActiveTab('mine')}
-        >
-          <Text weight="semibold" size="sm" className={activeTab === 'mine' ? 'text-primary-foreground' : 'text-muted-foreground'}>
+      <Box className="flex-row gap-6 px-5" style={{ marginTop: 16, marginBottom: 8 }}>
+        <Pressable onPress={() => setActiveTab('mine')} style={{ paddingBottom: 8 }}>
+          <Text weight="bold" size="lg" className={activeTab === 'mine' ? 'text-foreground' : 'text-muted-foreground'}>
             Mis Recursos
           </Text>
+          {activeTab === 'mine' && <Box className="bg-foreground" style={{ height: 2, borderRadius: 1, marginTop: 6 }} />}
         </Pressable>
-        <Pressable
-          className={`flex-1 py-2.5 rounded-md items-center ${activeTab === 'shared' ? 'bg-primary' : 'bg-secondary'}`}
-          onPress={() => setActiveTab('shared')}
-        >
-          <Text weight="semibold" size="sm" className={activeTab === 'shared' ? 'text-primary-foreground' : 'text-muted-foreground'}>
+        <Pressable onPress={() => setActiveTab('shared')} style={{ paddingBottom: 8 }}>
+          <Text weight="bold" size="lg" className={activeTab === 'shared' ? 'text-foreground' : 'text-muted-foreground'}>
             Compartidos
           </Text>
+          {activeTab === 'shared' && <Box className="bg-foreground" style={{ height: 2, borderRadius: 1, marginTop: 6 }} />}
         </Pressable>
       </Box>
 
       {isLoading ? (
         <Box className="flex-1 items-center justify-center" style={{ paddingTop: 60 }}>
-          <ActivityIndicator size="large" color="#000000" />
+          <ActivityIndicator size="large" color={C.textPrimary} />
         </Box>
       ) : error ? (
         <Box className="flex-1 items-center justify-center" style={{ paddingTop: 60 }}>
@@ -135,42 +163,39 @@ export default function ResourcesListScreen(props: Props) {
               </Text>
             </Box>
           ) : (
-            <Box className="gap-2">
+            <Box className="gap-6">
               {sections.map((section) =>
                 section.data.length === 0 ? null : (
                   <Box key={section.label}>
-                    <Text
-                      weight="bold"
-                      size="xs"
-                      muted
-                      className="uppercase"
-                      style={{ letterSpacing: 0.4, marginBottom: 10, marginTop: 4 }}
-                    >
+                    <Text weight="bold" size="xl" style={{ marginBottom: 12 }}>
                       {section.label}
                     </Text>
-                    <Box className="gap-2.5">
+                    <Box className="gap-3">
                       {section.data.map((item) => (
                         <Pressable
                           key={item.id}
-                          className="flex-row items-center gap-3 bg-card rounded-lg p-3.5"
+                          className="flex-row items-center gap-3 bg-card rounded-lg p-3"
                           onPress={() => openResource(item)}
                         >
                           <Box
-                            className="w-11 h-11 rounded-md items-center justify-center"
+                            className="w-[68px] h-[68px] rounded-lg items-center justify-center"
                             style={{ backgroundColor: `${TYPE_COLOR[item.type] ?? C.textPrimary}1A` }}
                           >
                             <Icon
                               name={TYPE_ICON[item.type] ?? 'document-text-outline'}
-                              size={20}
+                              size={28}
                               color={TYPE_COLOR[item.type] ?? C.textPrimary}
                             />
                           </Box>
                           <Box className="flex-1">
-                            <Text weight="bold" size="sm" numberOfLines={2}>
+                            <Text weight="bold" size="md" numberOfLines={2}>
                               {item.title}
                             </Text>
-                            <Text muted size="xs" className="capitalize" style={{ marginTop: 3 }}>
-                              {item.type}
+                            <Text muted size="sm" style={{ marginTop: 4 }}>
+                              {TYPE_LABEL[item.type] ?? item.type}
+                            </Text>
+                            <Text muted size="xs" style={{ marginTop: 2 }}>
+                              {formatResourceDate(item.created_at)}
                             </Text>
                           </Box>
                           <Icon name="chevron-forward" size={18} className="text-muted-foreground" />
