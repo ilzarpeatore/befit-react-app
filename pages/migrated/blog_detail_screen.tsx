@@ -56,17 +56,26 @@ const renderYouTubeEmbeds = (html: string): string => {
   );
 };
 
+// El texto del cuerpo (p, li) estaba hardcodeado en gris claro (#e0e0e0),
+// un resto de cuando este WebView se diseñó para fondo oscuro: sobre el bg
+// claro actual (C.surface) era casi ilegible. Corregido a C.textPrimary
+// (negro). No se engancha al modo oscuro de useAppColorMode (solo Home v2
+// lo usa por ahora, ver TAREAS.md): el resto de esta pantalla usa
+// className="bg-card"/"bg-background" de NativeWind, que no responde a
+// modo oscuro hasta que se desbloquee GluestackUIProvider mode en App.tsx
+// -- engancharlo solo aquí dejaría el texto oscuro sobre tarjetas que
+// seguirían viéndose claras, peor que no tocarlo.
 const WRAPPER_HTML = `<!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body { margin:0; padding:0; background-color:${C.bg}; color:${C.white}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
+    body { margin:0; padding:0; background-color:${C.surface}; color:${C.textPrimary}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
     img { max-width:100%; height:auto; border-radius:8px; margin:8px 0; }
-    p, li { font-size:15px; line-height:1.7; color:#e0e0e0; margin:8px 0; }
-    h1,h2,h3,h4 { color:${C.white}; margin:12px 0 8px; }
-    blockquote { border-left:3px solid ${C.brand5}; padding-left:12px; margin:12px 0; color:${C.gray30}; }
-    a { color:${C.brand5}; }
+    p, li { font-size:15px; line-height:1.7; color:${C.textPrimary}; margin:8px 0; }
+    h1,h2,h3,h4 { color:${C.textPrimary}; margin:12px 0 8px; }
+    blockquote { border-left:3px solid ${C.orange}; padding-left:12px; margin:12px 0; color:${C.textSecondary}; }
+    a { color:${C.orange}; }
     iframe { border-radius:12px; }
   </style>
 </head>
@@ -87,7 +96,7 @@ const WRAPPER_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-// Only the WRAPPER_HTML we generate (loaded as source.html, origin "about:blank") and the
+// Only the wrapper HTML we generate (loaded as source.html, origin "about:blank") and the
 // YouTube embed iframe it may contain should ever load in this WebView — block navigation
 // to any other origin (e.g. a malicious link/redirect inside sanitized blog content).
 const onShouldStartLoadWithRequest = (request: any) => {
@@ -181,9 +190,14 @@ export default function BlogDetailScreen({ navigation, route }: any) {
             style={{ position: 'absolute', top: 50, left: 8 }}
             onPress={() => navigation.goBack()}
           >
-            <Icon name="chevron-back" size={28} color={C.white} />
+            <Icon name="chevron-back" size={28} color="#FFFFFF" />
           </Button>
 
+          {/* Blanco fijo (no C.white) en todo este bloque de overlay sobre
+              la foto -- C.white ahora depende del modo claro/oscuro
+              (negro/blanco), pero este texto/icono va sobre el scrim oscuro
+              de la imagen, no sobre una superficie de la app: debe verse
+              igual en ambos modos. */}
           <HStack
             className="items-center rounded-sm"
             style={{
@@ -195,8 +209,8 @@ export default function BlogDetailScreen({ navigation, route }: any) {
               paddingVertical: 5,
             }}
           >
-            <Icon name="time-outline" size={14} color={C.white} style={{ marginRight: 4 }} />
-            <Text size="xs" style={{ color: C.white }}>{formatDate(blog?.datetime || blog?.created_at || '')}</Text>
+            <Icon name="time-outline" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text size="xs" style={{ color: '#FFFFFF' }}>{formatDate(blog?.datetime || blog?.created_at || '')}</Text>
           </HStack>
 
           <Text
@@ -229,7 +243,7 @@ export default function BlogDetailScreen({ navigation, route }: any) {
                 paddingVertical: 4,
               }}
             >
-              <Text size="xs" weight="semibold" style={{ color: C.white }}>{blog.blog_category.title}</Text>
+              <Text size="xs" weight="semibold" style={{ color: '#FFFFFF' }}>{blog.blog_category.title}</Text>
             </Box>
           )}
         </Box>
@@ -254,12 +268,14 @@ export default function BlogDetailScreen({ navigation, route }: any) {
             </Box>
           )}
 
-          {/* Rich content via WebView */}
+          {/* Rich content via WebView -- tarjeta con esquinas redondeadas
+              como el resto de la app (antes era un rectángulo suelto sin
+              radio, la única zona "cuadrada" de la pantalla). */}
           {blog?.content || blog?.description ? (
-            <Box style={{ paddingHorizontal: 8, marginTop: 4 }}>
+            <Box className="bg-card rounded-lg" style={{ marginHorizontal: 16, marginTop: 4, overflow: 'hidden' }}>
               <WebView
                 source={{ html: getRenderedHtml() }}
-                style={{ width: '100%', height: webViewHeight }}
+                style={{ width: '100%', height: webViewHeight, backgroundColor: 'transparent' }}
                 scrollEnabled={false}
                 originWhitelist={['about:blank']}
                 onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
