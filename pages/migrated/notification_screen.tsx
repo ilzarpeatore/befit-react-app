@@ -144,7 +144,7 @@ export default function NotificationScreen(props: any) {
         <FlatList
           data={notifications}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ padding: 20 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 20 }}
           ItemSeparatorComponent={() => <Box className="h-2" />}
           renderItem={NotificationCard}
           onEndReached={loadMore}

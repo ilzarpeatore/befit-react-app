@@ -4,6 +4,22 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Barrido completo: corte de color bajo la status bar + márgenes de pantalla inconsistentes (2026-08-22)
+
+Pedido explícito tras una captura de "Mis hábitos" señalando dos problemas repetidos en muchas pantallas: la franja de la status bar se veía de un color distinto a la cabecera justo debajo, y los márgenes laterales del contenido variaban de pantalla a pantalla.
+
+**Causa raíz del corte de color**: `ScreenHeader.tsx` pinta su propio fondo (`bg-card`, o el fallback sólido de `GlassView` en dispositivos sin Liquid Glass real) pero antes NO cubría la zona del `SafeAreaView` superior — esa franja la pintaba cada pantalla por su cuenta (`edges={['top','bottom']}` del `SafeAreaView`, o un `Box` envolvente con `paddingTop` fijo), con un color de fondo que no siempre coincidía exactamente con el de `ScreenHeader`. Arreglado en el origen: `ScreenHeader.tsx` ahora usa `useSafeAreaInsets()` y absorbe el inset superior en su propio `paddingTop` (antes `paddingVertical: 12` fijo, ahora `insets.top + 12`), así la cabecera y la status bar quedan pintadas como una sola superficie con el mismo color siempre.
+
+Con el componente corregido, barrido mecánico (pero verificado archivo a archivo, no regex a ciegas) de las **31 pantallas que usan `ScreenHeader`** para quitarles el pintado de top duplicado: `about_app_screen.tsx`, `about_us_screen.tsx`, `add_post_screen.tsx`, `add_shopping_list_screen.tsx`, `assigned_meals_screen.tsx`, `blog_screen.tsx`, `bookmark_screen.tsx`, `change_pwd_screen.tsx`, `chatting_image_screen.tsx`, `chatting_screen.tsx`, `notification_screen.tsx`, `view_equipment_screen.tsx` (quitado el `Box` con `paddingTop:40` envolvente); `checkin_fill_screen.tsx`, `checkins_list_screen.tsx`, `habit_add_screen.tsx`, `habits_list_screen.tsx` (`edges={['top','bottom']}` → `edges={['bottom']}`); `favourite_screen.tsx` (edges por defecto incluía `top`, ahora explícito `['bottom']`). Las otras ~13 pantallas ya no tenían pintado de top duplicado (algunas ni siquiera cubrían la status bar antes — arreglo extra de regalo) y no necesitaron cambios.
+
+**Segunda mitad del barrido — márgenes de pantalla**: `theme.ts` ya tenía un token `SPACING.screenPadding` (16) sin usar en casi ningún sitio; cada pantalla improvisaba su propio valor (16, 20, 8...). Homogeneizado a 16 el margen lateral del contenedor principal (el "gutter" de pantalla) en `habit_add_screen.tsx`, `checkin_fill_screen.tsx`, `checkins_list_screen.tsx`, `habits_list_screen.tsx`, `resources_list_screen.tsx`, `terms_and_conditions_screen.tsx`, `view_body_part_screen.tsx` y `notification_screen.tsx`. Cuidado explícito de no tocar padding interno de componentes (inputs, badges, burbujas de chat) que legítimamente usa otros valores — no fue un find-replace global.
+
+**Verificado** con `npx tsc --noEmit -p .` limpio sobre las 8 pantallas del bloque de márgenes (la parte del corte de color en `ScreenHeader.tsx` + 17 pantallas ya se verificó y se pusheó por separado).
+
+**Pendiente, deliberadamente fuera de este barrido**: se detectaron **18 pantallas más** que no usan `ScreenHeader` en absoluto (header a mano/legacy) — `body_metrics_screen.tsx`, `coming_soon_screen.tsx`, `habit_detail_screen.tsx`, `muscle_progress_screen.tsx`, `session_history_detail_screen.tsx`, `statistics_body_distribution_screen.tsx`, `statistics_monthly_report_screen.tsx`, `statistics_muscle_distribution_screen.tsx`, `statistics_personal_records_screen.tsx`, `statistics_screen.tsx`, `statistics_series_count_screen.tsx`, `statistics_top_exercises_screen.tsx`, `workout_history_screen.tsx`, `workout_session_screen.tsx`, `workout_summary_screen.tsx`, `pages/auth/fitness_assessment_screen.tsx`, `pages/auth/parq_screen.tsx`, `pages/auth/register_flow_screen.tsx`. Migrarlas a `ScreenHeader` (y de paso revisar sus márgenes) es trabajo de mayor alcance, para otra sesión.
+
+---
+
 ## ✅ Fixes de sesión de entrenamiento + rediseño de MigratedBlogDetail y MigratedResourcesList (2026-08-22)
 
 **`WorkoutMinimizedBar.tsx`**: el `boxShadow` vivía en el `Box` exterior (ancho completo, sin `borderRadius`), así que la sombra se veía como un halo cuadrado detrás de la tarjeta redondeada de dentro (reportado con captura). Corregido añadiendo `borderRadius:20` al mismo `Box`.

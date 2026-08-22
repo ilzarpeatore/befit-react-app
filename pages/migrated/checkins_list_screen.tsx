@@ -98,7 +98,7 @@ export default function CheckInsListScreen(props: Props) {
             </Text>
           </Box>
         ) : (
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
             <VStack space="sm">
               {pending.length > 0 && (
                 <Box>

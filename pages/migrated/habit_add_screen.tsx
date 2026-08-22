@@ -169,13 +169,13 @@ export default function HabitAddScreen(props: Props) {
             data={templates}
             keyExtractor={(t) => String(t.id)}
             renderItem={renderTemplateItem}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
             showsVerticalScrollIndicator={false}
           />
         )
       ) : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text weight="bold" size="xs" muted className="uppercase" style={{ marginBottom: 8, marginTop: 16, letterSpacing: 0.3 }}>Icono</Text>
             <Box className="flex-row flex-wrap" style={{ gap: 8 }}>
               {HABIT_ICON_KEYS.map((key) => (

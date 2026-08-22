@@ -266,7 +266,7 @@ export default function CheckInFillScreen(props: Props) {
         </Box>
       ) : (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {form.description && (
               <Text muted style={{ fontSize: 13.5, lineHeight: 19, marginBottom: 16 }}>{form.description}</Text>
             )}

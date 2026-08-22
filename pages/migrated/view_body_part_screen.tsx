@@ -85,7 +85,7 @@ export default function ViewBodyPartScreen(props: any) {
       </VStack>
 
       {listExpanded ? (
-        <ScrollView className="flex-1 px-5">
+        <ScrollView className="flex-1 px-4">
           {filteredOptions.map((opt) => (
             <Pressable
               key={opt.id}
@@ -102,7 +102,7 @@ export default function ViewBodyPartScreen(props: any) {
         </ScrollView>
       ) : (
         <>
-          <Text size="xs" muted className="text-center px-5" style={{ marginBottom: 12 }}>
+          <Text size="xs" muted className="text-center px-4" style={{ marginBottom: 12 }}>
             Toca una zona del cuerpo para ver sus ejercicios
           </Text>
           <Box className="flex-1 items-center justify-center" style={{ paddingBottom: 40 }}>

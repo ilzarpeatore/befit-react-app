@@ -10,7 +10,7 @@ export default function TermsAndConditionsScreen(props: any) {
     <Box className="flex-1 bg-background">
       <ScreenHeader title="Terms of Services" onBack={() => props.navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
         <Card variant="outline">
           <Text muted className="leading-6">
             {`Terms and Conditions\n\n` +

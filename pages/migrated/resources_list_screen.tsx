@@ -114,7 +114,7 @@ export default function ResourcesListScreen(props: Props) {
     <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title="Recursos" onBack={() => navigation?.goBack()} />
 
-      <Box className="px-5" style={{ marginTop: 12, marginBottom: 4 }}>
+      <Box className="px-4" style={{ marginTop: 12, marginBottom: 4 }}>
         <Input className="rounded-full bg-secondary px-4 gap-2" size="md">
           <Icon name="search" size={18} className="text-muted-foreground" />
           <InputField
@@ -130,7 +130,7 @@ export default function ResourcesListScreen(props: Props) {
         </Input>
       </Box>
 
-      <Box className="flex-row gap-6 px-5" style={{ marginTop: 16, marginBottom: 8 }}>
+      <Box className="flex-row gap-6 px-4" style={{ marginTop: 16, marginBottom: 8 }}>
         <Pressable onPress={() => setActiveTab('mine')} style={{ paddingBottom: 8 }}>
           <Text weight="bold" size="lg" className={activeTab === 'mine' ? 'text-foreground' : 'text-muted-foreground'}>
             Mis Recursos
@@ -154,7 +154,7 @@ export default function ResourcesListScreen(props: Props) {
           <Text muted className="text-center px-8">No se pudieron cargar los recursos.</Text>
         </Box>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
           {activeList.length === 0 ? (
             <Box className="flex-1 items-center justify-center" style={{ paddingTop: 60 }}>
               <Icon name="folder-open-outline" size={40} className="text-muted-foreground" />
