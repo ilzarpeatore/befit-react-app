@@ -60,18 +60,19 @@ interface ApiResponse {
 interface Props {
   categoryId?: number;
   tagId?: number;
+  mealType?: string;
   title: string;
 }
 
 export default function RecipeListScreenV2(props: any) {
-  const { categoryId, tagId, title }: Props = props.route?.params ?? {};
+  const { categoryId, tagId, mealType, title }: Props = props.route?.params ?? {};
   const [recipeList, setRecipeList] = useState<RecipeItem[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const isLastPageRef = useRef(false);
-  const [filter, setFilter] = useState<RecipeFilterModel>({});
+  const [filter, setFilter] = useState<RecipeFilterModel>({ mealTypes: mealType ? [mealType] : undefined });
   const [showFilterSheet, setShowFilterSheet] = useState(false);
-  const [mealTypeDraft, setMealTypeDraft] = useState<string[]>([]);
+  const [mealTypeDraft, setMealTypeDraft] = useState<string[]>(mealType ? [mealType] : []);
   const [calMinDraft, setCalMinDraft] = useState('');
   const [calMaxDraft, setCalMaxDraft] = useState('');
   const scrollRef = useRef<FlatList>(null);
