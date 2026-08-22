@@ -326,7 +326,11 @@ function QuestionInput({
     const q = question as RulerQuestion;
     const isHeight = q.id === 'height';
     const unit = isHeight ? heightUnit : weightUnit;
-    const setUnit = isHeight ? setHeightUnit : setWeightUnit;
+    // Cast explícito: TS infiere el parámetro de la unión de ambos setters
+    // como `never` (los literales 'cm'|'ft' y 'kg'|'lbs' son disjuntos), no
+    // por ningún motivo real -- `unit.value` siempre es el string correcto
+    // para el setter elegido según `isHeight`.
+    const setUnit = (isHeight ? setHeightUnit : setWeightUnit) as (u: string) => void;
     const baseValue = (answers[q.id] as number | undefined) ?? q.defaultValue;
     const activeUnitDef = q.units.find((u) => u.value === unit) ?? q.units[0];
     const displayValue = activeUnitDef.fromBase(baseValue);
@@ -342,7 +346,7 @@ function QuestionInput({
           {q.units.map((u) => (
             <Pressable
               key={u.value}
-              onPress={() => setUnit(u.value as any)}
+              onPress={() => setUnit(u.value)}
               style={[styles.unitPill, unit === u.value && styles.unitPillActive]}
             >
               <Text style={[styles.unitPillText, unit === u.value && styles.unitPillTextActive]}>{u.label}</Text>
