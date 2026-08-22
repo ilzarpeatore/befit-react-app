@@ -4,6 +4,20 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Fixes de sesión de entrenamiento + rediseño de MigratedBlogDetail y MigratedResourcesList (2026-08-22)
+
+**`WorkoutMinimizedBar.tsx`**: el `boxShadow` vivía en el `Box` exterior (ancho completo, sin `borderRadius`), así que la sombra se veía como un halo cuadrado detrás de la tarjeta redondeada de dentro (reportado con captura). Corregido añadiendo `borderRadius:20` al mismo `Box`.
+
+**`workout_session_screen.tsx`**: el diálogo de confirmación al pulsar la X ("Salir del entrenamiento" / "Seguir entrenando") ya existía, pero `onClose()` lo saltaba entero si `hasAnyProgress` era `false` (ninguna serie marcada) — cerrar justo al empezar el entrenamiento (0 series, cronómetro ya corriendo) salía sin preguntar. Ahora siempre confirma mientras la sesión está en curso.
+
+**`blog_detail_screen.tsx`**: dos bugs reales. (1) La zona de contenido (`WebView`) no tenía `borderRadius` — única zona "cuadrada" de la pantalla, ahora en tarjeta `bg-card rounded-lg`. (2) El texto de párrafos estaba casi invisible: CSS hardcodeado a `#e0e0e0` (resto de cuando se diseñó sobre fondo oscuro) sobre un fondo ahora claro. Corregido a `C.textPrimary`, y reforzado con `#content, #content * { color: ... !important }` porque el HTML del editor a veces trae color inline que gana por especificidad a un simple `p { color }`. De paso, los iconos/texto sobre la foto de cabecera (atrás, fecha, categoría) usaban `C.white` (que en el theme claro es `#000000` — negro invisible sobre foto oscurecida), corregidos a blanco fijo.
+
+**`resources_list_screen.tsx`**: rediseño completo de UI (pedido explícito, "muy básico y cutre"). `ScreenHeader` compartido en vez de header a medida, buscador nuevo (filtra por título), pestañas de píldora a subrayado, título de sección grande, tarjetas con icono más grande (68px) y tipo traducido al español + fecha.
+
+**Pendiente, para más adelante — no enganché estas pantallas al modo oscuro**: tanto `blog_detail_screen.tsx` como `resources_list_screen.tsx` se evaluaron para usar `useAppColorMode` (el hook de Home v2), pero se descartó en ambos casos por el mismo motivo: usan `className="bg-card"`/`"bg-background"` de NativeWind, que no responde a modo oscuro hasta desbloquear `GluestackUIProvider mode` en `App.tsx` (ver entrada anterior, 2026-08-21). Enganchar solo el texto/color de una pantalla sin que sus superficies (`bg-card`, `bg-background`, `ScreenHeader`, `Input`) respondan también dejaría un resultado a medias, peor que no tocarlo. Cuando se aborde la migración completa (documentada en la entrada anterior), revisar estas dos pantallas junto con el resto.
+
+---
+
 ## ✅ Hero con foto real por hora + modo oscuro automático en Home v2 (2026-08-21)
 
 **Foto real de fondo en el hero** (`home_screen_modern_v2.tsx`, sustituye al `LinearGradient` plano): 3 fotos del cliente convertidas a JPEG (~250-300KB c/u, originales PNG de 2-3MB) en `assets/hero-sunrise-sunset.jpg` / `hero-day.jpg` / `hero-night.jpg`, elegidas por `getHeroImageForHour()` según la hora local (5-8h y 19-21h → amanecer/atardecer, 8-19h → día, resto → noche). Scrim oscuro fijo sobre la foto para que el texto blanco de la cabecera mantenga contraste.
