@@ -70,13 +70,20 @@ const WRAPPER_HTML = `<!DOCTYPE html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body { margin:0; padding:0; background-color:${C.surface}; color:${C.textPrimary}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
+    body { margin:0; padding:0; background-color:${C.surface}; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
     img { max-width:100%; height:auto; border-radius:8px; margin:8px 0; }
-    p, li { font-size:15px; line-height:1.7; color:${C.textPrimary}; margin:8px 0; }
-    h1,h2,h3,h4 { color:${C.textPrimary}; margin:12px 0 8px; }
-    blockquote { border-left:3px solid ${C.orange}; padding-left:12px; margin:12px 0; color:${C.textSecondary}; }
-    a { color:${C.orange}; }
+    p, li { font-size:15px; line-height:1.7; margin:8px 0; }
+    h1,h2,h3,h4 { margin:12px 0 8px; }
+    blockquote { border-left:3px solid ${C.orange}; padding-left:12px; margin:12px 0; }
     iframe { border-radius:12px; }
+    /* El HTML del editor a veces trae color inline (grises pensados para un
+       fondo oscuro que ya no existe) -- un simple "p { color }" pierde
+       contra eso por especificidad. #content + !important gana tanto a los
+       estilos inline como a cualquier color suelto que traiga el contenido,
+       sin tener que sanitizarlo elemento por elemento. */
+    #content, #content * { color:${C.textPrimary} !important; }
+    #content blockquote { color:${C.textSecondary} !important; }
+    #content a { color:${C.orange} !important; }
   </style>
 </head>
 <body>
