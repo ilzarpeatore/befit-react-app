@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useResponsiveStyleSheet } from "@helper/responsiveStyleSheet";
 import { Colors } from "@constants/colors";
 import { dietApi, DietListItem, AssignedMealsSummary } from "../api/diet";
-import { DietCardMem } from "../components/DietCard";
+import { DietGridCardMem } from "../components/DietGridCard";
 import { EmptyStateMem } from "../components/EmptyState";
 import { ErrorRetryMem } from "../components/ErrorRetry";
 import { LoadingSkeletonMem } from "../components/LoadingSkeleton";
@@ -72,6 +72,19 @@ export default function DietDashboard({ navigation }: Props) {
     },
     [navigation]
   );
+
+  const toggleFavourite = useCallback(async (dietId: number) => {
+    setOtherDiets((prev) =>
+      prev.map((d) => (d.id === dietId ? { ...d, is_favourite: d.is_favourite === 1 ? 0 : 1 } : d))
+    );
+    try {
+      await dietApi.setFavourite(dietId);
+    } catch {
+      setOtherDiets((prev) =>
+        prev.map((d) => (d.id === dietId ? { ...d, is_favourite: d.is_favourite === 1 ? 0 : 1 } : d))
+      );
+    }
+  }, []);
 
   if (loading && !refreshing) {
     return (
@@ -216,15 +229,20 @@ export default function DietDashboard({ navigation }: Props) {
                   message="Your coach hasn't published any public diets yet."
                 />
               ) : (
-                otherDiets.map((item) => (
-                  <DietCardMem
-                    key={item.id.toString()}
-                    title={item.title}
-                    calories={Number(item.calories)}
-                    image={item.diet_image}
-                    onPress={() => openDietDetail(item.id, item.title)}
-                  />
-                ))
+                <View style={styles.grid}>
+                  {otherDiets.map((item) => (
+                    <DietGridCardMem
+                      key={item.id.toString()}
+                      title={item.title}
+                      calories={Number(item.calories)}
+                      totalTime={item.total_time}
+                      image={item.diet_image}
+                      isFavourite={item.is_favourite === 1}
+                      onPress={() => openDietDetail(item.id, item.title)}
+                      onToggleFavourite={() => toggleFavourite(item.id)}
+                    />
+                  ))}
+                </View>
               )}
             </View>
           </>
@@ -328,6 +346,11 @@ function useStyle() {
     },
     section: {
       marginBottom: "24@ratio",
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
     },
     sectionHeader: {
       flexDirection: "row",
