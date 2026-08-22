@@ -78,6 +78,7 @@ const MuscleProgressScreen = React.lazy(() => import('@pages/migrated/muscle_pro
 const MyProgramCalendarScreen = React.lazy(() => import('@pages/migrated/my_program_calendar_screen'));
 const NotificationScreen = React.lazy(() => import('@pages/migrated/notification_screen'));
 const OnboardingScreen = React.lazy(() => import('@pages/migrated/onboarding_screen'));
+const OnboardingV2Screen = React.lazy(() => import('@pages/migrated/onboarding_v2/onboarding_v2_screen'));
 const OtherUserProfileScreen = React.lazy(() => import('@pages/migrated/other_user_profile_screen'));
 const PlanScreen = React.lazy(() => import('@pages/migrated/plan_screen'));
 const PostDetailsScreen = React.lazy(() => import('@pages/migrated/post_details_screen'));
@@ -367,7 +368,7 @@ function RootNavigator() {
     <Suspense fallback={<LazyFallback />}>
       <Stack.Navigator
         key={state.isAuthenticated ? (state.onboardingCompleted ? 'main' : 'onboarding') : 'auth'}
-        initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboarding' : 'Home'}
+        initialRouteName={!state.isAuthenticated ? 'WelcomeAuth' : !state.onboardingCompleted ? 'MigratedOnboardingV2' : 'Home'}
         screenOptions={{ headerShown: false }}
       >
         {!state.isAuthenticated ? (
@@ -381,16 +382,8 @@ function RootNavigator() {
         </>
       ) : !state.onboardingCompleted ? (
         <>
-          <Stack.Screen name="MigratedOnboarding" component={OnboardingScreen} />
-          <Stack.Screen name="MigratedProfileSetupIntro" component={ProfileSetupIntroScreen} />
-          <Stack.Screen name="MigratedProfileSetupForm" component={ProfileSetupFormScreen} />
-          <Stack.Screen name="MigratedAvatarSetup" component={AvatarSetupScreen} />
-          <Stack.Screen name="MigratedPrivacyPolicyOnboard" component={PrivacyPolicyScreenOnboard} />
-          <Stack.Screen name="MigratedNotificationsOnboard" component={NotificationsScreen} />
+          <Stack.Screen name="MigratedOnboardingV2" component={OnboardingV2Screen} />
           <Stack.Screen name="MigratedAssessmentResult" component={AssessmentResultScreen} />
-          <Stack.Screen name="MigratedRecommendations" component={RecommendationsScreen} />
-          <Stack.Screen name="MigratedHealth" component={HealthScreen} />
-          <Stack.Screen name="MigratedArticles" component={ArticlesScreen} />
           <Stack.Screen name="MigratedOnboardingComplete" component={OnboardingCompleteScreen} />
         </>
       ) : (

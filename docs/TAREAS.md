@@ -4,6 +4,19 @@ Estado del trabajo de conexión backend/navegación. Cada tarea pendiente indica
 
 ---
 
+## ✅ Onboarding v2 — 4 etapas (datos personales, PAR-Q, entrenamiento, nutrición) (2026-08-22)
+
+Sustituye por completo el onboarding anterior (carrusel `MigratedOnboarding` de 11 slides → `ProfileSetupIntro/Form` → `AvatarSetup` → `PrivacyPolicyOnboard` → `NotificationsOnboard` → `AssessmentResult` → `Recommendations` → `Health` → `Articles` → `OnboardingComplete`), que además tenía un bug real: el carrusel llamaba a `completeOnboarding()` directamente al pulsar "Saltar"/"Empezar" sin pasar nunca por el formulario de datos — en la práctica nadie llegaba a `ProfileSetupForm` ni a nada posterior. Contrato completo (preguntas, payloads, endpoints, esquema de BD sugerido) en **`docs/ONBOARDING_V2.md`**.
+
+- **Diseño**: una pregunta por pantalla, con regla horizontal para altura/peso, rueda numérica para edad/días-semana/meses-entrenando/comidas-día, tarjetas de selección única, escala 1-10 y texto libre — según las capturas de referencia (tipo Lifesum) aportadas por el usuario. Construidos desde cero (`components/onboarding_v2/RulerPicker.tsx`, `NumberWheelPicker.tsx`, `OptionCards.tsx`, `ScaleSelector.tsx`, `OnboardingHeader.tsx`): no había ninguna librería de "wheel/ruler picker" en el repo.
+- **Motor único** (`pages/migrated/onboarding_v2/onboarding_v2_screen.tsx`): las 36 preguntas (`constants/onboardingV2Questions.ts`) se recorren con un índice interno en una sola pantalla, no 36 rutas de navegación. Respuestas persistidas en `AsyncStorage` en cada paso (reanudable si la app se cierra a medias).
+- **Etapa 1 (datos personales) ya funciona hoy de verdad**: reutiliza el endpoint real `update-profile` (`age`/`height`/`weight`/`gender` ya existen en `user_profiles`). **Etapas 2-4 (PAR-Q, cuestionario de entrenamiento, cuestionario de nutrición) llaman a endpoints `v1/onboarding/*` que todavía NO existen en el backend** — preparados en `api/onboardingV2.ts` (tipos + payload) para que solo falte implementarlos; ver el esquema de tablas sugerido en el MD. Ningún envío bloquea el alta de un usuario (best-effort, con log de error) — imprescindible mientras 3 de los 4 endpoints no existan.
+- `App.tsx`: rama `!state.onboardingCompleted` de `RootNavigator` reducida a `MigratedOnboardingV2` → `MigratedAssessmentResult` (reutilizada, ya muestra IMC/BMR reales) → `MigratedOnboardingComplete` (reutilizada, ya llama a `completeOnboarding()`). Las pantallas quitadas de esta rama no se han borrado — siguen registradas dentro de `MigratedNavigator` por si algo más las usa.
+
+**Pendiente**: implementar los 3 endpoints + tablas en el backend (VPS, fuera de este repo); verificar visualmente en dispositivo el `RulerPicker`/`NumberWheelPicker` (no se ha podido probar en un simulador real durante esta sesión); decidir si limpiar las pantallas huérfanas del onboarding anterior.
+
+---
+
 ## ✅ Tutorial guiado ("retos para empezar") — spotlight con completado activo (2026-08-22)
 
 Sustituye el checklist placeholder de "Reto para empezar" en Home v2 (goal/plan/device/coach/push, contenido de relleno desde que se construyó `StartupChecklist.tsx`) por los 7 retos esenciales reales, con un mecanismo de coach-marks nuevo:
