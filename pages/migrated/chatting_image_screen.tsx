@@ -156,19 +156,17 @@ export default function ChattingImageScreen({ navigation }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title="FitBot"
-          onBack={() => navigation.goBack()}
-          rightAction={
-            questionAnswers.length > 0 ? (
-              <Button variant="ghost" size="icon" onPress={showClearDialog}>
-                <Icon name="refresh-outline" size={22} className="text-foreground" />
-              </Button>
-            ) : undefined
-          }
-        />
-      </Box>
+      <ScreenHeader
+        title="FitBot"
+        onBack={() => navigation.goBack()}
+        rightAction={
+          questionAnswers.length > 0 ? (
+            <Button variant="ghost" size="icon" onPress={showClearDialog}>
+              <Icon name="refresh-outline" size={22} className="text-foreground" />
+            </Button>
+          ) : undefined
+        }
+      />
 
       <Box className="flex-1">
         {questionAnswers.length > 0 ? (

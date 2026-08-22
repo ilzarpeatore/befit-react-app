@@ -103,9 +103,7 @@ export default function AssignedMealsScreen(props: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title={title} onBack={() => props.navigation.goBack()} />
-      </Box>
+      <ScreenHeader title={title} onBack={() => props.navigation.goBack()} />
 
       {isLoading ? (
         <Box className="flex-1 items-center justify-center">

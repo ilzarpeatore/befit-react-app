@@ -117,9 +117,7 @@ export default function ViewEquipmentScreen(props: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="Equipments Exercise" onBack={() => props.navigation?.goBack()} />
-      </Box>
+      <ScreenHeader title="Equipments Exercise" onBack={() => props.navigation?.goBack()} />
 
       <Box className="flex-1">
         <FlatList

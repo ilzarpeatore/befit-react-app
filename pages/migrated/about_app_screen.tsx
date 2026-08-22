@@ -45,9 +45,7 @@ export default function AboutAppScreen({ navigation }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="About App" onBack={() => navigation.goBack()} />
-      </Box>
+      <ScreenHeader title="About App" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 8 }} showsVerticalScrollIndicator={false}>
         {mOption('document-text-outline', 'Privacy Policy', () => {

@@ -150,7 +150,7 @@ export default function HabitsListScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['bottom']}>
       <ScreenHeader
         title="Mis hábitos"
         onBack={() => navigation?.goBack()}

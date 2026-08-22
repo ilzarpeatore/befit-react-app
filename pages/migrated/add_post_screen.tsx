@@ -133,9 +133,7 @@ export default function AddPostScreen({ navigation, route }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title={flow === 'EditFlow' ? 'Edit Post' : 'New Post'} onBack={() => navigation.goBack()} />
-      </Box>
+      <ScreenHeader title={flow === 'EditFlow' ? 'Edit Post' : 'New Post'} onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <VStack space="lg" style={{ paddingTop: 16, paddingBottom: 32 }}>

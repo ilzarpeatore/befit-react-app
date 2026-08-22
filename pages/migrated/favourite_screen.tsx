@@ -28,7 +28,7 @@ export default function FavouriteScreen(props: FavouriteScreenProps) {
   const [select, setSelect] = useState(() => initialIndex === 0);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       {/* App Bar */}
       <ScreenHeader title="Favourite Workouts & Nutritions" onBack={() => props.navigation.goBack()} />
 

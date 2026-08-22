@@ -4,6 +4,7 @@ import { Box } from '@components/ui/box';
 import { Heading } from '@components/ui/heading';
 import { Button } from '@components/ui/button';
 import { Icon } from '@components/ui/icon';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassView, isGlassEffectAPIAvailable, type GlassStyle } from '@components/ui/glass-view';
 
 const SIDE_SLOT_WIDTH = 40;
@@ -25,14 +26,22 @@ interface ScreenHeaderProps {
 // patron repetido a mano en pages/migrated/* (Box/HStack + Button/Pressable +
 // Heading, cada pantalla con su propio padding/alineacion). Mismo criterio
 // que Card/SimpleBottomSheet: GlassView real en iOS 26+, fondo solido
-// bg-card como fallback en Android/iOS<26. No gestiona el safe-area top --
-// se monta como primer hijo dentro del SafeAreaView de cada pantalla, que ya
-// lo cubre.
+// bg-card como fallback en Android/iOS<26.
+//
+// Gestiona su propio safe-area top (useSafeAreaInsets), en vez de depender
+// de que el SafeAreaView de cada pantalla pinte esa franja -- antes ambos
+// pintaban esa zona por separado con colores distintos (SafeAreaView con
+// bg-background gris, este header con bg-card blanco de fallback), dejando
+// un corte de color justo encima de la cabecera (reportado con captura,
+// 2026-08-22). Las pantallas que lo usan deben quitar 'top' de su propio
+// edges de SafeAreaView (o el paddingTop manual si no usan SafeAreaView)
+// para no duplicar el hueco.
 export default function ScreenHeader({ title, onBack, hideBack, rightAction, glassEffectStyle = 'regular' }: ScreenHeaderProps) {
   const hasGlass = isGlassEffectAPIAvailable();
+  const insets = useSafeAreaInsets();
 
   const content = (
-    <Box className="flex-row items-center justify-between px-4" style={{ paddingVertical: 12 }}>
+    <Box className="flex-row items-center justify-between px-4" style={{ paddingTop: insets.top + 12, paddingBottom: 12 }}>
       {hideBack ? (
         <Box style={{ width: SIDE_SLOT_WIDTH }} />
       ) : (

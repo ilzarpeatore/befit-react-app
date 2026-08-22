@@ -201,21 +201,19 @@ export default function BlogScreen({ navigation }: any) {
 
   return (
     <Box style={styles_local.container}>
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title="Blog"
-          onBack={() => navigation.goBack()}
-          rightAction={
-            <Button
-              variant="ghost"
-              onPress={() => navigateToViewAll()}
-              style={{ backgroundColor: C.brand5, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}
-            >
-              <ButtonText style={{ fontFamily: FONT.semiBold, fontSize: 13, color: C.white }}>Ver todo</ButtonText>
-            </Button>
-          }
-        />
-      </Box>
+      <ScreenHeader
+        title="Blog"
+        onBack={() => navigation.goBack()}
+        rightAction={
+          <Button
+            variant="ghost"
+            onPress={() => navigateToViewAll()}
+            style={{ backgroundColor: C.brand5, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}
+          >
+            <ButtonText style={{ fontFamily: FONT.semiBold, fontSize: 13, color: C.white }}>Ver todo</ButtonText>
+          </Button>
+        }
+      />
 
       <ScrollView
         style={styles_local.body}

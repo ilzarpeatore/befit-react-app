@@ -137,19 +137,17 @@ export default function ChattingScreen({ navigation }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title="FitBot"
-          onBack={() => navigation.goBack()}
-          rightAction={
-            messages.length > 0 ? (
-              <Button variant="ghost" size="icon" onPress={showClearDialog}>
-                <Icon name="refresh-outline" size={22} className="text-foreground" />
-              </Button>
-            ) : undefined
-          }
-        />
-      </Box>
+      <ScreenHeader
+        title="FitBot"
+        onBack={() => navigation.goBack()}
+        rightAction={
+          messages.length > 0 ? (
+            <Button variant="ghost" size="icon" onPress={showClearDialog}>
+              <Icon name="refresh-outline" size={22} className="text-foreground" />
+            </Button>
+          ) : undefined
+        }
+      />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

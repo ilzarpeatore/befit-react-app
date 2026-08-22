@@ -125,7 +125,7 @@ export default function HabitAddScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['bottom']}>
       <ScreenHeader title="Añadir hábito" onBack={() => navigation?.goBack()} />
 
       <Box

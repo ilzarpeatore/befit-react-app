@@ -19,9 +19,7 @@ async function launchUrl(url: string) {
 export default function AboutUsScreen({ navigation }: any) {
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="About Us" onBack={() => navigation.goBack()} />
-      </Box>
+      <ScreenHeader title="About Us" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false}>
         <VStack space="md">

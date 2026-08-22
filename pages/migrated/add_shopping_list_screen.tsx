@@ -173,9 +173,7 @@ export default function AddShoppingListScreen({ navigation, route }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title={isEditMode ? 'Edit Shopping List' : 'Add Shopping List'} onBack={() => navigation.goBack()} />
-      </Box>
+      <ScreenHeader title={isEditMode ? 'Edit Shopping List' : 'Add Shopping List'} onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16 }} showsVerticalScrollIndicator={false}>
         {/* Date / Range Selection */}

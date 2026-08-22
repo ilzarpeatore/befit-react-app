@@ -189,9 +189,7 @@ export default function BookmarkScreen({ navigation }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="Bookmarks" onBack={() => navigation.goBack()} />
-      </Box>
+      <ScreenHeader title="Bookmarks" onBack={() => navigation.goBack()} />
 
       <Box className="flex-1">
         {loading && page === 1 ? (

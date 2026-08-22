@@ -119,19 +119,17 @@ export default function NotificationScreen(props: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader
-          title="Notificaciones"
-          onBack={() => props.navigation?.goBack()}
-          rightAction={
-            unreadCount > 0 ? (
-              <Button variant="secondary" size="sm" onPress={markAllRead}>
-                <ButtonText className="text-warning">Marcar leídas</ButtonText>
-              </Button>
-            ) : undefined
-          }
-        />
-      </Box>
+      <ScreenHeader
+        title="Notificaciones"
+        onBack={() => props.navigation?.goBack()}
+        rightAction={
+          unreadCount > 0 ? (
+            <Button variant="secondary" size="sm" onPress={markAllRead}>
+              <ButtonText className="text-warning">Marcar leídas</ButtonText>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {isLoading && notifications.length === 0 ? (
         <Box className="flex-1 items-center justify-center gap-3">

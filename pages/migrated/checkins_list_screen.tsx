@@ -78,7 +78,7 @@ export default function CheckInsListScreen(props: Props) {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
       <Box className="flex-1 bg-background">
         <ScreenHeader title="Check-ins y formularios" onBack={() => navigation?.goBack()} />
 

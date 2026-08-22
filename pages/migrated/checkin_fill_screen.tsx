@@ -253,7 +253,7 @@ export default function CheckInFillScreen(props: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={['bottom']}>
       <ScreenHeader title={form?.title || fallbackTitle || 'Formulario'} onBack={() => navigation?.goBack()} />
 
       {isLoading ? (

@@ -60,9 +60,7 @@ export default function ChangePwdScreen({ navigation }: any) {
 
   return (
     <Box className="flex-1 bg-background">
-      <Box style={{ paddingTop: 40 }}>
-        <ScreenHeader title="Change Password" onBack={() => navigation.goBack()} />
-      </Box>
+      <ScreenHeader title="Change Password" onBack={() => navigation.goBack()} />
 
       <ScrollView
         className="flex-1"
